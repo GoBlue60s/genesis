@@ -1,0 +1,46 @@
+configuration
+   2  21
+Dim1;Dimension 1
+Dim2;Dimension 2
+BLM;Black Lives Matter
+Fund;Christian fundamentalists
+Harp;Kamala Harris (post)
+Fauc;Dr. Anthony Fauci
+NRA;National Rifle Association
+Plan;Planned Parenthood	
+Penp;Mike Pence	(post)
+Supr;U.S. Supreme Court
+Busi;Big business
+Capi;Capitalists
+Cong;Congress
+Cons;Conservatives	
+Unio;Labor unions
+Libs;Liberals
+Soci;Socialists	
+Dems;Democratic Party
+Trum;Donald Trump
+Bide;Joe Biden
+Harr;Kamala Harris
+Penc;Mike Pence
+Reps;Republican Party	
+ 0.76669 -0.08175
+-0.05906  0.52731
+ 0.78870 -0.03001
+ 0.45245  0.21524
+ 0.08432  0.21377
+ 0.19245  0.11065
+-0.56010  0.54586
+-0.13570  0.61988
+ 0.01639  0.55261
+ 0.11434  0.23007
+ 0.35913  0.50442
+-0.37492  0.64580
+ 0.38897  0.14277
+ 0.72451  0.01903
+ 0.21278  0.16355
+ 0.77957 -0.05090
+-0.79961  0.39276
+ 0.81158 -0.14903
+ 0.58251  0.02912
+-0.46660  0.40203
+-0.57287  0.50377

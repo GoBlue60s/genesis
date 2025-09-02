@@ -1,0 +1,30 @@
+Configuration
+ 2 13
+dim1;Dimension 1
+dim2;Dimension 2
+Bush;Bush
+Kerr;Kerry
+Nade;Nader
+Chen;Cheney
+Edwa;Edwards
+Laur;Laura
+Hill;Hillary
+Clin;Clinton
+Powe;Powell
+Ashc;Ashcroft
+McCa;McCain
+Demp;Democratic Party
+Repp;Republican Party
+1.0 0.0 
+0.0 1.0 
+2.0 0.0 
+0.0 2.0 
+3.0 0.0 
+0.0 3.0 
+4.0 0.0 
+0.0 4.0 
+5.0 0.0 
+0.0 5.0 
+6.0 0.0 
+0.0 6.0 
+7.0 0.0 

@@ -1,0 +1,13 @@
+Grouped
+Religion
+   2   4
+L-R;Left-Right
+Soc;Social
+Cath; 1;Catholics
+Jews; 2;Jews
+Bapt; 3;Baptists
+Prot; 4;Protestants
+-0.148  0.031
+-0.371 -2.880
+-0.184  0.158
+ 0.143  0.048

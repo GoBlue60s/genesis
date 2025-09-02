@@ -1,0 +1,28 @@
+Configuration 
+   2  12
+L-R;Left-Right
+Soc;Social
+Wall;Wallace
+Reag;Reagan
+Cart;Carter
+Conn;Connally
+Ford;Ford
+Mond;Mondale
+Dole;Dole
+Hump;Humphrey
+Rock;Rockefeller
+Udal;Udall
+Kenn;Kennedy
+Gold;Goldwater
+  0.367  1.548
+  0.384  0.362
+ -0.493  0.358
+  1.413 -0.290
+  0.160 -0.161	
+ -1.021 -0.001
+  0.878 -0.601
+ -0.769 -0.222
+  0.409 -0.831
+ -1.229 -0.557
+ -0.793  0.240
+  0.694  0.156

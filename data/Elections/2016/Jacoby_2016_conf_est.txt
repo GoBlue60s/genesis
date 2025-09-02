@@ -1,0 +1,20 @@
+Configuration
+ 2 8
+Dim1;Dimension 1
+Dim2;Dimension 2
+HCli;Hillary Clinton
+Trum;Donald Trump
+Kain;Tim Kaine
+Penc;Mike Pence
+Obam;Barack Obama
+BCli;Bill Clinton
+DemP;Democratic Party
+RepP;Republican Party
+-2.50  0.02 
+ 3.35  0.07 
+-0.75  0.70 
+ 2.00 -1.70
+-3.00 -0.50  
+-1.90 -1.00  
+-1.65  0.00
+ 1.80  0.06

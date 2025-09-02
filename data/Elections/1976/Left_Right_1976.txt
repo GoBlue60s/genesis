@@ -1,0 +1,11 @@
+Grouped
+Left_Right
+   2   3
+L-R;Left-Right
+Soc;Social
+Libs; 1;Liberals
+Cons; 2;Conservatives
+Mods; 3;Moderates
+-0.389 -0.065
+ 0.284  0.112
+-0.097  0.017 

@@ -1,0 +1,26 @@
+Configuration
+ 2 11
+Dim1;Dimension 1
+Dim2;Dimension 2
+Obam;Barack Obama
+Bush;George W Bush
+Rice;Condoleezza Rice
+Pali;Sarah Palin
+HCli;Hillary Clinton
+BCli;Bill Clinton
+Limb;Rush Limbaugh
+Bide;Joe Biden
+McCa;John McCain
+DemP;Democratic Party
+RepP;Republican Party
+-3.60  1.20 
+ 3.50 -0.30
+ 1.50  2.00 
+ 2.80  1.00 
+-2.40 -1.25 
+-2.30 -2.00  
+ 2.50 -3.00 
+-1.45  1.00  
+ 1.78  0.60  
+-2.60  0.02 
+ 2.00 -0.02 

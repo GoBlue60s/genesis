@@ -1,0 +1,11 @@
+Grouped
+Vote in 1968
+   2   3
+L-R;Left-Right
+Soc;Social
+Nixon; 1;Nixon
+HHH; 2;Humphrey
+Wall; 3;Wallace
+ 0.444 -0.030
+-0.433 -0.113
+-0.121  0.676

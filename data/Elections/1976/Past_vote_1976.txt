@@ -1,0 +1,9 @@
+Grouped
+Past Vote for President
+   2   2
+L-R;Left-Right
+Soc;Social
+Nixon; 1;Nixon 1972
+McGov; 2;McGovern 1972
+ 0.309  0.050
+-0.532 -0.057 

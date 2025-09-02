@@ -1,0 +1,19 @@
+Grouped
+Past Voting
+   2   7
+L-R;Left-Right
+Soc;Social
+SD; 1; Straight Democratic
+MD; 2; Mostly Dem
+FD; 3; Frequently Dem
+TS; 4; Ticket splitter
+FR; 5; Frequently Rep
+MR; 6; Mostly Rep
+SR; 7; Straight Republican
+-0.518  0.090
+-0.434  0.034
+-0.297 -0.122
+ 0.054  0.032
+ 0.511 -0.100
+ 0.579  0.062
+ 0.634 -0.141

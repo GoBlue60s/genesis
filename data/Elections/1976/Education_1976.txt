@@ -1,0 +1,26 @@
+Grouped
+Education
+   2   7
+L-R;Left-Right
+Soc;Social
+Low; 1;Low education
+2; 2;2
+3; 3;3
+4; 4;4
+5; 5;5
+6; 6;6
+High; 7; High Education
+-0.171  0.149
+-0.263  0.125
+-0.071  0.094
+ 0.052 -0.010
+-0.037  0.021
+ 0.066 -0.192
+-0.150 -0.216
+
+
+
+
+
+
+

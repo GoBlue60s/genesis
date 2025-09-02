@@ -1,0 +1,9 @@
+Grouped
+Race
+   2   2
+L-R;Left-Right
+Soc;Social
+White; 1;Whites
+Black; 2;Blacks
+-0.020  0.029
+-0.484  0.002   

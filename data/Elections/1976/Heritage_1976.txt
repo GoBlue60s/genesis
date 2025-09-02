@@ -1,0 +1,21 @@
+Grouped
+Heritage
+   2   8
+L-R;Left-Right
+Soc;Social
+Brit; 1;British
+Irsh; 2;Irish
+Ital; 3;Italian
+Pole; 4;Polish
+Ger; 5;Germany
+Fre; 6;French
+Span; 7;Spanish
+Blk; 8;Black
+ 0.101 -0.034
+ 0.006  0.023
+-0.214  0.003
+-0.413  0.083
+ 0.016  0.127
+ 0.106  0.086
+-0.371  0.050
+-0.485  0.011 

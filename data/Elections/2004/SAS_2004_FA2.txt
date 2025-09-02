@@ -1,0 +1,30 @@
+Configuration
+   2  13
+Fac1;Factor 1
+Fac2;Factor 2
+gwbu;gwbush
+kerr;kerry
+nade;nader
+chen;cheney
+edwa;edwards
+lbus;lbush
+hcli;hclinton
+bcli;bclinton
+powe;powell
+ashc;ashcroft
+mcca;mccain
+demp;dempty
+repp;reppty
+-0.04064	0.17597
+ 0.21249	0.08687
+ 0.12717	0.18885
+-0.02775	0.18055
+ 0.22739	0.12775
+ 0.01562	0.21934
+ 0.21752	0.11313
+ 0.20774	0.09611
+ 0.08753	0.28792
+ 0.01437	0.20863
+ 0.14909	0.27672
+ 0.23430	0.14518
+-0.03276	0.17131

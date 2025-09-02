@@ -1,0 +1,12 @@
+Grouped
+Partisans
+   2   3
+L-R;Left-Right
+Soc;Social
+REPS; 1;Republicans
+DEMS; 2;Democrats
+INDS; 3;Independents
+ 0.533 -0.027
+-0.464  0.067
+-0.007 -0.001
+
