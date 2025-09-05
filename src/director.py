@@ -1399,7 +1399,9 @@ class Status(QMainWindow):
 				"containing a sample design.",
 			"Open sample repetitions": "Open sample repetitions reads in "
 				"a file containing sample repetitions.",
-			"Open scores": "Open scores reads in a file containing indiviudal "
+			"Open sample solutions": "Open sample solutions reads in "
+				"a file containing sample solutions.",
+			"Open scores": "Open scores reads in a file containing individual "
 				"scores \n"
 				"corresponding to the dimensions in the active configuration.",
 			"Paired": "Paired is used to obtain information about pairs of "

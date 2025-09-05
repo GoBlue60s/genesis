@@ -42,16 +42,18 @@ class BaseCommand(ASupporterGrouping):
 			common: Spaces, # noqa:ARG002
 			groups_to_show: str) -> None:
 
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._base_groups_to_show = groups_to_show
-		self._director.common.create_plot_for_plot_and_gallery_tabs("base")
-		self._director.title_for_table_widget = (
+		director = self._director
+		common = director.common
+		director.record_command_as_selected_and_in_process()
+		director.optionally_explain_what_command_does()
+		director.dependency_checker.detect_dependency_problems()
+		director.current_command._base_groups_to_show = groups_to_show
+		common.create_plot_for_plot_and_gallery_tabs("base")
+		director.title_for_table_widget = (
 			f"Base supporters of {self._rival_a.name}"
 			f" and {self._rival_b.name}")
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
+		director.create_widgets_for_output_and_log_tabs()
+		director.record_command_as_successfully_completed()
 
 		return
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib import transforms
+from matplotlib.patches import Ellipse
 import numpy as np
 from PySide6.QtWidgets import QSizePolicy, QSpacerItem
 
@@ -10,8 +12,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from director import Status
-	import numpy as np
-	
+
 from exceptions import SelectionError
 
 # ------------------------------------------------------------------------
@@ -572,3 +573,70 @@ class MatplotlibCommon:
 			20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 		self._director.tab_gallery_layout.addItem(spacer)
 		plt.close(fig)
+
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+
+	def confidence_ellipse_using_matplotlib(
+			self,
+			x: list[float],
+			y: list[float],
+			ax: plt.Axes,
+			n_std: float = 3.0,
+			facecolor: str = "none",
+			**kwargs: str | float) -> Ellipse:
+		"""
+		Create a plot of the covariance confidence ellipse of *x* and *y*.
+
+		Parameters
+		----------
+		x, y : array-like, shape (n, )
+			Input data.
+
+		ax : matplotlib.axes.Axes
+			The Axes object to draw the ellipse into.
+
+		n_std : float
+			The number of standard deviations to determine the ellipse's
+			radiuses.
+
+		**kwargs
+			Forwarded to `~matplotlib.patches.Ellipse`
+
+		Returns
+		-------
+		matplotlib.patches.Ellipse
+		"""
+
+		cov = np.cov(x, y)
+		pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
+		# Using a special case to obtain the eigenvalues of this
+		# two-dimensional dataset.
+		ell_radius_x = np.sqrt(1 + pearson)
+		ell_radius_y = np.sqrt(1 - pearson)
+		ellipse = Ellipse(
+			(0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2,
+			facecolor=facecolor, **kwargs)
+
+		# Calculating the standard deviation of x from
+		# the squareroot of the variance and multiplying
+		# with the given number of standard deviations.
+		scale_x = np.sqrt(cov[0, 0]) * n_std
+		mean_x = np.mean(x)
+
+		# calculating the standard deviation of y ...
+		scale_y = np.sqrt(cov[1, 1]) * n_std
+		mean_y = np.mean(y)
+
+		transf = transforms.Affine2D() \
+			.rotate_deg(45) \
+			.scale(scale_x, scale_y) \
+			.translate(mean_x, mean_y)
+
+		ellipse.set_transform(transf + ax.transData)
+
+		ellipse_patch = ax.add_patch(ellipse)
+
+		return ellipse_patch
+

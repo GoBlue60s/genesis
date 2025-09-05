@@ -102,7 +102,7 @@ class ConfigurationCommand:
 
 	def execute(
 			self,
-			common: Spaces) -> None: # noqa: ARG002
+			common: Spaces) -> None:
 		# peek("\nAt top of ConfigurationCommand.execute()")
 		director = self._director
 		common = director.common
@@ -406,7 +406,7 @@ class CreateCommand:
 
 	def execute(
 			self,
-			common: Spaces) -> None: # noqa: ARG002
+			common: Spaces) -> None:
 		
 		director = self._director
 		common = self.common
@@ -2019,7 +2019,7 @@ class OpenSampleSolutionsCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Open sample solutions"
-		self._open_sample_solutions_caption = "Open sample solutionss"
+		self._open_sample_solutions_caption = "Open sample solutions"
 		self._open_sample_solutions_filter = "*.csv"
 		self._problem_reading_sample_solutions_title: str = \
 			"Problem reading sample_solutions"
@@ -2952,6 +2952,7 @@ class SaveSampleSolutionsCommand:
 		self._save_sample_solutions_title = "The response is empty."
 		self._save_sample_solutions_message = \
 			"A file name is needed to save the active sample solutions."
+		self._save_sample_solutions_caption = "Save sample solutions"
 		self._save_sample_solutions_filter = "*.csv"
 		self._save_sample_solutions_problem_title = "Problem writing file."
 		self._save_sample_solutions_problem_message = \
@@ -2966,13 +2967,28 @@ class SaveSampleSolutionsCommand:
 			common: Spaces) -> None: # noqa: ARG002
 
 		# _message and _feedback changed to _title and _message
-
+		peek("At top of SaveSampleSolutionsCommand.execute()"
+			" - self._director.uncertainty_active: ",
+			f"{self._director.uncertainty_active}",
+			"ndim: ",
+			f"{self._director.uncertainty_active.ndim}",
+			"npoints: ",
+			f"{self._director.uncertainty_active.npoints}",
+			"nrepetitions: ",
+			f"{self._director.uncertainty_active.number_of_repetitions}",
+			"dim_labels:"
+			f" {self._director.uncertainty_active.dim_labels}"
+			"dim_names: "
+			f"{self._director.uncertainty_active.dim_names}",
+			"point_names: "
+			f"{self._director.uncertainty_active.point_names}",
+			"point_labels: "
+			f"{self._director.uncertainty_active.point_labels}")
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_sample_solutions_title,
-			self._save_sample_solutions_message,
+			self._save_sample_solutions_caption,
 			self._save_sample_solutions_filter)
 		self._director.uncertainty_active.sample_solutions.to_csv(file_name)
 		self._director.name_of_file_written_to = file_name

@@ -4,8 +4,6 @@ import numpy as np
 
 import peek
 from matplotlib import pyplot as plt
-from matplotlib import transforms
-from matplotlib.patches import Ellipse
 
 # from archive import rivalry
 from constants import MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
@@ -1728,77 +1726,13 @@ class MatplotlibMethods:
 			ax.text(x_mean, y_mean, point_labels[each_point])
 			ax.scatter(x_coords, y_coords, color='r', s=0.5)
 			ax.patches.Ellipse = \
-				self.confidence_ellipse_using_matplotlib(
+				matplotlib_common.confidence_ellipse_using_matplotlib(
 				x_coords, y_coords,
 				ax, n_std=2.0, facecolor='none', edgecolor='r')
 			
 		director.set_focus_on_tab('Plot')
 
 		return fig
-
-# --------------------------------------------------------------------------
-
-	def confidence_ellipse_using_matplotlib(
-			self,
-			x: list[float],
-			y: list[float],
-			ax: plt.Axes,
-			n_std: float = 3.0,
-			facecolor: str = "none",
-			**kwargs: str | float) -> Ellipse:
-		"""
-		Create a plot of the covariance confidence ellipse of *x* and *y*.
-
-		Parameters
-		----------
-		x, y : array-like, shape (n, )
-			Input data.
-
-		ax : matplotlib.axes.Axes
-			The Axes object to draw the ellipse into.
-
-		n_std : float
-			The number of standard deviations to determine the ellipse's
-			radiuses.
-
-		**kwargs
-			Forwarded to `~matplotlib.patches.Ellipse`
-
-		Returns
-		-------
-		matplotlib.patches.Ellipse
-		"""
-
-		cov = np.cov(x, y)
-		pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
-		# Using a special case to obtain the eigenvalues of this
-		# two-dimensional dataset.
-		ell_radius_x = np.sqrt(1 + pearson)
-		ell_radius_y = np.sqrt(1 - pearson)
-		ellipse = Ellipse(
-			(0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2,
-			facecolor=facecolor, **kwargs)
-
-		# Calculating the standard deviation of x from
-		# the squareroot of the variance and multiplying
-		# with the given number of standard deviations.
-		scale_x = np.sqrt(cov[0, 0]) * n_std
-		mean_x = np.mean(x)
-
-		# calculating the standard deviation of y ...
-		scale_y = np.sqrt(cov[1, 1]) * n_std
-		mean_y = np.mean(y)
-
-		transf = transforms.Affine2D() \
-			.rotate_deg(45) \
-			.scale(scale_x, scale_y) \
-			.translate(mean_x, mean_y)
-
-		ellipse.set_transform(transf + ax.transData)
-
-		ellipse_patch = ax.add_patch(ellipse)
-
-		return ellipse_patch
 
 
 	# ------------------------------------------------------------------------

@@ -1343,6 +1343,12 @@ class UncertaintyAnalysis:
 		self.sample_repetitions: pd.DataFrame = pd.DataFrame()
 		self.sample_repetitions_stress: list[float] = []
 		self.sample_solutions: pd.DataFrame = pd.DataFrame()
+		self.ndim: int = 0
+		self.npoint: int = 0
+		self.dim_names: list[str] = []
+		self.dim_labels: list[str] = []
+		self.point_names: list[str] = []
+		self.point_labels: list[str] = []
 		self.target_out: np.ndarray = np.array([])
 		self.repetitions_rotated: pd.DataFrame = pd.DataFrame()
 
@@ -1437,6 +1443,8 @@ class UncertaintyCommand:
 		self.repetitions_rotated: pd.DataFrame = pd.DataFrame(
 			columns=[self._director.target_active.dim_names])
 		self.repetitions_rotated: pd.DataFrame = pd.DataFrame()
+		self._director.uncertainty_active.sample_solutions: pd.DataFrame = \
+			pd.DataFrame()
 		self.target_out: np.array = np.array([])
 		self.active_out: np.array = np.array([])
 		self.target_adjusted = TargetFeature(self._director)
@@ -1463,6 +1471,10 @@ class UncertaintyCommand:
 		self._director.uncertainty_active.target_out = self.target_out
 		self._director.uncertainty_active.repetitions_rotated = \
 			self.repetitions_rotated
+		self._director.uncertainty_active.sample_solutions = \
+			self.repetitions_rotated
+		peek("DEBUG -- after _get_repetition_mds_solutions - solutions")
+		peek(f"{self._director.uncertainty_active.sample_solutions}")
 		self.common.create_uncertainty_table()
 
 		print(self._director.uncertainty_active.uncertainty_analysis_df.\
@@ -1493,6 +1505,8 @@ class UncertaintyCommand:
 		target_active = director.target_active
 		uncertainty_active = director.uncertainty_active
 		dim_names = target_active.dim_names
+		# dim_labels = target_active.dim_labels
+		self.ndim = target_active.ndim
 		repetition_freqs = \
 			uncertainty_active.sample_design_frequencies
 		nrepetitions = uncertainty_active.number_of_repetitions
@@ -1552,8 +1566,11 @@ class UncertaintyCommand:
 
 		self.target_last = target_out
 		self.repetitions_rotated.columns = repetitions_rotated_columns
+		target_active = self._director.target_active
 
-		uncertainty_active.sample_solutions = self.repetitions_rotated
+		self.establish_sample_solutions_info()
+
+		# uncertainty_active.nrepetitions = nrepetitions
 
 		# peek("At end of _get_repetition_mds_solutions\n",
 		# 	"self._director.uncertainty_active.sample_solutions: \n"
@@ -1564,6 +1581,23 @@ class UncertaintyCommand:
 
 		return target_out, active_out
 
+# -------------------------------------------------------------------------
+
+	def establish_sample_solutions_info(self) -> None:
+
+		uncertainty_active = self._director.uncertainty_active
+		target_active = self._director.target_active
+		uncertainty_active.point_coords = uncertainty_active.repetitions_rotated
+		uncertainty_active.npoints = target_active.npoint
+		uncertainty_active.ndim = target_active.ndim
+		uncertainty_active.dim_names = target_active.dim_names
+		uncertainty_active.dim_labels = target_active.dim_labels
+		uncertainty_active.point_names = target_active.point_names
+		uncertainty_active.point_labels = target_active.point_labels
+		uncertainty_active.nsolutions = \
+			uncertainty_active.number_of_repetitions
+		
+		return
 # -------------------------------------------------------------------------
 
 	def get_repetition_sizes(

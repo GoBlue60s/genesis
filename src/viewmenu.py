@@ -772,18 +772,23 @@ class ViewSpatialUncertaintyCommand:
 			common: Spaces, # noqa: ARG002
 			plot_to_show: str) -> None:
 
+		director = self._director
+		common = director.common
+		uncertainty_active = director.uncertainty_active
+		sample_solutions = uncertainty_active.sample_solutions
+		universe_size = uncertainty_active.universe_size
+		probability_of_inclusion = uncertainty_active.probability_of_inclusion
+
 		peek("At top of ViewSpatialUncertaintyCommand.execute()"
 			" - self._director.uncertainty_active.sample_solutions: ",
-			f"{self._director.uncertainty_active.sample_solutions}")
+			f"{uncertainty_active.sample_solutions}")
 		self.plot_to_show = plot_to_show
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		sample_solutions = self._director.uncertainty_active.sample_solutions
+		director.record_command_as_selected_and_in_process()
+		director.optionally_explain_what_command_does()
+		director.dependency_checker.detect_dependency_problems()
+
 		print(sample_solutions)
-		universe_size = self._director.uncertainty_active.universe_size
-		probability_of_inclusion = \
-			self._director.uncertainty_active.probability_of_inclusion
+
 		self._director.title_for_table_widget = \
 			(f"Spatial Uncertainty??????? - Size of universe: {universe_size},"
 				f" Probability of inclusion: "

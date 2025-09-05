@@ -1893,10 +1893,11 @@ class PyQtGraphMethods:
 			self) -> None:
 
 		director = self._director
+		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		uncertainty_active = director.uncertainty_active
 
-		pyqtgraph_common.set_axis_extremes_based_on_coordinates(
+		common.set_axis_extremes_based_on_coordinates(
 			uncertainty_active.repetitions_rotated)
 		tab_plot_widget = self.plot_uncertainty_using_pyqtgraph()
 		tab_gallery_widget = self.plot_uncertainty_using_pyqtgraph()
@@ -1955,84 +1956,13 @@ class PyQtGraphMethods:
 				x=x_coords, y=y_coords,
 				pen='r', symbol='o', size=point_size, brush='r')
 			plot.addItem(scatter)
-			ellipse = self.confidence_ellipse_using_pyqtgraph(
+			ellipse = pyqtgraph_common.confidence_ellipse_using_pyqtgraph(
 				x_coords, y_coords, n_std=2.0)
 			plot.addItem(ellipse)
 
 		director.set_focus_on_tab('Plot')
 
 		return graphics_layout_widget
-
-	# ------------------------------------------------------------------------
-
-	def confidence_ellipse_using_pyqtgraph(
-			self,
-			x: np.ndarray,
-			y: np.ndarray,
-			n_std: float = 3.0,
-			edgecolor: str = "r") -> pg.QtWidgets.QGraphicsEllipseItem:
-		"""
-		Create a covariance confidence ellipse of *x* and *y* for pyqtgraph.
-
-		Parameters
-		----------
-		x, y : array-like, shape (n, )
-			Input data.
-
-		n_std : float
-			The number of standard deviations to determine the ellipse's
-			radiuses.
-
-		edgecolor : str
-			Edge color for the ellipse
-
-		Returns
-		-------
-		pg.QtWidgets.QGraphicsEllipseItem
-		"""
-		cov = np.cov(x, y)
-		pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
-		
-		# Using a special case to obtain the eigenvalues of this
-		# two-dimensional dataset.
-		ell_radius_x = np.sqrt(1 + pearson)
-		ell_radius_y = np.sqrt(1 - pearson)
-		
-		# Calculating the standard deviation of x from
-		# the squareroot of the variance and multiplying
-		# with the given number of standard deviations.
-		scale_x = np.sqrt(cov[0, 0]) * n_std
-		mean_x = np.mean(x)
-		
-		# calculating the standard deviation of y ...
-		scale_y = np.sqrt(cov[1, 1]) * n_std
-		mean_y = np.mean(y)
-		
-		# Calculate final ellipse dimensions
-		width = ell_radius_x * scale_x * 2
-		height = ell_radius_y * scale_y * 2
-
-		# Create ellipse centered at the mean
-		ellipse = pg.QtWidgets.QGraphicsEllipseItem(
-			mean_x - width/2,
-			mean_y - height/2,
-			width,
-			height
-		)
-		
-		# Set appearance
-		pen_color = pg.QtGui.QColor(edgecolor)
-		ellipse.setPen(pg.mkPen(color=pen_color, width=2))
-		ellipse.setBrush(pg.mkBrush(None))  # No fill
-		
-		# Apply rotation (45 degrees like matplotlib version)
-		transform = pg.QtGui.QTransform()
-		transform.translate(mean_x, mean_y)
-		transform.rotate(45)
-		transform.translate(-mean_x, -mean_y)
-		ellipse.setTransform(transform)
-		
-		return ellipse
 
 	# ------------------------------------------------------------------------
 
