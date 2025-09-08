@@ -52,6 +52,7 @@ from constants import (
 	TEST_IF_REFERENCE_POINTS_SELECTED,
 	TEST_IF_JUST_REFERENCE_POINTS_SELECTED
 )
+
 # --------------------------------------------------------------------------
 
 class ConfigurationCommand:
@@ -2020,7 +2021,7 @@ class OpenSampleSolutionsCommand:
 		self.common = common
 		self._director.command = "Open sample solutions"
 		self._open_sample_solutions_caption = "Open sample solutions"
-		self._open_sample_solutions_filter = "*.csv"
+		self._open_sample_solutions_filter = "*.txt"
 		self._problem_reading_sample_solutions_title: str = \
 			"Problem reading sample_solutions"
 		self._problem_reading_sample_solutions_message: str = \
@@ -2032,7 +2033,7 @@ class OpenSampleSolutionsCommand:
 
 	def execute(
 			self,
-			common: Spaces) -> None: # noqa: ARG002
+			common: Spaces) -> None:
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -2040,23 +2041,179 @@ class OpenSampleSolutionsCommand:
 		file = self._director.get_file_name_and_handle_nonexistent_file_names(
 			self._open_sample_solutions_caption,
 			self._open_sample_solutions_filter)
-		self._read_sample_solutions_from_file(
-			file,
-			self._problem_reading_sample_solutions_title,
-			self._problem_reading_sample_solutions_message)
+		# Use the new Solutions format reader
+		self.read_a_solutions_type_file(file)
 		# self._director.common.create_plot_for_plot_and_gallery_tabs(
 		# "sample_design")
+		common.print_sample_solutions()
+
 		self._director.title_for_table_widget = (
 				"Sample solutions file has "
-				f"{self._director.uncertainty_active.number_of_repetitions} "
+				f"{self._director.uncertainty_active.ndim} "
+				"dimensions, "
+				f"{self._director.uncertainty_active.npoints} "
+				"points and "
+				f"{self._director.uncertainty_active.nsolutions} "
 				"solutions.")
+		common.create_uncertainty_table()
+		common.create_plot_for_plot_and_gallery_tabs("uncertainty")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Output')
+		self._director.set_focus_on_tab('Plot')
 		self._director.record_command_as_successfully_completed()
 		return
 
+	# ------------------------------------------------------------------------
 
+	def read_a_solutions_type_file(self, file_name: str) -> None:
+		"""Read solutions data from a custom Solutions format file.
+		
+		Args:
+			file_name: Path to the input file
+		"""
+		uncertainty_active = self._director.uncertainty_active
+		
+		file_path = Path(file_name)
+		with file_path.open(encoding='utf-8') as f:
+			# Line 1: File type identifier
+			file_type = f.readline().strip()
+			if file_type != "Solutions":
+				error_msg = (
+					f"Invalid file type: expected 'Solutions', "
+					f"got '{file_type}'"
+				)
+				raise ValueError(error_msg)
+			
+			# Line 2: Basic parameters (I4 format)
+			parameters_line = f.readline()
+			ndim = int(parameters_line[0:4])
+			npoint = int(parameters_line[4:8])
+			nsolutions = int(parameters_line[8:12])
+			
+			# Set basic parameters
+			uncertainty_active.ndim = ndim
+			uncertainty_active.npoints = npoint
+			uncertainty_active.nsolutions = nsolutions
+			uncertainty_active.number_of_repetitions = nsolutions
+			
+			# Section: Description of dimensions
+			dim_labels = []
+			dim_names = []
+			for _i in range(ndim):
+				dim_line = f.readline().strip()
+				parts = dim_line.split(';')
+				dim_labels.append(parts[0])
+				dim_names.append(parts[1])
+			
+			uncertainty_active.dim_labels = dim_labels
+			uncertainty_active.dim_names = dim_names
+			uncertainty_active.range_dims = range(ndim)
+			
+			# Section: Description of points
+			point_labels = []
+			point_names = []
+			for _i in range(npoint):
+				point_line = f.readline().strip()
+				parts = point_line.split(';')
+				point_labels.append(parts[0])
+				point_names.append(parts[1])
+			
+			uncertainty_active.point_labels = point_labels
+			uncertainty_active.point_names = point_names
+			uncertainty_active.range_points = range(npoint)
+			
+			# Section: Read stress information for each repetition
+			stress_data = []
+			for i in range(nsolutions):
+				stress_line = f.readline()
+				repetition = int(stress_line[0:4])
+				stress = float(stress_line[4:12])
+				stress_data.append([repetition, stress])
+			
+			# Create stress DataFrame and store it
+			stress_df = pd.DataFrame(
+				stress_data, columns=["Repetition", "Stress"])
+			uncertainty_active.repetitions_stress_df = stress_df
+			
+			# Section: Coordinates for all points for all solutions
+			# Prepare data structure
+			total_rows = npoint * nsolutions
+			solutions_data = np.zeros((total_rows, ndim))
+			
+			# Read coordinates
+			for solution_idx in range(nsolutions):
+				for point_idx in range(npoint):
+					coord_line = f.readline().rstrip(
+						'\n\r')  # Only strip newlines, preserve leading spaces
+					row_idx = solution_idx * npoint + point_idx
+					
+					# Parse coordinates (8.4f format)
+					coords = []
+					for dim_idx in range(ndim):
+						start_pos = dim_idx * 8
+						end_pos = start_pos + 8
+						coord_str = coord_line[start_pos:end_pos].strip()
+						coords.append(float(coord_str))
+					
+					solutions_data[row_idx] = coords
+			
+			# Create DataFrame with proper column names
+			solutions_df = pd.DataFrame(solutions_data, columns=dim_names)
+			
+			# Store the solutions data
+			uncertainty_active.sample_solutions = solutions_df
+			uncertainty_active.repetitions_rotated = solutions_df
 
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> QTableWidget:
+		#
+		gui_output_as_widget = \
+			self._create_table_widget_for_open_sample_solutions()
+		
+		# self._director.set_column_and_row_headers(
+		# 	gui_output_as_widget,
+		# 	["Factor", "Size"],
+		# 	[])
+		#
+		self._director.resize_and_set_table_size(gui_output_as_widget, 4)
+		#
+		# self._director.output_widget_type = "Table"
+		return gui_output_as_widget
+
+	# ------------------------------------------------------------------------
+	
+	def _create_table_widget_for_open_sample_solutions(self) -> QTableWidget:
+
+		peek("At top of _create_table_widget_for_open_sample_solutions()")
+		max_cols = self._director.common.max_cols
+		width = self._director.common.width
+		decimals = self._director.common.decimals
+		#
+		nrows = N_ROWS_IN_SETTINGS_LAYOUT_TABLE
+		table_widget = QTableWidget(nrows, 2)
+		#
+		table_widget.setItem(0, 0, QTableWidgetItem(
+			"Maximum number of columns per page"))
+		value = QTableWidgetItem(f"{max_cols}")
+		value.setTextAlignment(QtCore.Qt.AlignCenter)
+		table_widget.setItem(0, 1, QTableWidgetItem(value))
+
+		table_widget.setItem(
+			1, 0,
+			QTableWidgetItem("Field width"))
+		value = QTableWidgetItem(f"{width}")
+		value.setTextAlignment(QtCore.Qt.AlignCenter)
+		table_widget.setItem(1, 1, QTableWidgetItem(value))
+		#
+		table_widget.setItem(
+			2, 0,
+			QTableWidgetItem("Decimal points"))
+		value = QTableWidgetItem(f"{decimals}")
+		value.setTextAlignment(QtCore.Qt.AlignCenter)
+		table_widget.setItem(2, 1, QTableWidgetItem(value))
+
+		return table_widget
+	
 	# ------------------------------------------------------------------------
 
 
@@ -2953,7 +3110,7 @@ class SaveSampleSolutionsCommand:
 		self._save_sample_solutions_message = \
 			"A file name is needed to save the active sample solutions."
 		self._save_sample_solutions_caption = "Save sample solutions"
-		self._save_sample_solutions_filter = "*.csv"
+		self._save_sample_solutions_filter = "*.txt"
 		self._save_sample_solutions_problem_title = "Problem writing file."
 		self._save_sample_solutions_problem_message = \
 			"Check whether file already exists"
@@ -2990,7 +3147,8 @@ class SaveSampleSolutionsCommand:
 		file_name = self._director.get_file_name_to_store_file(
 			self._save_sample_solutions_caption,
 			self._save_sample_solutions_filter)
-		self._director.uncertainty_active.sample_solutions.to_csv(file_name)
+		# Use the new Solutions format writer
+		self.write_a_solutions_type_file(file_name)
 		self._director.name_of_file_written_to = file_name
 		self._director.title_for_table_widget = (
 			f"The active sample solutions has been written to: "
@@ -2999,6 +3157,77 @@ class SaveSampleSolutionsCommand:
 		self._director.set_focus_on_tab('Output')
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def write_a_solutions_type_file(self, file_name: str) -> None:
+		"""Write solutions data to a custom Solutions format file.
+		
+		Args:
+			file_name: Path to the output file
+		"""
+		
+		uncertainty_active = self._director.uncertainty_active
+		
+		# Get basic dimensions
+		ndim = uncertainty_active.ndim
+		npoint = uncertainty_active.npoints
+		nsolutions = uncertainty_active.number_of_repetitions
+		
+		# Get solutions data (repetitions_rotated DataFrame)
+		solutions_df = uncertainty_active.sample_solutions
+		
+		file_path = Path(file_name)
+		print(f"DEBUG write_a_solutions_type_file: Path object: '{file_path}'")
+		with file_path.open('w', encoding='utf-8') as f:
+			# Line 1: File type identifier
+			f.write("Solutions\n")
+			
+			# Line 2: Basic dimensions (I4 format)
+			f.write(f"{ndim:4d}{npoint:4d}{nsolutions:4d}\n")
+			
+			# Section: Description of dimensions
+			for i in range(ndim):
+				dim_label = uncertainty_active.dim_labels[i]
+				dim_name = uncertainty_active.dim_names[i]
+				f.write(f"{dim_label};{dim_name}\n")
+			
+			# Section: Description of points
+			for i in range(npoint):
+				point_label = uncertainty_active.point_labels[i]
+				point_name = uncertainty_active.point_names[i]
+				f.write(f"{point_label};{point_name}\n")
+			
+			# Section: Stress information for each repetition
+			if hasattr(uncertainty_active, 'repetitions_stress_df'):
+				stress_df = uncertainty_active.repetitions_stress_df
+			else:
+				# Create DataFrame from sample_repetitions_stress list
+				stress_data = []
+				for i, stress in enumerate(
+					uncertainty_active.sample_repetitions_stress):
+					stress_data.append(
+						[i + 1, stress])  # Repetition starts from 1
+				stress_df = pd.DataFrame(
+					stress_data, columns=["Repetition", "Stress"])
+			for i in range(nsolutions):
+				repetition = stress_df.iloc[i, 0]  # Repetition number
+				stress = stress_df.iloc[i, 1]      # Stress value
+				f.write(f"{repetition:4d}{stress:8.4f}\n")
+			
+			# Section: Coordinates for all points for all solutions
+			# solutions_df has columns for dimension, rows for points*solutions
+			for solution_idx in range(nsolutions):
+				for point_idx in range(npoint):
+					# Calculate the row index in the DataFrame
+					row_idx = solution_idx * npoint + point_idx
+					
+					# Write coordinates for this point (8.4f format)
+					coords = []
+					for dim_idx in range(ndim):
+						coord_value = solutions_df.iloc[row_idx, dim_idx]
+						coords.append(f"{coord_value:8.4f}")
+					f.write("".join(coords) + "\n")
 
 # --------------------------------------------------------------------------
 

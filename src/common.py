@@ -187,9 +187,9 @@ class Spaces:
 		sample_repetitions_stress = \
 			self._director.uncertainty_active.sample_repetitions_stress
 
-		# Create DataFrame with columns "Repetition" and "Stress"
+		# Create DataFrame with columns "Solution" and "Stress"
 		uncertainty_analysis_df = \
-			pd.DataFrame(columns=["Repetition", "Stress"])
+			pd.DataFrame(columns=["Solution", "Stress"])
 
 		# # Process each repetition
 		# for index, stress_value in enumerate(sample_repetitions_stress):
@@ -207,7 +207,7 @@ class Spaces:
 		uncertainty_analysis_df = pd.DataFrame(data)
 
 		# Store the result in the uncertainty_active object
-		self._director.uncertainty_active.uncertainty_analysis_df = \
+		self._director.uncertainty_active.repetitions_stress_df = \
 			uncertainty_analysis_df
 		
 		return uncertainty_analysis_df
@@ -1582,6 +1582,25 @@ class Spaces:
 			f"{self._director.common.core_tolerance * 100: 3.0f}")
 		print(" ")
 		return
+	#  ------------------------------------------------------------------------
+
+	def print_sample_solutions(self) -> None:
+		
+		uncertainty_active = self._director.uncertainty_active
+		point_labels = uncertainty_active.point_labels
+		point_names = uncertainty_active.point_names
+		npoint = uncertainty_active.npoints
+
+		points = range(npoint)
+		print("\nSample solutions points\n")
+		for each_point in points:
+			print(f"\t{point_labels[each_point]}, {point_names[each_point]}")
+		print("\nStress for each solution\n")
+		print(uncertainty_active.repetitions_stress_df.to_string(index=False))
+		print("\nCoordinates for all points for all solutions\n")
+		print(uncertainty_active.sample_solutions)
+		return
+	
 
 	# ------------------------------------------------------------------------
 

@@ -1342,9 +1342,11 @@ class UncertaintyAnalysis:
 		self.sample_design_frequencies: pd.DataFrame = pd.DataFrame()
 		self.sample_repetitions: pd.DataFrame = pd.DataFrame()
 		self.sample_repetitions_stress: list[float] = []
+		self.repetitions_stress_df: pd.DataFrame = pd.DataFrame()
 		self.sample_solutions: pd.DataFrame = pd.DataFrame()
 		self.ndim: int = 0
 		self.npoint: int = 0
+		self.nsolutions: int = 0
 		self.dim_names: list[str] = []
 		self.dim_labels: list[str] = []
 		self.point_names: list[str] = []
@@ -1420,11 +1422,8 @@ class UncertaintyAnalysis:
 			item_5.setTextAlignment(QtCore.Qt.AlignCenter)
 			table_widget.setItem(
 				each_repetition - 1, 4, QTableWidgetItem(item_5))
+			
 		return table_widget
-
-
-
-
 
 	# ------------------------------------------------------------------------
 
@@ -1477,7 +1476,7 @@ class UncertaintyCommand:
 		peek(f"{self._director.uncertainty_active.sample_solutions}")
 		self.common.create_uncertainty_table()
 
-		print(self._director.uncertainty_active.uncertainty_analysis_df.\
+		print(self._director.uncertainty_active.repetitions_stress_df.\
 			to_string(index=False))
 		peek("DEBUG -- after _get_repetition_mds_solutions\n")
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
@@ -1587,7 +1586,8 @@ class UncertaintyCommand:
 
 		uncertainty_active = self._director.uncertainty_active
 		target_active = self._director.target_active
-		uncertainty_active.point_coords = uncertainty_active.repetitions_rotated
+		uncertainty_active.point_coords = \
+			uncertainty_active.repetitions_rotated
 		uncertainty_active.npoints = target_active.npoint
 		uncertainty_active.ndim = target_active.ndim
 		uncertainty_active.dim_names = target_active.dim_names
@@ -1685,7 +1685,6 @@ class UncertaintyCommand:
 				line_of_sight.nitem,
 				line_of_sight.value_type)
 
-
 	# ------------------------------------------------------------------------
 
 	def _display(self) -> QTableWidget:
@@ -1695,6 +1694,4 @@ class UncertaintyCommand:
 		
 		self._director.output_widget_type = "Table"
 		return gui_output_as_widget
-
-
 

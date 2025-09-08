@@ -474,7 +474,7 @@ class ViewPointUncertaintyCommand:
 
 	def execute(
 			self,
-			common: Spaces, # noqa: ARG002
+			common: Spaces,
 			plot_to_show: str) -> None:
 
 		peek("At top of ViewPointUncertaintyCommand.execute()"
@@ -484,9 +484,9 @@ class ViewPointUncertaintyCommand:
 
 		director = self._director
 		common = self.common
-		uncertainty_active = director.uncertainty_active
+		# uncertainty_active = director.uncertainty_active
 		target_active = director.target_active
-		sample_solutions = uncertainty_active.sample_solutions
+		# sample_solutions = uncertainty_active.sample_solutions
 		point_names = target_active.point_names
 
 		director.record_command_as_selected_and_in_process()
@@ -498,11 +498,12 @@ class ViewPointUncertaintyCommand:
 			point_names)
 		self._focal_item_index = focal_index
 		common.create_plot_for_plot_and_gallery_tabs("configuration")
-		self._director.title_for_table_widget = (
+		director.title_for_table_widget = (
 			f"Uncertainty of location of {point_names[focal_index]} ")
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Plot')
-		self._director.record_command_as_successfully_completed()
+		director.create_widgets_for_output_and_log_tabs()
+		director.set_focus_on_tab('Plot')
+		director.record_command_as_successfully_completed()
+
 		return
 	# ------------------------------------------------------------------------
 
@@ -635,16 +636,26 @@ class ViewSampleSolutionsCommand:
 
 	def execute(
 			self,
-			common: Spaces) -> None:  # noqa: ARG002
+			common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		print(self._director.uncertainty_active.sample_solutions)
-		self._director.title_for_table_widget = "Sample solutions"
+		# print(self._director.uncertainty_active.sample_solutions)
+		nsolutions = self._director.uncertainty_active.nsolutions
+		ndim = self._director.uncertainty_active.ndim
+		npoint = self._director.uncertainty_active.npoint
+		self._director.title_for_table_widget = (
+			f"{nsolutions} solutions have {ndim} dimensions "
+			f"and {npoint} points"
+		)
+		common.create_uncertainty_table()
+		common.print_sample_solutions()
+		common.create_plot_for_plot_and_gallery_tabs("uncertainty")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Output')
+		self._director.set_focus_on_tab('Plot')
 		self._director.record_command_as_successfully_completed()
 		return
+
 
 	# ------------------------------------------------------------------------
 
@@ -680,6 +691,7 @@ class ViewScoresCommand:
 		director.command = "View scores"
 		self._width = 8
 		self._decimals = 2
+		
 		return
 
 	# ------------------------------------------------------------------------
@@ -769,11 +781,11 @@ class ViewSpatialUncertaintyCommand:
 
 	def execute(
 			self,
-			common: Spaces, # noqa: ARG002
+			common: Spaces,
 			plot_to_show: str) -> None:
 
 		director = self._director
-		common = director.common
+		# common = director.common
 		uncertainty_active = director.uncertainty_active
 		sample_solutions = uncertainty_active.sample_solutions
 		universe_size = uncertainty_active.universe_size
@@ -789,13 +801,13 @@ class ViewSpatialUncertaintyCommand:
 
 		print(sample_solutions)
 
-		self._director.title_for_table_widget = \
+		director.title_for_table_widget = \
 			(f"Spatial Uncertainty??????? - Size of universe: {universe_size},"
 				f" Probability of inclusion: "
 				f"{probability_of_inclusion}")
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Output')
-		self._director.record_command_as_successfully_completed()
+		director.create_widgets_for_output_and_log_tabs()
+		director.set_focus_on_tab('Output')
+		director.record_command_as_successfully_completed()
 		return
 	
 	# ------------------------------------------------------------------------

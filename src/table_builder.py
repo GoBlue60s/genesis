@@ -540,7 +540,7 @@ class StatisticalTableWidget:
 			
 			case "uncertainty":
 				source = self._director.uncertainty_active
-				data = source.uncertainty_analysis_df
+				data = source.repetitions_stress_df
 				row_headers = []
 				column_headers = ["Repetition", "Stress"]
 				row_height = 4

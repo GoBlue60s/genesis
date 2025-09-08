@@ -46,6 +46,7 @@ from common import Spaces
 from matplotlib_plots import MatplotlibMethods
 from pyqtgraph_plots import PyQtGraphMethods
 
+
 # --------------------------------------------------------------------------
 
 
@@ -1777,9 +1778,18 @@ class Status(QMainWindow):
 			None,
 			caption= dialog_caption,
 			filter= dialog_filter)
+		
+		# Debug: Log the filename returned from the dialog
+		print(f"DEBUG: QFileDialog returned filename: '{file_name}'")
+		print(f"DEBUG: filename type: {type(file_name)}")
+		print(f"DEBUG: filename length: {len(file_name)}")
+		
 		if len(file_name) == 0:
 			raise SpacesError(
 				self.empty_response_title, self.empty_response_message)
+		
+		# Debug: Log the filename being returned
+		print(f"DEBUG: Returning filename: '{file_name}'")
 		return file_name
 
 	# ------------------------------------------------------------------------
@@ -2132,22 +2142,14 @@ class BuildTrafficDict:
 				(ViewSpatialUncertaintyCommand, "lines"),
 			"view_spatial_uncertainty_boxes":
 				(ViewSpatialUncertaintyCommand, "boxes"),
-			"view_spatial_uncertainty_circles":
-				(ViewSpatialUncertaintyCommand, "circles"),
 			"view_spatial_uncertainty_ellipses":
 				(ViewSpatialUncertaintyCommand, "ellipses"),
-			"view_spatial_uncertainty_box_and_whiskers":
-				(ViewSpatialUncertaintyCommand, "box_and_whiskers"),
 			"view_point_uncertainty_lines":
 				(ViewPointUncertaintyCommand, "lines"),
 			"view_point_uncertainty_boxes":
 				(ViewPointUncertaintyCommand, "boxes"),
-			"view_point_uncertainty_circles":
-				(ViewPointUncertaintyCommand, "circles"),
 			"view_point_uncertainty_ellipses":
 				(ViewPointUncertaintyCommand, "ellipses"),
-			"view_point_uncertainty_box_and_whiskers":
-				(ViewPointUncertaintyCommand, "box_and_whiskers"),
 			"history":  (HistoryCommand, None),
 			"view_custom": (ViewCustomCommand, None),
 			"center":  (CenterCommand, None),
@@ -2337,6 +2339,7 @@ class BuildWidgetDict:
 			ViewSampleSolutionsCommand,
 			ViewScoresCommand,
 			ViewSimilaritiesCommand,
+			ViewSpatialUncertaintyCommand,
 			ViewTargetCommand,
 		)
 
@@ -2535,6 +2538,8 @@ class BuildWidgetDict:
 				lambda: parent.statistics.display_table("sample_solutions")],
 			"View similarities": [ViewSimilaritiesCommand, "shared",
 				lambda: parent.squares.display_table("similarities")],
+			"View spatial uncertainty": [ViewSpatialUncertaintyCommand, "shared",
+				lambda: parent.statistics.display_table("spatial_uncertainty")],
 			"View target": [ViewTargetCommand, "shared",
 				lambda: parent.tables.display_table("target")]
 			}

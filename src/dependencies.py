@@ -97,7 +97,7 @@ class DependencyChecking:
 			"score individuals", "view evaluations"}
 		self.commands_that_need_target: set = {
 			"compare", "print target", "save target", "uncertainty",
-			"view sample solutions", "view target"}
+			"view target"}
 		self.commands_that_need_grouped_data: set = {
 			"print grouped data", "view grouped data"}
 		self.commands_that_need_sample_design: set = {
