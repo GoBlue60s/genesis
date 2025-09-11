@@ -13,6 +13,7 @@ import scipy.stats as ss
 from experimental import ItemFrame
 from geometry import PeoplePoints
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
 	from common import Spaces
 	from director import Status
@@ -26,11 +27,7 @@ from exceptions import DependencyError, SpacesError
 
 
 class ConfigurationFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:  # xxxxxxxxxx
-
+	def __init__(self, director: Status) -> None:  # xxxxxxxxxx
 		self._director = director
 		self._hor_dim = director.common.hor_dim
 		self._vert_dim = director.common.vert_dim
@@ -47,7 +44,7 @@ class ConfigurationFeature:
 		self.dim_names: list[str] = []
 		self.dim_labels: list[str] = []
 		self.range_dims: range = range(0)
-		
+
 		# self.hor_axis_name: str = "Unknown"   # ???????????????????????
 		# self.vert_axis_name: str = "Unknown"   # ??????????????????????
 		self.hor_axis_name: str = ""
@@ -93,13 +90,11 @@ class ConfigurationFeature:
 
 		return
 
-	
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _populate_base_groups_to_show(
-			self,
-			base_groups_to_show: list[str]) -> PeoplePoints:
-
+		self, base_groups_to_show: list[str]
+	) -> PeoplePoints:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -108,35 +103,36 @@ class ConfigurationFeature:
 			return PeoplePoints([], [])
 		if not common.have_scores():
 			title = "No scores available for plotting"
-			message = ("Establish scores before plotting base groups")
+			message = "Establish scores before plotting base groups"
 			raise DependencyError(title, message)
 
 		x = []
 		y = []
 		base_dict = {
-			"left": (rivalry.base_left._points.x,
-				rivalry.base_left._points.y),
-			"right": (rivalry.base_right._points.x,
-				rivalry.base_right._points.y),
-			"both": (rivalry.base_left._points.x
-					+ rivalry.base_right._points.x,
-					rivalry.base_left._points.y
-					+ rivalry.base_right._points.y),
-			"neither": (rivalry.base_neither._points.x,
-				rivalry.base_neither._points.y)
+			"left": (rivalry.base_left._points.x, rivalry.base_left._points.y),
+			"right": (
+				rivalry.base_right._points.x,
+				rivalry.base_right._points.y,
+			),
+			"both": (
+				rivalry.base_left._points.x + rivalry.base_right._points.x,
+				rivalry.base_left._points.y + rivalry.base_right._points.y,
+			),
+			"neither": (
+				rivalry.base_neither._points.x,
+				rivalry.base_neither._points.y,
+			),
 		}
 		x = base_dict[base_groups_to_show][0]
 		y = base_dict[base_groups_to_show][1]
-		
+
 		return PeoplePoints(x, y)
-	
 
 	# ------------------------------------------------------------------------
 
 	def _populate_battleground_groups_to_show(
-			self,
-			battleground_groups_to_show: str) -> PeoplePoints:
-
+		self, battleground_groups_to_show: str
+	) -> PeoplePoints:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -145,29 +141,31 @@ class ConfigurationFeature:
 			return PeoplePoints([], [])
 		if not common.have_scores():
 			title = "No scores available for plotting"
-			message = ("Establish scores before plotting battleground groups")
+			message = "Establish scores before plotting battleground groups"
 			raise DependencyError(title, message)
-		
+
 		x = []
 		y = []
 		battleground_dict = {
-			"battleground": (rivalry.battleground_segment._points.x,
-							rivalry.battleground_segment._points.y),
-			"settled": (rivalry.battleground_settled._points.x,
-						rivalry.battleground_settled._points.y)
+			"battleground": (
+				rivalry.battleground_segment._points.x,
+				rivalry.battleground_segment._points.y,
+			),
+			"settled": (
+				rivalry.battleground_settled._points.x,
+				rivalry.battleground_settled._points.y,
+			),
 		}
 		x = battleground_dict[battleground_groups_to_show][0]
 		y = battleground_dict[battleground_groups_to_show][1]
-	
-		return PeoplePoints(x, y)
 
+		return PeoplePoints(x, y)
 
 	# ------------------------------------------------------------------------
 
 	def _populate_convertible_groups_to_show(
-			self,
-			convertible_groups_to_show: str) -> PeoplePoints:
-
+		self, convertible_groups_to_show: str
+	) -> PeoplePoints:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -176,22 +174,30 @@ class ConfigurationFeature:
 			return PeoplePoints([], [])
 		if not common.have_scores():
 			title = "No scores available for plotting"
-			message = ("Establish scores before plotting convertible groups")
+			message = "Establish scores before plotting convertible groups"
 			raise DependencyError(title, message)
 
 		x = []
 		y = []
 		convertible_dict = {
-			"left": (rivalry.convertible_to_left._points.x,
-				rivalry.convertible_to_left._points.y),
-			"right": (rivalry.convertible_to_right._points.x,
-				rivalry.convertible_to_right._points.y),
-			"both": (rivalry.convertible_to_left._points.x
+			"left": (
+				rivalry.convertible_to_left._points.x,
+				rivalry.convertible_to_left._points.y,
+			),
+			"right": (
+				rivalry.convertible_to_right._points.x,
+				rivalry.convertible_to_right._points.y,
+			),
+			"both": (
+				rivalry.convertible_to_left._points.x
 				+ rivalry.convertible_to_right._points.x,
 				rivalry.convertible_to_left._points.y
-				+ rivalry.convertible_to_right._points.y),
-			"settled": (rivalry.convertible_settled._points.x,
-				rivalry.convertible_settled._points.y)
+				+ rivalry.convertible_to_right._points.y,
+			),
+			"settled": (
+				rivalry.convertible_settled._points.x,
+				rivalry.convertible_settled._points.y,
+			),
 		}
 		x = convertible_dict[convertible_groups_to_show][0]
 		y = convertible_dict[convertible_groups_to_show][1]
@@ -200,13 +206,11 @@ class ConfigurationFeature:
 
 		return PeoplePoints(x, y)
 
-
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _populate_core_groups_to_show(
-		self,
-		core_groups_to_show: str) -> PeoplePoints:
-
+		self, core_groups_to_show: str
+	) -> PeoplePoints:
 		director = self._director
 		common = director.common
 		segments = director.rivalry.seg
@@ -219,34 +223,40 @@ class ConfigurationFeature:
 			return PeoplePoints([], [])
 		if not common.have_scores():
 			title = "No scores available for plotting"
-			message = ("Establish scores before plotting core groups")
+			message = "Establish scores before plotting core groups"
 			raise DependencyError(title, message)
-		
+
 		x = []
 		y = []
-		
+
 		core_dict = {
-			"left": (in_group(segments, nscored, score_1_name, "Core", {1}),
-				in_group(segments, nscored, score_2_name, "Core", {1})),
-			"right": (in_group(segments, nscored, score_1_name, "Core", {3}),
-				in_group(segments, nscored, score_2_name, "Core", {3})),
-			"both": (in_group(segments, nscored, score_1_name, "Core", {1, 3}),
-				in_group(segments, nscored, score_2_name, "Core", {1, 3})),
-			"neither": (in_group(segments, nscored, score_1_name, "Core", {2}),
-				in_group(segments, nscored, score_2_name, "Core", {2}))
+			"left": (
+				in_group(segments, nscored, score_1_name, "Core", {1}),
+				in_group(segments, nscored, score_2_name, "Core", {1}),
+			),
+			"right": (
+				in_group(segments, nscored, score_1_name, "Core", {3}),
+				in_group(segments, nscored, score_2_name, "Core", {3}),
+			),
+			"both": (
+				in_group(segments, nscored, score_1_name, "Core", {1, 3}),
+				in_group(segments, nscored, score_2_name, "Core", {1, 3}),
+			),
+			"neither": (
+				in_group(segments, nscored, score_1_name, "Core", {2}),
+				in_group(segments, nscored, score_2_name, "Core", {2}),
+			),
 		}
 		x = core_dict[core_groups_to_show][0]
 		y = core_dict[core_groups_to_show][1]
 
 		return PeoplePoints(x, y)
-	
-	
+
 	# ---------------------------------------------------------------------
 
-	def _populate_first_dim_groups_to_show(self,
-		first_dim_groups_to_show: str) -> PeoplePoints:
-
-
+	def _populate_first_dim_groups_to_show(
+		self, first_dim_groups_to_show: str
+	) -> PeoplePoints:
 		# segments = self._director.current_command._seg
 		# score_1_name = self._director.current_command._score_1_name
 		# score_2_name = self._director.current_command._score_2_name
@@ -260,28 +270,30 @@ class ConfigurationFeature:
 			return PeoplePoints([], [])
 		if not common.have_scores():
 			title = "No scores available for plotting"
-			message = ("Establish scores before plotting "
-				"first dimension groups")
+			message = "Establish scores before plotting first dimension groups"
 			raise DependencyError(title, message)
 		x = []
 		y = []
 		first_dict = {
-			"left": (rivalry.first_left._points.x,
-				rivalry.first_left._points.y),
-			"right": (rivalry.first_right._points.x,
-				rivalry.first_right._points.y)
-			}
+			"left": (
+				rivalry.first_left._points.x,
+				rivalry.first_left._points.y,
+			),
+			"right": (
+				rivalry.first_right._points.x,
+				rivalry.first_right._points.y,
+			),
+		}
 		x = first_dict[first_dim_groups_to_show][0]
 		y = first_dict[first_dim_groups_to_show][1]
-	
-		return PeoplePoints(x, y)
 
+		return PeoplePoints(x, y)
 
 	# ------------------------------------------------------------------------
 
-	def _populate_likely_groups_to_show(self,
-		likely_groups_to_show: str) -> PeoplePoints:
-
+	def _populate_likely_groups_to_show(
+		self, likely_groups_to_show: str
+	) -> PeoplePoints:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -294,7 +306,7 @@ class ConfigurationFeature:
 			return PeoplePoints([], [])
 		if not common.have_scores():
 			title = "No scores available for plotting"
-			message = ("Establish scores before plotting likely groups")
+			message = "Establish scores before plotting likely groups"
 			raise DependencyError(title, message)
 		x = []
 		y = []
@@ -304,20 +316,19 @@ class ConfigurationFeature:
 			"right": (likely_right._points.x, likely_right._points.y),
 			"both": (
 				likely_left._points.x + likely_right._points.x,
-				likely_left._points.y + likely_right._points.y)
+				likely_left._points.y + likely_right._points.y,
+			),
 		}
 		x = likely_dict[likely_groups_to_show][0]
 		y = likely_dict[likely_groups_to_show][1]
 
 		return PeoplePoints(x, y)
 
+	# -------------------------------------------------------------------------
 
-# ----------------------------------------------------------------------------
-	
-	def _populate_second_dim_groups_to_show(self,
-		second_dim_groups_to_show: str) -> PeoplePoints:
-
-
+	def _populate_second_dim_groups_to_show(
+		self, second_dim_groups_to_show: str
+	) -> PeoplePoints:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -326,28 +337,34 @@ class ConfigurationFeature:
 			return PeoplePoints([], [])
 		if not common.have_scores():
 			title = "No scores available for plotting"
-			message = ("Establish scores before plotting "
-				"second dimension groups")
+			message = (
+				"Establish scores before plotting second dimension groups"
+			)
 			raise DependencyError(title, message)
-		
+
 		x = []
 		y = []
 		second_dict = {
-			"upper": (rivalry.second_up._points.x,
-					rivalry.second_up._points.y),
-			"lower": (rivalry.second_down._points.x,
-					rivalry.second_down._points.y)
+			"upper": (
+				rivalry.second_up._points.x,
+				rivalry.second_up._points.y,
+			),
+			"lower": (
+				rivalry.second_down._points.x,
+				rivalry.second_down._points.y,
+			),
 		}
 
 		x = second_dict[second_dim_groups_to_show][0]
 		y = second_dict[second_dim_groups_to_show][1]
 
 		return PeoplePoints(x, y)
-# --------------------------------------------------------------------------
 
-	def inter_point_distances_initialize_variables(self) -> \
-		tuple[list[float], list[float], float]:
+	# ------------------------------------------------------------------------
 
+	def inter_point_distances_initialize_variables(
+		self,
+	) -> tuple[list[float], list[float], float]:
 		self.distances.clear()
 		self.distances_as_dict = {}
 		self.distances_as_list.clear()
@@ -364,10 +381,9 @@ class ConfigurationFeature:
 
 		return diffs, sqs, sumofsqs
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def inter_point_distances(self) -> None:
-
 		npoint = self.npoint
 		point_names = self.point_names
 		point_labels = self.point_labels
@@ -382,22 +398,24 @@ class ConfigurationFeature:
 		# range_distances = self.range_distances
 		# sorted_distances = self.sorted_distances
 
-		#calculate the inter-point distances in separate function??
+		# calculate the inter-point distances in separate function??
 		# peek("\nAt top of inter_point_distances")
 		if npoint == 0:
 			npoint = nreferent
 
-		distances_as_list, distances_as_dict, distances = \
+		distances_as_list, distances_as_dict, distances = (
 			self.calculate_inter_point_distances(
-			point_coords, point_labels, npoint, range_dims)
+				point_coords, point_labels, npoint, range_dims
+			)
+		)
 		# peek("\nAfter calculate_inter_point_distances")
 		# peek("\t distances_as_list: ", distances_as_list)
 		# peek("\t distances_as_dict: ", distances_as_dict)
 		# peek("\t distances: ", distances)
 
-
-		sorted_distances = dict(sorted(
-			distances_as_dict.items(), key=lambda x: x[1]))
+		sorted_distances = dict(
+			sorted(distances_as_dict.items(), key=lambda x: x[1])
+		)
 
 		nreferent = npoint
 
@@ -421,22 +439,27 @@ class ConfigurationFeature:
 				elif each_point < other_point:
 					index = str(
 						point_labels[each_point]
-						+ "_" + point_labels[other_point])
+						+ "_"
+						+ point_labels[other_point]
+					)
 					distances_as_square[each_point].append(
-						distances_as_dict[index])
+						distances_as_dict[index]
+					)
 				else:
 					index = str(
 						point_labels[other_point]
-						+ "_" + point_labels[each_point])
+						+ "_"
+						+ point_labels[each_point]
+					)
 					distances_as_square[each_point].append(
-						distances_as_dict[index])
+						distances_as_dict[index]
+					)
 		#
 		self.distances_as_dataframe = pd.DataFrame(
-			self.distances_as_square,
-			columns=point_names,
-			index=point_names)
+			self.distances_as_square, columns=point_names, index=point_names
+		)
 
-		self.distances_as_list = distances_as_list # this is the fix
+		self.distances_as_list = distances_as_list  # this is the fix
 
 		self.rank_distances()
 
@@ -456,13 +479,15 @@ class ConfigurationFeature:
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def calculate_inter_point_distances(
-			self,
-			point_coords: pd.DataFrame, point_labels: list[str],
-			npoint: int, range_dims: range) -> \
-				tuple[list, dict, list[list[float]]]:
+		self,
+		point_coords: pd.DataFrame,
+		point_labels: list[str],
+		npoint: int,
+		range_dims: range,
+	) -> tuple[list, dict, list[list[float]]]:
 		# peek("\nAt top of calculate_inter_point_distances")
 		# peek("\t npoint: ", npoint)
 
@@ -471,8 +496,9 @@ class ConfigurationFeature:
 		distances_as_dict: dict = {}
 		distances: list[list[float]] = []
 
-		diffs, sqs, sumofsqs = \
+		diffs, sqs, sumofsqs = (
 			self.inter_point_distances_initialize_variables()
+		)
 		from_pts_range = range(1, npoint)
 		for from_pts in from_pts_range:
 			a_row = []
@@ -481,20 +507,25 @@ class ConfigurationFeature:
 				for each_dim in range_dims:
 					diffs.append(
 						point_coords.iloc[from_pts, each_dim]
-						- point_coords.iloc[to_pts, each_dim])
+						- point_coords.iloc[to_pts, each_dim]
+					)
 					sqs.append(
-						(point_coords.iloc[from_pts, each_dim]
-							- point_coords.iloc[to_pts, each_dim])
-						*
-						(point_coords.iloc[from_pts, each_dim]
-							- point_coords.iloc[to_pts, each_dim]))
+						(
+							point_coords.iloc[from_pts, each_dim]
+							- point_coords.iloc[to_pts, each_dim]
+						)
+						* (
+							point_coords.iloc[from_pts, each_dim]
+							- point_coords.iloc[to_pts, each_dim]
+						)
+					)
 					sumofsqs += sqs[each_dim]
 				distpts = math.sqrt(sumofsqs)
 				distances_as_list.append(distpts)
 				a_row.append(distpts)
 				dist_key = str(
-					point_labels[to_pts]
-					+ "_" + point_labels[from_pts])
+					point_labels[to_pts] + "_" + point_labels[from_pts]
+				)
 				distances_as_dict[dist_key] = distpts
 				diffs = []
 				sqs = []
@@ -503,13 +534,10 @@ class ConfigurationFeature:
 		# peek("At bottom of calculate_inter_point_distances")
 		# peek("\t distances_as_list: ", distances_as_list)
 		return distances_as_list, distances_as_dict, distances
-	
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 	def rank_distances(self) -> None:
-
 		# peek("\nAt top of rank_distances")
-
 
 		point_names = self.point_names
 		point_labels = self.point_labels
@@ -545,9 +573,7 @@ class ConfigurationFeature:
 				rank = ranked_distances_as_list[next_pair]
 				next_pair += 1
 				a_row.append(rank)
-				key = str(
-					point_labels[to_pts]
-					+ "_" + point_labels[from_pts])
+				key = str(point_labels[to_pts] + "_" + point_labels[from_pts])
 				ranked_distances_as_dict[key] = rank
 			ranked_distances.append(a_row)
 		# self.range_points = range(nreferent)
@@ -561,20 +587,25 @@ class ConfigurationFeature:
 				elif each_point < other_point:
 					index = str(
 						point_labels[each_point]
-						+ "_" + point_labels[other_point])
+						+ "_"
+						+ point_labels[other_point]
+					)
 					ranked_distances_as_square[each_point].append(
-						ranked_distances_as_dict[index])
+						ranked_distances_as_dict[index]
+					)
 				else:
 					index = str(
 						point_labels[other_point]
-						+ "_" + point_labels[each_point])
+						+ "_"
+						+ point_labels[each_point]
+					)
 					ranked_distances_as_square[each_point].append(
-						ranked_distances_as_dict[index])
+						ranked_distances_as_dict[index]
+					)
 
 		ranked_distances_as_dataframe = pd.DataFrame(
-			ranked_distances_as_square,
-			columns=point_names,
-			index=point_names)
+			ranked_distances_as_square, columns=point_names, index=point_names
+		)
 
 		self.distances = distances
 		self.ranked_distances = ranked_distances
@@ -584,85 +615,68 @@ class ConfigurationFeature:
 		self.ranked_distances_as_dataframe = ranked_distances_as_dataframe
 		return
 
-
-# -------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def print_active_function(self) -> None:
-
-		""" print active function - is used by many commands to print the
+		"""print active function - is used by many commands to print the
 		active configuration.
 		"""
 		print(self.point_coords)
 		# print(self.point_coords.index.format())
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def print_the_configuration(self) -> None:
-
 		ndim = self.ndim
 		npoint = self.npoint
 		point_coords = self.point_coords
-		print(
-			f"\n\tConfiguration has {ndim} dimensions and {npoint} points\n")
-		point_coords.style.format(
-			precision=3,
-			thousands=",",
-			decimal=".")
+		print(f"\n\tConfiguration has {ndim} dimensions and {npoint} points\n")
+		point_coords.style.format(precision=3, thousands=",", decimal=".")
 		self.print_active_function()
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def print_the_distances(
-			self,
-			width: int,
-			decimals: int,
-			common: Spaces) -> None:
-
+		self, width: int, decimals: int, common: Spaces
+	) -> None:
 		point_labels = self.point_labels
 		point_names = self.point_names
 		npoint = self.npoint
 		distances = self.distances
 
-		print(
-			"\n\tDistances between points in the active configuration\n")
+		print("\n\tDistances between points in the active configuration\n")
 		common.print_lower_triangle(
-			decimals,
-			point_labels,
-			point_names,
-			npoint,
-			distances,
-			width)
+			decimals, point_labels, point_names, npoint, distances, width
+		)
 		return
 
-# -------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def write_a_configuration_type_file_initialize_variables(self) -> None:
-
 		self.conf_file_exists_error_title = "File exists"
 		self.conf_file_exists_error_message = (
 			"File already exists\n"
-			"Choose a different file name or delete the existing file.")
+			"Choose a different file name or delete the existing file."
+		)
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def write_a_configuration_type_file(
-			self,
-			file_name: str,
-			source: ConfigurationFeature) -> None:
-
+		self, file_name: str, source: ConfigurationFeature
+	) -> None:
 		# dropped positional arguments message and feedback
 
 		self.write_a_configuration_type_file_initialize_variables()
 
 		file_type: str = "Configuration"
 		try:
-			with Path(file_name).open('w') as file_handle:
+			with Path(file_name).open("w") as file_handle:
 				file_handle.write(file_type + "\n")
 				file_handle.write(
-					" " + str(source.ndim) + " "
-					+ str(source.npoint) + "\n")
+					" " + str(source.ndim) + " " + str(source.npoint) + "\n"
+				)
 				lines = [
 					f"{source.dim_labels[each_dim]};"
 					f"{source.dim_names[each_dim].strip()}\n"
@@ -676,31 +690,32 @@ class ConfigurationFeature:
 				file_handle.write("".join(lines))
 				for each_point in source.range_points:
 					for each_dim in source.range_dims:
-						file_handle.write(str(
-							source.point_coords.iloc[
-								each_point].iloc[each_dim]) + " ")
+						file_handle.write(
+							str(
+								source.point_coords.iloc[each_point].iloc[
+									each_dim
+								]
+							)
+							+ " "
+						)
 						continue
 					file_handle.write("\n")
 					continue
-		
+
 		except SpacesError as exc:
 			# except SituationToBeNamedLaterError:
 			peek("Do we get past Qt")
 			raise SpacesError(
 				self.conf_file_exists_error_title,
-				self.conf_file_exists_error_message) from exc
+				self.conf_file_exists_error_message,
+			) from exc
 		return
-	
 
 	# ------------------------------------------------------------------------
 
 
 class CorrelationsFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 		self.file_handle: str = ""
 		self.nreferent: int = 0
@@ -732,14 +747,10 @@ class CorrelationsFeature:
 		self.b_item_name: str = ""  # the name of the second item
 		self.a_item_label: str = ""  # the label of the first item
 		self.b_item_label: str = ""  # the label of the second item
-	
 
 	# ------------------------------------------------------------------------
 
-	def duplicate_correlations(
-			self,
-			common: Spaces) -> None:
-
+	def duplicate_correlations(self, common: Spaces) -> None:
 		(
 			self.correlations_as_dataframe,
 			self.correlations_as_dict,
@@ -748,45 +759,37 @@ class CorrelationsFeature:
 			self.sorted_correlations_w_pairs,
 			self.ndyad,
 			self.range_dyads,
-			self.range_items) = \
-			common.duplicate_in_different_structures(
-				self.correlations,
-				self.item_names,
-				self.item_labels,
-				self.nreferent,
-				"dissimilarities")
+			self.range_items,
+		) = common.duplicate_in_different_structures(
+			self.correlations,
+			self.item_names,
+			self.item_labels,
+			self.nreferent,
+			"dissimilarities",
+		)
 
 	# ------------------------------------------------------------------------
 
 	def print_the_correlations(
-			self,
-			width: int,
-			decimals: int,
-			common: Spaces) -> None:
-		
+		self, width: int, decimals: int, common: Spaces
+	) -> None:
 		item_labels = self.item_labels
 		item_names = self.item_names
 		nitem = self.nitem
 		correlations = self.correlations
 
-		print(
-			"\n\tThe correlation matrix has", self.nitem, "items")
+		print("\n\tThe correlation matrix has", self.nitem, "items")
 		common.print_lower_triangle(
-			decimals, item_labels,	item_names, nitem,
-			correlations, width)
+			decimals, item_labels, item_names, nitem, correlations, width
+		)
 
 		return
-
 
 	# ------------------------------------------------------------------------
 
 
 class EvaluationsFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 		self.file_handle: str = ""
 		self.nreferent: int = 0
@@ -807,7 +810,6 @@ class EvaluationsFeature:
 	# ------------------------------------------------------------------------
 
 	def print_the_evaluations(self) -> None:
-
 		print("\nEvaluations: \n", self.evaluations)
 		# self.evaluate()
 		return
@@ -815,21 +817,34 @@ class EvaluationsFeature:
 	# ------------------------------------------------------------------------
 
 	def summarize_evaluations(self) -> None:
-
 		evaluations = self.evaluations
 		# stats_eval = self.stats_eval
 		# avg_eval = self.avg_eval
 		temp_stats_eval = evaluations.describe(
-			percentiles=[.25, .5, .75]).transpose()
+			percentiles=[0.25, 0.5, 0.75]
+		).transpose()
 		stats_eval = temp_stats_eval[
-			['mean', 'std', 'min', 'max', '25%', '50%', '75%']]
+			["mean", "std", "min", "max", "25%", "50%", "75%"]
+		]
 		stats_eval.columns = [
-			'Mean', 'Standard\nDeviation', 'Min', 'Max', 'First\nquartile',
-			'Median', 'Third\nquartile']
+			"Mean",
+			"Standard\nDeviation",
+			"Min",
+			"Max",
+			"First\nquartile",
+			"Median",
+			"Third\nquartile",
+		]
 		new_order = [
-			'Mean', 'Standard\nDeviation',
-			'Min', 'First\nquartile', 'Median', 'Third\nquartile', 'Max']
-		stats_eval = stats_eval .reindex(columns=new_order)
+			"Mean",
+			"Standard\nDeviation",
+			"Min",
+			"First\nquartile",
+			"Median",
+			"Third\nquartile",
+			"Max",
+		]
+		stats_eval = stats_eval.reindex(columns=new_order)
 		stats_eval_sorted = stats_eval.sort_values(by="Mean", ascending=False)
 		# stats_eval_sorted = pd.DataFrame(stats_eval_sorted)
 		# peek(type(stats_eval_sorted))
@@ -837,7 +852,7 @@ class EvaluationsFeature:
 		# peek(names_eval_sorted)
 		# columns = stats_eval_sorted.columns.tolist()
 		# peek(columns)
-		
+
 		avg_eval = evaluations.mean()
 		avg_eval.sort_values(inplace=True)
 
@@ -848,16 +863,11 @@ class EvaluationsFeature:
 
 		return
 
-
 	# ------------------------------------------------------------------------
 
 
 class GroupedDataFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 		self._hor_dim = director.common.hor_dim
 		self._vert_dim = director.common.vert_dim
@@ -875,12 +885,10 @@ class GroupedDataFeature:
 		self.group_labels: list[str] = []  # replaces point_labels_grpd
 		self.group_coords: pd.DataFrame = pd.DataFrame()
 
-
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def print_grouped_function(self) -> None:
-		""" print grouped - is used to print the grouped data configuration.
-		"""
+		"""print grouped - is used to print the grouped data configuration."""
 		grouping_var = self.grouping_var
 		group_coords = self.group_coords
 		print(f" Configuration is based on {grouping_var} \n")
@@ -892,11 +900,7 @@ class GroupedDataFeature:
 
 
 class IndividualsFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 		self.file_handle: str = ""
 		# the handle of the grouped configuration file
@@ -916,25 +920,18 @@ class IndividualsFeature:
 	# ------------------------------------------------------------------------
 
 	def print_individuals(self) -> None:
-
 		n_individ = self._director.individuals_active.n_individ
 		ind_vars = self._director.individuals_active.ind_vars
 
-		print(
-			f"The file contains {n_individ} individuals.\n")
+		print(f"The file contains {n_individ} individuals.\n")
 		print(ind_vars)
 		return
-
 
 	# -----------------------------------------------------------------------
 
 
 class ScoresFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 		self._hor_dim = self._director.common.hor_dim
 		self._vert_dim = self._director.common.vert_dim
@@ -968,12 +965,9 @@ class ScoresFeature:
 		self._vert_min: float = 0.0
 		self._offset: float = 0.0
 
-
-
 	# ------------------------------------------------------------------------
 
 	def print_scores(self) -> None:
-
 		scores = self.scores
 		columns = self.scores.columns
 
@@ -982,8 +976,7 @@ class ScoresFeature:
 		for i in range(len(cols) - 1):
 			print("\t\t", cols[i + 1])
 			self.var_names = [] if self.var_names is None else self.var_names
-			self.var_names = self.var_names.append(
-				pd.Index([cols[i + 1]]))
+			self.var_names = self.var_names.append(pd.Index([cols[i + 1]]))
 		print(scores)
 
 		return
@@ -991,25 +984,38 @@ class ScoresFeature:
 	# ------------------------------------------------------------------------
 
 	def summarize_scores(self) -> None:
-
 		scores = self.scores
 
 		scores_vars = copy.deepcopy(scores)
 		scores_vars.drop(scores_vars.columns[0], axis=1, inplace=True)
 		floated_vars = scores_vars.astype(float)
 		temp_stats_scores = floated_vars.describe(
-			percentiles=[.25, .5, .75]).transpose()
+			percentiles=[0.25, 0.5, 0.75]
+		).transpose()
 
 		stats_scores = temp_stats_scores[
-			['mean', 'std', 'min', 'max', '25%', '50%', '75%']]
+			["mean", "std", "min", "max", "25%", "50%", "75%"]
+		]
 
 		stats_scores.columns = [
-			'Mean', 'Standard\nDeviation', 'Min', 'Max', 'First\nquartile',
-			'Median', 'Third\nquartile']
+			"Mean",
+			"Standard\nDeviation",
+			"Min",
+			"Max",
+			"First\nquartile",
+			"Median",
+			"Third\nquartile",
+		]
 
 		new_order = [
-			'Mean', 'Standard\nDeviation', 'Min', 'First\nquartile',
-			'Median', 'Third\nquartile', 'Max']
+			"Mean",
+			"Standard\nDeviation",
+			"Min",
+			"First\nquartile",
+			"Median",
+			"Third\nquartile",
+			"Max",
+		]
 
 		stats_scores = stats_scores.reindex(columns=new_order)
 		avg_scores = scores.mean()
@@ -1018,16 +1024,11 @@ class ScoresFeature:
 		self.avg_scores = avg_scores
 		return
 
-
-
 	# ------------------------------------------------------------------------
 
 
 class SimilaritiesFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:
+	def __init__(self, director: Status) -> None:
 		# self.nreferent_sims: int = 0 no
 		self._director = director
 		# self.shepard_axis: str = ""
@@ -1094,50 +1095,56 @@ class SimilaritiesFeature:
 	# ------------------------------------------------------------------------
 
 	def compute_differences_in_ranks(self) -> None:
-
 		nreferent = self._director.similarities_active.nreferent
-		ranked_similarities_as_list = \
+		ranked_similarities_as_list = (
 			self._director.similarities_active.ranked_similarities_as_list
-		ranked_distances_as_list = \
+		)
+		ranked_distances_as_list = (
 			self._director.configuration_active.ranked_distances_as_list
+		)
 		item_names = self._director.similarities_active.item_names
 
 		square = np.empty((nreferent, nreferent))
 
-		differences_of_ranks_as_list = \
+		differences_of_ranks_as_list = (
 			ranked_similarities_as_list - ranked_distances_as_list
+		)
 		np.set_printoptions(suppress=True)
 		next_pair = 0
 		from_pts_range = range(1, nreferent)
 		for each_item in from_pts_range:
 			to_pts_range = range(each_item)
 			for that_item in to_pts_range:
-				square[each_item][that_item] = \
-					differences_of_ranks_as_list[next_pair]
-				square[that_item][each_item] = \
-					differences_of_ranks_as_list[next_pair]
+				square[each_item][that_item] = differences_of_ranks_as_list[
+					next_pair
+				]
+				square[that_item][each_item] = differences_of_ranks_as_list[
+					next_pair
+				]
 				next_pair += 1
 
 		differences_of_ranks_as_square = square
 		differences_of_ranks_as_dataframe = pd.DataFrame(
 			differences_of_ranks_as_square,
-			columns=item_names, index=item_names)
+			columns=item_names,
+			index=item_names,
+		)
 
-		self._director.similarities_active.differences_of_ranks_as_list = \
+		self._director.similarities_active.differences_of_ranks_as_list = (
 			differences_of_ranks_as_list
-		self._director.similarities_active.differences_of_ranks_as_square = \
+		)
+		self._director.similarities_active.differences_of_ranks_as_square = (
 			differences_of_ranks_as_square
+		)
 		self._director.similarities_active.\
 			differences_of_ranks_as_dataframe = \
-			differences_of_ranks_as_dataframe
+				differences_of_ranks_as_dataframe
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def duplicate_similarities(
-			self,
-			common: Spaces) -> None:
+	def duplicate_similarities(self, common: Spaces) -> None:
 		"""Duplicate similarities into various data structures.
 
 		This method uses a utility function from the 'common' object to
@@ -1159,78 +1166,80 @@ class SimilaritiesFeature:
 			self.sorted_similarities_w_pairs,
 			self.ndyad,
 			self.range_dyads,
-			self.range_items) = \
-			common.duplicate_in_different_structures(
-				self.similarities,
-				self.item_names,
-				self.item_labels,
-				self.nitem,
-				self.value_type)
-		
-
+			self.range_items,
+		) = common.duplicate_in_different_structures(
+			self.similarities,
+			self.item_names,
+			self.item_labels,
+			self.nitem,
+			self.value_type,
+		)
 
 	# ------------------------------------------------------------------------
-	
-	def prepare_for_shepard_diagram(self) -> None:
 
+	def prepare_for_shepard_diagram(self) -> None:
 		nreferent = self._director.similarities_active.nreferent
-		ranked_similarities_as_list = \
+		ranked_similarities_as_list = (
 			self._director.similarities_active.ranked_similarities_as_list
-		ranked_distances_as_list = \
+		)
+		ranked_distances_as_list = (
 			self._director.configuration_active.ranked_distances_as_list
+		)
 		item_names = self._director.similarities_active.item_names
 
-		pd.set_option('display.float_format', lambda x: f"{x:.2f}")
+		pd.set_option("display.float_format", lambda x: f"{x:.2f}")
 		shepard_square = np.empty((nreferent, nreferent))
 		next_dist = 0
 		next_simi = 0
 		for each_item in range(nreferent):
 			for that_item in range(nreferent):
 				if each_item < that_item:
-					shepard_square[each_item][that_item] = \
+					shepard_square[each_item][that_item] = (
 						ranked_similarities_as_list[next_simi]
+					)
 					next_simi += 1
 				elif each_item > that_item:
-					shepard_square[each_item][that_item] = \
+					shepard_square[each_item][that_item] = (
 						ranked_distances_as_list[next_dist]
+					)
 					next_dist += 1
 		shepard_diagram_table_as_square = shepard_square
 		shepard_diagram_table_as_dataframe = pd.DataFrame(
 			shepard_diagram_table_as_square,
-			columns=item_names, index=item_names)
+			columns=item_names,
+			index=item_names,
+		)
 
-		self._director.similarities_active.shepard_diagram_table_as_square = \
+		self._director.similarities_active.shepard_diagram_table_as_square = (
 			shepard_diagram_table_as_square
+		)
 		self._director.similarities_active.\
 			shepard_diagram_table_as_dataframe = \
-			shepard_diagram_table_as_dataframe
+				shepard_diagram_table_as_dataframe
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def print_the_similarities(
-			self,
-			width: int,
-			decimals: int,
-			common: Spaces) -> None:
-
+		self, width: int, decimals: int, common: Spaces
+	) -> None:
 		value_type = self.value_type
 		nitem = self.nitem
 		item_labels = self.item_labels
 		item_names = self.item_names
 		similarities = self.similarities
 
-		print(
-			"\n\tThe", value_type, "matrix has", nitem, "items")
+		print("\n\tThe", value_type, "matrix has", nitem, "items")
 		common.print_lower_triangle(
-			decimals, item_labels, item_names, nitem, similarities, width)
+			decimals, item_labels, item_names, nitem, similarities, width
+		)
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def create_ranked_similarities_dataframe(self) -> None:
-			#director: Status) -> None:
+		# director: Status) -> None:
 		#
 		# Create dataframe which is used for computing and displaying ranks
 		# It will start with self.sorted_similarities_w_pairs which has
@@ -1239,8 +1248,9 @@ class SimilaritiesFeature:
 		#
 
 		# ranks_df = self._director.similarities_active.ranks_df
-		distances_as_dict = \
+		distances_as_dict = (
 			self._director.configuration_active.distances_as_dict
+		)
 		sorted_similarities_w_pairs = self.sorted_similarities_w_pairs
 		range_similarities = self.range_similarities
 		# columns_for_ranks = self.columns_for_ranks
@@ -1249,44 +1259,62 @@ class SimilaritiesFeature:
 
 		ranks_df = pd.DataFrame(
 			sorted_similarities_w_pairs,
-			columns=['Similarity', 'A_label', 'B_label', 'A_name', 'B_name'])
+			columns=["Similarity", "A_label", "B_label", "A_name", "B_name"],
+		)
 		a_label_index = 1
 		b_label_index = 2
 		#
 		# Rank the similarities
 		#
-		ranks_df['Similarity_Rank'] = \
-			ranks_df['Similarity'].rank(method='average')
+		ranks_df["Similarity_Rank"] = ranks_df["Similarity"].rank(
+			method="average"
+		)
 		#
 		# Add and rank the distances
 		#
 		temp_list = [
-			str(ranks_df.iloc[each_dyad, a_label_index] + "_" +
-				ranks_df.iloc[each_dyad, b_label_index])
+			str(
+				ranks_df.iloc[each_dyad, a_label_index]
+				+ "_"
+				+ ranks_df.iloc[each_dyad, b_label_index]
+			)
 			for each_dyad in range_similarities
 		]
 		ranks_df["Dyad"] = temp_list
 		ranks_df["Distance_AB"] = 0.0
 		#
 		for each_dyad in range_similarities:
-			ranks_df.loc[each_dyad, "Distance_AB"] = \
-				distances_as_dict[temp_list[each_dyad]]
-		ranks_df["Distance_Rank"] = \
-			ranks_df['Distance_AB'].rank(method='average')
+			ranks_df.loc[each_dyad, "Distance_AB"] = distances_as_dict[
+				temp_list[each_dyad]
+			]
+		ranks_df["Distance_Rank"] = ranks_df["Distance_AB"].rank(
+			method="average"
+		)
 		#
 		# Compute the difference in ranks between the similarities
 		# and the distances
 		#
-		ranks_df["AB_Rank_Difference"] = \
+		ranks_df["AB_Rank_Difference"] = (
 			ranks_df["Similarity_Rank"] - ranks_df["Distance_Rank"]
-		ranks_df["Absolute_AB_Rank_Difference"] = \
-			abs(ranks_df["AB_Rank_Difference"])
+		)
+		ranks_df["Absolute_AB_Rank_Difference"] = abs(
+			ranks_df["AB_Rank_Difference"]
+		)
 		columns_for_ranks = ranks_df[
-			["A_label", "B_label",
-				"Similarity_Rank", "Distance_Rank", "AB_Rank_Difference",
-				"Absolute_AB_Rank_Difference", "A_name", "B_name"]]
+			[
+				"A_label",
+				"B_label",
+				"Similarity_Rank",
+				"Distance_Rank",
+				"AB_Rank_Difference",
+				"Absolute_AB_Rank_Difference",
+				"A_name",
+				"B_name",
+			]
+		]
 		columns_for_ranks = columns_for_ranks.rename(
-			columns={'A_name': 'A', 'B_name': 'B'})
+			columns={"A_name": "A", "B_name": "B"}
+		)
 		#
 		# Create filter for each item  indicating when an item is part
 		# of a dyad
@@ -1297,32 +1325,36 @@ class SimilaritiesFeature:
 			ranks_df[item_labels[each_item]] = "INAP"
 		for each_pair in range_similarities:
 			for each_item in range_items:
-				if ranks_df.iloc[each_pair, a_label_index] == \
-					item_labels[each_item] \
-					or ranks_df.iloc[each_pair, b_label_index] \
-					== item_labels[each_item]:
-					if ranks_df.iloc[each_pair, a_label_index] \
-						== item_labels[each_item]:
-						ranks_df.loc[
-								each_pair, item_labels[each_item]] = \
-								ranks_df.iloc[each_pair, b_label_index]
+				if (
+					ranks_df.iloc[each_pair, a_label_index]
+					== item_labels[each_item]
+					or ranks_df.iloc[each_pair, b_label_index]
+					== item_labels[each_item]
+				):
+					if (
+						ranks_df.iloc[each_pair, a_label_index]
+						== item_labels[each_item]
+					):
+						ranks_df.loc[each_pair, item_labels[each_item]] = (
+							ranks_df.iloc[each_pair, b_label_index]
+						)
 					else:
-						ranks_df.loc[
-							each_pair, item_labels[each_item]] \
-							= ranks_df.iloc[each_pair, a_label_index]
+						ranks_df.loc[each_pair, item_labels[each_item]] = (
+							ranks_df.iloc[each_pair, a_label_index]
+						)
 				else:
-					ranks_df.loc[
-						each_pair, item_labels[each_item]] = "INAP"
+					ranks_df.loc[each_pair, item_labels[each_item]] = "INAP"
 
 		self._director.similarities_active.ranks_df = ranks_df
-		self._director.similarities_active.columns_for_ranks = \
+		self._director.similarities_active.columns_for_ranks = (
 			columns_for_ranks
+		)
 
 		return
+
 	# ------------------------------------------------------------------------
 
 	def rank_similarities(self) -> None:
-
 		nitem = self.nitem
 		item_names = self.item_names
 		item_labels = self.item_labels
@@ -1341,8 +1373,7 @@ class SimilaritiesFeature:
 				rank = ranked_similarities_as_list[next_pair]
 				next_pair += 1
 				a_row.append(rank)
-				key = str(
-					item_labels[to_pts] + "_" + item_labels[from_pts])
+				key = str(item_labels[to_pts] + "_" + item_labels[from_pts])
 				ranked_similarities_as_dict[key] = rank
 			ranked_similarities.append(a_row)
 		range_items = range(nreferent)
@@ -1355,51 +1386,49 @@ class SimilaritiesFeature:
 					ranked_similarities_as_square[other_item].append(0.0)
 				elif each_item < other_item:
 					index = str(
-						item_labels[each_item] + "_" + item_labels[other_item])
+						item_labels[each_item] + "_" + item_labels[other_item]
+					)
 					ranked_similarities_as_square[each_item].append(
-						ranked_similarities_as_dict[index])
+						ranked_similarities_as_dict[index]
+					)
 				else:
 					index = str(
-						item_labels[other_item] + "_" + item_labels[each_item])
+						item_labels[other_item] + "_" + item_labels[each_item]
+					)
 					ranked_similarities_as_square[each_item].append(
-						ranked_similarities_as_dict[index])
+						ranked_similarities_as_dict[index]
+					)
 
 		ranked_similarities_as_dataframe = pd.DataFrame(
-			ranked_similarities_as_square,
-			columns=item_names, index=item_names)
+			ranked_similarities_as_square, columns=item_names, index=item_names
+		)
 
 		self.range_items = range_items
 		self.ranked_similarities_as_list = ranked_similarities_as_list
 		self.ranked_similarities_as_dict = ranked_similarities_as_dict
 		self.ranked_similarities_as_square = ranked_similarities_as_square
-		self.ranked_similarities_as_dataframe = \
+		self.ranked_similarities_as_dataframe = (
 			ranked_similarities_as_dataframe
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def rank_when_similarities_match_configuration(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-
+		self, director: Status, common: Spaces
+	) -> None:
 		if common.have_similarities():
-
 			director.similarities_active.create_ranked_similarities_dataframe()
-			#	director)
+			# director)
 			director.similarities_active.duplicate_ranked_similarities(common)
 			director.similarities_active.compute_differences_in_ranks()
 
 		return
 
-	
 	# ------------------------------------------------------------------------
 
-	def duplicate_ranked_similarities(
-			self,
-			common: Spaces) -> None:
-
+	def duplicate_ranked_similarities(self, common: Spaces) -> None:
 		(
 			self.ranked_similarities_as_dataframe,
 			self.ranked_similarities_as_dict,
@@ -1408,25 +1437,21 @@ class SimilaritiesFeature:
 			self.sorted_ranked_similarities_w_pairs,
 			self.ndyad,
 			self.range_dyads,
-			self.range_items) = \
-			common.duplicate_in_different_structures(
-				self.ranked_similarities,
-				self.item_names,
-				self.item_labels,
-				self.nreferent,
-				self.value_type)
-		
+			self.range_items,
+		) = common.duplicate_in_different_structures(
+			self.ranked_similarities,
+			self.item_names,
+			self.item_labels,
+			self.nreferent,
+			self.value_type,
+		)
 
 
 # --------------------------------------------------------------------------
 
 
 class TargetFeature:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 		self._hor_dim = director.common.hor_dim
 		self._vert_dim = director.common.vert_dim
@@ -1448,10 +1473,10 @@ class TargetFeature:
 	# ------------------------------------------------------------------------
 
 	def print_target(self) -> None:
-		""" print target function - is used to print the target configuration.
-		"""
+		"""print target function -
+		is used to print the target configuration."""
 		print(self.point_coords)
 		return
 
-# --------------------------------------------------------------------------
 
+# --------------------------------------------------------------------------

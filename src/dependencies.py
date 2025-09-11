@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import peek # noqa: F401
+import peek  # noqa: F401
 from PySide6.QtWidgets import QDialog
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
 	from director import Status
-	
+
 from common import Spaces
 from constants import MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
 from dialogs import ChoseOptionDialog
@@ -16,11 +17,8 @@ from exceptions import SpacesError
 
 
 class DependencyChecking:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-			# common: Spaces):
+	def __init__(self, director: Status) -> None:
+		# common: Spaces):
 
 		self._director = director
 
@@ -52,67 +50,138 @@ class DependencyChecking:
 	# ------------------------------------------------------------------------
 
 	def detect_dependency_problems_initialize_variables(self) -> int:
-		""" Establishes whether the data needed for a command exists """
+		"""Establishes whether the data needed for a command exists"""
 		n_problems = 0
-		
+
 		self.commands_that_need_configuration: set = {
 			"alike",
-			"base", "bisector", "center", "cluster", "compare", "contest",
-			"convertible", "core supporters", "directions",
+			"base",
+			"bisector",
+			"center",
+			"cluster",
+			"compare",
+			"contest",
+			"convertible",
+			"core supporters",
+			"directions",
 			"distances",
-			"first dimension", "invert", "joint", "likely supporters",
-			"battleground", "move", "paired", "plane",
-			"print configuration", "ranks distances",
-			"reference points", "rescale",
-			"rotate", "save configuration", "score individuals",
-			"second dimension",	"segments", "settings - plane",
-			"shepard", "stress contribution", "varimax",
-			"vectors", "view configuration", "view custom",
-			"view distances"}
+			"first dimension",
+			"invert",
+			"joint",
+			"likely supporters",
+			"battleground",
+			"move",
+			"paired",
+			"plane",
+			"print configuration",
+			"ranks distances",
+			"reference points",
+			"rescale",
+			"rotate",
+			"save configuration",
+			"score individuals",
+			"second dimension",
+			"segments",
+			"settings - plane",
+			"shepard",
+			"stress contribution",
+			"varimax",
+			"vectors",
+			"view configuration",
+			"view custom",
+			"view distances",
+		}
 		self.commands_that_need_similarities: set = {
-			"alike", "mds", "paired", "print similarities",
-			"ranks similarities", "ranks differences", "scree",
-			"save similarities", "shepard", "stress contribution",
-			"view similarities"}
+			"alike",
+			"mds",
+			"paired",
+			"print similarities",
+			"ranks similarities",
+			"ranks differences",
+			"scree",
+			"save similarities",
+			"shepard",
+			"stress contribution",
+			"view similarities",
+		}
 		self.commands_that_need_reference_points: set = {
-			"base", "bisector", "contest", "convertible", "core supporters",
-			"first dimension", "likely supporters", "battleground",
-			"second dimension", "segments"}
+			"base",
+			"bisector",
+			"contest",
+			"convertible",
+			"core supporters",
+			"first dimension",
+			"likely supporters",
+			"battleground",
+			"second dimension",
+			"segments",
+		}
 		self.commands_that_need_correlations: set = {
-			"print correlations", "save correlations",
-			"view correlations"}
+			"print correlations",
+			"save correlations",
+			"view correlations",
+		}
 		self.commands_that_need_individual_data: set = {
-			"print individuals", "save individuals", "view individuals"}
+			"print individuals",
+			"save individuals",
+			"view individuals",
+		}
 		self.commands_that_need_distances: set = {
-			"ranks distances", "shepard", "view distances"}
-		self.commands_that_need_ranks: set = {
-			"shepard"}
+			"ranks distances",
+			"shepard",
+			"view distances",
+		}
+		self.commands_that_need_ranks: set = {"shepard"}
 		self.commands_that_need_scores: set = {
-			"joint", "print scores", "save scores", "segments", "view scores"}
+			"joint",
+			"print scores",
+			"save scores",
+			"segments",
+			"view scores",
+		}
 		self.commands_that_need_evaluations: set = {
-			"factor analysis", "factor analysis machine learning",
+			"factor analysis",
+			"factor analysis machine learning",
 			"line of sight",
 			"principal components",
-			"print evaluations", "sample designer", "sample repetitions",
-			"score individuals", "view evaluations"}
+			"print evaluations",
+			"sample designer",
+			"sample repetitions",
+			"score individuals",
+			"view evaluations",
+		}
 		self.commands_that_need_target: set = {
-			"compare", "print target", "save target", "uncertainty",
-			"view target"}
+			"compare",
+			"print target",
+			"save target",
+			"uncertainty",
+			"view target",
+		}
 		self.commands_that_need_grouped_data: set = {
-			"print grouped data", "view grouped data"}
+			"print grouped data",
+			"view grouped data",
+		}
 		self.commands_that_need_sample_design: set = {
 			"open sample repetitions",
-			"save sample design", "print sample design", "sample repetitions",
-			"view sample design", "uncertainty"}
+			"save sample design",
+			"print sample design",
+			"sample repetitions",
+			"view sample design",
+			"uncertainty",
+		}
 		self.commands_that_need_sample_repetitions: set = {
 			"print sample repetitions",
-			"save sample repetitions", "uncertainty",
-			"view sample repetitions"}
+			"save sample repetitions",
+			"uncertainty",
+			"view sample repetitions",
+		}
 		self.commands_that_need_sample_solutions: set = {
 			"print sample solutions",
-			"save sample solutions", "view point uncertainty",
+			"save sample solutions",
+			"view point uncertainty",
 			"view sample solutions",
-			"view spatial uncertainty"}
+			"view spatial uncertainty",
+		}
 
 		self.commands_having_this_dependency = [
 			self.commands_that_need_configuration,
@@ -128,8 +197,9 @@ class DependencyChecking:
 			self.commands_that_need_grouped_data,
 			self.commands_that_need_sample_design,
 			self.commands_that_need_sample_repetitions,
-			self.commands_that_need_sample_solutions]
-	
+			self.commands_that_need_sample_solutions,
+		]
+
 		self.test_for_that_dependency_no_parens = [
 			self._director.common.needs_configuration,
 			self._director.common.needs_similarities,
@@ -144,27 +214,29 @@ class DependencyChecking:
 			self._director.common.needs_grouped_data,
 			self._director.common.needs_sample_design,
 			self._director.common.needs_sample_repetitions,
-			self._director.common.needs_sample_solutions]
-		
+			self._director.common.needs_sample_solutions,
+		]
+
 		return n_problems
 
-
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def detect_dependency_problems(self) -> None:
-		""" The Dependencies method is used to determine whether the
-			command being processed has any dependencies that must be
-			satisfied before the command can be executed.
+		"""The Dependencies method is used to determine whether the
+		command being processed has any dependencies that must be
+		satisfied before the command can be executed.
 		"""
 
 		n_problems = self.detect_dependency_problems_initialize_variables()
 
 		for each_test in range(len(self.commands_having_this_dependency)):
-			if self._director.command.lower() in \
-				self.commands_having_this_dependency[each_test]:
-				problem_detected = \
-					self.test_for_that_dependency_no_parens[
-						each_test](self._director.command)
+			if (
+				self._director.command.lower()
+				in self.commands_having_this_dependency[each_test]
+			):
+				problem_detected = self.test_for_that_dependency_no_parens[
+					each_test
+				](self._director.command)
 				if problem_detected:
 					n_problems += 1
 		if n_problems > 0:
@@ -174,7 +246,7 @@ class DependencyChecking:
 			raise SpacesError(None, None)
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def detect_consistency_issues_initialize_variables(self) -> None:
 		"""Establishes what information is needed to determine
@@ -207,121 +279,216 @@ class DependencyChecking:
 		have_scores = self._director.common.have_scores
 
 		self.features = [
-			"Configuration", "Target", "Grouped data",
-			"Similarities", "Evaluations", "Correlations", "Individuals",
-			"Scores"]
-			
+			"Configuration",
+			"Target",
+			"Grouped data",
+			"Similarities",
+			"Evaluations",
+			"Correlations",
+			"Individuals",
+			"Scores",
+		]
+
 		self.new_feature_dict = {
-			"Configuration":
-				("Configuration", "Points", "Dimensions",
-					configuration_candidate.npoint,
-					configuration_candidate.point_names,
-					configuration_candidate.point_labels,
-					configuration_candidate.ndim,
-					configuration_candidate.dim_names,
-					configuration_candidate.dim_labels),
-			"Target":
-				("Target", "Points", "Dimensions",
-					target_candidate.npoint,
-					target_candidate.point_names,
-					target_candidate.point_labels,
-					target_candidate.ndim,
-					target_candidate.dim_names,
-					target_candidate.dim_labels),
-			"Grouped data":
-				("Grouped data", None, "Dimensions",
-					None, None, None,
-					grouped_data_candidate.ndim,
-					grouped_data_candidate.dim_names,
-					grouped_data_candidate.dim_labels),
+			"Configuration": (
+				"Configuration",
+				"Points",
+				"Dimensions",
+				configuration_candidate.npoint,
+				configuration_candidate.point_names,
+				configuration_candidate.point_labels,
+				configuration_candidate.ndim,
+				configuration_candidate.dim_names,
+				configuration_candidate.dim_labels,
+			),
+			"Target": (
+				"Target",
+				"Points",
+				"Dimensions",
+				target_candidate.npoint,
+				target_candidate.point_names,
+				target_candidate.point_labels,
+				target_candidate.ndim,
+				target_candidate.dim_names,
+				target_candidate.dim_labels,
+			),
+			"Grouped data": (
+				"Grouped data",
+				None,
+				"Dimensions",
+				None,
+				None,
+				None,
+				grouped_data_candidate.ndim,
+				grouped_data_candidate.dim_names,
+				grouped_data_candidate.dim_labels,
+			),
 			# "Uncertainty":
 			# 	("Uncertainty", None, None,
 			# 	None, None, None,
 			# 	None, None, None),
-			"Similarities":
-				("Similarity", "Points", None,
-					similarities_candidate.nitem,
-					similarities_candidate.item_names,
-					similarities_candidate.item_labels,
-					None, None, None),
-			"Correlations":
-				("Correlations", "Points", None,
-					correlations_candidate.nitem,
-					correlations_candidate.item_names,
-					correlations_candidate.item_labels,
-					None, None, None),
-			"Evaluations":
-				("Evaluations", "Points", None,
-					evaluations_candidate.nitem,
-					evaluations_candidate.item_names,
-					evaluations_candidate.item_labels,
-					None, None, None),
-			"Individuals":
-				("Individuals", "Points", None,
-					individuals_candidate.nitem,
-					individuals_candidate.item_names,
-					individuals_candidate.item_labels,
-					None, None, None),
-			"Scores":
-				("Scores", None, "Dimensions",
-					None, None, None,
-					scores_candidate.nscores,
-					scores_candidate.dim_names,
-					scores_candidate.dim_labels)
+			"Similarities": (
+				"Similarity",
+				"Points",
+				None,
+				similarities_candidate.nitem,
+				similarities_candidate.item_names,
+				similarities_candidate.item_labels,
+				None,
+				None,
+				None,
+			),
+			"Correlations": (
+				"Correlations",
+				"Points",
+				None,
+				correlations_candidate.nitem,
+				correlations_candidate.item_names,
+				correlations_candidate.item_labels,
+				None,
+				None,
+				None,
+			),
+			"Evaluations": (
+				"Evaluations",
+				"Points",
+				None,
+				evaluations_candidate.nitem,
+				evaluations_candidate.item_names,
+				evaluations_candidate.item_labels,
+				None,
+				None,
+				None,
+			),
+			"Individuals": (
+				"Individuals",
+				"Points",
+				None,
+				individuals_candidate.nitem,
+				individuals_candidate.item_names,
+				individuals_candidate.item_labels,
+				None,
+				None,
+				None,
+			),
+			"Scores": (
+				"Scores",
+				None,
+				"Dimensions",
+				None,
+				None,
+				None,
+				scores_candidate.nscores,
+				scores_candidate.dim_names,
+				scores_candidate.dim_labels,
+			),
 		}
 
 		self.existing_feature_dict = {
-			"Configuration":
-				("Configuration", have_configuration, "Points", "Dimensions",
-					configuration_active.npoint,
-					configuration_active.point_names,
-					configuration_active.point_labels,
-					configuration_active.ndim, configuration_active.dim_names,
-					configuration_active.dim_labels,
-					"Must match"),
-			"Target":
-				("Target", have_target, "Points", "Dimensions",
-					target_active.npoint, target_active.point_names,
-					target_active.point_labels,
-					target_active.ndim, target_active.dim_names,
-					target_active.dim_labels,
-					"Must match"),
-			"Grouped data":
-				("Grouped data", have_grouped_data, None, "Dimensions",
-					None, None, None,
-					grouped_data_active.ndim, grouped_data_active.dim_names,
-					grouped_data_active.dim_labels,
-					"No information in common"),
-			"Similarities":
-				("Similarities", have_similarities, "Points", None,
-					similarities_active.nitem, similarities_active.item_names,
-					similarities_active.item_labels,
-					None, None, None,
-					"No information in common"),
-			"Evaluations":
-				("Evaluations", have_evaluations, "Points", None,
-					evaluations_active.nitem, evaluations_active.item_names,
-					evaluations_active.item_labels,
-					None, None, None,
-					"No information in common"),
-			"Individuals":
-				("Individuals", have_individual_data, None, None,
-					individuals_active.nitem, individuals_active.item_names,
-					individuals_active.item_labels,
-					None, None, None,
-					"No information in common"),
-			"Correlations":
-				("Correlations", have_correlations, "Points", None,
-					correlations_active.nitem, correlations_active.item_names,
-					correlations_active.item_labels,
-					None, None, None,
-					"No information in common"),
-			"Scores":
-				("Scores", have_scores, None, "Dimensions",
-					None, None, None,
-					scores_active.nscores, scores_active.dim_names,
-					scores_active.dim_labels,
-					"No information in common")
+			"Configuration": (
+				"Configuration",
+				have_configuration,
+				"Points",
+				"Dimensions",
+				configuration_active.npoint,
+				configuration_active.point_names,
+				configuration_active.point_labels,
+				configuration_active.ndim,
+				configuration_active.dim_names,
+				configuration_active.dim_labels,
+				"Must match",
+			),
+			"Target": (
+				"Target",
+				have_target,
+				"Points",
+				"Dimensions",
+				target_active.npoint,
+				target_active.point_names,
+				target_active.point_labels,
+				target_active.ndim,
+				target_active.dim_names,
+				target_active.dim_labels,
+				"Must match",
+			),
+			"Grouped data": (
+				"Grouped data",
+				have_grouped_data,
+				None,
+				"Dimensions",
+				None,
+				None,
+				None,
+				grouped_data_active.ndim,
+				grouped_data_active.dim_names,
+				grouped_data_active.dim_labels,
+				"No information in common",
+			),
+			"Similarities": (
+				"Similarities",
+				have_similarities,
+				"Points",
+				None,
+				similarities_active.nitem,
+				similarities_active.item_names,
+				similarities_active.item_labels,
+				None,
+				None,
+				None,
+				"No information in common",
+			),
+			"Evaluations": (
+				"Evaluations",
+				have_evaluations,
+				"Points",
+				None,
+				evaluations_active.nitem,
+				evaluations_active.item_names,
+				evaluations_active.item_labels,
+				None,
+				None,
+				None,
+				"No information in common",
+			),
+			"Individuals": (
+				"Individuals",
+				have_individual_data,
+				None,
+				None,
+				individuals_active.nitem,
+				individuals_active.item_names,
+				individuals_active.item_labels,
+				None,
+				None,
+				None,
+				"No information in common",
+			),
+			"Correlations": (
+				"Correlations",
+				have_correlations,
+				"Points",
+				None,
+				correlations_active.nitem,
+				correlations_active.item_names,
+				correlations_active.item_labels,
+				None,
+				None,
+				None,
+				"No information in common",
+			),
+			"Scores": (
+				"Scores",
+				have_scores,
+				None,
+				"Dimensions",
+				None,
+				None,
+				None,
+				scores_active.nscores,
+				scores_active.dim_names,
+				scores_active.dim_labels,
+				"No information in common",
+			),
 		}
 		return
 
@@ -338,27 +505,28 @@ class DependencyChecking:
 		# 	return
 		new = self._create_new_from_command_without_open()
 		for each_feature in features:
-			if (
-				self._skip_when_new_and_existing_are_same_type_of_feature(
-					new, each_feature)
-				and self._check_whether_feature_currently_exists(each_feature)
-			):
+			if self._skip_when_new_and_existing_are_same_type_of_feature(
+				new, each_feature
+			) and self._check_whether_feature_currently_exists(each_feature):
 				existing_abandoned = \
-					self._when_no_information_in_common_get_user_to_resolve_conflict(
-						new, each_feature)
+				self._when_no_information_in_common_get_user_to_resolve_conflict(
+					new, each_feature
+				)
 				if not existing_abandoned:
-					existing_abandoned = \
+					existing_abandoned = (
 						self._check_if_points_match_and_resolve_conflict(
-							new, each_feature)
+							new, each_feature
+						)
+					)
 				if not existing_abandoned:
 					self._check_if_dimensions_match_and_resolve_conflict(
-						new, each_feature)
+						new, each_feature
+					)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _create_new_from_command_without_open(self) -> str:
-
 		command = self._director.command
 
 		if command[0:4] == "Open":
@@ -370,10 +538,9 @@ class DependencyChecking:
 			new = command
 		return new
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _check_if_any_features_exist(self) -> int:
-
 		n_exist = 0
 		for each_feature in self.features:
 			if self.existing_feature_dict[each_feature][1]():
@@ -383,34 +550,38 @@ class DependencyChecking:
 	# ------------------------------------------------------------------------
 
 	def _check_if_dimensions_match_and_resolve_conflict(
-			self, new: str, each_feature: str) -> bool:
-
+		self, new: str, each_feature: str
+	) -> bool:
 		existing_feature_dict = self.existing_feature_dict
 		new_feature_dict = self.new_feature_dict
 
 		existing_abandoned = False
 		if (
 			new_feature_dict[new][2] == "Dimensions"
-			and existing_feature_dict[each_feature][3] == "Dimensions"):
+			and existing_feature_dict[each_feature][3] == "Dimensions"
+		):
 			dimensions_match = self.do_dimensions_match(
 				existing_feature_dict[each_feature][7],
 				existing_feature_dict[each_feature][8],
 				existing_feature_dict[each_feature][9],
 				new_feature_dict[new][6],
 				new_feature_dict[new][7],
-				new_feature_dict[new][8])
+				new_feature_dict[new][8],
+			)
 			if not dimensions_match:
 				nothing_in_common = False
 				existing_abandoned = self.resolve_conflict_w_existing_data(
 					existing_feature_dict[each_feature][0],
-					new_feature_dict[new][0], nothing_in_common)
+					new_feature_dict[new][0],
+					nothing_in_common,
+				)
 		return existing_abandoned
 
 	# ------------------------------------------------------------------------
 
 	def _check_if_points_match_and_resolve_conflict(
-		self, new: str, each_feature: str) -> bool:
-
+		self, new: str, each_feature: str
+	) -> bool:
 		existing_feature_dict = self.existing_feature_dict
 		new_feature_dict = self.new_feature_dict
 
@@ -418,28 +589,30 @@ class DependencyChecking:
 		# points_match = False
 		if (
 			new_feature_dict[new][1] == "Points"
-			and existing_feature_dict[each_feature][2] == "Points"):
+			and existing_feature_dict[each_feature][2] == "Points"
+		):
 			points_match = self.do_points_match(
 				existing_feature_dict[each_feature][4],
 				existing_feature_dict[each_feature][5],
 				existing_feature_dict[each_feature][6],
 				new_feature_dict[new][3],
 				new_feature_dict[new][4],
-				new_feature_dict[new][5])
+				new_feature_dict[new][5],
+			)
 			if not points_match:
 				nothing_in_common = False
 				existing_abandoned = self.resolve_conflict_w_existing_data(
 					existing_feature_dict[each_feature][0],
-					new_feature_dict[new][0], nothing_in_common)
+					new_feature_dict[new][0],
+					nothing_in_common,
+				)
 		return existing_abandoned
 
 	# ------------------------------------------------------------------------
 
 	def _check_that_both_features_have_both_points_and_dimensions(
-			self,
-			new: str,
-			each_feature: str) -> bool:
-
+		self, new: str, each_feature: str
+	) -> bool:
 		existing_feature_dict = self.existing_feature_dict
 		new_feature_dict = self.new_feature_dict
 
@@ -453,10 +626,8 @@ class DependencyChecking:
 	# ------------------------------------------------------------------------
 
 	def _check_that_both_features_have_dimensions(
-			self,
-			new: str,
-			each_feature: str) -> bool:
-
+		self, new: str, each_feature: str
+	) -> bool:
 		existing_feature_dict = self.existing_feature_dict
 		new_feature_dict = self.new_feature_dict
 
@@ -468,10 +639,8 @@ class DependencyChecking:
 	# ------------------------------------------------------------------------
 
 	def _check_that_both_features_have_points(
-			self,
-			new: str,
-			each_feature: str) -> bool:
-
+		self, new: str, each_feature: str
+	) -> bool:
 		existing_feature_dict = self.existing_feature_dict
 		new_feature_dict = self.new_feature_dict
 
@@ -483,57 +652,65 @@ class DependencyChecking:
 	# ------------------------------------------------------------------------
 
 	def _check_whether_feature_currently_exists(
-			self,
-			each_feature: str) -> bool:
-
+		self, each_feature: str
+	) -> bool:
 		return self.existing_feature_dict[each_feature][1]()
-	
-# ---------------------------------------------------------------------------
+
+	# -------------------------------------------------------------------------
 
 	def detect_limitations_violations_initialize_variables(self) -> None:
-
-
 		self.compare_mismatch_error_title = (
 			"Number of points in active configuration differs "
-			"from number of stimuli in similarities.")
+			"from number of stimuli in similarities."
+		)
 		self.compare_mismatch_error_message = (
 			"Use Configuration or Similarities command to "
-			"establish a configuration or similarities.")
+			"establish a configuration or similarities."
+		)
 		self.compare_too_many_dimensions_error_title = (
-			"Number of dimensions is larger than two.")
+			"Number of dimensions is larger than two."
+		)
 		self.compare_too_many_dimensions_error_message = (
 			"Current version of Compare command is "
-			"\nlimited to two dimensions.")
-		
+			"\nlimited to two dimensions."
+		)
+
 	# ------------------------------------------------------------------------
 
 	def detect_limitations_violations(self) -> None:
-		
 		self.detect_limitations_violations_initialize_variables()
-		
+
 		if self._director.command == "Alike":
-			if self._director.similarities_active.nreferent != \
-					self._director.configuration_active.npoint:
+			if (
+				self._director.similarities_active.nreferent
+				!= self._director.configuration_active.npoint
+			):
 				raise SpacesError(
 					self.compare_mismatch_error_title,
-					self.compare_mismatch_error_message)
+					self.compare_mismatch_error_message,
+				)
 
 		elif self._director.command == "Compare":
 			ndim = self._director.configuration_active.ndim
-			if ndim	> MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 				raise SpacesError(
 					self.compare_too_many_dimensions_error_title,
-					self.compare_too_many_dimensions_error_message)
+					self.compare_too_many_dimensions_error_message,
+				)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def do_dimensions_match(
-		self, existing_ndim: int, existing_dim_names: list[str],
-		existing_dim_labels: list[str], new_ndim: int,
-		new_dim_names: list[str], new_dim_labels: list[str]) -> bool:
-
+		self,
+		existing_ndim: int,
+		existing_dim_names: list[str],
+		existing_dim_labels: list[str],
+		new_ndim: int,
+		new_dim_names: list[str],
+		new_dim_labels: list[str],
+	) -> bool:
 		dimensions_match = False
 
 		if self.check_label_consistency:
@@ -542,22 +719,21 @@ class DependencyChecking:
 			else:
 				dimensions_match = False
 			return dimensions_match
-		if (
-			existing_ndim == new_ndim and existing_dim_names == new_dim_names):
+		if existing_ndim == new_ndim and existing_dim_names == new_dim_names:
 			dimensions_match = True
 		return dimensions_match
 
 	# ------------------------------------------------------------------------
 
 	def do_points_match(
-			self,
-			existing_npoint: int,
-			existing_point_names: list[str],
-			existing_point_labels: list[str],
-			new_npoint: int,
-			new_point_names: list[str],
-			new_point_labels: list[str]) -> bool:
-
+		self,
+		existing_npoint: int,
+		existing_point_names: list[str],
+		existing_point_labels: list[str],
+		new_npoint: int,
+		new_point_names: list[str],
+		new_point_labels: list[str],
+	) -> bool:
 		points_match = False
 		if self.check_label_consistency:
 			if existing_point_labels == new_point_labels:
@@ -567,16 +743,16 @@ class DependencyChecking:
 			return points_match
 		if (
 			existing_npoint == new_npoint
-			and existing_point_names == new_point_names):
+			and existing_point_names == new_point_names
+		):
 			points_match = True
 		return points_match
 
 	# ------------------------------------------------------------------------
 
 	def resolve_conflict_w_existing_data(
-		self, existing: str, new: str,
-		no_common_information: bool) -> bool: # noqa: FBT001
-
+		self, existing: str, new: str, no_common_information: bool
+	) -> bool:  # noqa: FBT001
 		# peek("At top of resolve_conflict_w_existing_data")
 		# peek(f"self._director.command: {self._director.command}")
 		# peek(f"self.command: {self.command}")
@@ -590,19 +766,18 @@ class DependencyChecking:
 			"Correlations": self._director.abandon_correlations,
 			"Evaluations": self._director.abandon_evaluations,
 			"Individuals": self._director.abandon_individual_data,
-			"Scores": self._director.abandon_scores
+			"Scores": self._director.abandon_scores,
 		}
 		if no_common_information:
-
-			self._conflict_title: str = \
-				"Potential consistency problem"
+			self._conflict_title: str = "Potential consistency problem"
 			self._conflict_options_title: str = "How to proceed"
 			self._conflict_options: list[str] = [
 				f"Abandon active {existing.lower()}, \
 				\ncontinue establishing {new.lower()}",
 				f"Abandon opening {new.lower()}, \
 				\nkeep active {existing.lower()}",
-				"Ignore potential of inconsistency"]
+				"Ignore potential of inconsistency",
+			]
 		else:
 			self._conflict_title: str = f"{existing} does not match"
 			self._conflict_options_title: str = "How to proceed"
@@ -610,11 +785,13 @@ class DependencyChecking:
 				f"Abandon active {existing.lower()}, \
 				\ncontinue establishing {new.lower()}",
 				f"Abandon opening {new.lower()}, \
-				\nkeep active {existing.lower()}"]
+				\nkeep active {existing.lower()}",
+			]
 		dialog = ChoseOptionDialog(
 			self._conflict_title,
 			self._conflict_options_title,
-			self._conflict_options)
+			self._conflict_options,
+		)
 		result = dialog.exec()
 		if result == QDialog.Accepted:
 			selected_option = dialog.selected_option  # + 1
@@ -626,88 +803,81 @@ class DependencyChecking:
 				case 1:
 					abandon_dict[new]()
 					abandon_needed_error_title = self._director.command
-					abandon_needed_error_message = (
-						f"{new} has been abandoned")
+					abandon_needed_error_message = f"{new} has been abandoned"
 					raise SpacesError(
 						abandon_needed_error_title,
-						abandon_needed_error_message)
+						abandon_needed_error_message,
+					)
 				case 2:
 					existing_abandoned = False
 				case _:
 					abandon_dict[existing]()
-					inconsistency_error_title = (
-						f"{new} has been abandoned")
+					inconsistency_error_title = f"{new} has been abandoned"
 					inconsistency_error_message = (
 						f"Inconsistency between {new.lower()} "
-						f"and {existing.lower()} was not resolved")
+						f"and {existing.lower()} was not resolved"
+					)
 					raise SpacesError(
-						inconsistency_error_title,
-						inconsistency_error_message)
+						inconsistency_error_title, inconsistency_error_message
+					)
 		else:
 			abandon_dict[existing]()
-			inconsistency_unresolved_error_title = (
-				f"{new} has been abandoned")
+			inconsistency_unresolved_error_title = f"{new} has been abandoned"
 			inconsistency_unresolved_error_message = (
 				f"Inconsistency between {new.lower()} "
-				f"and {existing.lower()} was not resolved")
+				f"and {existing.lower()} was not resolved"
+			)
 			raise SpacesError(
 				inconsistency_unresolved_error_title,
-				inconsistency_unresolved_error_message)
+				inconsistency_unresolved_error_message,
+			)
 
 		return existing_abandoned
 
 	# ------------------------------------------------------------------------
 
 	def _skip_when_new_and_existing_are_same_type_of_feature(
-			self,
-			new: str,
-			each_feature: str) -> bool:
+		self, new: str, each_feature: str
+	) -> bool:
 		return new != self.existing_feature_dict[each_feature][0]
 
 	# ------------------------------------------------------------------------
 
 	def _when_no_information_in_common_get_user_to_resolve_conflict(
-			self,
-			new: str,
-			each_feature: str) -> bool:
-
+		self, new: str, each_feature: str
+	) -> bool:
 		existing_feature_dict = self.existing_feature_dict
 		new_feature_dict = self.new_feature_dict
 
 		existing_abandoned = False
 		feature_group_1 = ["Similarities", "Correlations", "Evaluations"]
 		feature_group_2 = ["Grouped data", "Scores"]
-		if (
-			existing_feature_dict[each_feature][10] == \
-				"No information in common"
-			and (
-				(
-					new_feature_dict[new][0] in feature_group_1
-					and existing_feature_dict[each_feature][0]
-					in feature_group_2
-				)
-				or (
-					new_feature_dict[new][0] in feature_group_2
-					and existing_feature_dict[each_feature][0]
-					in feature_group_1
-				)
+		if existing_feature_dict[each_feature][
+			10
+		] == "No information in common" and (
+			(
+				new_feature_dict[new][0] in feature_group_1
+				and existing_feature_dict[each_feature][0] in feature_group_2
+			)
+			or (
+				new_feature_dict[new][0] in feature_group_2
+				and existing_feature_dict[each_feature][0] in feature_group_1
 			)
 		):
 			nothing_in_common = True
 			existing_abandoned = self.resolve_conflict_w_existing_data(
 				existing_feature_dict[each_feature][0],
-				new_feature_dict[new][0], nothing_in_common)
+				new_feature_dict[new][0],
+				nothing_in_common,
+			)
 		return existing_abandoned
-	
+
 
 # --------------------------------------------------------------------------
 
 
 class PrepareForDependencyTesting:
-	def __init__(
-			self,
-			parent: Status) -> None:
-		
+	def __init__(self, parent: Status) -> None:
 		self.parent = parent
 		self.common: Spaces = Spaces(parent, parent)
 

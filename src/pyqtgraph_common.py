@@ -95,7 +95,8 @@ class PyQtGraphCommon:
 		# Create tick lists - reverse left ticks to match flipped data
 		bottom_ticks = list(zip(tick_range, tick_labels, strict=True))
 		left_ticks = list(
-			zip(tick_range, list(reversed(tick_names)), strict=True))
+			zip(tick_range, list(reversed(tick_names)), strict=True)
+		)
 
 		# Set ticks
 		x_axis.setTicks([bottom_ticks])
@@ -136,9 +137,9 @@ class PyQtGraphCommon:
 
 		# Use the mapped colormap or try matplotlib directly
 		pg_colormap_name = colormap_mapping.get(shading, shading)
-		
+
 		# Check if we need to reverse the colormap
-		reverse_colormap = pg_colormap_name.endswith('_r')
+		reverse_colormap = pg_colormap_name.endswith("_r")
 		if reverse_colormap:
 			pg_colormap_name = pg_colormap_name[:-2]  # Remove '_r' suffix
 
@@ -199,13 +200,12 @@ class PyQtGraphCommon:
 					max_val += range_val
 
 		colorbar = pg.ColorBarItem(
-			values=(min_val, max_val),
-			colorMap=im.getColorMap()
+			values=(min_val, max_val), colorMap=im.getColorMap()
 		)
 		# Use setImageItem with insert_in parameter to properly align
 		# with data area
 		colorbar.setImageItem(im, insert_in=plot)
-		
+
 		return
 
 	# -----------------------------------------------------------------------
@@ -223,9 +223,7 @@ class PyQtGraphCommon:
 		data_to_plot = np.array(data, dtype=float)
 
 		graphics_layout, plot = self.begin_pyqtgraph_heatmap_with_title(title)
-		im = self.add_heatmap_to_pyqtgraph_heatmap(
-			plot, data_to_plot, shading
-		)
+		im = self.add_heatmap_to_pyqtgraph_heatmap(plot, data_to_plot, shading)
 		self.add_colorbar_to_pyqtgraph_heatmap(graphics_layout, plot, im)
 		# Use original names to match the unflipped data
 		self.add_tick_marks_names_and_labels_to_pyqtgraph_heatmap(
@@ -238,7 +236,6 @@ class PyQtGraphCommon:
 	# ------------------------------------------------------------------------
 
 	def add_configuration_to_pyqtgraph_plot(self, plot: pg.PlotItem) -> None:
-
 		director = self._director
 		common = director.common
 		hor_dim = common.hor_dim
@@ -269,7 +266,8 @@ class PyQtGraphCommon:
 			)
 			a_label.setPos(
 				point_coords.iloc[each_point, hor_dim],
-				point_coords.iloc[each_point, vert_dim])
+				point_coords.iloc[each_point, vert_dim],
+			)
 			plot.addItem(a_label)
 		pen = pg.mkPen(color="black")
 
@@ -457,7 +455,7 @@ class PyQtGraphCommon:
 
 	# ------------------------------------------------------------------------
 
-	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_pyqtgraph( # noqa: E501
+	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_pyqtgraph(  # noqa: E501
 		self,
 	) -> None:
 		pyqtgraph_common = self._director.pyqtgraph_common
@@ -735,7 +733,8 @@ class PyQtGraphCommon:
 			x.append(point_coords.iloc[rival_b.index, hor_dim])
 			y.append(point_coords.iloc[rival_b.index, vert_dim])
 			points = pg.ScatterPlotItem(
-				x=x, y=y, pen="b", symbol="o", size=point_size)
+				x=x, y=y, pen="b", symbol="o", size=point_size
+			)
 			plot.addItem(points)
 			rival_a_label = pg.TextItem(
 				text=rival_a.label, color=(0, 0, 0), anchor=(1.0, 0.0)
@@ -786,15 +785,15 @@ class PyQtGraphCommon:
 		widget.setLayout(layout)
 		self._director.tab_gallery_layout.addWidget(widget)
 
-
 	# ------------------------------------------------------------------------
 
 	def confidence_ellipse_using_pyqtgraph(
-			self,
-			x: np.ndarray,
-			y: np.ndarray,
-			n_std: float = 3.0,
-			edgecolor: str = "r") -> pg.QtWidgets.QGraphicsEllipseItem:
+		self,
+		x: np.ndarray,
+		y: np.ndarray,
+		n_std: float = 3.0,
+		edgecolor: str = "r",
+	) -> pg.QtWidgets.QGraphicsEllipseItem:
 		"""
 		Create a covariance confidence ellipse of *x* and *y* for pyqtgraph.
 
@@ -815,45 +814,42 @@ class PyQtGraphCommon:
 		pg.QtWidgets.QGraphicsEllipseItem
 		"""
 		cov = np.cov(x, y)
-		pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
-		
+		pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
+
 		# Using a special case to obtain the eigenvalues of this
 		# two-dimensional dataset.
 		ell_radius_x = np.sqrt(1 + pearson)
 		ell_radius_y = np.sqrt(1 - pearson)
-		
+
 		# Calculating the standard deviation of x from
 		# the squareroot of the variance and multiplying
 		# with the given number of standard deviations.
 		scale_x = np.sqrt(cov[0, 0]) * n_std
 		mean_x = np.mean(x)
-		
+
 		# calculating the standard deviation of y ...
 		scale_y = np.sqrt(cov[1, 1]) * n_std
 		mean_y = np.mean(y)
-		
+
 		# Calculate final ellipse dimensions
 		width = ell_radius_x * scale_x * 2
 		height = ell_radius_y * scale_y * 2
 
 		# Create ellipse centered at the mean
 		ellipse = pg.QtWidgets.QGraphicsEllipseItem(
-			mean_x - width/2,
-			mean_y - height/2,
-			width,
-			height
+			mean_x - width / 2, mean_y - height / 2, width, height
 		)
-		
+
 		# Set appearance
 		pen_color = pg.QtGui.QColor(edgecolor)
 		ellipse.setPen(pg.mkPen(color=pen_color, width=2))
 		ellipse.setBrush(pg.mkBrush(None))  # No fill
-		
+
 		# Apply rotation (45 degrees like matplotlib version)
 		transform = pg.QtGui.QTransform()
 		transform.translate(mean_x, mean_y)
 		transform.rotate(45)
 		transform.translate(-mean_x, -mean_y)
 		ellipse.setTransform(transform)
-		
+
 		return ellipse

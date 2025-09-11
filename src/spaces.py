@@ -2,10 +2,11 @@ from __future__ import annotations
 
 # Standard library imports
 import sys
+
 # from dataclasses import dataclass
 import peek
 from PySide6.QtGui import QFont
-from PySide6.QtCore import (QFile, QIODevice)
+from PySide6.QtCore import QFile, QIODevice
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QTextEdit
 from director import Status, SplashWindow
@@ -19,10 +20,7 @@ from director import Status, SplashWindow
 
 
 class MyTextEditWrapper:
-	def __init__(
-			self,
-			text_to_tab: QTextEdit) -> None:
-		
+	def __init__(self, text_to_tab: QTextEdit) -> None:
 		self.text_to_tab = text_to_tab
 		# Could use "Consolas" or "Courier New" for fixed font
 		# or "Monaco" or "Menlo" for Mac -- not rendered as fixed width
@@ -39,18 +37,16 @@ class MyTextEditWrapper:
 		self.text_to_tab.setFont(fixed_font)
 		# super().__init__(StringIO())
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
-	def write(
-			self,
-			text: str) -> None:
-		
+	def write(self, text: str) -> None:
 		self.text_to_tab.insertPlainText(text)
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def flush(self) -> None:
 		pass
+
 
 # --------------------------------------------------------------------------
 
@@ -68,7 +64,8 @@ class MyApplication:
 		print(
 			f"\nIn this version of Spaces there are "
 			f"{len(self.director.traffic_dict)} "
-			f"menu items available.")
+			f"menu items available."
+		)
 		peek("Peek seems to be working")
 		self.start_event_loop()
 		self.print_debug_logs()
@@ -88,14 +85,12 @@ class MyApplication:
 		# sys.stdout = open('record_of_output.txt', 'wt')
 		return director
 
-	def load_welcome_dialog(
-			self,
-			ui_filename: str) -> None:
-
+	def load_welcome_dialog(self, ui_filename: str) -> None:
 		ui_file = QFile(ui_filename)
 		if not ui_file.open(QIODevice.ReadOnly):
 			self.exit_with_error(
-				f"Cannot open {ui_filename}: {ui_file.errorString()}")
+				f"Cannot open {ui_filename}: {ui_file.errorString()}"
+			)
 		loader = QUiLoader()
 		welcome_dialog = loader.load(ui_file)
 		ui_file.close()
@@ -116,6 +111,7 @@ class MyApplication:
 	def exit_with_error(error_message: str) -> None:
 		print(error_message)
 		sys.exit(-1)
+
 
 # --------------------------------------------------------------------------
 

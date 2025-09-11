@@ -7,40 +7,48 @@ import random
 # Third party imports
 import numpy as np
 import pandas as pd
-import peek # noqa: F401
+import peek  # noqa: F401
 
 # Typing imports
 from typing import NamedTuple
 
-from constants import (
-	MINIMAL_DIFFERENCE_FROM_ZERO
+from constants import MINIMAL_DIFFERENCE_FROM_ZERO
+
+from geometry import (
+	Circle,
+	CoordinateLists,
+	LineInPlot,
+	PeoplePoints,
+	Point,
+	Polygon,
+	Region,
+	TheoreticalExtremes,
 )
 
-from geometry import (Circle, CoordinateLists, LineInPlot,
-	PeoplePoints, Point, Polygon, Region,
-	TheoreticalExtremes)
 # from supporters import AbstractCommand, ASupporterGrouping
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
 	from director import Status
 	from common import Spaces
-	
+
 
 # -------------------------------------------------------------------------
 
 
 class Bisector(LineInPlot):
-	def __init__( # noqa: PLR0913
-			self,
-			director: Status,
-			point_on_line: Point,
-			slope: float,
-			color: str="black",
-			thickness: int=1,
-			style: str="solid") -> None:
+	def __init__(  # noqa: PLR0913
+		self,
+		director: Status,
+		point_on_line: Point,
+		slope: float,
+		color: str = "black",
+		thickness: int = 1,
+		style: str = "solid",
+	) -> None:
 		super().__init__(
-			director, point_on_line, slope,
-			color, thickness, style)
+			director, point_on_line, slope, color, thickness, style
+		)
 
 		self._director = director
 
@@ -51,33 +59,27 @@ class Bisector(LineInPlot):
 
 
 class East(LineInPlot):
-	def __init__( # noqa: PLR0913
-			self,
-			director: Status,
-			point_on_line: Point,
-			slope: float,
-			color: str="black",
-			thickness: int=1,
-			style: str="solid") -> None:
+	def __init__(  # noqa: PLR0913
+		self,
+		director: Status,
+		point_on_line: Point,
+		slope: float,
+		color: str = "black",
+		thickness: int = 1,
+		style: str = "solid",
+	) -> None:
 		super().__init__(
-			director, point_on_line, slope,
-			color, thickness, style)
+			director, point_on_line, slope, color, thickness, style
+		)
 
 		self._director = director
-
-
-
 
 
 # --------------------------------------------------------------------------
 
 
 class Rivalry:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 
 		self.EPSILON = MINIMAL_DIFFERENCE_FROM_ZERO
@@ -85,9 +87,15 @@ class Rivalry:
 		self.seg: pd.DataFrame = pd.DataFrame()
 
 		self.segment_names: list[str] = [
-			"Base", "Convertible", "Core", "Likely", "Battle_ground",
-			"First", "Second"]
-		
+			"Base",
+			"Convertible",
+			"Core",
+			"Likely",
+			"Battle_ground",
+			"First",
+			"Second",
+		]
+
 		self._create_instances_based_on_rivalry()
 		self.rival_a: Point = Point()
 		self.rival_b: Point = Point()
@@ -116,7 +124,6 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _create_instances_based_on_rivalry(self) -> None:
-
 		self.rival_a = Point()
 		self.rival_b = Point()
 		self.mid_point = Point()
@@ -126,7 +133,7 @@ class Rivalry:
 		self.west_cross = Point()
 		self.first_cross = Point()
 		self.second_cross = Point()
-		
+
 		self.core_left = Circle(fill="blue")
 		self.core_right = Circle(fill="red")
 		self.core_neither = Polygon(fill="white")
@@ -146,8 +153,6 @@ class Rivalry:
 		self.second_down = Polygon(fill="red")
 
 		return
-
-
 
 	# ------------------------------------------------------------------------
 
@@ -180,68 +185,104 @@ class Rivalry:
 
 		self.seg = pd.DataFrame(
 			columns=[
-				score_1_name, score_2_name,
-				"Base", "Convertible", "Core", "Likely", "Battle_ground",
-				"First", "Second"])
+				score_1_name,
+				score_2_name,
+				"Base",
+				"Convertible",
+				"Core",
+				"Likely",
+				"Battle_ground",
+				"First",
+				"Second",
+			]
+		)
 		segments = self.seg
 		segments[score_1_name] = score_1
 		segments[score_2_name] = score_2
-	#
-	# Determine base left and base right  segments ---------------------------
-	#
+		#
+		# Determine base left and base right  segments -----------------------
+		#
 		(segments, base_segment_names) = self.assign_to_base_segments(
-			segments, score_1_name, score_2_name, rival_a, rival_b,
-			bisector, west, east, nscored)
-	#
-	# Determine convertible_to_left and convertible_to_right  segments -----
-	#
-		(segments, convertible_segment_names) = \
-			self.assign_to_convertible_segments(
 			segments,
-			score_1_name, score_2_name,
-			rival_a, rival_b,
+			score_1_name,
+			score_2_name,
+			rival_a,
+			rival_b,
 			bisector,
-			west, east,
-			nscored)
-	#
-	# Determine Core left and core right  segments -----------------------
-	#
+			west,
+			east,
+			nscored,
+		)
+		#
+		# Determine convertible_to_left and convertible_to_right  segments ---
+		#
+		(segments, convertible_segment_names) = (
+			self.assign_to_convertible_segments(
+				segments,
+				score_1_name,
+				score_2_name,
+				rival_a,
+				rival_b,
+				bisector,
+				west,
+				east,
+				nscored,
+			)
+		)
+		#
+		# Determine Core left and core right  segments -----------------------
+		#
 		(segments, core_segment_names) = self.assign_to_core_segments(
 			segments,
-			score_1_name, score_2_name,
-			rival_a, rival_b,
+			score_1_name,
+			score_2_name,
+			rival_a,
+			rival_b,
 			bisector,
 			point_coords,
-			hor_dim, vert_dim,
-			nscored)
-	#
-	# Determine battleground and settled segments ----------------------------
-	#
-		(segments, battleground_segment_names) = \
+			hor_dim,
+			vert_dim,
+			nscored,
+		)
+		#
+		# Determine battleground and settled segments ------------------------
+		#
+		(segments, battleground_segment_names) = (
 			self.assign_to_battleground_segments(
-			segments,
-			score_1_name, score_2_name,
-			bisector, west, east,
-			nscored)
+				segments,
+				score_1_name,
+				score_2_name,
+				bisector,
+				west,
+				east,
+				nscored,
+			)
+		)
 
-	#
-	# Determine Only first and second segments -------------------------------
-	#
-		(segments, first_segment_names, second_segment_names) = \
+		#
+		# Determine Only first and second segments ----------------------
+		#
+		(segments, first_segment_names, second_segment_names) = (
 			self.assign_to_first_and_second_dimension_segments(
-			segments,
-			score_1_name, score_2_name, rival_a, rival_b,bisector,
-			first_dim_divider, second_dim_divider, nscored)
-	#
-	# Determine Likely  segments ----------------------------------------
-	#
+				segments,
+				score_1_name,
+				score_2_name,
+				rival_a,
+				rival_b,
+				bisector,
+				first_dim_divider,
+				second_dim_divider,
+				nscored,
+			)
+		)
+		#
+		# Determine Likely  segments ----------------------------------------
+		#
 		(segments, likely_segment_names) = self.assign_to_likely_segments(
-			segments, nscored,
-			score_1_name, score_2_name,
-			bisector)
+			segments, nscored, score_1_name, score_2_name, bisector
+		)
 
-		self.segment_percentages = self.calculate_segment_percentages(
-			segments)
+		self.segment_percentages = self.calculate_segment_percentages(segments)
 		self.assemble_segment_percentages(
 			likely_segment_names,
 			base_segment_names,
@@ -249,7 +290,8 @@ class Rivalry:
 			first_segment_names,
 			second_segment_names,
 			battleground_segment_names,
-			convertible_segment_names)
+			convertible_segment_names,
+		)
 
 		return
 
@@ -263,8 +305,8 @@ class Rivalry:
 		first_segment_names: list[str],
 		second_segment_names: list[str],
 		battleground_segment_names: list[str],
-		convertible_segment_names: list[str] ) -> None:
-		
+		convertible_segment_names: list[str],
+	) -> None:
 		self.base_pcts = self.segment_percentages.base_pcts
 		self.battleground_pcts = self.segment_percentages.battleground_pcts
 		self.conv_pcts = self.segment_percentages.conv_pcts
@@ -273,27 +315,45 @@ class Rivalry:
 		self.likely_pcts = self.segment_percentages.likely_pcts
 		self.second_pcts = self.segment_percentages.second_pcts
 
-		base_pcts_df = pd.DataFrame({
-			"Core Supporter Segment": base_segment_names,
-			"Percent": self.base_pcts})
-		battleground_pcts_df = pd.DataFrame({
-			"Battleground Segment": battleground_segment_names,
-			"Percent": self.battleground_pcts})
-		conv_pcts_df = pd.DataFrame({
-			"Convertible Segment": convertible_segment_names,
-			"Percent": self.conv_pcts})
-		core_pcts_df = pd.DataFrame({
-			"Core Supporter Segment": core_segment_names,
-			"Percent": self.core_pcts})
-		first_pcts_df = pd.DataFrame({
-			"First Segment": first_segment_names,
-			"Percent": self.first_pcts})
-		likely_pcts_df = pd.DataFrame({
-			"Core Supporter Segment": likely_segment_names,
-			"Percent": self.likely_pcts})
-		second_pcts_df = pd.DataFrame({
-			"Second Segment": second_segment_names,
-			"Percent": self.second_pcts})
+		base_pcts_df = pd.DataFrame(
+			{
+				"Core Supporter Segment": base_segment_names,
+				"Percent": self.base_pcts,
+			}
+		)
+		battleground_pcts_df = pd.DataFrame(
+			{
+				"Battleground Segment": battleground_segment_names,
+				"Percent": self.battleground_pcts,
+			}
+		)
+		conv_pcts_df = pd.DataFrame(
+			{
+				"Convertible Segment": convertible_segment_names,
+				"Percent": self.conv_pcts,
+			}
+		)
+		core_pcts_df = pd.DataFrame(
+			{
+				"Core Supporter Segment": core_segment_names,
+				"Percent": self.core_pcts,
+			}
+		)
+		first_pcts_df = pd.DataFrame(
+			{"First Segment": first_segment_names, "Percent": self.first_pcts}
+		)
+		likely_pcts_df = pd.DataFrame(
+			{
+				"Core Supporter Segment": likely_segment_names,
+				"Percent": self.likely_pcts,
+			}
+		)
+		second_pcts_df = pd.DataFrame(
+			{
+				"Second Segment": second_segment_names,
+				"Percent": self.second_pcts,
+			}
+		)
 
 		self.base_pcts_df = base_pcts_df
 		self.battleground_pcts_df = battleground_pcts_df
@@ -318,21 +378,20 @@ class Rivalry:
 		for each_df in segments_list:
 			each_df.columns = ["Segment", "Percent"]
 
-		self.segments_pcts_df = pd.concat(
-			segments_list, ignore_index=True)
+		self.segments_pcts_df = pd.concat(segments_list, ignore_index=True)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def assign_to_likely_segments(
-			self,
-			segments: pd.DataFrame,
-			nscored: int,
-			score_1_name: str,
-			score_2_name: str,
-			bisector: Bisector) -> tuple[pd.DataFrame, list[str]]:
-
+		self,
+		segments: pd.DataFrame,
+		nscored: int,
+		score_1_name: str,
+		score_2_name: str,
+		bisector: Bisector,
+	) -> tuple[pd.DataFrame, list[str]]:
 		rivalry = self._director.rivalry
 		in_group = self._director.common.in_group
 		rival_a = self._director.rivalry.rival_a
@@ -342,8 +401,10 @@ class Rivalry:
 		# vert_dim = self._director.common.vert_dim
 		if bisector._direction == "Flat":
 			for each_indiv in range(nscored):
-				if segments.loc[each_indiv, score_2_name] \
-						< bisector._intercept:
+				if (
+					segments.loc[each_indiv, score_2_name]
+					< bisector._intercept
+				):
 					segments.loc[each_indiv, "Likely"] = 1
 				else:
 					segments.loc[each_indiv, "Likely"] = 2
@@ -353,85 +414,105 @@ class Rivalry:
 					segments.loc[each_indiv, score_1_name]
 					< (
 						segments.loc[each_indiv, score_2_name]
-						- bisector._intercept)
-					/ bisector._slope):
+						- bisector._intercept
+					)
+					/ bisector._slope
+				):
 					segments.loc[each_indiv, "Likely"] = 1
 				else:
 					segments.loc[each_indiv, "Likely"] = 2
 
-		rivalry.likely_left._points.x \
-			= in_group(segments, nscored, score_1_name, "Likely", {1})
-		rivalry.likely_left._points.y \
-			= in_group(segments, nscored, score_2_name, "Likely", {1})
-		rivalry.likely_right._points.x \
-			= in_group(segments, nscored, score_1_name, "Likely", {2})
-		rivalry.likely_right._points.y \
-			= in_group(segments, nscored, score_2_name, "Likely", {2})
+		rivalry.likely_left._points.x = in_group(
+			segments, nscored, score_1_name, "Likely", {1}
+		)
+		rivalry.likely_left._points.y = in_group(
+			segments, nscored, score_2_name, "Likely", {1}
+		)
+		rivalry.likely_right._points.x = in_group(
+			segments, nscored, score_1_name, "Likely", {2}
+		)
+		rivalry.likely_right._points.y = in_group(
+			segments, nscored, score_2_name, "Likely", {2}
+		)
 
-		
-		if point_coords.iloc[
-			rival_a.index, hor_dim] \
-			< point_coords.iloc[rival_b.index, hor_dim]:
+		if (
+			point_coords.iloc[rival_a.index, hor_dim]
+			< point_coords.iloc[rival_b.index, hor_dim]
+		):
 			likely_segment_names = [rival_a.name, rival_b.name]
 		else:
 			likely_segment_names = [rival_b.name, rival_a.name]
-		
+
 		return segments, likely_segment_names
 
 	# ------------------------------------------------------------------------
 
 	def assign_to_base_segments(
-			self,
-			segments: pd.DataFrame,
-			score_1_name: str,
-			score_2_name: str,
-			rival_a: Point,
-			rival_b: Point,
-			bisector: Bisector,
-			west: West,
-			east: East,
-			nscored: int) -> tuple[pd.DataFrame, list[str]]:
-
+		self,
+		segments: pd.DataFrame,
+		score_1_name: str,
+		score_2_name: str,
+		rival_a: Point,
+		rival_b: Point,
+		bisector: Bisector,
+		west: West,
+		east: East,
+		nscored: int,
+	) -> tuple[pd.DataFrame, list[str]]:
 		rivalry = self._director.rivalry
 		in_group = self._director.common.in_group
 		for each_indiv in segments.index:
-			west_at_x_coord = ((
-					segments.loc[each_indiv, score_2_name]
-					- west._intercept)
-					/ west._slope)
+			west_at_x_coord = (
+				segments.loc[each_indiv, score_2_name] - west._intercept
+			) / west._slope
 
-			east_at_x_coord = ((
-					segments.loc[each_indiv, score_2_name]
-					- east._intercept)
-					/ east._slope)
+			east_at_x_coord = (
+				segments.loc[each_indiv, score_2_name] - east._intercept
+			) / east._slope
 
 			if bisector._direction == "Flat":
 				segments = self._base_group_when_bisector_is_flat(
-					segments, each_indiv, score_2_name, west, east)
+					segments, each_indiv, score_2_name, west, east
+				)
 			elif bisector._direction == "Vertical":
 				segments = self._base_group_when_bisector_is_vertical(
-					segments, each_indiv, score_1_name, west, east)
+					segments, each_indiv, score_1_name, west, east
+				)
 			elif bisector._direction == "Upward slope":
 				segments = self._base_group_when_bisector_slopes_upward(
-					segments, each_indiv, score_1_name,
-					west_at_x_coord, east_at_x_coord)
+					segments,
+					each_indiv,
+					score_1_name,
+					west_at_x_coord,
+					east_at_x_coord,
+				)
 			elif bisector._direction == "Downward slope":
 				segments = self._base_group_when_bisector_slopes_downward(
-					segments, each_indiv, score_1_name,
-					west_at_x_coord, east_at_x_coord)
+					segments,
+					each_indiv,
+					score_1_name,
+					west_at_x_coord,
+					east_at_x_coord,
+				)
 
-		rivalry.base_left._points.x = \
-			in_group(segments, nscored, score_1_name, "Base", {1})
-		rivalry.base_left._points.y = \
-			in_group(segments, nscored, score_2_name, "Base", {1})
-		rivalry.base_neither._points.x = \
-			in_group(segments, nscored, score_1_name, "Base", {2})
-		rivalry.base_neither._points.y = \
-			in_group(segments, nscored, score_2_name, "Base", {2})
-		rivalry.base_right._points.x = \
-			in_group(segments, nscored, score_1_name, "Base", {3})
-		rivalry.base_right._points.y = \
-			in_group(segments, nscored, score_2_name, "Base", {3})
+		rivalry.base_left._points.x = in_group(
+			segments, nscored, score_1_name, "Base", {1}
+		)
+		rivalry.base_left._points.y = in_group(
+			segments, nscored, score_2_name, "Base", {1}
+		)
+		rivalry.base_neither._points.x = in_group(
+			segments, nscored, score_1_name, "Base", {2}
+		)
+		rivalry.base_neither._points.y = in_group(
+			segments, nscored, score_2_name, "Base", {2}
+		)
+		rivalry.base_right._points.x = in_group(
+			segments, nscored, score_1_name, "Base", {3}
+		)
+		rivalry.base_right._points.y = in_group(
+			segments, nscored, score_2_name, "Base", {3}
+		)
 
 		if bisector._direction == "Flat":
 			if rival_a.y > rival_b.y:
@@ -442,23 +523,26 @@ class Rivalry:
 			base_segment_names = [rival_a.name, "Neither", rival_b.name]
 		else:
 			base_segment_names = [rival_b.name, "Neither", rival_a.name]
-		
+
 		return (segments, base_segment_names)
 
 	# ------------------------------------------------------------------------
 
 	def _base_group_when_bisector_is_flat(
-			self,
-			segments: pd.DataFrame,
-			each_indiv: int,
-			score_2_name: str,
-			west: West,
-			east: East) -> pd.DataFrame:
-
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_2_name: str,
+		west: West,
+		east: East,
+	) -> pd.DataFrame:
 		if segments.loc[each_indiv, score_2_name] < west._start.y:
 			segments.loc[each_indiv, "Base"] = 1
-		elif east._start.y > segments.loc[
-			each_indiv, score_2_name] > west._start.y:
+		elif (
+			east._start.y
+			> segments.loc[each_indiv, score_2_name]
+			> west._start.y
+		):
 			segments.loc[each_indiv, "Base"] = 2
 		else:
 			segments.loc[each_indiv, "Base"] = 3
@@ -467,13 +551,13 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _base_group_when_bisector_is_vertical(
-			self,
-			segments: pd.DataFrame,
-			each_indiv: int,
-			score_1_name: str,
-			west: West,
-			east: East) -> pd.DataFrame:
-
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		west: West,
+		east: East,
+	) -> pd.DataFrame:
 		if segments.loc[each_indiv, score_1_name] < west._start.x:
 			segments.loc[each_indiv, "Base"] = 1
 		elif segments.loc[each_indiv, score_1_name] > east._start.x:
@@ -485,19 +569,20 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _base_group_when_bisector_slopes_upward(
-			self,
-			segments: pd.DataFrame,
-			each_indiv: int,
-			score_1_name: str,
-			west_at_x_coord: float,
-			east_at_x_coord: float) -> pd.DataFrame:
-
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		west_at_x_coord: float,
+		east_at_x_coord: float,
+	) -> pd.DataFrame:
 		if segments.loc[each_indiv, score_1_name] < west_at_x_coord:
 			segments.loc[each_indiv, "Base"] = 1
 		elif (
 			east_at_x_coord
 			> segments.loc[each_indiv, score_1_name]
-			> west_at_x_coord):
+			> west_at_x_coord
+		):
 			segments.loc[each_indiv, "Base"] = 2
 		else:
 			segments.loc[each_indiv, "Base"] = 3
@@ -507,120 +592,155 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _base_group_when_bisector_slopes_downward(
-			self,
-			segments: pd.DataFrame,
-			each_indiv: int,
-			score_1_name: str,
-			west_at_x_coord: float,
-			east_at_x_coord: float) -> pd.DataFrame:
-
-		if segments.loc[each_indiv, score_1_name] \
-				< west_at_x_coord:  # switched side
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		west_at_x_coord: float,
+		east_at_x_coord: float,
+	) -> pd.DataFrame:
+		if (
+			segments.loc[each_indiv, score_1_name] < west_at_x_coord
+		):  # switched side
 			segments.loc[each_indiv, "Base"] = 1
 		elif (
 			east_at_x_coord
 			> segments.loc[each_indiv, score_1_name]
-			> west_at_x_coord):  # switched side twice
+			> west_at_x_coord
+		):  # switched side twice
 			segments.loc[each_indiv, "Base"] = 2
 		else:
 			segments.loc[each_indiv, "Base"] = 3
 
 		return segments
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def assign_to_convertible_segments(
-			self,
-			segments: pd.DataFrame,
-			score_1_name: str,
-			score_2_name: str,
-			rival_a: Point,
-			rival_b: Point,
-			bisector: Bisector,
-			west: West,
-			east: East,
-			nscored: int) -> pd.DataFrame:
-		
+		self,
+		segments: pd.DataFrame,
+		score_1_name: str,
+		score_2_name: str,
+		rival_a: Point,
+		rival_b: Point,
+		bisector: Bisector,
+		west: West,
+		east: East,
+		nscored: int,
+	) -> pd.DataFrame:
 		rivalry = self._director.rivalry
 		in_group = self._director.common.in_group
 		not_in_group = self._director.common.not_in_group
 		for each_indiv in range(nscored):
 			bisector_x = (
-				segments.loc[each_indiv, score_2_name]
-				- bisector._intercept) / bisector._slope
+				segments.loc[each_indiv, score_2_name] - bisector._intercept
+			) / bisector._slope
 			west_at_x_coord = (
-				segments.loc[each_indiv, score_2_name]
-				- west._intercept) / west._slope
+				segments.loc[each_indiv, score_2_name] - west._intercept
+			) / west._slope
 			east_at_x_coord = (
-				segments.loc[each_indiv, score_2_name]
-				- east._intercept) / east._slope
+				segments.loc[each_indiv, score_2_name] - east._intercept
+			) / east._slope
 			#
 			if bisector._direction == "Flat":
 				segments = self._convertible_group_when_bisector_is_flat(
-					segments, each_indiv, bisector._start.y,
-					score_2_name, west._start.y, east._start.y)
+					segments,
+					each_indiv,
+					bisector._start.y,
+					score_2_name,
+					west._start.y,
+					east._start.y,
+				)
 			elif bisector._direction == "Vertical":
 				segments = self._convertible_group_when_bisector_is_vertical(
-					segments, each_indiv, score_1_name,
-					bisector, west, east)
+					segments, each_indiv, score_1_name, bisector, west, east
+				)
 			elif bisector._direction == "Upward slope":
 				segments = self._convertible_group_when_bisector_slopes_upward(
-					segments, each_indiv, score_1_name, bisector_x,
-					west_at_x_coord, east_at_x_coord)
+					segments,
+					each_indiv,
+					score_1_name,
+					bisector_x,
+					west_at_x_coord,
+					east_at_x_coord,
+				)
 			elif bisector._direction == "Downward slope":
-				segments = \
+				segments = (
 					self._convertible_group_when_bisector_slopes_downward(
-					segments, each_indiv, score_1_name,
-					bisector_x, west_at_x_coord, east_at_x_coord)
+						segments,
+						each_indiv,
+						score_1_name,
+						bisector_x,
+						west_at_x_coord,
+						east_at_x_coord,
+					)
+				)
 
-		rivalry.convertible_to_left._points.x = \
-			in_group(segments, nscored, score_1_name, "Convertible", {1})
-		rivalry.convertible_to_left._points.y = \
-			in_group(segments, nscored, score_2_name, "Convertible", {1})
-		rivalry.convertible_to_right._points.x = \
-			in_group(segments, nscored, score_1_name, "Convertible", {2})
-		rivalry.convertible_to_right._points.y = \
-			in_group(segments, nscored, score_2_name, "Convertible", {2})
+		rivalry.convertible_to_left._points.x = in_group(
+			segments, nscored, score_1_name, "Convertible", {1}
+		)
+		rivalry.convertible_to_left._points.y = in_group(
+			segments, nscored, score_2_name, "Convertible", {1}
+		)
+		rivalry.convertible_to_right._points.x = in_group(
+			segments, nscored, score_1_name, "Convertible", {2}
+		)
+		rivalry.convertible_to_right._points.y = in_group(
+			segments, nscored, score_2_name, "Convertible", {2}
+		)
 
-		rivalry.convertible_settled._points.x = \
-			not_in_group(
-				segments, nscored, score_1_name, "Convertible", {1, 2})
-		rivalry.convertible_settled._points.y = \
-			not_in_group(
-				segments, nscored, score_2_name, "Convertible", {1, 2})
+		rivalry.convertible_settled._points.x = not_in_group(
+			segments, nscored, score_1_name, "Convertible", {1, 2}
+		)
+		rivalry.convertible_settled._points.y = not_in_group(
+			segments, nscored, score_2_name, "Convertible", {1, 2}
+		)
 
 		if bisector._direction == "Flat":
 			if rival_a.y > rival_b.y:
 				convertible_segment_names = [
-					rival_a.name, rival_b.name, "Settled"]
+					rival_a.name,
+					rival_b.name,
+					"Settled",
+				]
 			else:
 				convertible_segment_names = [
-					rival_b.name, rival_a.name, "Settled"]
+					rival_b.name,
+					rival_a.name,
+					"Settled",
+				]
 		elif rival_a.x < rival_b.x:
-			convertible_segment_names = [
-				rival_a.name, rival_b.name, "Settled"]
+			convertible_segment_names = [rival_a.name, rival_b.name, "Settled"]
 		else:
-			convertible_segment_names = [
-				rival_b.name, rival_a.name, "Settled"]
-			
+			convertible_segment_names = [rival_b.name, rival_a.name, "Settled"]
+
 		return segments, convertible_segment_names
 
 	# ------------------------------------------------------------------------
 
 	def _convertible_group_when_bisector_is_flat(
-			self, segments: pd.DataFrame,
-			each_indiv: int,
-			bisector_start_y: float,
-			score_2_name: str,
-			west: West, east: East) -> pd.DataFrame:
-			# west_start_y: float,
-			# east_start_y: float) -> pd.DataFrame:
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		bisector_start_y: float,
+		score_2_name: str,
+		west: West,
+		east: East,
+	) -> pd.DataFrame:
+		# west_start_y: float,
+		# east_start_y: float) -> pd.DataFrame:
 
-		if bisector_start_y < segments.loc[
-			each_indiv, score_2_name] < east._start.y:
+		if (
+			bisector_start_y
+			< segments.loc[each_indiv, score_2_name]
+			< east._start.y
+		):
 			segments.loc[each_indiv, "Convertible"] = 1
-		elif bisector_start_y > segments.loc[
-			each_indiv, score_2_name] > west._start.y:
+		elif (
+			bisector_start_y
+			> segments.loc[each_indiv, score_2_name]
+			> west._start.y
+		):
 			segments.loc[each_indiv, "Convertible"] = 2
 		else:
 			segments.loc[each_indiv, "Convertible"] = 3
@@ -630,41 +750,53 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _convertible_group_when_bisector_is_vertical(
-			self,
-			segments: pd.DataFrame,
-			each_indiv: int,
-			score_1_name: str,
-			bisector: Bisector,
-			west: West,
-			east: East) -> pd.DataFrame:
-
-		if bisector._start.x < segments.loc[
-			each_indiv, score_1_name] < east._start.x:
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		bisector: Bisector,
+		west: West,
+		east: East,
+	) -> pd.DataFrame:
+		if (
+			bisector._start.x
+			< segments.loc[each_indiv, score_1_name]
+			< east._start.x
+		):
 			segments.loc[each_indiv, "Convertible"] = 1
-		elif bisector._start.x > segments.loc[
-			each_indiv, score_1_name] > west._start.x:
+		elif (
+			bisector._start.x
+			> segments.loc[each_indiv, score_1_name]
+			> west._start.x
+		):
 			segments.loc[each_indiv, "Convertible"] = 2
 		else:
 			segments.loc[each_indiv, "Convertible"] = 3
 
 		return segments
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _convertible_group_when_bisector_slopes_upward(
-			self,
-			segments: pd.DataFrame,
-			each_indiv: int,
-			score_1_name: str,
-			bisector_x: float,
-			west_at_x_coord: float,
-			east_at_x_coord: float) -> pd.DataFrame:
-
-		if bisector_x < segments.loc[
-			each_indiv, score_1_name] < east_at_x_coord:
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		bisector_x: float,
+		west_at_x_coord: float,
+		east_at_x_coord: float,
+	) -> pd.DataFrame:
+		if (
+			bisector_x
+			< segments.loc[each_indiv, score_1_name]
+			< east_at_x_coord
+		):
 			segments.loc[each_indiv, "Convertible"] = 1
-		elif bisector_x > segments.loc[
-			each_indiv, score_1_name] > west_at_x_coord:
+		elif (
+			bisector_x
+			> segments.loc[each_indiv, score_1_name]
+			> west_at_x_coord
+		):
 			segments.loc[each_indiv, "Convertible"] = 2
 		else:
 			segments.loc[each_indiv, "Convertible"] = 3
@@ -674,37 +806,46 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _convertible_group_when_bisector_slopes_downward(
-			self,
-			segments: pd.DataFrame,
-			each_indiv: int,
-			score_1_name: str,
-			bisector_x: float,
-			west_at_x_coord: float,
-			east_at_x_coord: float) -> pd.DataFrame:
-
-		if bisector_x < segments.loc[
-			each_indiv, score_1_name] < east_at_x_coord:
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		bisector_x: float,
+		west_at_x_coord: float,
+		east_at_x_coord: float,
+	) -> pd.DataFrame:
+		if (
+			bisector_x
+			< segments.loc[each_indiv, score_1_name]
+			< east_at_x_coord
+		):
 			segments.loc[each_indiv, "Convertible"] = 1
-		elif bisector_x > segments.loc[
-			each_indiv, score_1_name] > west_at_x_coord:
+		elif (
+			bisector_x
+			> segments.loc[each_indiv, score_1_name]
+			> west_at_x_coord
+		):
 			segments.loc[each_indiv, "Convertible"] = 2
 		else:
 			segments.loc[each_indiv, "Convertible"] = 3
 
 		return segments
-	
+
 	# -----------------------------------------------------------------------
 
 	def assign_to_core_segments(
-			self,
-			segments: pd.DataFrame,
-			score_1_name: str, score_2_name: str,
-			rival_a: Point, rival_b: Point,
-			bisector: Bisector,
-			point_coords: pd.DataFrame,
-			hor_dim: str, vert_dim: str,
-			nscored: int) -> tuple[pd.DataFrame, list[str]]:
-
+		self,
+		segments: pd.DataFrame,
+		score_1_name: str,
+		score_2_name: str,
+		rival_a: Point,
+		rival_b: Point,
+		bisector: Bisector,
+		point_coords: pd.DataFrame,
+		hor_dim: str,
+		vert_dim: str,
+		nscored: int,
+	) -> tuple[pd.DataFrame, list[str]]:
 		# point_names = self._director.configuration_active.point_names
 
 		core_radius = self._director.rivalry.core_radius
@@ -716,14 +857,14 @@ class Rivalry:
 				left_y = point_coords.iloc[rival_a.index, vert_dim]
 				right_x = point_coords.iloc[rival_b.index, hor_dim]
 				right_y = point_coords.iloc[rival_b.index, vert_dim]
-				core_segment_names = [rival_a.name,	"Neither",rival_b.name]
+				core_segment_names = [rival_a.name, "Neither", rival_b.name]
 			else:
 				# here if rival a is NOT higher vertically than rival b
 				left_x = point_coords.iloc[rival_b.index, hor_dim]
 				left_y = point_coords.iloc[rival_b.index, vert_dim]
 				right_x = point_coords.iloc[rival_a.index, hor_dim]
 				right_y = point_coords.iloc[rival_a.index, vert_dim]
-				core_segment_names = [rival_b.name,	"Neither", rival_a.name]
+				core_segment_names = [rival_b.name, "Neither", rival_a.name]
 		# here if bisector is NOT Flat
 		elif rival_a.x < rival_b.x:
 			# here if rival a is more westward than rival b
@@ -744,9 +885,11 @@ class Rivalry:
 			target_x = segments.loc[each_indiv, score_1_name]
 			target_y = segments.loc[each_indiv, score_2_name]
 			dist_to_left = self.calculate_distance_between_points(
-				Point(left_x, left_y), Point(target_x, target_y))
+				Point(left_x, left_y), Point(target_x, target_y)
+			)
 			dist_to_right = self.calculate_distance_between_points(
-				Point(right_x, right_y), Point(target_x, target_y))
+				Point(right_x, right_y), Point(target_x, target_y)
+			)
 			#
 			if dist_to_left < core_radius:
 				segments.loc[each_indiv, "Core"] = 1
@@ -763,63 +906,79 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def assign_to_battleground_segments(
-			self,
-			segments: pd.DataFrame,
-			score_1_name: str, score_2_name: str,
-			bisector: Bisector, west: West, east: East,
-			nscored: int) -> pd.DataFrame:
-
+		self,
+		segments: pd.DataFrame,
+		score_1_name: str,
+		score_2_name: str,
+		bisector: Bisector,
+		west: West,
+		east: East,
+		nscored: int,
+	) -> pd.DataFrame:
 		if self._director.common.have_scores():
 			self.battleground_segment_people_points = PeoplePoints(
-				self.battleground_segment._x, self.battleground_segment._y)
+				self.battleground_segment._x, self.battleground_segment._y
+			)
 			self.battleground_settled_people_points = PeoplePoints([], [])
-		
+
 		rivalry = self._director.rivalry
 		in_group = self._director.common.in_group
 		for each_indiv in range(nscored):
 			west_at_x_coord = (
-				segments.loc[each_indiv, score_2_name]
-				- west._intercept) / west._slope
+				segments.loc[each_indiv, score_2_name] - west._intercept
+			) / west._slope
 			east_at_x_coord = (
-				segments.loc[each_indiv, score_2_name]
-				- east._intercept) / east._slope
+				segments.loc[each_indiv, score_2_name] - east._intercept
+			) / east._slope
 			if bisector._direction == "Flat":
-				if east._intercept \
-					< segments.loc[each_indiv, score_2_name] \
-					< west._intercept:
+				if (
+					east._intercept
+					< segments.loc[each_indiv, score_2_name]
+					< west._intercept
+				):
 					segments.loc[each_indiv, "Battle_ground"] = 1
 				else:
 					segments.loc[each_indiv, "Battle_ground"] = 2
 			elif bisector._direction == "Vertical":
-				if east._start.x \
-					> segments.loc[each_indiv, score_1_name] \
-					> west._start.x:
+				if (
+					east._start.x
+					> segments.loc[each_indiv, score_1_name]
+					> west._start.x
+				):
 					segments.loc[each_indiv, "Battle_ground"] = 1
 				else:
 					segments.loc[each_indiv, "Battle_ground"] = 2
 			elif bisector._direction == "Upward slope":
-				if east_at_x_coord \
-					> segments.loc[each_indiv, score_1_name] \
-					> west_at_x_coord:
+				if (
+					east_at_x_coord
+					> segments.loc[each_indiv, score_1_name]
+					> west_at_x_coord
+				):
 					segments.loc[each_indiv, "Battle_ground"] = 1
 				else:
 					segments.loc[each_indiv, "Battle_ground"] = 2
 			elif bisector._direction == "Downward slope":
-				if east_at_x_coord \
-					> segments.loc[each_indiv, score_1_name] \
-					> west_at_x_coord:  # switched side twice
+				if (
+					east_at_x_coord
+					> segments.loc[each_indiv, score_1_name]
+					> west_at_x_coord
+				):  # switched side twice
 					segments.loc[each_indiv, "Battle_ground"] = 1
 				else:
 					segments.loc[each_indiv, "Battle_ground"] = 2
-				
-		rivalry.battleground_segment._points.x = \
-			in_group(segments, nscored, score_1_name, "Battle_ground", {1})
-		rivalry.battleground_segment._points.y = \
-			in_group(segments, nscored, score_2_name, "Battle_ground", {1})
-		rivalry.battleground_settled._points.x = \
-			in_group(segments, nscored, score_1_name, "Battle_ground", {2})
-		rivalry.battleground_settled._points.y = \
-			in_group(segments, nscored, score_2_name, "Battle_ground", {2})
+
+		rivalry.battleground_segment._points.x = in_group(
+			segments, nscored, score_1_name, "Battle_ground", {1}
+		)
+		rivalry.battleground_segment._points.y = in_group(
+			segments, nscored, score_2_name, "Battle_ground", {1}
+		)
+		rivalry.battleground_settled._points.x = in_group(
+			segments, nscored, score_1_name, "Battle_ground", {2}
+		)
+		rivalry.battleground_settled._points.y = in_group(
+			segments, nscored, score_2_name, "Battle_ground", {2}
+		)
 
 		battleground_segment_names = ["Battleground", "Settled"]
 
@@ -828,17 +987,17 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def assign_to_first_and_second_dimension_segments(
-			self,
-			segments: pd.DataFrame,
-			score_1_name: str,
-			score_2_name: str,
-			rival_a: Point,
-			rival_b: Point,
-			bisector: Bisector,
-			first_div: float,
-			second_div: float,
-			nscored: int) -> tuple[pd.DataFrame, list[str], list[str]]:
-
+		self,
+		segments: pd.DataFrame,
+		score_1_name: str,
+		score_2_name: str,
+		rival_a: Point,
+		rival_b: Point,
+		bisector: Bisector,
+		first_div: float,
+		second_div: float,
+		nscored: int,
+	) -> tuple[pd.DataFrame, list[str], list[str]]:
 		rivalry = self._director.rivalry
 		in_group = self._director.common.in_group
 		for each_indiv in range(nscored):
@@ -853,25 +1012,33 @@ class Rivalry:
 				segments.loc[each_indiv, "Second"] = 1
 			else:
 				segments.loc[each_indiv, "Second"] = 2
-		
-		rivalry.first_left._points.x \
-			= in_group(segments, nscored, score_1_name, "First", {1})
-		rivalry.first_left._points.y \
-			= in_group(segments, nscored, score_2_name, "First", {1})
-		rivalry.first_right._points.x \
-			= in_group(segments, nscored, score_1_name, "First", {2})
-		rivalry.first_right._points.y \
-			= in_group(segments, nscored, score_2_name, "First", {2})
 
-		rivalry.second_up._points.x \
-			= in_group(segments, nscored, score_1_name, "Second", {1})
-		rivalry.second_up._points.y \
-			= in_group(segments, nscored, score_2_name, "Second", {1})
-		rivalry.second_down._points.x \
-			= in_group(segments, nscored, score_1_name, "Second", {2})
-		rivalry.second_down._points.y \
-			= in_group(segments, nscored, score_2_name, "Second", {2})
-		
+		rivalry.first_left._points.x = in_group(
+			segments, nscored, score_1_name, "First", {1}
+		)
+		rivalry.first_left._points.y = in_group(
+			segments, nscored, score_2_name, "First", {1}
+		)
+		rivalry.first_right._points.x = in_group(
+			segments, nscored, score_1_name, "First", {2}
+		)
+		rivalry.first_right._points.y = in_group(
+			segments, nscored, score_2_name, "First", {2}
+		)
+
+		rivalry.second_up._points.x = in_group(
+			segments, nscored, score_1_name, "Second", {1}
+		)
+		rivalry.second_up._points.y = in_group(
+			segments, nscored, score_2_name, "Second", {1}
+		)
+		rivalry.second_down._points.x = in_group(
+			segments, nscored, score_1_name, "Second", {2}
+		)
+		rivalry.second_down._points.y = in_group(
+			segments, nscored, score_2_name, "Second", {2}
+		)
+
 		if bisector._direction == "Flat":
 			if rival_a.y > rival_b.y:
 				first_segment_names = [rival_a.name, rival_b.name]
@@ -885,55 +1052,70 @@ class Rivalry:
 		else:
 			first_segment_names = [rival_b.name, rival_a.name]
 			second_segment_names = [rival_b.name, rival_a.name]
-			
+
 		return segments, first_segment_names, second_segment_names
 
 	# ------------------------------------------------------------------------
 
 	def calculate_segment_percentages(
-			self,
-			segments: pd.DataFrame) -> SegmentPercentages:
-		
+		self, segments: pd.DataFrame
+	) -> SegmentPercentages:
 		# tuple[float, float, float, float, float, float, float]:
 
 		#
 		# gets percent for codes appearing in series
 		# will not return 0.0 if code does not appear in series
 		#
-		base_pcts = segments.value_counts(
-			"Base", normalize=True, sort=False) * 100
-		conv_pcts = segments.value_counts(
-			"Convertible", normalize=True, sort=False) * 100
-		core_pcts = segments.value_counts(
-			"Core", normalize=True, sort=False) * 100
-		likely_pcts = segments.value_counts(
-			"Likely", normalize=True, sort=False) * 100
-		battleground_pcts = segments.value_counts(
-			"Battle_ground", normalize=True, sort=False) * 100
-		first_pcts = segments.value_counts(
-			"First", normalize=True, sort=False) * 100
-		second_pcts = segments.value_counts(
-			"Second", normalize=True, sort=False) * 100
+		base_pcts = (
+			segments.value_counts("Base", normalize=True, sort=False) * 100
+		)
+		conv_pcts = (
+			segments.value_counts("Convertible", normalize=True, sort=False)
+			* 100
+		)
+		core_pcts = (
+			segments.value_counts("Core", normalize=True, sort=False) * 100
+		)
+		likely_pcts = (
+			segments.value_counts("Likely", normalize=True, sort=False) * 100
+		)
+		battleground_pcts = (
+			segments.value_counts("Battle_ground", normalize=True, sort=False)
+			* 100
+		)
+		first_pcts = (
+			segments.value_counts("First", normalize=True, sort=False) * 100
+		)
+		second_pcts = (
+			segments.value_counts("Second", normalize=True, sort=False) * 100
+		)
 		#
 		# Needed to capture any code that does not appear in pcts
 		# ensures percent is 0.0 for any missing code
 		#
 		for i in range(1, 4):
 			base_pcts = base_pcts.reindex(
-				base_pcts.index.union([i]), fill_value=0.0)
+				base_pcts.index.union([i]), fill_value=0.0
+			)
 			conv_pcts = conv_pcts.reindex(
-				conv_pcts.index.union([i]), fill_value=0.0)
+				conv_pcts.index.union([i]), fill_value=0.0
+			)
 			core_pcts = core_pcts.reindex(
-				core_pcts.index.union([i]), fill_value=0.0)
+				core_pcts.index.union([i]), fill_value=0.0
+			)
 		for i in range(1, 2):
 			likely_pcts = likely_pcts.reindex(
-				likely_pcts.index.union([i]), fill_value=0.0)
+				likely_pcts.index.union([i]), fill_value=0.0
+			)
 			battleground_pcts = battleground_pcts.reindex(
-				battleground_pcts.index.union([i]), fill_value=0.0)
+				battleground_pcts.index.union([i]), fill_value=0.0
+			)
 			first_pcts = first_pcts.reindex(
-				first_pcts.index.union([i]), fill_value=0.0)
+				first_pcts.index.union([i]), fill_value=0.0
+			)
 			second_pcts = second_pcts.reindex(
-				second_pcts.index.union([i]), fill_value=0.0)
+				second_pcts.index.union([i]), fill_value=0.0
+			)
 		#
 		# Ensures order of pcts
 		#
@@ -945,19 +1127,22 @@ class Rivalry:
 		first_pcts.sort_index(inplace=True)
 		second_pcts.sort_index(inplace=True)
 
-		
 		return SegmentPercentages(
-			base_pcts, conv_pcts, core_pcts, likely_pcts,
-			battleground_pcts, first_pcts, second_pcts)
+			base_pcts,
+			conv_pcts,
+			core_pcts,
+			likely_pcts,
+			battleground_pcts,
+			first_pcts,
+			second_pcts,
+		)
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def calculate_distance_between_points(
-			self,
-			a_point: Point,
-			b_point: Point) -> float:
-
-		""" Distance between points function - calculates distance between
+		self, a_point: Point, b_point: Point
+	) -> float:
+		"""Distance between points function - calculates distance between
 		two points.
 		"""
 		#
@@ -975,16 +1160,16 @@ class Rivalry:
 	@staticmethod
 	def choose_a_side_function() -> tuple[str, str]:
 		"""The choose a side function - randomly chooses a side.
-			\nIf a line goes through a corner this randomly assigns it as going
-			through one side.
-			\nArguments -
-			\nNone
-			\nReturned variables -
-			\nside_1:  "Yes" or "No" indicating the line will be considered
-			as going through side_1
-			\nside_2: "Yes" or "No" indicating whether the line will be
-			considered as going through side_2
-			"""
+		\nIf a line goes through a corner this randomly assigns it as going
+		through one side.
+		\nArguments -
+		\nNone
+		\nReturned variables -
+		\nside_1:  "Yes" or "No" indicating the line will be considered
+		as going through side_1
+		\nside_2: "Yes" or "No" indicating whether the line will be
+		considered as going through side_2
+		"""
 		#
 		# randomly set first to be true or false
 		#
@@ -1001,47 +1186,51 @@ class Rivalry:
 		# --------------------------------------------------------------------
 
 	def dividers(
-			self,
-			source: PeoplePoints,
-			rival_a: Point,
-			rival_b: Point) -> None:
+		self, source: PeoplePoints, rival_a: Point, rival_b: Point
+	) -> None:
 		"""Determines the point on each dimension that separates rivals
-			on that dimension
-			"""
+		on that dimension
+		"""
 
 		point_coords = source.point_coords
 
-		diff_first = point_coords.iloc[rival_b.index, 0] \
+		diff_first = (
+			point_coords.iloc[rival_b.index, 0]
 			- point_coords.iloc[rival_a.index, 0]
-		diff_second = point_coords.iloc[rival_b.index, 1] \
+		)
+		diff_second = (
+			point_coords.iloc[rival_b.index, 1]
 			- point_coords.iloc[rival_a.index, 1]
-		sq_first = diff_first ** 2
-		sq_second = diff_second ** 2
+		)
+		sq_first = diff_first**2
+		sq_second = diff_second**2
 		half_first = math.sqrt(sq_first) / 2
 		half_second = math.sqrt(sq_second) / 2
 		min_first = min(
 			point_coords.iloc[rival_a.index, 0],
-			point_coords.iloc[rival_b.index, 0])
+			point_coords.iloc[rival_b.index, 0],
+		)
 		min_second = min(
 			point_coords.iloc[rival_a.index, 1],
-			point_coords.iloc[rival_b.index, 1])
+			point_coords.iloc[rival_b.index, 1],
+		)
 		first_div = min_first + half_first
 		second_div = min_second + half_second
 
 		self.first_div = first_div
 		self.second_div = second_div
-		
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _establish_slope_and_cross_points(
-			self,
-			rival_a: Point,
-			rival_b: Point,
-			battleground_percent: float,
-			point_coords: pd.DataFrame) -> tuple[float, float]:
-		
+		self,
+		rival_a: Point,
+		rival_b: Point,
+		battleground_percent: float,
+		point_coords: pd.DataFrame,
+	) -> tuple[float, float]:
 		mid_point = self.mid_point
 		point_1 = self.point_1
 		point_2 = self.point_2
@@ -1050,60 +1239,62 @@ class Rivalry:
 		first_cross = self.first_cross
 		second_cross = self.second_cross
 
-		self._determine_connector_mid_point(
-			rival_a,
-			rival_b)
+		self._determine_connector_mid_point(rival_a, rival_b)
 
-		slope = self._determine_connector_slope(
-			rival_a,
-			rival_b)
-		
+		slope = self._determine_connector_slope(rival_a, rival_b)
+
 		connector_threshold = battleground_percent / 2.0
 
 		self._director.common.set_axis_extremes_based_on_coordinates(
-			point_coords)
+			point_coords
+		)
 
 		if abs(slope) < self.EPSILON:
 			bisector_slope = float("inf")
 		else:
 			bisector_slope = -1 / slope
-		
-		(diff_x, diff_y, east_cross, west_cross) = \
+
+		(diff_x, diff_y, east_cross, west_cross) = (
 			self._determine_east_and_west_cross_points(
-			rival_a, rival_b,
-			mid_point, connector_threshold,
-			point_1, point_2, east_cross, west_cross)
-		
-		(first_cross, second_cross) = \
+				rival_a,
+				rival_b,
+				mid_point,
+				connector_threshold,
+				point_1,
+				point_2,
+				east_cross,
+				west_cross,
+			)
+		)
+
+		(first_cross, second_cross) = (
 			self._determine_first_and_second_cross_points(
-			diff_x, diff_y, first_cross, second_cross)
-	
+				diff_x, diff_y, first_cross, second_cross
+			)
+		)
+
 		self.east_cross = east_cross
 		self.west_cross = west_cross
 		self.first_cross = first_cross
 		self.second_cross = second_cross
-		
-		return (
-			slope,
-			bisector_slope)
+
+		return (slope, bisector_slope)
 
 	# ------------------------------------------------------------------------
 
-	def _determine_connector_mid_point(self,
-			rival_a: Point,
-			rival_b: Point) -> None:
+	def _determine_connector_mid_point(
+		self, rival_a: Point, rival_b: Point
+	) -> None:
+		self.mid_point.x = (rival_b.x + rival_a.x) / 2.0
+		self.mid_point.y = (rival_b.y + rival_a.y) / 2.0
 
-		self.mid_point.x = ((rival_b.x + rival_a.x) / 2.0)
-		self.mid_point.y = ((rival_b.y + rival_a.y) / 2.0)
-		
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _determine_connector_slope(self,
-			rival_a: Point,
-			rival_b: Point) -> float:
-
+	def _determine_connector_slope(
+		self, rival_a: Point, rival_b: Point
+	) -> float:
 		dx = rival_b.x - rival_a.x
 		if abs(dx) < self.EPSILON:
 			slope = float("inf")
@@ -1114,22 +1305,24 @@ class Rivalry:
 
 	# ------------------------------------------------------------------------
 
-	def _determine_east_and_west_cross_points(self,
-			rival_a: Point,
-			rival_b: Point,
-			mid_point: Point,
-			connector_threshold: float,
-			point_1: Point, point_2: Point,
-			east_cross: Point, west_cross: Point) -> tuple[
-				float, float, Point, Point]:
-
+	def _determine_east_and_west_cross_points(
+		self,
+		rival_a: Point,
+		rival_b: Point,
+		mid_point: Point,
+		connector_threshold: float,
+		point_1: Point,
+		point_2: Point,
+		east_cross: Point,
+		west_cross: Point,
+	) -> tuple[float, float, Point, Point]:
 		diff_x = rival_b.x - rival_a.x
 		diff_y = rival_b.y - rival_a.y
 
 		point_1.x = mid_point.x - (connector_threshold * diff_x)
-		point_1.y =	mid_point.y - (connector_threshold * diff_y)
+		point_1.y = mid_point.y - (connector_threshold * diff_y)
 		point_2.x = mid_point.x + (connector_threshold * diff_x)
-		point_2.y =	mid_point.y + (connector_threshold * diff_y)
+		point_2.y = mid_point.y + (connector_threshold * diff_y)
 
 		if point_1.x < point_2.x:
 			west_cross.x = point_1.x
@@ -1146,10 +1339,13 @@ class Rivalry:
 
 	# ------------------------------------------------------------------------
 
-	def _determine_first_and_second_cross_points(self,
-			diff_x: float, diff_y: float,
-			first_cross: Point, second_cross: Point) -> tuple[Point, Point]:
-		
+	def _determine_first_and_second_cross_points(
+		self,
+		diff_x: float,
+		diff_y: float,
+		first_cross: Point,
+		second_cross: Point,
+	) -> tuple[Point, Point]:
 		first_cross.x = diff_x
 		first_cross.y = 0.0
 		second_cross.x = 0.0
@@ -1160,30 +1356,32 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def create_or_revise_rivalry_attributes(
-			self,
-			director: Status, # noqa: ARG002
-			common: Spaces) -> None:
-		
+		self,
+		director: Status,  # noqa: ARG002
+		common: Spaces,
+	) -> None:
 		if not common.have_reference_points():
 			return
 
 		self.set_line_attributes_based_on_location_of_rivals(
-				self._director, common)
+			self._director, common
+		)
 
 		self.set_region_attributes_based_on_location_of_rivals(
-			self._director, common)
+			self._director, common
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _establish_lines_defining_contest_and_segments(
-			self,
-			rival_a: Point,
-			rival_b: Point,
-			point_coords: pd.DataFrame,
-			battleground_percent: float) -> None:
-
+		self,
+		rival_a: Point,
+		rival_b: Point,
+		point_coords: pd.DataFrame,
+		battleground_percent: float,
+	) -> None:
 		mid_point = self.mid_point
 		east_cross = self.east_cross
 		west_cross = self.west_cross
@@ -1193,30 +1391,60 @@ class Rivalry:
 		# calculation of slope , extremes, and connector_threshold need to
 		# precede use of
 		# classes sub classed fromLineInPlot()
-		(slope, bisector_slope) = \
-			self._establish_slope_and_cross_points(
-				rival_a, rival_b,
-				battleground_percent, point_coords)
-		
+		(slope, bisector_slope) = self._establish_slope_and_cross_points(
+			rival_a, rival_b, battleground_percent, point_coords
+		)
+
 		self.connector = Connector(
-			self._director, mid_point, slope,
-			rival_a, rival_b,
-			style="solid", color="black", thickness=1)
+			self._director,
+			mid_point,
+			slope,
+			rival_a,
+			rival_b,
+			style="solid",
+			color="black",
+			thickness=1,
+		)
 		self.bisector = Bisector(
-			self._director, mid_point, bisector_slope,
-			style="solid", color="black", thickness=1)
+			self._director,
+			mid_point,
+			bisector_slope,
+			style="solid",
+			color="black",
+			thickness=1,
+		)
 		self.west = West(
-			self._director, west_cross, bisector_slope,
-			style="solid", color="black", thickness=1)
+			self._director,
+			west_cross,
+			bisector_slope,
+			style="solid",
+			color="black",
+			thickness=1,
+		)
 		self.east = East(
-			self._director, east_cross, bisector_slope,
-			style="solid", color="black", thickness=1)
+			self._director,
+			east_cross,
+			bisector_slope,
+			style="solid",
+			color="black",
+			thickness=1,
+		)
 		self.first = First(
-			self._director, first_cross, self.EPSILON,
-			style="solid", color="black", thickness=1)
+			self._director,
+			first_cross,
+			self.EPSILON,
+			style="solid",
+			color="black",
+			thickness=1,
+		)
 		self.second = Second(
-			self._director, second_cross, 1,
-			style="solid", color="black", thickness=1)
+			self._director,
+			second_cross,
+			1,
+			style="solid",
+			color="black",
+			thickness=1,
+		)
 
 		self.west_cross = west_cross
 		self.east_cross = east_cross
@@ -1226,9 +1454,8 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def set_line_attributes_based_on_location_of_rivals(
-			self,
-			director: Status,
-			common: Spaces) -> None: # noqa: ARG002
+		self, director: Status, common: Spaces
+	) -> None:  # noqa: ARG002
 		"""
 		This function establishes the attributes of the connector,
 		the bisector,
@@ -1276,31 +1503,28 @@ class Rivalry:
 		point_coords = director.configuration_active.point_coords
 		rival_a = self.rival_a
 		rival_b = self.rival_b
-		
+
 		rival_a.x = point_coords.iloc[rival_a.index, 0]
 		rival_a.y = point_coords.iloc[rival_a.index, 1]
 		rival_b.x = point_coords.iloc[rival_b.index, 0]
 		rival_b.y = self._director.configuration_active.point_coords.iloc[
-				rival_b.index, 1]
+			rival_b.index, 1
+		]
 
 		battleground_percent = self._director.common.battleground_size
-	
 
 		self._establish_lines_defining_contest_and_segments(
-				rival_a, rival_b,
-				point_coords, battleground_percent)
+			rival_a, rival_b, point_coords, battleground_percent
+		)
 
-		(slope, bisector_slope) = \
-			self._establish_slope_and_cross_points(
-				rival_a, rival_b,
-				battleground_percent,
-				point_coords)
+		(slope, bisector_slope) = self._establish_slope_and_cross_points(
+			rival_a, rival_b, battleground_percent, point_coords
+		)
 
 		show_bisector = self._director.common.show_bisector
 		show_connector = self._director.common.show_connector
 
-		self.dividers(director.configuration_active,
-			rival_a, rival_b)
+		self.dividers(director.configuration_active, rival_a, rival_b)
 		if self._director.common.have_reference_points():
 			show_bisector = True
 			show_connector = True
@@ -1321,10 +1545,8 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def set_region_attributes_based_on_location_of_rivals(
-			self,
-			director: Status,
-			common: Spaces) -> None: # noqa: ARG002
-
+		self, director: Status, common: Spaces
+	) -> None:  # noqa: ARG002
 		point_coords = director.configuration_active.point_coords
 		rival_a = self.rival_a
 		rival_b = self.rival_b
@@ -1338,16 +1560,15 @@ class Rivalry:
 
 		self._establish_regions_defining_contest_and_segments()
 		# 	battleground_percent)
-		
+
 		return
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _create_core_regions(self) -> None:
-		
 		hor_dim = self._director.common.hor_dim
 		vert_dim = self._director.common.vert_dim
-		
+
 		point_coords = self._director.configuration_active.point_coords
 		rivalry = self._director.rivalry
 		rival_a = rivalry.rival_a
@@ -1355,8 +1576,10 @@ class Rivalry:
 		core_left = Point()
 		core_right = Point()
 		if self.bisector._direction == "Flat":
-			if point_coords.iloc[rival_a.index, vert_dim] \
-					> point_coords.iloc[rival_b.index, vert_dim]:
+			if (
+				point_coords.iloc[rival_a.index, vert_dim]
+				> point_coords.iloc[rival_b.index, vert_dim]
+			):
 				core_left.x = point_coords.iloc[rival_a.index, hor_dim]
 				core_left.y = point_coords.iloc[rival_a.index, vert_dim]
 				core_right.x = point_coords.iloc[rival_b.index, hor_dim]
@@ -1368,7 +1591,8 @@ class Rivalry:
 				core_right.y = point_coords.iloc[rival_a.index, vert_dim]
 		elif (
 			point_coords.iloc[rival_a.index, hor_dim]
-			> point_coords.iloc[rival_b.index, hor_dim]):
+			> point_coords.iloc[rival_b.index, hor_dim]
+		):
 			core_left.x = point_coords.iloc[rival_b.index, hor_dim]
 			core_left.y = point_coords.iloc[rival_b.index, vert_dim]
 			core_right.x = point_coords.iloc[rival_a.index, hor_dim]
@@ -1378,7 +1602,7 @@ class Rivalry:
 			core_left.y = point_coords.iloc[rival_a.index, vert_dim]
 			core_right.x = point_coords.iloc[rival_b.index, hor_dim]
 			core_right.y = point_coords.iloc[rival_b.index, vert_dim]
-	
+
 		core_left_center = Point(core_left.x, core_left.y)
 		core_right_center = Point(core_right.x, core_right.y)
 		core_radius = self.core_radius
@@ -1393,36 +1617,35 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _create_base_regions(self) -> None:
-		
-		self._determine_vertices_of_base_regions(
-			self.west, self.east)
+		self._determine_vertices_of_base_regions(self.west, self.east)
 
 		self.base_left.vertices = CoordinateLists(
-			x=self.base_left._x, y=self.base_left._y)
+			x=self.base_left._x, y=self.base_left._y
+		)
 		self.base_right.vertices = CoordinateLists(
-			x=self.base_right._x, y=self.base_right._y)
-		self.base_neither.vertices = CoordinateLists(
-			x=[], y=[])
-		
+			x=self.base_right._x, y=self.base_right._y
+		)
+		self.base_neither.vertices = CoordinateLists(x=[], y=[])
+
 		if self._director.common.have_scores():
 			self.base_left_people_points = PeoplePoints(
-				self.base_left._x, self.base_left._y)
+				self.base_left._x, self.base_left._y
+			)
 			self.base_right_people_points = PeoplePoints(
-				self.base_right._x, self.base_right._y)
+				self.base_right._x, self.base_right._y
+			)
 			self.base_neither_people_points = PeoplePoints([], [])
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _determine_vertices_of_base_regions(
-			self,
-			west: West,
-			east: East) -> None:
-
+		self, west: West, east: East
+	) -> None:
 		base_left = self.base_left
 		base_right = self.base_right
-		
+
 		base_left.outline = self._west_base(west)
 		base_right.outline = self._east_base(east)
 
@@ -1436,12 +1659,12 @@ class Rivalry:
 
 		return
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _west_base(self, west: West) -> np.array:
-		
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 		# WEST
 		#
 		west_dict = {
@@ -1450,72 +1673,92 @@ class Rivalry:
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[hor_max, vert_min],
-					[hor_min, vert_min]]),
+					[hor_min, vert_min],
+				]
+			),
 			"0b": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
-					[hor_min, vert_min], [hor_min, vert_max]]),
+					[hor_min, vert_min],
+					[hor_min, vert_max],
+				]
+			),
 			"Ia": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[hor_max, vert_max],
-					[hor_min, vert_max]]),
+					[hor_min, vert_max],
+				]
+			),
 			"IIa": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
-					[hor_min, vert_max]]),
+					[hor_min, vert_max],
+				]
+			),
 			"IIIa": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[hor_max, vert_max],
 					[hor_min, vert_max],
-					[hor_min, vert_min]]),
+					[hor_min, vert_min],
+				]
+			),
 			"IVa": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[hor_min, vert_max],
-					[hor_min, vert_min]]),
+					[hor_min, vert_min],
+				]
+			),
 			"Ib": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[hor_max, vert_min],
-					[hor_min, vert_min]]),
+					[hor_min, vert_min],
+				]
+			),
 			"IIb": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
-					[hor_min, vert_min]]),
+					[hor_min, vert_min],
+				]
+			),
 			"IIIb": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[hor_max, vert_min],
 					[hor_min, vert_min],
-					[hor_min, vert_max]]),
+					[hor_min, vert_max],
+				]
+			),
 			"IVb": np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[hor_min, vert_min],
-					[hor_min, vert_max]])
+					[hor_min, vert_max],
+				]
+			),
 		}
 		base_left_vertices = west_dict[west._case]
 		#
 		return base_left_vertices
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _east_base(self, east: East) -> np.array:
-
-		
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		# EAST
 		#
@@ -1525,59 +1768,79 @@ class Rivalry:
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
 					[hor_max, vert_max],
-					[hor_min, vert_max]]),
+					[hor_min, vert_max],
+				]
+			),
 			"0b": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
 					[hor_max, vert_min],
-					[hor_max, vert_max]]),
+					[hor_max, vert_max],
+				]
+			),
 			"Ia": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
 					[hor_max, vert_min],
-					[hor_min, vert_min]]),
+					[hor_min, vert_min],
+				]
+			),
 			"IIa": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
 					[hor_max, vert_max],
 					[hor_max, vert_min],
-					[hor_min, vert_min]]),
-			"IIIa":	np.array(
+					[hor_min, vert_min],
+				]
+			),
+			"IIIa": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
-					[hor_max, vert_min]]),
+					[hor_max, vert_min],
+				]
+			),
 			"IVa": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
 					[hor_max, vert_max],
-					[hor_max, vert_min]]),
+					[hor_max, vert_min],
+				]
+			),
 			"Ib": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
 					[hor_max, vert_max],
-					[hor_min, vert_max]]),
+					[hor_min, vert_max],
+				]
+			),
 			"IIb": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
-					[hor_min, vert_min]]),
+					[hor_min, vert_min],
+				]
+			),
 			"IIIb": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
-					[hor_max, vert_max]]),
+					[hor_max, vert_max],
+				]
+			),
 			"IVb": np.array(
 				[
 					[east._start.x, east._start.y],
 					[east._end.x, east._end.y],
 					[hor_max, vert_min],
-					[hor_max, vert_max]])
+					[hor_max, vert_max],
+				]
+			),
 		}
 		base_right_vertices = east_dict[east._case]
 		#
@@ -1586,482 +1849,572 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _create_likely_regions(self) -> None:
-		
 		self._determine_vertices_of_likely_regions()
 
 		self.likely_left.vertices = CoordinateLists(
-			x=self.likely_left._x, y=self.likely_left._y)
+			x=self.likely_left._x, y=self.likely_left._y
+		)
 		self.likely_right.vertices = CoordinateLists(
-			x=self.likely_right._x, y=self.likely_right._y)
+			x=self.likely_right._x, y=self.likely_right._y
+		)
 
 		if self._director.common.have_scores():
 			self.likely_left_people_points = PeoplePoints(
-				self.likely_left._x, self.likely_left._y)
+				self.likely_left._x, self.likely_left._y
+			)
 			self.likely_right_people_points = PeoplePoints(
-				self.likely_right._x, self.likely_right._y)
+				self.likely_right._x, self.likely_right._y
+			)
 
 		return
-	
+
 	# ------------------------------------------------------------------------
 
 	def _determine_vertices_of_likely_regions(self) -> None:
-
 		bisector = self.bisector
 
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		likely_left = self.likely_left
 		likely_right = self.likely_right
-		
+
 		match bisector._case:
 			case "0a":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[hor_min, vert_max]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_min],
-					[hor_min, vert_min]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+						[hor_min, vert_max],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_min],
+						[hor_min, vert_min],
+					]
+				)
 			#
 			# Bisector Case 0b Bisector is vertical - from top to bottom
 			#
 			case "0b":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_min],
-					[hor_max, vert_max]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_min, vert_min],
-					[hor_min, vert_max]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_min],
+						[hor_max, vert_max],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_min, vert_min],
+						[hor_min, vert_max],
+					]
+				)
 			#
 			# Bisector Case Ia Positive slope from Left side to Right side
 			# and min_y > vert_min
 			#
 			case "Ia":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_min],
-					[hor_min, vert_min]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[hor_min, vert_max]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_min],
+						[hor_min, vert_min],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+						[hor_min, vert_max],
+					]
+				)
 			#
 			# Bisector Case IIa Positive slope from Left side to Top
 			# and max_y == vert_max
 			#
 			case "IIa":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[hor_max, vert_min],
-					[hor_min, vert_min]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_min, vert_max]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+						[hor_max, vert_min],
+						[hor_min, vert_min],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_min, vert_max],
+					]
+				)
 			#
 			# Bisector Case IIIa Positive slope from Bottom to Right side
 			#
 			case "IIIa":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[hor_max, vert_min],
-					[hor_min, vert_min]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[hor_min, vert_max],
-					[hor_min, vert_min]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+						[hor_max, vert_min],
+						[hor_min, vert_min],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+						[hor_min, vert_max],
+						[hor_min, vert_min],
+					]
+				)
 			#
 			# Bisector Case IVa Positive slope from Bottom to Top
 			# and min_x < hor_min
 			#
 			case "IVa":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[hor_max, vert_min]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_min, vert_max],
-					[hor_min, vert_min]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+						[hor_max, vert_min],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_min, vert_max],
+						[hor_min, vert_min],
+					]
+				)
 			#
 			# Bisector Case Ib Negative slope from Left side to Right side
 			#
 			case "Ib":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[hor_min, vert_max]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_min],
-					[hor_min, vert_min]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+						[hor_min, vert_max],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_min],
+						[hor_min, vert_min],
+					]
+				)
 			#
 			# Bisector Case IIb Negative slope from Left side to Bottom
 			# and min_y == vert_min
 			#
 			case "IIb":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_min],
-					[hor_max, vert_max],
-					[hor_min, vert_max]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_min, vert_min]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_min],
+						[hor_max, vert_max],
+						[hor_min, vert_max],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_min, vert_min],
+					]
+				)
 			#
 			# Bisector Case IIIb Negative slope from Top to Right side
 			# and min_x < hor_min ?????????
 			#
 			case "IIIb":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_min],
-					[hor_min, vert_min],
-					[hor_min, vert_max]
-				])
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_max],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_min],
+						[hor_min, vert_min],
+						[hor_min, vert_max],
+					]
+				)
 			#
 			# Bisector Case IVb Negative slope from Bottom to Top
 			# and max_y > vert_max  ????????????????????????
 			#
 			case "IVb":
-				likely_right.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_min],
-					[hor_max, vert_max]
-				])
-				likely_left.outline = np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_min, vert_min],
-					[hor_min, vert_max]
-				])
-		
+				likely_right.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_max, vert_min],
+						[hor_max, vert_max],
+					]
+				)
+				likely_left.outline = np.array(
+					[
+						[bisector._start.x, bisector._start.y],
+						[bisector._end.x, bisector._end.y],
+						[hor_min, vert_min],
+						[hor_min, vert_max],
+					]
+				)
+
 		# Taking transpose
 		#
 		self.likely_left.outline = likely_left.outline
 		self.likely_right.outline = likely_right.outline
-		self.likely_left._x, self.likely_left._y \
-			= likely_left.outline.T
-		self.likely_right._x, self.likely_right._y \
-			= likely_right.outline.T
+		self.likely_left._x, self.likely_left._y = likely_left.outline.T
+		self.likely_right._x, self.likely_right._y = likely_right.outline.T
 
 		return
-	
-# --------------------------------------------------------------------------
+
+	# -----------------------------------------------------------------------
 
 	def _create_battleground_regions(self) -> None:
-		
-		self._determine_vertices_of_battleground_regions(
-			self.west, self.east)
-		
+		self._determine_vertices_of_battleground_regions(self.west, self.east)
+
 		self.battleground_segment.vertices = CoordinateLists(
-			x=self.battleground_segment._x, y=self.battleground_segment._y)
-		self.battleground_settled.vertices = CoordinateLists(
-			x=[], y=[])
-		
+			x=self.battleground_segment._x, y=self.battleground_segment._y
+		)
+		self.battleground_settled.vertices = CoordinateLists(x=[], y=[])
+
 		if self._director.common.have_scores():
 			self.battleground_segment_people_points = PeoplePoints(
-				self.battleground_segment._x, self.battleground_segment._y)
+				self.battleground_segment._x, self.battleground_segment._y
+			)
 			self.battleground_settled_people_points = PeoplePoints([], [])
 
 		return
 
-# --------------------------------------------------------------------------
-	
-	def _determine_vertices_of_battleground_regions(
-			self,
-			west: West,
-			east: East) -> None:
+	# -----------------------------------------------------------------------
 
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+	def _determine_vertices_of_battleground_regions(
+		self, west: West, east: East
+	) -> None:
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		battleground_segment = self.battleground_segment
 		# battleground_settled = self.battleground_settled
-		
-		if (
-			west._right_side == east._right_side) \
-			and (west._left_side == east._left_side) \
-			and (west._top == east._top) \
-			and (west._bottom == east._bottom):
 
+		if (
+			(west._right_side == east._right_side)
+			and (west._left_side == east._left_side)
+			and (west._top == east._top)
+			and (west._bottom == east._bottom)
+		):
 			battleground_segment.outline = np.array(
 				[
 					[west._start.x, west._start.y],
 					[west._end.x, west._end.y],
 					[east._end.x, east._end.y],
-					[east._start.x, east._start.y]])
+					[east._start.x, east._start.y],
+				]
+			)
 
 		#
 		# Top Left only
-		elif \
-			(east._top and east._bottom and west._left_side
-				and west._right_side) \
-			or \
-			(east._top and east._right_side and west._left_side
-				and west._right_side):
+		elif (
+			east._top and east._bottom and west._left_side and west._right_side
+		) or (
+			east._top
+			and east._right_side
+			and west._left_side
+			and west._right_side
+		):
 			#
-			battleground_segment.outline = np.array([
-				[east._start.x, east._start.y],
-				[east._end.x, east._end.y],
-				[west._end.x, west._end.y],
-				[west._start.x, west._start.y],
-				[hor_min, vert_max]
-			])
+			battleground_segment.outline = np.array(
+				[
+					[east._start.x, east._start.y],
+					[east._end.x, east._end.y],
+					[west._end.x, west._end.y],
+					[west._start.x, west._start.y],
+					[hor_min, vert_max],
+				]
+			)
 		#
 		# Top right only
-		elif \
-			(west._top and west._bottom and east._right_side
-				and east._bottom) \
-			or \
-			(west._top and west._left_side and east._right_side
-				and east._left_side):
+		elif (
+			west._top and west._bottom and east._right_side and east._bottom
+		) or (
+			west._top
+			and west._left_side
+			and east._right_side
+			and east._left_side
+		):
 			#
-			battleground_segment.outline = np.array([
-				[west._start.x, west._start.y],
-				[west._end.x, west._end.y],
-				[hor_max, vert_max],
-				[east._end.x, east._end.y],
-				[east._start.x, east._start.y]
-			])
+			battleground_segment.outline = np.array(
+				[
+					[west._start.x, west._start.y],
+					[west._end.x, west._end.y],
+					[hor_max, vert_max],
+					[east._end.x, east._end.y],
+					[east._start.x, east._start.y],
+				]
+			)
 		#
 		# Bottom right only
-		elif \
-			(east._top and east._right_side and west._top and west._bottom) \
-			or \
-			(east._left_side and east._right_side and west._left_side
-				and west._bottom):
+		elif (
+			east._top and east._right_side and west._top and west._bottom
+		) or (
+			east._left_side
+			and east._right_side
+			and west._left_side
+			and west._bottom
+		):
 			#
-			battleground_segment.outline = np.array([
-				[west._start.x, west._start.y],
-				[west._end.x, west._end.y],
-				[hor_max, vert_min],
-				[east._end.x, east._end.y],
-				[east._start.x, east._start.y]
-			])
+			battleground_segment.outline = np.array(
+				[
+					[west._start.x, west._start.y],
+					[west._end.x, west._end.y],
+					[hor_max, vert_min],
+					[east._end.x, east._end.y],
+					[east._start.x, east._start.y],
+				]
+			)
 		#
 		# Bottom left only
-		elif \
-			(west._top and west._left_side and east._top and east._bottom) \
-			or \
-			(west._right_side and west._left_side
-				and east._right_side and east._bottom):
+		elif (
+			west._top and west._left_side and east._top and east._bottom
+		) or (
+			west._right_side
+			and west._left_side
+			and east._right_side
+			and east._bottom
+		):
 			#
-			battleground_segment.outline = np.array([
-				[west._start.x, west._start.y],
-				[west._end.x, west._end.y],
-				[east._end.x, east._end.y],
-				[east._start.x, east._start.y],
-				[hor_min, vert_min]
-			])
+			battleground_segment.outline = np.array(
+				[
+					[west._start.x, west._start.y],
+					[west._end.x, west._end.y],
+					[east._end.x, east._end.y],
+					[east._start.x, east._start.y],
+					[hor_min, vert_min],
+				]
+			)
 			#
 		# Both top right and bottom left ------ need reverse of 1 and 2 ????
-		elif \
-			(west._top and west._left_side and east._right_side
-				and east._bottom):
+		elif (
+			west._top and west._left_side and east._right_side and east._bottom
+		):
 			#
-			battleground_segment.outline = np.array([
-				[west._start.x, west._start.y],
-				[west._end.x, west._end.y],
-				[hor_max, vert_max],
-				[east._end.x, east._end.y],
-				[east._start.x, east._start.y],
-				[hor_min, vert_min]
-			])
+			battleground_segment.outline = np.array(
+				[
+					[west._start.x, west._start.y],
+					[west._end.x, west._end.y],
+					[hor_max, vert_max],
+					[east._end.x, east._end.y],
+					[east._start.x, east._start.y],
+					[hor_min, vert_min],
+				]
+			)
 		#
 		# Both top left and bottom right ------ need reverse of 1 and 2 ????
-		elif \
-			(east._top and east._right_side and west._bottom and
-				west._left_side):
+		elif (
+			east._top and east._right_side and west._bottom and west._left_side
+		):
 			#
-			battleground_segment.outline = np.array([
-				[west._start.x, west._start.y],
-				[west._end.x, west._end.y],
-				[hor_max, vert_min],
-				[east._end.x, east._end.y],
-				[east._start.x, east._start.y],
-				[hor_min, vert_max]
-			])
+			battleground_segment.outline = np.array(
+				[
+					[west._start.x, west._start.y],
+					[west._end.x, west._end.y],
+					[hor_max, vert_min],
+					[east._end.x, east._end.y],
+					[east._start.x, east._start.y],
+					[hor_min, vert_max],
+				]
+			)
 		#
 		# Taking transpose
 		#
 		self.battleground_segment.outline = battleground_segment.outline
-		self.battleground_segment._x, self.battleground_segment._y = \
+		self.battleground_segment._x, self.battleground_segment._y = (
 			battleground_segment.outline.T
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _create_convertible_regions(self) -> None:
-		
 		self._determine_vertices_of_convertible_regions(
-			self.bisector, self.west, self.east)
+			self.bisector, self.west, self.east
+		)
 		self.convertible_to_left.vertices = CoordinateLists(
-			x=self.convertible_to_left._x, y=self.convertible_to_left._y)
+			x=self.convertible_to_left._x, y=self.convertible_to_left._y
+		)
 		self.convertible_to_right.vertices = CoordinateLists(
-			x=self.convertible_to_right._x, y=self.convertible_to_right._y)
-		self.convertible_settled.vertices = CoordinateLists(
-			x=[], y=[])
-			
+			x=self.convertible_to_right._x, y=self.convertible_to_right._y
+		)
+		self.convertible_settled.vertices = CoordinateLists(x=[], y=[])
+
 		if self._director.common.have_scores():
 			self.convertible_to_left_people_points = PeoplePoints(
-				self.convertible_to_left._x, self.convertible_to_left._y)
+				self.convertible_to_left._x, self.convertible_to_left._y
+			)
 			self.convertible_to_right_people_points = PeoplePoints(
-				self.convertible_to_right._x, self.convertible_to_right._y)
-			self.convertible_settled_people_points = PeoplePoints(
-				[], [])
+				self.convertible_to_right._x, self.convertible_to_right._y
+			)
+			self.convertible_settled_people_points = PeoplePoints([], [])
 
 		return
-		
-# --------------------------------------------------------------------------
+
+	# -----------------------------------------------------------------------
 
 	def _determine_vertices_of_convertible_regions(
-			self,
-			bisector: object,
-			west: West,
-			east: East) -> None:
+		self, bisector: object, west: West, east: East
+	) -> None:
+		(
+			right_includes_upper_right,
+			right_includes_lower_right,
+			right_includes_upper_left,
+			right_includes_lower_left,
+			left_includes_lower_left,
+			left_includes_upper_left,
+			left_includes_lower_right,
+			left_includes_upper_right,
+		) = self._define_convertible_regions(bisector, west, east)
 
-		(right_includes_upper_right, right_includes_lower_right,
-			right_includes_upper_left, right_includes_lower_left,
-			left_includes_lower_left, left_includes_upper_left,
-			left_includes_lower_right, left_includes_upper_right) \
-			= self._define_convertible_regions(bisector, west, east)
+		(
+			self.convertible_to_left.outline,
+			self.convertible_to_right.outline,
+		) = self._define_convertible_vertices(
+			right_includes_upper_right,
+			right_includes_lower_right,
+			right_includes_upper_left,
+			right_includes_lower_left,
+			left_includes_lower_left,
+			left_includes_upper_left,
+			left_includes_lower_right,
+			left_includes_upper_right,
+		)
 
-		(self.convertible_to_left.outline,
-			self.convertible_to_right.outline) \
-			= self._define_convertible_vertices(
-				right_includes_upper_right, right_includes_lower_right,
-				right_includes_upper_left, right_includes_lower_left,
-				left_includes_lower_left, left_includes_upper_left,
-				left_includes_lower_right, left_includes_upper_right)
-		
 		self.convertible_to_left.outline = self.convertible_to_left.outline
 		self.convertible_to_right.outline = self.convertible_to_right.outline
 		#
 		# # Taking transpose
 		# x, y = data.T
-		self.convertible_to_left._x, self.convertible_to_left._y = \
+		self.convertible_to_left._x, self.convertible_to_left._y = (
 			self.convertible_to_left.outline.T
-		self.convertible_to_right._x, self.convertible_to_right._y = \
+		)
+		self.convertible_to_right._x, self.convertible_to_right._y = (
 			self.convertible_to_right.outline.T
+		)
 
 		return
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _define_convertible_regions(
-			self,
-			bisector: Bisector,
-			west: West,
-			east: East) -> tuple:
-
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		self, bisector: Bisector, west: West, east: East
+	) -> tuple:
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 		#
 		# Create convertible regions
 		#
-		right_includes_upper_right_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[hor_max, vert_max],
-			[west._end.x, west._end.y],
-			[west._start.x, west._start.y]
-		])
-		right_includes_lower_right_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[hor_max, vert_min],
-			[west._end.x, west._end.y],
-			[west._start.x, west._start.y]
-		])
-		right_includes_upper_left_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[west._end.x, west._end.y],
-			[west._start.x, west._start.y],
-			[hor_min, vert_max]
-		])
-		right_includes_lower_left_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[west._end.x, west._end.y],
-			[west._start.x, west._start.y],
-			[hor_min, vert_min]
-		])
-		left_includes_lower_left_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[hor_min, vert_min],
-			[east._end.x, east._end.y],
-			[east._start.x, east._start.y]
-		])
-		left_includes_upper_left_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[east._end.x, east._end.y],
-			[east._start.x, east._start.y],
-			[hor_min, vert_max]
-		])
-		left_includes_lower_right_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[hor_max, vert_min],
-			[east._end.x, east._end.y],
-			[east._start.x, east._start.y]
-		])
-		left_includes_upper_right_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[hor_max, vert_max],
-			[east._end.x, east._end.y],
-			[east._start.x, east._start.y]
-		])
+		right_includes_upper_right_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+			]
+		)
+		right_includes_lower_right_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+			]
+		)
+		right_includes_upper_left_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+				[hor_min, vert_max],
+			]
+		)
+		right_includes_lower_left_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+				[hor_min, vert_min],
+			]
+		)
+		left_includes_lower_left_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_min, vert_min],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+			]
+		)
+		left_includes_upper_left_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+				[hor_min, vert_max],
+			]
+		)
+		left_includes_lower_right_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+			]
+		)
+		left_includes_upper_right_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+			]
+		)
 		#
 		# Bisector Case 0a Bisector slope is zero from Left side to Right side
 		# Bisector Case 0b Connector slope is zero - from top to bottom
@@ -2081,20 +2434,22 @@ class Rivalry:
 			left_includes_lower_left_as_pairs,
 			left_includes_upper_left_as_pairs,
 			left_includes_lower_right_as_pairs,
-			left_includes_upper_right_as_pairs)
+			left_includes_upper_right_as_pairs,
+		)
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _define_convertible_vertices(
-			self,
-			right_includes_upper_right: np.array,
-			right_includes_lower_right: np.array,
-			right_includes_upper_left: np.array,
-			right_includes_lower_left: np.array,
-			left_includes_lower_left: np.array,
-			left_includes_upper_left: np.array,
-			left_includes_lower_right: np.array,
-			left_includes_upper_right: np.array) -> tuple:
+		self,
+		right_includes_upper_right: np.array,
+		right_includes_lower_right: np.array,
+		right_includes_upper_left: np.array,
+		right_includes_lower_left: np.array,
+		left_includes_lower_left: np.array,
+		left_includes_upper_left: np.array,
+		left_includes_lower_right: np.array,
+		left_includes_upper_right: np.array,
+	) -> tuple:
 		#
 		# Establish default areas
 		#
@@ -2103,21 +2458,26 @@ class Rivalry:
 		west = rivalry.west
 		east = rivalry.east
 
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
-		convertible_to_left_vertices_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[east._end.x, east._end.y],
-			[east._start.x, east._start.y]
-		])
-		convertible_to_right_vertices_as_pairs = np.array([
-			[bisector._start.x, bisector._start.y],
-			[bisector._end.x, bisector._end.y],
-			[west._end.x, west._end.y],
-			[west._start.x, west._start.y]
-		])
+		convertible_to_left_vertices_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+			]
+		)
+		convertible_to_right_vertices_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+			]
+		)
 		#
 		# Bisector Case 0a Bisector slope is zero from Left side to Right side
 		# Bisector Case 0b Connector slope is zero - from top to bottom
@@ -2131,14 +2491,16 @@ class Rivalry:
 				# if west.case == "Ia":					# test with FP
 				# defaults should cover this
 				if west._case == "IIa":  # test with TG
-					convertible_to_right_vertices_as_pairs = \
+					convertible_to_right_vertices_as_pairs = (
 						right_includes_upper_right
+					)
 				#
 				# if east.case == "Ia":
 				# defaults should cover this				test with BG
 				if east._case == "IIIa":  # test with TC/FP
-					convertible_to_left_vertices_as_pairs = \
+					convertible_to_left_vertices_as_pairs = (
 						left_includes_lower_left
+					)
 			#
 			# Bisector Case IIa Positive slope from Left side to Top
 			# and max_y == vert_max
@@ -2147,48 +2509,57 @@ class Rivalry:
 				# if west.case == "IIa":
 				# defaults should cover this					test with TG
 				if east._case == "Ia":  # test with  BK
-					convertible_to_left_vertices_as_pairs = \
+					convertible_to_left_vertices_as_pairs = (
 						left_includes_upper_right
+					)
 				# elif east.case == "IIa":                test with BF
 				# defaults should cover this
 				elif east._case == "IIIa":  # test with    TS
-					convertible_to_left_vertices_as_pairs = np.array([
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[east._end.x, east._end.y],
-						[east._start.x, east._start.y],
-						[hor_min, vert_min],
-					])
+					convertible_to_left_vertices_as_pairs = np.array(
+						[
+							[bisector._start.x, bisector._start.y],
+							[bisector._end.x, bisector._end.y],
+							[hor_max, vert_max],
+							[east._end.x, east._end.y],
+							[east._start.x, east._start.y],
+							[hor_min, vert_min],
+						]
+					)
 
 				elif east._case == "IVa":  # test with BL
-					convertible_to_left_vertices_as_pairs = \
+					convertible_to_left_vertices_as_pairs = (
 						left_includes_lower_left
+					)
 			#
 			# Bisector Case IIIa Positive slope from Bottom to Right side
 			#
 			elif bisector._case == "IIIa":
 				if west._case == "Ia":  # test with GP
-					convertible_to_right_vertices_as_pairs = \
+					convertible_to_right_vertices_as_pairs = (
 						right_includes_lower_left
+					)
 				elif west._case == "IIa":  # test with BC
-					convertible_to_right_vertices_as_pairs = np.array([
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[west._end.x, west._end.y],
-						[west._start.x, west._start.y],
-						[hor_min, vert_min]
-					])
+					convertible_to_right_vertices_as_pairs = np.array(
+						[
+							[bisector._start.x, bisector._start.y],
+							[bisector._end.x, bisector._end.y],
+							[hor_max, vert_max],
+							[west._end.x, west._end.y],
+							[west._start.x, west._start.y],
+							[hor_min, vert_min],
+						]
+					)
 
 				elif west._case == "IVa":  # test with CF
-					convertible_to_right_vertices_as_pairs = np.array([
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[west._end.x, west._end.y],
-						[west._start.x, west._start.y]
-					])
+					convertible_to_right_vertices_as_pairs = np.array(
+						[
+							[bisector._start.x, bisector._start.y],
+							[bisector._end.x, bisector._end.y],
+							[hor_max, vert_max],
+							[west._end.x, west._end.y],
+							[west._start.x, west._start.y],
+						]
+					)
 
 			# elif west.case == "IIIa":					test with EH
 			# 	defaults should cover this as well as all cases match
@@ -2199,15 +2570,17 @@ class Rivalry:
 			#
 			elif bisector._case == "IVa":
 				if west._case == "IIa":  # test with TN
-					convertible_to_right_vertices_as_pairs = \
+					convertible_to_right_vertices_as_pairs = (
 						right_includes_lower_left
+					)
 				#
 				# elif west.case == "IVa":				test with ??????????
 				# defaults should cover this
 				#
 				if east._case == "IIIa":  # test with EJ
-					convertible_to_left_vertices_as_pairs = \
+					convertible_to_left_vertices_as_pairs = (
 						left_includes_upper_right
+					)
 
 		# elif east.case == "IVa":					test with BD
 		# defaults should cover this as well as all cases match
@@ -2220,15 +2593,17 @@ class Rivalry:
 				# defaults should cover this
 				#
 				if west._case == "IIb":  # test with EP
-					convertible_to_right_vertices_as_pairs = \
+					convertible_to_right_vertices_as_pairs = (
 						right_includes_lower_right
+					)
 				#
 				# if east.case == "Ib":					test with CE
 				# defaults should cover this as well as all cases match
 				#
 				if east._case == "IIIb":  # test with AC
-					convertible_to_left_vertices_as_pairs = \
+					convertible_to_left_vertices_as_pairs = (
 						left_includes_upper_left
+					)
 			#
 			# Bisector Case IIb Negative slope from Left side to Bottom
 			# and min_y == vert_min
@@ -2237,23 +2612,27 @@ class Rivalry:
 				if west._case == "IIb":  # test with HI
 					# defaults should cover this
 					if east._case == "Ib":  # test with IY
-						convertible_to_left_vertices_as_pairs = \
+						convertible_to_left_vertices_as_pairs = (
 							left_includes_lower_right
+						)
 					# elif east.case == "IIb":					test with IK
 					# defaults should cover this as well as all cases match
 					elif east._case == "IIIb":  # test with PX
-						convertible_to_left_vertices_as_pairs = np.array([
-							[bisector._start.x, bisector._start.y],
-							[bisector._end.x, bisector._end.y],
-							[hor_max, vert_min],
-							[east._end.x, east._end.y],
-							[east._start.x, east._start.y],
-							[hor_min, vert_max]
-						])
+						convertible_to_left_vertices_as_pairs = np.array(
+							[
+								[bisector._start.x, bisector._start.y],
+								[bisector._end.x, bisector._end.y],
+								[hor_max, vert_min],
+								[east._end.x, east._end.y],
+								[east._start.x, east._start.y],
+								[hor_min, vert_max],
+							]
+						)
 
 					elif east._case == "IVb":  # test with IW
-						convertible_to_left_vertices_as_pairs \
-							= left_includes_upper_left
+						convertible_to_left_vertices_as_pairs = (
+							left_includes_upper_left
+						)
 			#
 			# Bisector Case IIIb Negative slope from Top to right side
 			#
@@ -2264,73 +2643,84 @@ class Rivalry:
 					pass
 				#
 				if west._case == "Ib":  # test with AS
-					convertible_to_right_vertices_as_pairs = \
+					convertible_to_right_vertices_as_pairs = (
 						right_includes_upper_left
+					)
 				#
 				elif west._case == "IIb":  # test with ?
-					convertible_to_right_vertices_as_pairs = np.array([
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[west._end.x, west._end.y],
-						[west._start.x, west._start.y],
-						[hor_min, vert_max]
-					])
+					convertible_to_right_vertices_as_pairs = np.array(
+						[
+							[bisector._start.x, bisector._start.y],
+							[bisector._end.x, bisector._end.y],
+							[hor_max, vert_min],
+							[west._end.x, west._end.y],
+							[west._start.x, west._start.y],
+							[hor_min, vert_max],
+						]
+					)
 				#
 				# elif west.case == "IIIb":				test with AQ
 				# defaults should cover this as well as all cases match
 				elif west._case == "IVb":  # test with AK
-					convertible_to_right_vertices_as_pairs = \
+					convertible_to_right_vertices_as_pairs = (
 						right_includes_lower_right
+					)
 			#
 			# Bisector Case IVb Negative slope from Bottom to Top
 			# and max_y > vert_max  ????????????????????????
 			#
 			elif bisector._case == "IVb":
 				if west._case == "IIb":  # test with GH
-					convertible_to_right_vertices_as_pairs = \
+					convertible_to_right_vertices_as_pairs = (
 						right_includes_upper_left
+					)
 					if east.case == "IIIb":  # test with GM
-						convertible_to_left_vertices_as_pairs = \
+						convertible_to_left_vertices_as_pairs = (
 							left_includes_lower_right
+						)
 				# if east.case == "IVb": 				# test with GY
 				# defaults should cover this
 				elif west._case == "IVb":  # Test with 	DG
 					if east._case == "IIIb":
-						convertible_to_left_vertices_as_pairs \
-							= left_includes_lower_right
+						convertible_to_left_vertices_as_pairs = (
+							left_includes_lower_right
+						)
 			# elif east.case == "IVb":
 			# defaults should cover this as well as all cases match
 
-		return (convertible_to_left_vertices_as_pairs,
-			convertible_to_right_vertices_as_pairs)
-
+		return (
+			convertible_to_left_vertices_as_pairs,
+			convertible_to_right_vertices_as_pairs,
+		)
 
 	# ------------------------------------------------------------------------
 
 	def _create_first_dimension_regions(self) -> None:
-		
 		self._determine_vertices_of_first_dim_regions()
-		
+
 		self.first_left.vertices = CoordinateLists(
-			x=self.first_left._x, y=self.first_left._y)
+			x=self.first_left._x, y=self.first_left._y
+		)
 		self.first_right_vertices_as_lists = CoordinateLists(
-			x=self.first_right._x, y=self.first_right._y)
+			x=self.first_right._x, y=self.first_right._y
+		)
 
 		if self._director.common.have_scores():
 			self.first_left_people_points = PeoplePoints(
-				self.first_left._x, self.first_left._y)
+				self.first_left._x, self.first_left._y
+			)
 			self.first_right_people_points = PeoplePoints(
-				self.first_right._x, self.first_right._y)
+				self.first_right._x, self.first_right._y
+			)
 
 		return
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _determine_vertices_of_first_dim_regions(self) -> None:
-
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		rivalry = self._director.rivalry
 		first_div = rivalry.first_div
@@ -2338,34 +2728,36 @@ class Rivalry:
 		first_left = rivalry.first_left
 		first_right = rivalry.first_right
 
-		self.first_right.outline = np.array([
-			[hor_max, vert_max],
-			[first_div, vert_max],
-			[first_div, vert_min],
-			[hor_max, vert_min]
-		])
-		self.first_left.outline = np.array([
-			[hor_min, vert_max],
-			[first_div, vert_max],
-			[first_div, vert_min],
-			[hor_min, vert_min]
-		])
+		self.first_right.outline = np.array(
+			[
+				[hor_max, vert_max],
+				[first_div, vert_max],
+				[first_div, vert_min],
+				[hor_max, vert_min],
+			]
+		)
+		self.first_left.outline = np.array(
+			[
+				[hor_min, vert_max],
+				[first_div, vert_max],
+				[first_div, vert_min],
+				[hor_min, vert_min],
+			]
+		)
 		# # Taking transpose
 		self.first_left.outline = first_left.outline
 		self.first_right.outline = first_right.outline
-		self.first_left._x, self.first_left._y \
-			= self.first_left.outline.T
-		self.first_right._x, self.first_right._y \
-			= self.first_right.outline.T
+		self.first_left._x, self.first_left._y = self.first_left.outline.T
+		self.first_right._x, self.first_right._y = self.first_right.outline.T
 
 		return
 
-# -------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def _determine_vertices_of_second_dim_regions(self) -> None:
-
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		rivalry = self._director.rivalry
 		second_div = rivalry.second_div
@@ -2373,101 +2765,113 @@ class Rivalry:
 		second_up = rivalry.second_up
 		second_down = rivalry.second_down
 
-		self.second_up.outline = np.array([
-			[hor_min, second_div],
-			[hor_min, vert_max],
-			[hor_max, vert_max],
-			[hor_max, second_div]
-		])
-		self.second_down.outline = np.array([
-			[hor_max, second_div],
-			[hor_max, vert_min],
-			[hor_min, vert_min],
-			[hor_min, second_div]
-		])
+		self.second_up.outline = np.array(
+			[
+				[hor_min, second_div],
+				[hor_min, vert_max],
+				[hor_max, vert_max],
+				[hor_max, second_div],
+			]
+		)
+		self.second_down.outline = np.array(
+			[
+				[hor_max, second_div],
+				[hor_max, vert_min],
+				[hor_min, vert_min],
+				[hor_min, second_div],
+			]
+		)
 		#
 		# Taking transpose
 		#
 		self.second_up.outline = second_up.outline
 		self.second_down.outline = second_down.outline
-		second_up._x, second_up._y \
-			= self.second_up.outline.T
-		second_down._x, second_down._y \
-			= self.second_down.outline.T
-		
+		second_up._x, second_up._y = self.second_up.outline.T
+		second_down._x, second_down._y = self.second_down.outline.T
+
 		return
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _create_second_dimension_regions(self) -> None:
-		
 		self._determine_vertices_of_second_dim_regions()
-		
+
 		self.second_up.vertices = CoordinateLists(
-			x=self.second_up._x, y=self.second_up._y)
+			x=self.second_up._x, y=self.second_up._y
+		)
 		self.second_down.vertices = CoordinateLists(
-			x=self.second_down._x, y=self.second_down._y)
-		
+			x=self.second_down._x, y=self.second_down._y
+		)
+
 		if self._director.common.have_scores():
 			self.second_up_people_points = PeoplePoints(
-				self.second_up._x, self.second_up._y)
+				self.second_up._x, self.second_up._y
+			)
 			self.second_down_people_points = PeoplePoints(
-				self.second_down._x, self.second_down._y)
+				self.second_down._x, self.second_down._y
+			)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def set_connector_direction(
-			self,
-			point_coords: pd.DataFrame,
-			rival_a: Point,
-			rival_b: Point,
-			hor_dim: int,
-			vert_dim: int) -> str:
-
-		if point_coords.iloc[rival_a.index, hor_dim] \
-				== point_coords.iloc[rival_b.index, hor_dim]:
+		self,
+		point_coords: pd.DataFrame,
+		rival_a: Point,
+		rival_b: Point,
+		hor_dim: int,
+		vert_dim: int,
+	) -> str:
+		if (
+			point_coords.iloc[rival_a.index, hor_dim]
+			== point_coords.iloc[rival_b.index, hor_dim]
+		):
 			connector_direction = "Vertical"
 		if (
 			point_coords.iloc[rival_a.index, vert_dim]
-			== point_coords.iloc[rival_b.index, vert_dim]):
+			== point_coords.iloc[rival_b.index, vert_dim]
+		):
 			connector_direction = "Flat"
 		#
 		if (
 			(
-				(point_coords.iloc[rival_a.index, hor_dim]
-					< point_coords.iloc[rival_b.index, hor_dim])
-				and
-				(point_coords.iloc[rival_a.index, vert_dim]
-					> point_coords.iloc[rival_b.index, vert_dim])
+				point_coords.iloc[rival_a.index, hor_dim]
+				< point_coords.iloc[rival_b.index, hor_dim]
 			)
-			or
+			and (
+				point_coords.iloc[rival_a.index, vert_dim]
+				> point_coords.iloc[rival_b.index, vert_dim]
+			)
+		) or (
 			(
-				(point_coords.iloc[rival_a.index, hor_dim]
-					> point_coords.iloc[rival_b.index, hor_dim])
-				and
-				(point_coords.iloc[rival_a.index, vert_dim]
-					< point_coords.iloc[rival_b.index, vert_dim])
+				point_coords.iloc[rival_a.index, hor_dim]
+				> point_coords.iloc[rival_b.index, hor_dim]
+			)
+			and (
+				point_coords.iloc[rival_a.index, vert_dim]
+				< point_coords.iloc[rival_b.index, vert_dim]
 			)
 		):
 			connector_direction = "Downward slope"
 		#
 		if (
 			(
-				(point_coords.iloc[rival_a.index, hor_dim]
-					< point_coords.iloc[rival_b.index, hor_dim])
-				and
-				(point_coords.iloc[rival_a.index, vert_dim]
-					< point_coords.iloc[rival_b.index, vert_dim])
+				point_coords.iloc[rival_a.index, hor_dim]
+				< point_coords.iloc[rival_b.index, hor_dim]
 			)
-			or
+			and (
+				point_coords.iloc[rival_a.index, vert_dim]
+				< point_coords.iloc[rival_b.index, vert_dim]
+			)
+		) or (
 			(
-				(point_coords.iloc[rival_a.index, hor_dim]
-					> point_coords.iloc[rival_b.index, hor_dim])
-				and
-				(point_coords.iloc[rival_a.index, vert_dim]
-					> point_coords.iloc[rival_b.index, vert_dim])
+				point_coords.iloc[rival_a.index, hor_dim]
+				> point_coords.iloc[rival_b.index, hor_dim]
+			)
+			and (
+				point_coords.iloc[rival_a.index, vert_dim]
+				> point_coords.iloc[rival_b.index, vert_dim]
 			)
 		):
 			connector_direction = "Upward slope"
@@ -2477,19 +2881,20 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def set_connector_length(
-			self,
-			point_coords: pd.DataFrame,
-			rival_a: Point,
-			rival_b: Point,
-			hor_dim: int,
-			vert_dim: int) -> tuple[float]:
-
+		self,
+		point_coords: pd.DataFrame,
+		rival_a: Point,
+		rival_b: Point,
+		hor_dim: int,
+		vert_dim: int,
+	) -> tuple[float]:
 		sumofsqs = (
 			point_coords.iloc[rival_a.index, hor_dim]
-			- point_coords.iloc[rival_b.index, hor_dim]) ** 2 \
-			+ (
-				point_coords.iloc[rival_a.index, vert_dim]
-			- point_coords.iloc[rival_b.index, vert_dim]) ** 2
+			- point_coords.iloc[rival_b.index, hor_dim]
+		) ** 2 + (
+			point_coords.iloc[rival_a.index, vert_dim]
+			- point_coords.iloc[rival_b.index, vert_dim]
+		) ** 2
 		connector_length = math.sqrt(sumofsqs)
 
 		return connector_length
@@ -2500,7 +2905,7 @@ class Rivalry:
 		"""
 		Determines the radius of the core region based on connector length
 		and core tolerance.
-		# """
+		#"""
 
 		connector_length = self._director.rivalry.connector.length
 		core_tolerance = self._director.common.core_tolerance
@@ -2512,14 +2917,13 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def theoretical_extremes(
-			self,
-			slope: float,
-			intercept: float) -> TheoreticalExtremes:
-
+		self, slope: float, intercept: float
+	) -> TheoreticalExtremes:
 		# the return has been modified to return a named tuple
 
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		# self.bisector passes through top or bottom
 		y_at_hor_max = (slope * hor_max) + intercept
@@ -2528,21 +2932,23 @@ class Rivalry:
 		x_at_vert_min = (vert_min - intercept) / slope
 
 		return TheoreticalExtremes(
-			y_at_hor_max, y_at_hor_min, x_at_vert_max,	x_at_vert_min)
-	
+			y_at_hor_max, y_at_hor_min, x_at_vert_max, x_at_vert_min
+		)
+
 	# ------------------------------------------------------------------------
 
 	def set_sides_line_goes_through(
-			self,
-			bisector_direction: str,
-			connector_direction: str,
-			y_at_hor_max: float,
-			y_at_hor_min: float,
-			x_at_vert_max: float,
-			x_at_vert_min: float) -> tuple[bool, bool, bool, bool]:
-
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		self,
+		bisector_direction: str,
+		connector_direction: str,
+		y_at_hor_max: float,
+		y_at_hor_min: float,
+		x_at_vert_max: float,
+		x_at_vert_min: float,
+	) -> tuple[bool, bool, bool, bool]:
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		right_side = False
 		left_side = False
@@ -2559,8 +2965,7 @@ class Rivalry:
 			left_side = False
 			top = True
 			bottom = True
-		if bisector_direction != (
-			"Flat" and connector_direction != "Flat"):
+		if bisector_direction != ("Flat" and connector_direction != "Flat"):
 			if vert_min <= y_at_hor_max <= vert_max:
 				right_side = True
 			if vert_min <= y_at_hor_min <= vert_max:
@@ -2575,18 +2980,19 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def handle_corners(
-			self,
-			left_side: bool, # noqa: FBT001
-			right_side: bool, # noqa: FBT001
-			top: bool, # noqa: FBT001
-			bottom: bool, # noqa: FBT001
-			y_at_hor_max: float,
-			y_at_hor_min: float,
-			x_at_vert_max: float,
-			x_at_vert_min: float) -> tuple[bool, bool, bool, bool]:
-
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		self,
+		left_side: bool,  # noqa: FBT001
+		right_side: bool,  # noqa: FBT001
+		top: bool,  # noqa: FBT001
+		bottom: bool,  # noqa: FBT001
+		y_at_hor_max: float,
+		y_at_hor_min: float,
+		x_at_vert_max: float,
+		x_at_vert_min: float,
+	) -> tuple[bool, bool, bool, bool]:
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		# Handle lines going through corners
 		#
@@ -2608,41 +3014,45 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def handle_bisector_corners(
-			self,
-			right_side: bool, # noqa: FBT001
-			left_side: bool, # noqa: FBT001
-			top: bool, # noqa: FBT001
-			bottom: bool, # noqa: FBT001
-			bisector_y_at_hor_max: float,
-			bisector_y_at_hor_min: float,
-			bisector_x_at_vert_max: float,
-			bisector_x_at_vert_min: float) -> \
-				tuple[bool, bool, bool, bool]:
-
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		self,
+		right_side: bool,  # noqa: FBT001
+		left_side: bool,  # noqa: FBT001
+		top: bool,  # noqa: FBT001
+		bottom: bool,  # noqa: FBT001
+		bisector_y_at_hor_max: float,
+		bisector_y_at_hor_min: float,
+		bisector_x_at_vert_max: float,
+		bisector_x_at_vert_min: float,
+	) -> tuple[bool, bool, bool, bool]:
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		# Handle lines going through corners
 		#
 		# upper right
 		if (
 			bisector_x_at_vert_max == hor_max
-			and bisector_y_at_hor_max == vert_max):
+			and bisector_y_at_hor_max == vert_max
+		):
 			(top, right_side) = self.choose_a_side_function()
 		# upper left
 		if (
 			bisector_x_at_vert_max == hor_min
-			and bisector_y_at_hor_min == vert_max):
+			and bisector_y_at_hor_min == vert_max
+		):
 			(top, left_side) = self.choose_a_side_function()
 		# lower right
 		if (
 			bisector_x_at_vert_min == hor_max
-			and bisector_y_at_hor_max == vert_min):
+			and bisector_y_at_hor_max == vert_min
+		):
 			(bottom, right_side) = self.choose_a_side_function()
 		# lower left
 		if (
 			bisector_x_at_vert_min == hor_min
-			and bisector_y_at_hor_min == vert_min):
+			and bisector_y_at_hor_min == vert_min
+		):
 			(bottom, left_side) = self.choose_a_side_function()
 
 		return right_side, left_side, top, bottom
@@ -2650,57 +3060,56 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def handle_east_corners(
-			self,
-			right_side: float,
-			left_side: float,
-			top: float,
-			bottom: float,
-			east_y_at_hor_max: float,
-			east_y_at_hor_min: float,
-			east_x_at_vert_max: float,
-			east_x_at_vert_min: float) -> tuple[float, float, float, float]:
-
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		self,
+		right_side: float,
+		left_side: float,
+		top: float,
+		bottom: float,
+		east_y_at_hor_max: float,
+		east_y_at_hor_min: float,
+		east_x_at_vert_max: float,
+		east_x_at_vert_min: float,
+	) -> tuple[float, float, float, float]:
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		#
 		# upper right
-		if east_x_at_vert_max == hor_max \
-			and east_y_at_hor_max == vert_max:
+		if east_x_at_vert_max == hor_max and east_y_at_hor_max == vert_max:
 			(top, right_side) = self.choose_a_side_function()
 		# upper left
-		if east_x_at_vert_max == hor_min \
-			and east_y_at_hor_min == vert_max:
+		if east_x_at_vert_max == hor_min and east_y_at_hor_min == vert_max:
 			(top, left_side) = self.choose_a_side_function()
 		# lower right
-		if east_x_at_vert_min == hor_max \
-			and east_y_at_hor_max == vert_min:
+		if east_x_at_vert_min == hor_max and east_y_at_hor_max == vert_min:
 			(bottom, right_side) = self.choose_a_side_function()
 		# lower left
-		if east_x_at_vert_min == hor_min \
-			and east_y_at_hor_min == vert_min:
+		if east_x_at_vert_min == hor_min and east_y_at_hor_min == vert_min:
 			(bottom, left_side) = self.choose_a_side_function()
 
 		return right_side, left_side, top, bottom
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
-	def establish_each_contributions_to_connector_length(self) -> \
-		tuple[float, float]:
-
+	def establish_each_contributions_to_connector_length(
+		self,
+	) -> tuple[float, float]:
 		point_coords = self._director.configuration_active.point_coords
 		rival_a = self.rival_a
 		rival_b = self.rival_b
 		battleground_size = self._director.common.battleground_size
-		
+
 		# Determine distance and each dimension's contribution to distance
 		#
 		differ_x = (
-			point_coords.iloc[rival_a.index, 0] /
-			- point_coords.iloc[rival_b.index, 0])
+			point_coords.iloc[rival_a.index, 0]
+			/ -point_coords.iloc[rival_b.index, 0]
+		)
 		differ_y = (
-			point_coords.iloc[rival_a.index, 1] /
-			- point_coords.iloc[rival_b.index, 1])
+			point_coords.iloc[rival_a.index, 1]
+			/ -point_coords.iloc[rival_b.index, 1]
+		)
 		sq_diff_x = differ_x * differ_x
 		sq_diff_y = differ_y * differ_y
 		x_dist = math.sqrt(sq_diff_x)
@@ -2710,24 +3119,25 @@ class Rivalry:
 		# between reference point
 		# tolerance is set in main  - default is.1
 		#
-		half_battleground_x = (battleground_size * x_dist)
-		half_battleground_y = (battleground_size * y_dist)
+		half_battleground_x = battleground_size * x_dist
+		half_battleground_y = battleground_size * y_dist
 
 		return half_battleground_x, half_battleground_y
 
 	# ------------------------------------------------------------------------
 
 	def use_reference_points_to_define_segments(
-			self,
-			director: Status, # noqa: ARG002
-			common: Spaces) -> None: # noqa: ARG002
-		
+		self,
+		director: Status,  # noqa: ARG002
+		common: Spaces,
+	) -> None:  # noqa: ARG002
 		score_1_name = self._director.scores_active.score_1_name
 		score_2_name = self._director.scores_active.score_2_name
 		segment_names = self.segment_names
 
 		segments = pd.DataFrame(
-			columns=[score_1_name, score_2_name, segment_names])
+			columns=[score_1_name, score_2_name, segment_names]
+		)
 		self.seg = segments
 
 		return
@@ -2735,10 +3145,10 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _establish_regions_defining_contest_and_segments(self) -> None:
-			# rival_a: Point,
-			# rival_b: Point,
-			# point_coords: pd.DataFrame,
-			# battleground_percent: float) -> None:
+		# rival_a: Point,
+		# rival_b: Point,
+		# point_coords: pd.DataFrame,
+		# battleground_percent: float) -> None:
 
 		self._create_core_regions()
 		self._create_base_regions()
@@ -2747,99 +3157,104 @@ class Rivalry:
 		self._create_convertible_regions()
 		self._create_first_dimension_regions()
 		self._create_second_dimension_regions()
-			
+
 		return
-	
+
+
 # -------------------------------------------------------------------------
 
 
 class Connector(LineInPlot):
-	def __init__( # noqa: PLR0913
-			self,
-			director: Status,
-			point_on_line: Point,
-			slope: float,
-			rival_a: Point,
-			rival_b: Point,
-			color: str="black",
-			thickness: int=1,
-			style: str="solid") -> None:
+	def __init__(  # noqa: PLR0913
+		self,
+		director: Status,
+		point_on_line: Point,
+		slope: float,
+		rival_a: Point,
+		rival_b: Point,
+		color: str = "black",
+		thickness: int = 1,
+		style: str = "solid",
+	) -> None:
 		super().__init__(
-			director, point_on_line, slope,
-			color, thickness, style)
+			director, point_on_line, slope, color, thickness, style
+		)
 
 		self._director = director
-		self.length = self._calculate_connector_length(
-			rival_a,
-			rival_b)
+		self.length = self._calculate_connector_length(rival_a, rival_b)
 
-# -------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def _calculate_connector_length(
-			self,
-			rival_a: Point,
-			rival_b: Point) -> float:
+		self, rival_a: Point, rival_b: Point
+	) -> float:
 		"""Calculates the length of a line between points rival_a and
 		rival_b."""
 		length = math.sqrt(
-			(rival_b.x - rival_a.x) ** 2
-			+ (rival_b.y - rival_a.y) ** 2)
+			(rival_b.x - rival_a.x) ** 2 + (rival_b.y - rival_a.y) ** 2
+		)
 		return length
+
 
 # -------------------------------------------------------------------------
 
 
 class First(LineInPlot):
-	def __init__( # noqa: PLR0913
-			self,
-			director: Status,
-			point_on_line: Point,
-			slope: float,
-			color:str="black",
-			thickness: int=1,
-			style: str="solid") -> None:
+	def __init__(  # noqa: PLR0913
+		self,
+		director: Status,
+		point_on_line: Point,
+		slope: float,
+		color: str = "black",
+		thickness: int = 1,
+		style: str = "solid",
+	) -> None:
 		super().__init__(
-			director, point_on_line, slope,
-			color, thickness, style)
+			director, point_on_line, slope, color, thickness, style
+		)
+
 
 # -------------------------------------------------------------------------
 
 
 class Second(LineInPlot):
-	def __init__( # noqa: PLR0913
-			self,
-			director: Status,
-			point_on_line: Point,
-			slope: float,
-			color: str="black",
-			thickness: int=1,
-			style: str="solid") -> None:
+	def __init__(  # noqa: PLR0913
+		self,
+		director: Status,
+		point_on_line: Point,
+		slope: float,
+		color: str = "black",
+		thickness: int = 1,
+		style: str = "solid",
+	) -> None:
 		super().__init__(
-			director, point_on_line, slope,
-			color, thickness, style)
+			director, point_on_line, slope, color, thickness, style
+		)
+
 
 # --------------------------------------------------------------------------
 
 
 class Segmentation:
 	def __init__(
-			self,
-			name: str,
-			n_categories: int,
-			pcts: pd.Series,
-			regions: list[Region],
-			tribes: list[str]) -> None:
+		self,
+		name: str,
+		n_categories: int,
+		pcts: pd.Series,
+		regions: list[Region],
+		tribes: list[str],
+	) -> None:
 		self._name = name
 		self._n_categories = n_categories
 		self._pcts = pcts
 		self._regions = regions
 		self._tribes = tribes
 
+
 # -------------------------------------------------------------------------
 
 
 class SegmentPercentages(NamedTuple):
-
 	# to be phased out
 
 	base_pcts: pd.Series
@@ -2855,18 +3270,17 @@ class SegmentPercentages(NamedTuple):
 
 
 class West(LineInPlot):
-	def __init__( # noqa: PLR0913
-			self,
-			director: Status,
-			point_on_line: Point,
-			slope: float,
-			color: str="black",
-			thickness: int=1,
-			style: str="solid") -> None:
+	def __init__(  # noqa: PLR0913
+		self,
+		director: Status,
+		point_on_line: Point,
+		slope: float,
+		color: str = "black",
+		thickness: int = 1,
+		style: str = "solid",
+	) -> None:
 		super().__init__(
-			director, point_on_line, slope,
-			color, thickness, style)
+			director, point_on_line, slope, color, thickness, style
+		)
 
 		self._director = director
-
-

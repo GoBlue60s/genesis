@@ -21,26 +21,24 @@ from exceptions import SelectionError
 class MatplotlibCommon:
 	def __init__(self, director: Status) -> None:
 		from director import Status  # noqa: PLC0415, F401
+
 		self._director = director
 
-# -- The following code comes from common.py----------------------------------
 
 	# ------------------------------------------------------------------------
 
 	def begin_matplotlib_plot_with_title(
-			self,
-			title: str) -> tuple[plt.Figure, plt.Axes]:
-
+		self, title: str
+	) -> tuple[plt.Figure, plt.Axes]:
 		fig, ax = plt.subplots()
 		ax.set_title(title)
 		return fig, ax
-	
+
 	# ------------------------------------------------------------------------
 
 	def begin_matplotlib_heatmap_with_title(
-			self,
-			title: str) -> tuple[plt.Figure, plt.Axes]:
-
+		self, title: str
+	) -> tuple[plt.Figure, plt.Axes]:
 		fig = plt.gcf()
 		ax = fig.add_subplot(111)
 		ax.set_title(title)
@@ -48,22 +46,16 @@ class MatplotlibCommon:
 		return fig, ax
 
 	# ------------------------------------------------------------------------
-	
-	def set_aspect_and_grid_in_matplotlib_plot(
-			self,
-			ax: plt.Axes) -> plt.Axes:
 
-		ax.set_aspect('equal')
-		ax.grid(False) # noqa: FBT003
+	def set_aspect_and_grid_in_matplotlib_plot(self, ax: plt.Axes) -> plt.Axes:
+		ax.set_aspect("equal")
+		ax.grid(False)  # noqa: FBT003
 
 		return ax
-	
-	# ------------------------------------------------------------------------
-	
-	def add_axes_labels_to_matplotlib_plot(
-			self,
-			ax: plt.Axes) -> plt.Axes:
 
+	# ------------------------------------------------------------------------
+
+	def add_axes_labels_to_matplotlib_plot(self, ax: plt.Axes) -> plt.Axes:
 		director = self._director
 		hor_dim = director.common.hor_dim
 		vert_dim = director.common.vert_dim
@@ -73,52 +65,48 @@ class MatplotlibCommon:
 		ax.set_ylabel(dim_names[vert_dim])
 
 		return ax
-	
-	
-	# ------------------------------------------------------------------------
-	
-	def add_axes_names_to_matplotlib_heatmap(
-			self,
-			ax: plt.Axes,
-			name: str) -> plt.Axes:
 
+	# ------------------------------------------------------------------------
+
+	def add_axes_names_to_matplotlib_heatmap(
+		self, ax: plt.Axes, name: str
+	) -> plt.Axes:
 		ax.set_xlabel(name)
 		ax.set_ylabel(name)
 
 		return ax
-	
+
 	# ------------------------------------------------------------------------
-	
+
 	def add_tick_names_and_labels_to_matplotlib_heatmap(
-			self,
-			ax: plt.Axes, tick_names: list[str],
-			tick_labels: list[str]) -> plt.Axes:
-		tick_range = (range(len(tick_names)))
+		self, ax: plt.Axes, tick_names: list[str], tick_labels: list[str]
+	) -> plt.Axes:
+		tick_range = range(len(tick_names))
 		ax.set_xticks(tick_range)
 		ax.set_xticklabels(tick_labels, rotation=45)
 		ax.set_yticks(tick_range)
 		ax.set_yticklabels(tick_names)
 
 		return ax
-	
+
 	# -----------------------------------------------------------------------
 
 	def add_heatmap_to_matplotlib_heatmap(
-			self, ax: plt.Axes, data: np.ndarray, shading: str) -> plt.Axes:
-
+		self, ax: plt.Axes, data: np.ndarray, shading: str
+	) -> plt.Axes:
 		im = ax.imshow(data, cmap=shading, interpolation="none")
 
 		return im
-		
+
 	# -----------------------------------------------------------------------
 
 	def add_colorbar_to_matplotlib_heatmap(
-			self, fig: plt.Figure, ax: plt.Axes, im: plt.AxesImage) -> None:
-
+		self, fig: plt.Figure, ax: plt.Axes, im: plt.AxesImage
+	) -> None:
 		fig.colorbar(im, ax=ax)
 		return
 
-# -----------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def create_heatmap_using_matplotlib(
 		self,
@@ -127,22 +115,19 @@ class MatplotlibCommon:
 		shading: str,
 		names: list[str],
 		labels: list[str],
-		axes_names: str) -> plt.Figure:
-
+		axes_names: str,
+	) -> plt.Figure:
 		fig, ax = self.begin_matplotlib_heatmap_with_title(title)
-		im = self.add_heatmap_to_matplotlib_heatmap(
-			ax, data, shading)
+		im = self.add_heatmap_to_matplotlib_heatmap(ax, data, shading)
 		self.add_colorbar_to_matplotlib_heatmap(fig, ax, im)
-		self.add_tick_names_and_labels_to_matplotlib_heatmap(
-			ax, names, labels)
+		self.add_tick_names_and_labels_to_matplotlib_heatmap(ax, names, labels)
 		self.add_axes_names_to_matplotlib_heatmap(ax, axes_names)
 
 		return fig
-	
+
 	# ------------------------------------------------------------------------
 
 	def add_configuration_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-
 		hor_dim = self._director.common.hor_dim
 		vert_dim = self._director.common.vert_dim
 		point_coords = self._director.configuration_active.point_coords
@@ -154,7 +139,7 @@ class MatplotlibCommon:
 		# conf = self._director.configuration_active.point_coords
 		# peek("\nIn add_configuration_to_matplotlib_plot"
 		# 	f"\n conf = {conf}")
-		
+
 		x_coords = []
 		y_coords = []
 		for each_point in range_points:
@@ -164,10 +149,10 @@ class MatplotlibCommon:
 				# conf.dim_1_coords[each_point] + offset,
 				# conf.dim_2_coords[each_point],
 				# conf.item(each_point).label)
-			
 				point_coords.iloc[each_point, hor_dim] + offset,
 				point_coords.iloc[each_point, vert_dim],
-				point_labels[each_point])
+				point_labels[each_point],
+			)
 
 		# x_coords = conf.dim_1_coords
 		# y_coords = conf.dim_2_coords
@@ -177,33 +162,36 @@ class MatplotlibCommon:
 		ax.scatter(x_coords, y_coords, color="black", marker="o", s=3)
 
 		return
+
 	# ------------------------------------------------------------------------
 
 	def set_ranges_for_matplotlib_plot(self, ax: plt.Axes) -> None:
 		"""Set axis limits for a matplotlib plot.
-		
+
 		Args:
 			ax: The matplotlib Axes object to configure
 		"""
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
 		ax.axis([hor_min, hor_max, vert_min, vert_max])
 
 		return
-	
+
 	# ------------------------------------------------------------------------
 
 	def _plot_scree_using_matplotlib(self) -> plt.Figure:
-
 		use_metric = self._use_metric
 		min_stress = self._min_stress
 
 		fig, ax = self._director.common.begin_matplotlib_plot_with_title(
-			"Scree Diagram")
+			"Scree Diagram"
+		)
 		if not use_metric:
 			ax = self._director.common.set_aspect_and_grid_in_matplotlib_plot(
-				ax)
+				ax
+			)
 		ax.set_xlabel("Number of Dimensions")
 		ax.set_ylabel("Stress")
 		x_coords = min_stress["Dimensionality"].tolist()
@@ -217,28 +205,29 @@ class MatplotlibCommon:
 			show_min_stress = int(min_stress.iloc[0, 1] + 2)
 			ax.axis([1, 10, 0, show_min_stress])
 		return fig
-	
-	
+
 	# --------------------------------------------------------------------
 
 	def plot_shep_using_matplotlib(self) -> plt.Figure:
-
 		shepard_axis = self.shepard_axis
-		distances_as_list = \
+		distances_as_list = (
 			self._director.configuration_active.distances_as_list
-		similarities_as_list = \
+		)
+		similarities_as_list = (
 			self._director.similarities_active.similarities_as_list
-		range_similarities = \
+		)
+		range_similarities = (
 			self._director.similarities_active.range_similarities
+		)
 		ndyad = self._director.similarities_active.ndyad
 		ranks_df = self._director.similarities_active.ranks_df
 		command = self._director.command
 
-		fig, ax = \
-			self._director.common.begin_matplotlib_plot_with_title(
-				"Shepard Diagram")
-		if shepard_axis == 'Y':
-		# if self._director.current_command.shepard_axis == 'Y':
+		fig, ax = self._director.common.begin_matplotlib_plot_with_title(
+			"Shepard Diagram"
+		)
+		if shepard_axis == "Y":
+			# if self._director.current_command.shepard_axis == 'Y':
 			hor_max = max(distances_as_list)
 			hor_min = min(distances_as_list)
 			vert_max = max(similarities_as_list)
@@ -250,13 +239,18 @@ class MatplotlibCommon:
 			for each_dyad in range_similarities:
 				if each_dyad != ndyad - 1:
 					ax.plot(
-						(ranks_df.loc[each_dyad, "Distance_AB"],
-							ranks_df.loc[each_dyad + 1, "Distance_AB"]),
-						(ranks_df.loc[each_dyad, "Similarity"],
-							ranks_df.loc[each_dyad + 1, "Similarity"]),
-						color="k")
+						(
+							ranks_df.loc[each_dyad, "Distance_AB"],
+							ranks_df.loc[each_dyad + 1, "Distance_AB"],
+						),
+						(
+							ranks_df.loc[each_dyad, "Similarity"],
+							ranks_df.loc[each_dyad + 1, "Similarity"],
+						),
+						color="k",
+					)
 		elif shepard_axis == "X":
-		# elif self._director.current_command.shepard_axis == "X":
+			# elif self._director.current_command.shepard_axis == "X":
 			vert_max = max(distances_as_list)
 			vert_min = min(distances_as_list)
 			hor_max = max(similarities_as_list)
@@ -266,11 +260,16 @@ class MatplotlibCommon:
 			for each_dyad in range_similarities:
 				if each_dyad != ndyad - 1:
 					ax.plot(
-						(ranks_df.loc[each_dyad, "Similarity"],
-							ranks_df.loc[each_dyad + 1, "Similarity"]),
-						(ranks_df.loc[each_dyad, "Distance_AB"],
-							ranks_df.loc[each_dyad + 1, "Distance_AB"]),
-						color="k")
+						(
+							ranks_df.loc[each_dyad, "Similarity"],
+							ranks_df.loc[each_dyad + 1, "Similarity"],
+						),
+						(
+							ranks_df.loc[each_dyad, "Distance_AB"],
+							ranks_df.loc[each_dyad + 1, "Distance_AB"],
+						),
+						color="k",
+					)
 		else:
 			raise SelectionError(command, "No axis selected")
 		ax.axis([hor_min, hor_max, vert_min, vert_max])
@@ -278,76 +277,74 @@ class MatplotlibCommon:
 		self._director.similarities_active.ranks_df = ranks_df
 
 		return fig
-	
+
 	# ------------------------------------------------------------------------
 
 	def request_differences_plot_for_plot_and_gallery_tabs_using_matplotlib(
-			self) -> None:
-	
+		self,
+	) -> None:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self._director.current_command.plot_a_heatmap_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
 		return
-	
+
 	# ------------------------------------------------------------------------
 
 	def request_scree_plot_for_plot_and_gallery_tabs_using_matplotlib(
-			self) -> None:
-
+		self,
+	) -> None:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self._plot_scree_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
-		self._director.set_focus_on_tab('Plot')
+		self._director.set_focus_on_tab("Plot")
 		return
-	
+
 	# ------------------------------------------------------------------------
 
 	def request_shepard_plot_for_plot_and_gallery_tabs_using_matplotlib(
-			self) -> None:
-
+		self,
+	) -> None:
 		matplotlib_common = self._director.matplotlib_common
-		
+
 		fig = self.plot_shep_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
-		self._director.set_focus_on_tab('Plot')
+		self._director.set_focus_on_tab("Plot")
 		return
-	
 
 	# ------------------------------------------------------------------------
 
-	def \
-	request_stress_contribution_plot_for_plot_and_gallery_tabs_using_matplotlib(
-			self) -> None:
-
+	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_matplotlib(
+		self,
+	) -> None:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self._plot_stress_contribution_by_point_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
-		self._director.set_focus_on_tab('Plot')
+		self._director.set_focus_on_tab("Plot")
 		return
-	
 
 	# ------------------------------------------------------------------------
 
-	def _plot_stress_contribution_by_point_using_matplotlib(self) -> \
-		plt.Figure:
-
-		#point = self._point_to_plot_label
+	def _plot_stress_contribution_by_point_using_matplotlib(
+		self,
+	) -> plt.Figure:
+		# point = self._point_to_plot_label
 		point_label = self._director.current_command._point_to_plot_label
 		point_index = self._director.common.point_to_plot_index
 		ranks_df = self._director.similarities_active.ranks_df
 		item_names = self._director.similarities_active.item_names
-		range_similarities = \
+		range_similarities = (
 			self._director.similarities_active.range_similarities
+		)
 		ndyad = self._director.similarities_active.ndyad
 		# point_index = self._director.current_command._point_to_plot_index
 
 		fig, ax = self._director.common.begin_matplotlib_plot_with_title(
-			"Stress contribution of " + item_names[point_index])
-		ax = self._director.common.\
-			set_aspect_and_grid_in_matplotlib_plot(ax)
+			"Stress contribution of " + item_names[point_index]
+		)
+		ax = self._director.common.set_aspect_and_grid_in_matplotlib_plot(ax)
 		plt.close()
 		#
 		x_others = []
@@ -382,41 +379,48 @@ class MatplotlibCommon:
 			ax.text(
 				x_others[each_item],
 				y_others[each_item],
-				label_others[each_item])
+				label_others[each_item],
+			)
 			if index_others[each_item] + 1 == x_others[each_item]:
 				ax.plot(
 					[index_others[each_item] + 1, x_others[each_item]],
-					[index_others[each_item] + 1, y_others[each_item]], 'b')
+					[index_others[each_item] + 1, y_others[each_item]],
+					"b",
+				)
 			else:
 				difference = index_others[each_item] + 1 - x_others[each_item]
 				if difference > 0:
 					ax.plot(
-							[x_others[each_item], x_others[each_item]],
-							[index_others[each_item]
-							+ difference, y_others[each_item]], 'b')
+						[x_others[each_item], x_others[each_item]],
+						[
+							index_others[each_item] + difference,
+							y_others[each_item],
+						],
+						"b",
+					)
 				else:
 					ax.plot(
-							[x_others[each_item], x_others[each_item]],
-							[index_others[each_item]
-							+ 1 - difference, y_others[each_item]], 'b')
+						[x_others[each_item], x_others[each_item]],
+						[
+							index_others[each_item] + 1 - difference,
+							y_others[each_item],
+						],
+						"b",
+					)
 		#
 		# Add line to indicate what a perfect relationship, no stress, would be
 		#
-		ax.plot((1, ndyad + 1), (1, ndyad + 1), 'r')
+		ax.plot((1, ndyad + 1), (1, ndyad + 1), "r")
 
 		self._director.similarities_active.ranks_df = ranks_df
 
 		return fig
-	
-# -- The following comes from rivalry ------------------------------------
 
+	# -- The following comes from rivalry ------------------------------------
 
 	# ------------------------------------------------------------------------
 
-	def add_connector_to_matplotlib_plot(
-			self,
-			ax: plt.Axes) -> None:
-
+	def add_connector_to_matplotlib_plot(self, ax: plt.Axes) -> None:
 		rivalry = self._director.rivalry
 		hor_dim = self._director.common.hor_dim
 		vert_dim = self._director.common.vert_dim
@@ -426,22 +430,23 @@ class MatplotlibCommon:
 
 		if self._director.common.show_connector:
 			ax.plot(
-				[point_coords.iloc[rival_a.index, hor_dim],
-					point_coords.iloc[rival_b.index, hor_dim]],
-				[point_coords.iloc[rival_a.index, vert_dim],
-					point_coords.iloc[rival_b.index, vert_dim]],
-				color="black"
+				[
+					point_coords.iloc[rival_a.index, hor_dim],
+					point_coords.iloc[rival_b.index, hor_dim],
+				],
+				[
+					point_coords.iloc[rival_a.index, vert_dim],
+					point_coords.iloc[rival_b.index, vert_dim],
+				],
+				color="black",
 			)
 		return
 
 	# ------------------------------------------------------------------------
 
-	def add_bisector_to_matplotlib_plot(
-			self,
-			ax: plt.Axes) -> None:
-
+	def add_bisector_to_matplotlib_plot(self, ax: plt.Axes) -> None:
 		rivalry = self._director.rivalry
-		
+
 		# if self._director.common.have_bisector_info():
 		if self._director.common.have_reference_points():
 			show_bisector = self._director.common.show_bisector
@@ -458,10 +463,7 @@ class MatplotlibCommon:
 
 	# ------------------------------------------------------------------------
 
-	def add_east_to_matplotlib_plot(
-			self,
-			ax: plt.Axes) -> None:
-
+	def add_east_to_matplotlib_plot(self, ax: plt.Axes) -> None:
 		rivalry = self._director.rivalry
 		start = rivalry.east._start
 		end = rivalry.east._end
@@ -474,10 +476,7 @@ class MatplotlibCommon:
 
 	# ------------------------------------------------------------------------
 
-	def add_west_to_matplotlib_plot(
-			self,
-			ax: plt.Axes) -> None:
-		
+	def add_west_to_matplotlib_plot(self, ax: plt.Axes) -> None:
 		rivalry = self._director.rivalry
 		start = rivalry.west._start
 		end = rivalry.west._end
@@ -491,7 +490,6 @@ class MatplotlibCommon:
 	# ------------------------------------------------------------------------
 
 	def add_first_dim_divider_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-
 		vert_max = self._director.common.plot_ranges.vert_max
 		vert_min = self._director.common.plot_ranges.vert_min
 		first_div = self._director.rivalry.first_div
@@ -503,22 +501,20 @@ class MatplotlibCommon:
 	# ------------------------------------------------------------------------
 
 	def add_second_dim_divider_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-
 		hor_max = self._director.common.plot_ranges.hor_max
 		hor_min = self._director.common.plot_ranges.hor_min
 		second_div = self._director.rivalry.second_div
 		ax.plot([hor_max, hor_min], [second_div, second_div])
 
 		return
-		
+
 	# ------------------------------------------------------------------------
 
 	def add_reference_points_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-
 		rivalry = self._director.rivalry
 		rival_a = rivalry.rival_a
 		rival_b = rivalry.rival_b
-		
+
 		x_coords = []
 		y_coords = []
 
@@ -535,11 +531,13 @@ class MatplotlibCommon:
 			ax.text(
 				point_coords.iloc[rival_a.index, hor_dim] + offset,
 				point_coords.iloc[rival_a.index, vert_dim],
-				rival_a.label)
+				rival_a.label,
+			)
 			ax.text(
 				point_coords.iloc[rival_b.index, hor_dim] + offset,
 				point_coords.iloc[rival_b.index, vert_dim],
-				rival_b.label)
+				rival_b.label,
+			)
 			x_coords.append(point_coords.iloc[rival_a.index, hor_dim])
 			y_coords.append(point_coords.iloc[rival_a.index, vert_dim])
 			x_coords.append(point_coords.iloc[rival_b.index, hor_dim])
@@ -548,18 +546,17 @@ class MatplotlibCommon:
 			ax.scatter(x_coords, y_coords)
 		return
 
-# -- The following comes from director
+	# -- The following comes from director
 
 	# ------------------------------------------------------------------------
 
-	def plot_to_gui_using_matplotlib(
-			self,
-			fig: plt.Figure) -> None:
+	def plot_to_gui_using_matplotlib(self, fig: plt.Figure) -> None:
 		# Add the plot to the Plot tab (replace the current plot)
 		canvas_plot = FigureCanvas(fig)
 		width, height = (
 			int(fig.get_size_inches()[0] * fig.dpi),
-			int(fig.get_size_inches()[1] * fig.dpi))
+			int(fig.get_size_inches()[1] * fig.dpi),
+		)
 		canvas_plot.setFixedSize(width, height)
 		canvas_plot.draw()
 		self._director.tab_plot_scroll_area.setWidget(canvas_plot)
@@ -570,22 +567,22 @@ class MatplotlibCommon:
 		self._director.tab_gallery_layout.addWidget(canvas_gallery)
 		# Add a spacer at the end to push plots to the top
 		spacer = QSpacerItem(
-			20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+			20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding
+		)
 		self._director.tab_gallery_layout.addItem(spacer)
 		plt.close(fig)
 
-# --------------------------------------------------------------------------
-
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def confidence_ellipse_using_matplotlib(
-			self,
-			x: list[float],
-			y: list[float],
-			ax: plt.Axes,
-			n_std: float = 3.0,
-			facecolor: str = "none",
-			**kwargs: str | float) -> Ellipse:
+		self,
+		x: list[float],
+		y: list[float],
+		ax: plt.Axes,
+		n_std: float = 3.0,
+		facecolor: str = "none",
+		**kwargs: str | float,
+	) -> Ellipse:
 		"""
 		Create a plot of the covariance confidence ellipse of *x* and *y*.
 
@@ -610,14 +607,18 @@ class MatplotlibCommon:
 		"""
 
 		cov = np.cov(x, y)
-		pearson = cov[0, 1]/np.sqrt(cov[0, 0] * cov[1, 1])
+		pearson = cov[0, 1] / np.sqrt(cov[0, 0] * cov[1, 1])
 		# Using a special case to obtain the eigenvalues of this
 		# two-dimensional dataset.
 		ell_radius_x = np.sqrt(1 + pearson)
 		ell_radius_y = np.sqrt(1 - pearson)
 		ellipse = Ellipse(
-			(0, 0), width=ell_radius_x * 2, height=ell_radius_y * 2,
-			facecolor=facecolor, **kwargs)
+			(0, 0),
+			width=ell_radius_x * 2,
+			height=ell_radius_y * 2,
+			facecolor=facecolor,
+			**kwargs,
+		)
 
 		# Calculating the standard deviation of x from
 		# the squareroot of the variance and multiplying
@@ -629,14 +630,15 @@ class MatplotlibCommon:
 		scale_y = np.sqrt(cov[1, 1]) * n_std
 		mean_y = np.mean(y)
 
-		transf = transforms.Affine2D() \
-			.rotate_deg(45) \
-			.scale(scale_x, scale_y) \
+		transf = (
+			transforms.Affine2D()
+			.rotate_deg(45)
+			.scale(scale_x, scale_y)
 			.translate(mean_x, mean_y)
+		)
 
 		ellipse.set_transform(transf + ax.transData)
 
 		ellipse_patch = ax.add_patch(ellipse)
 
 		return ellipse_patch
-

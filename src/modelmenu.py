@@ -1,6 +1,6 @@
-
 from factor_analyzer import FactorAnalyzer
 import numpy as np
+
 # import matplotlib.pyplot as plt
 # from matplotlib import transforms
 # from matplotlib.patches import Ellipse
@@ -16,18 +16,11 @@ from tabulate import tabulate
 
 from constants import (
 	# MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
-	MINIMAL_DIFFERENCE_FROM_ZERO
+	MINIMAL_DIFFERENCE_FROM_ZERO,
 )
 from dialogs import SetValueDialog
-from exceptions import (
-	MissingInformationError,
-	SpacesError
-)
-from features import (
-    EvaluationsFeature,
-	SimilaritiesFeature,
-	TargetFeature
-)
+from exceptions import MissingInformationError, SpacesError
+from features import EvaluationsFeature, SimilaritiesFeature, TargetFeature
 from common import Spaces
 from director import Status
 from table_builder import StatisticalTableWidget
@@ -36,12 +29,7 @@ from table_builder import StatisticalTableWidget
 
 
 class DirectionsCommand:
-
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Directions"
@@ -63,10 +51,7 @@ class DirectionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -74,51 +59,57 @@ class DirectionsCommand:
 		# self._director.configuration_active.print_active_function()
 		self._print_directions_df()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"directions")
+			"directions"
+		)
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
 			f"Directions are based on the active configuration"
 			f" which has {ndim} dimensions and "
-			f"{npoint} points")
+			f"{npoint} points"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _print_directions_df(self) -> None:
 		"""Print the directions DataFrame to the output tab"""
 		directions_df = self._director.configuration_active.directions_df
 		directions_df.rename(
 			columns={
-				'Slope': 'Slope',
-				'Unit_Circle_x': 'Unit Circle \n X',
-				'Unit_Circle_y': 'Unit Circle \n Y',
-				'Angle_Degrees': 'Angle in \n Degrees',
-				'Angle_Radians': 'Angle in \n Radians',
-				'Quadrant': 'Quadrant'}, inplace=True)
+				"Slope": "Slope",
+				"Unit_Circle_x": "Unit Circle \n X",
+				"Unit_Circle_y": "Unit Circle \n Y",
+				"Angle_Degrees": "Angle in \n Degrees",
+				"Angle_Radians": "Angle in \n Radians",
+				"Quadrant": "Quadrant",
+			},
+			inplace=True,
+		)
 
 		table = tabulate(
 			directions_df,
-			headers='keys',
-			tablefmt='plain',
+			headers="keys",
+			tablefmt="plain",
 			showindex=True,
-			floatfmt=['.2f', '.2f', '.2f', '.2f', '.2f', '.2f', '.0f'])
-		
+			floatfmt=[".2f", ".2f", ".2f", ".2f", ".2f", ".2f", ".0f"],
+		)
+
 		print(f"{table}")
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _calculate_point_directions(self) -> pd.DataFrame:
 		"""Calculate direction information for each point including slope,
 		unit circle coordinates, and angles"""
-		
+
 		point_coords = self._director.configuration_active.point_coords
 		point_names = self._director.configuration_active.point_names
-		
+
 		# Initialize lists to store direction information
 		slopes = []
 		unit_circle_x = []
@@ -126,30 +117,30 @@ class DirectionsCommand:
 		angles_degrees = []
 		angles_radians = []
 		quadrants = []
-		
+
 		for i in range(len(point_coords)):
 			x = point_coords.iloc[i, 0]
 			y = point_coords.iloc[i, 1]
-			
+
 			# Calculate the angle from the origin
 			angle_radians = np.arctan2(y, x)
 			angle_degrees_val = np.degrees(angle_radians)
-			
+
 			# Ensure angle is in [0, 360) range
 			if angle_degrees_val < 0:
 				angle_degrees_val += 360
-				
+
 			# Calculate coordinates on unit circle using the angle
 			# These will always be at distance 1 from origin
 			unit_x = np.cos(angle_radians)
 			unit_y = np.sin(angle_radians)
-			
+
 			# Calculate slope (dimension 2 / dimension 1)
 			if abs(x) < MINIMAL_DIFFERENCE_FROM_ZERO:
-				slope = float('inf') if y >= 0 else float('-inf')
+				slope = float("inf") if y >= 0 else float("-inf")
 			else:
 				slope = y / x
-				
+
 			# Determine quadrant based on unit circle coordinates
 			if unit_x >= 0 and unit_y >= 0:
 				quadrant = 1
@@ -159,17 +150,19 @@ class DirectionsCommand:
 				quadrant = 3
 			else:  # unit_x >= 0 and unit_y < 0
 				quadrant = 4
-				
+
 			# Special case for origin point
-			if abs(x) < MINIMAL_DIFFERENCE_FROM_ZERO \
-				and abs(y) < MINIMAL_DIFFERENCE_FROM_ZERO:
+			if (
+				abs(x) < MINIMAL_DIFFERENCE_FROM_ZERO
+				and abs(y) < MINIMAL_DIFFERENCE_FROM_ZERO
+			):
 				unit_x = 0
 				unit_y = 0
 				quadrant = 0
 				angle_degrees_val = 0
 				angle_radians = 0
 				slope = 0
-			
+
 			# Append values to lists
 			slopes.append(slope)
 			unit_circle_x.append(unit_x)
@@ -177,39 +170,37 @@ class DirectionsCommand:
 			angles_degrees.append(angle_degrees_val)
 			angles_radians.append(angle_radians)
 			quadrants.append(quadrant)
-		
+
 		# Create DataFrame with all direction information
 		# Note: Quadrant is placed last as requested
-		directions_df = pd.DataFrame({
-			'Slope': slopes,
-			'Unit_Circle_x': unit_circle_x,
-			'Unit_Circle_y': unit_circle_y,
-			'Angle_Degrees': angles_degrees,
-			'Angle_Radians': angles_radians,
-			'Quadrant': quadrants
-		}, index=point_names)
-		
-		self._director.configuration_active.directions_df = directions_df
-		
-		return directions_df
+		directions_df = pd.DataFrame(
+			{
+				"Slope": slopes,
+				"Unit_Circle_x": unit_circle_x,
+				"Unit_Circle_y": unit_circle_y,
+				"Angle_Degrees": angles_degrees,
+				"Angle_Radians": angles_radians,
+				"Quadrant": quadrants,
+			},
+			index=point_names,
+		)
 
+		self._director.configuration_active.directions_df = directions_df
+
+		return directions_df
 
 	# ------------------------------------------------------------------------
 
 
 class FactorAnalysisCommand:
-	""" The Factor command calculates latent variables to explain the
+	"""The Factor command calculates latent variables to explain the
 	variation in evaluations.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Factor analysis"
-
 
 		# self._director.configuration_active.fa = pd.DataFrame()
 		# self._director.configuration_active.loadings = pd.DataFrame()
@@ -231,7 +222,6 @@ class FactorAnalysisCommand:
 		# self._director.configuration_active.point_coords = pd.DataFrame()
 		# self._director.configuration_active.distances = []
 
-
 		self._director.scores_active.factor_scores = pd.DataFrame()
 		self._director.scores_active.score_1_name = ""
 		self._director.scores_active.score_2_name = ""
@@ -239,7 +229,7 @@ class FactorAnalysisCommand:
 		self._title = "Factor analysis"
 		self._label = "Number of factors to extract:"
 		self._min_allowed = 1
-		
+
 		self._max_allowed = self._director.evaluations_active.nreferent
 		self._an_integer = True
 		self._default = 2
@@ -248,16 +238,18 @@ class FactorAnalysisCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		ext_fact = self._get_factors_to_extract_from_user(
-			self._title, self._label, self._min_allowed, self._max_allowed,
-			self._an_integer, self._default)
+			self._title,
+			self._label,
+			self._min_allowed,
+			self._max_allowed,
+			self._an_integer,
+			self._default,
+		)
 		self._director.configuration_active.ndim = int(ext_fact)
 		self._factors_and_scores()
 		# self._create_scree_diagram_for_plot_and_gallery_tabs()
@@ -273,7 +265,6 @@ class FactorAnalysisCommand:
 	# ------------------------------------------------------------------------
 
 	def _factors_and_scores(self) -> None:
-
 		ndim = self._director.configuration_active.ndim
 		nreferent = self._director.evaluations_active.nreferent
 		evaluations = self._director.evaluations_active.evaluations
@@ -287,7 +278,8 @@ class FactorAnalysisCommand:
 		dim_labels = []
 
 		fa = FactorAnalyzer(
-			n_factors=ndim, rotation="varimax", is_corr_matrix=False)
+			n_factors=ndim, rotation="varimax", is_corr_matrix=False
+		)
 		# self._director.configuration_active.fa = FactorAnalyzer(
 		# 	n_factors=self._director.configuration_active.ndim,
 		# rotation="varimax", is_corr_matrix=True)
@@ -309,14 +301,19 @@ class FactorAnalysisCommand:
 
 		print(f"DEBUG -- {dim_names=} \n{item_names=}")
 		print(f"DEBUG -- just before fa.loadings {nreferent=}")
-		print("DEBUG -- in FA classic also just before fa.loadings"
-			f" {range_items=}")
+		print(
+			"DEBUG -- in FA classic also just before fa.loadings"
+			f" {range_items=}"
+		)
 		the_loadings = fa.loadings_
-		print("DEBUG -- in FA classic also just after fa.loadings"
-			f" {the_loadings=}")
+		print(
+			"DEBUG -- in FA classic also just after fa.loadings"
+			f" {the_loadings=}"
+		)
 		print(f"DEBUG -- {dim_names=} \n{item_names=}")
-		loadings = pd.DataFrame(the_loadings, columns=dim_names,
-			index=item_names)
+		loadings = pd.DataFrame(
+			the_loadings, columns=dim_names, index=item_names
+		)
 		print(f"DEBUG -- in FA classic just after loadings {range_items=}")
 		# print(f"DEBUG -- {self._director.configuration_active.loadings=}")
 		#
@@ -332,8 +329,9 @@ class FactorAnalysisCommand:
 		# self._director.configuration_active.loadings,
 		# columns=self._director.configuration_active.dim_names,
 		# index=self._director.configuration_active.item_names)
-		point_coords = pd.DataFrame(\
-			loadings, columns=dim_names, index=item_names)
+		point_coords = pd.DataFrame(
+			loadings, columns=dim_names, index=item_names
+		)
 		#
 		# Get the eigenvector and the eigenvalues
 		ev, v = fa.get_eigenvalues()
@@ -350,16 +348,19 @@ class FactorAnalysisCommand:
 		print(f"DEBUG in factors_and_scores -- {eigen_common=}")
 		get_commonalities = fa.get_communalities()
 		commonalities = pd.DataFrame(
-			data=get_commonalities, columns=["Commonality"], index=item_names)
+			data=get_commonalities, columns=["Commonality"], index=item_names
+		)
 		factor_variance = pd.DataFrame(
 			fa.get_factor_variance(),
 			columns=dim_names,
-			index=["Variance", "Proportional", "Cumulative"])
+			index=["Variance", "Proportional", "Cumulative"],
+		)
 		uniquenesses = pd.DataFrame(
-			fa.get_uniquenesses(), columns=["Uniqueness"], index=item_names)
+			fa.get_uniquenesses(), columns=["Uniqueness"], index=item_names
+		)
 		scores = pd.DataFrame(fa.transform(evaluations), columns=dim_names)
 		scores.reset_index(inplace=True)
-		scores.rename(columns={'index': 'Resp no'}, inplace=True)
+		scores.rename(columns={"index": "Resp no"}, inplace=True)
 
 		score_1 = scores[score_1_name]
 		score_2 = scores[score_2_name]
@@ -378,32 +379,42 @@ class FactorAnalysisCommand:
 		self._director.configuration_active.loadings = loadings
 		# potentially move summarize scores to separate function
 
-		self._director.configuration_active.npoint = \
+		self._director.configuration_active.npoint = (
 			self._director.evaluations_active.nreferent
-		self._director.configuration_active.nreferent = \
+		)
+		self._director.configuration_active.nreferent = (
 			self._director.evaluations_active.nreferent
-		self._director.configuration_active.point_names = \
+		)
+		self._director.configuration_active.point_names = (
 			self._director.evaluations_active.item_names
-		self._director.configuration_active.point_labels = \
+		)
+		self._director.configuration_active.point_labels = (
 			self._director.evaluations_active.item_labels
-		self._director.configuration_active.range_points = \
+		)
+		self._director.configuration_active.range_points = (
 			self._director.evaluations_active.range_items
+		)
 		self._director.configuration_active.inter_point_distances()
 		self._director.scores_active.scores = scores
 		self._director.scores_active.score_1 = score_1
 		self._director.scores_active.score_2 = score_2
-		self._director.scores_active.nscores = \
+		self._director.scores_active.nscores = (
 			self._director.configuration_active.ndim
-		self._director.scores_active.nscored_individ = \
+		)
+		self._director.scores_active.nscored_individ = (
 			self._director.evaluations_active.nevaluators
-		self._director.scores_active.nscored_items = \
+		)
+		self._director.scores_active.nscored_items = (
 			self._director.configuration_active.npoint
+		)
 		# self._director.scores_active.nscored_items = \
 		# 	self._director.configuration_active.nitem
-		self._director.scores_active.dim_names = \
+		self._director.scores_active.dim_names = (
 			self._director.configuration_active.dim_names
-		self._director.scores_active.dim_labels = \
+		)
+		self._director.scores_active.dim_labels = (
 			self._director.configuration_active.dim_labels
+		)
 		self._director.scores_active.score_1_name = score_1_name
 		self._director.scores_active.score_2_name = score_2_name
 		# self._director.scores_active.first_label = score_1_label
@@ -416,18 +427,17 @@ class FactorAnalysisCommand:
 	# ------------------------------------------------------------------------
 
 	def _fill_configuration(self) -> None:
-
-		self._director.configuration_active.nreferent = \
+		self._director.configuration_active.nreferent = (
 			self._director.evaluations_active.nreferent
+		)
 
 		return
 
-# ------------------------------------------------------------------------
-
+	# ------------------------------------------------------------------------
 
 	def _get_factors_to_extract_from_user_initialize_variables(self) -> None:
 		"""Initialize variables for the factor extraction dialog."""
-	
+
 		self.zero_factors_error_title = "Factor analysis"
 		self.zero_factors_error_message = "Need number of factors."
 
@@ -439,32 +449,32 @@ class FactorAnalysisCommand:
 		label: str,
 		min_allowed: int,
 		max_allowed: int,
-		an_integer: bool, # noqa: FBT001
-		default: int) -> int:
-		
+		an_integer: bool,  # noqa: FBT001
+		default: int,
+	) -> int:
 		self._get_factors_to_extract_from_user_initialize_variables()
 		# ext_fact = 0
 		ext_fact_dialog = SetValueDialog(
-			title, label, min_allowed, max_allowed, an_integer, default)
+			title, label, min_allowed, max_allowed, an_integer, default
+		)
 		result = ext_fact_dialog.exec()
 		if result == QDialog.Accepted:
 			ext_fact = ext_fact_dialog.getValue()
 		else:
 			raise SpacesError(
-				self.zero_factors_error_title,
-				self.zero_factors_error_message)
+				self.zero_factors_error_title, self.zero_factors_error_message
+			)
 
 		if ext_fact == 0:
 			raise SpacesError(
-				self.zero_factors_error_title,
-				self.zero_factors_error_message)
+				self.zero_factors_error_title, self.zero_factors_error_message
+			)
 
 		return ext_fact
 
 	# ------------------------------------------------------------------------
 
 	def _print_factor_analysis_results(self) -> None:
-
 		loadings = self._director.configuration_active.loadings
 		point_coords = self._director.configuration_active.point_coords
 		eigen = self._director.configuration_active.eigen
@@ -488,12 +498,12 @@ class FactorAnalysisCommand:
 		print(scores)
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _create_factor_analysis_table(self) -> pd.DataFrame:
 		"""Create a DataFrame containing factor analysis results
 		with all relevant columns.
-		
+
 		Returns:
 			pd.DataFrame: Combined DataFrame with eigenvalues,
 			common factor eigenvalues, communalities, uniquenesses,
@@ -502,43 +512,44 @@ class FactorAnalysisCommand:
 		source = self._director.configuration_active
 		item_names = source.point_names
 		nreferent = len(item_names)
-		
+
 		# Get all required data components
 		eigenvalues = source.eigen["Eigenvalue"].to_numpy()
 		common_eigenvalues = source.eigen_common["Eigenvalue"].to_numpy()
 		commonalities = source.commonalities["Commonality"].to_numpy()
 		uniquenesses = source.uniquenesses["Uniqueness"].to_numpy()
 		loadings_factor1 = source.loadings.iloc[:, 0].to_numpy()
-		loadings_factor2 = \
-			source.loadings.iloc[:, 1].to_numpy() \
-				if source.ndim > 1 else [0] * nreferent
-		
-		# Create DataFrame with all columns
-		factor_analysis_df = pd.DataFrame({
-			"Eigenvalues": eigenvalues[:nreferent],
-			"Common Factor\nEigenvalues": common_eigenvalues[:nreferent],
-			"Commonalities": commonalities,
-			"Uniquenesses": uniquenesses,
-			"Item": item_names,
-			"Loadings\nFactor 1": loadings_factor1,
-			"Loadings\nFactor 2": loadings_factor2
-		})
+		loadings_factor2 = (
+			source.loadings.iloc[:, 1].to_numpy()
+			if source.ndim > 1
+			else [0] * nreferent
+		)
 
-		self._director.configuration_active.factor_analysis_df = \
+		# Create DataFrame with all columns
+		factor_analysis_df = pd.DataFrame(
+			{
+				"Eigenvalues": eigenvalues[:nreferent],
+				"Common Factor\nEigenvalues": common_eigenvalues[:nreferent],
+				"Commonalities": commonalities,
+				"Uniquenesses": uniquenesses,
+				"Item": item_names,
+				"Loadings\nFactor 1": loadings_factor1,
+				"Loadings\nFactor 2": loadings_factor2,
+			}
+		)
+
+		self._director.configuration_active.factor_analysis_df = (
 			factor_analysis_df
-		
+		)
+
 		return factor_analysis_df
 
 	# ------------------------------------------------------------------------
 
 
 class FactorAnalysisMachineLearningCommand:
-
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-		""" The Factor command calculates latent variables to explain the
+	def __init__(self, director: Status, common: Spaces) -> None:
+		"""The Factor command calculates latent variables to explain the
 		variation in evaluations.
 		"""
 		self._director = director
@@ -556,8 +567,9 @@ class FactorAnalysisMachineLearningCommand:
 		# self._director.configuration_active.distances = []
 
 		self._director.evaluations_active.item_labels = []
-		self._director.evaluations_active.range_items = \
-			range(self._director.evaluations_active.nitem)
+		self._director.evaluations_active.range_items = range(
+			self._director.evaluations_active.nitem
+		)
 		# self._hor_max: float = 0.0
 		# self._hor_min: float = 0.0
 		# self._vert_max: float = 0.0
@@ -568,10 +580,7 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -583,8 +592,8 @@ class FactorAnalysisMachineLearningCommand:
 		evaluations = self._director.evaluations_active.evaluations
 		dim_names = []
 		dim_labels = []
-		
-		X = evaluations # noqa: N806
+
+		X = evaluations  # noqa: N806
 		scaler = StandardScaler()
 		print("\n\nscaler: \n", scaler)
 		scaler.fit(X)
@@ -600,25 +609,31 @@ class FactorAnalysisMachineLearningCommand:
 		# 	n_components=2, svd_method="lapack", copy=True, rotation="varimax",
 		# 	random_state=0)
 		transformer = FactorAnalysis(
-			n_components=2, svd_method="randomized", copy=True,
+			n_components=2,
+			svd_method="randomized",
+			copy=True,
 			rotation="varimax",
-			random_state=0)
+			random_state=0,
+		)
 		print("\n\tTransformer: ", transformer)
 		# x_fit = transformer.fit(X)
 		# print("\nX-fit: \n", x_fit)
-		X_transformed = transformer.fit_transform(X) # noqa: N806
+		X_transformed = transformer.fit_transform(X)  # noqa: N806
 		print("\nX_transformed.shape: ", X_transformed.shape)
 		# print("\ncomponents_\n", transformer.components_)
-		pd.set_option('display.max_columns', None)
-		pd.set_option('display.precision', 2)
-		pd.set_option('display.max_colwidth', 300)
+		pd.set_option("display.max_columns", None)
+		pd.set_option("display.precision", 2)
+		pd.set_option("display.max_colwidth", 300)
 		components = pd.DataFrame(
 			transformer.components_,
-			index=transformer.get_feature_names_out(), columns=item_names)
+			index=transformer.get_feature_names_out(),
+			columns=item_names,
+		)
 
 		# X_transformed.columns = transformer.get_feature_names_out() badddd
 		x_trans = pd.DataFrame(
-			X_transformed, columns=transformer.get_feature_names_out())
+			X_transformed, columns=transformer.get_feature_names_out()
+		)
 		# x_trans = pd.DataFrame(
 		# 	X_transformed, columns=["Factor 1", "Factor 2"])
 		print("\nX_Trans: \n", x_trans)
@@ -626,12 +641,14 @@ class FactorAnalysisMachineLearningCommand:
 		print("\ntransformer.get_params(): \n", transformer.get_params())
 		print(
 			"\ntransformer.get_feature_names_out(): ",
-			transformer.get_feature_names_out())
+			transformer.get_feature_names_out(),
+		)
 		# dim_names = transformer.get_feature_names_out()
 		# dim_names = ["Factor 1", "Factor 2"]
 		#  print("Get_covariance: ", transformer.get_covariance())
 		covar = pd.DataFrame(
-			transformer.get_covariance(), columns=item_names, index=item_names)
+			transformer.get_covariance(), columns=item_names, index=item_names
+		)
 
 		print("\nCovariance: \n", covar)
 		print("\nPrecision: ", transformer.get_precision())
@@ -643,7 +660,8 @@ class FactorAnalysisMachineLearningCommand:
 		print("\n\tmean_: \n", transformer.mean_)
 		x_new = pd.DataFrame(
 			transformer.transform(X),
-			columns=transformer.get_feature_names_out())
+			columns=transformer.get_feature_names_out(),
+		)
 		# self._director.configuration_active.x_new = pd.DataFrame(
 		# 	transformer.transform(X),
 		# 	columns=["Factor 1", "Factor 2"])
@@ -667,7 +685,7 @@ class FactorAnalysisMachineLearningCommand:
 			# print(f"DEBUG -- {each_dim=}")
 			# dim_names.append(trans.columns[each_dim])
 			dim_names.append("Factor " + str(each_dim))
-			dim_labels.append("FA"+str(each_dim))
+			dim_labels.append("FA" + str(each_dim))
 		print(f"DEBUG -- in FA machine learning {item_names=}")
 		print(f"DEBUG -- in FA machine learning {range_items=}")
 
@@ -679,7 +697,8 @@ class FactorAnalysisMachineLearningCommand:
 		for each_point in range_items:
 			# print(f"DEBUG -- {each_point=}")
 			self._director.evaluations_active.item_labels.append(
-				self._director.evaluations_active.item_names[each_point][0:4])
+				self._director.evaluations_active.item_names[each_point][0:4]
+			)
 		# rivalry.rival_a.index = -1
 		# rivalry.rival_b.index = -1
 
@@ -689,10 +708,14 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.common.show_connector = False
 		self._director.configuration_active.distances.clear()
 		self._director.configuration_active.point_coords = pd.DataFrame(trans)
-		self._director.configuration_active.point_coords.columns = \
-			['Factor 1', 'Factor 2']
-		self._director.configuration_active.dim_names = \
-			["Factor 1", "Factor 2"]
+		self._director.configuration_active.point_coords.columns = [
+			"Factor 1",
+			"Factor 2",
+		]
+		self._director.configuration_active.dim_names = [
+			"Factor 1",
+			"Factor 2",
+		]
 		self._director.configuration_active.dim_labels = ["FA1", "FA2"]
 		scaler2 = StandardScaler()
 		print("\n\nscaler2: \n", scaler2)
@@ -703,60 +726,83 @@ class FactorAnalysisMachineLearningCommand:
 		print("\nscaler2.mean_: \n", scaler2.mean_)
 		new_trans = scaler2.transform(trans)
 		print("\nnew_trans: ", new_trans)
-		self._director.configuration_active.point_coords = \
-			pd.DataFrame(new_trans)
-		print("\nPoint_coords: \n",
-			self._director.configuration_active.point_coords)
+		self._director.configuration_active.point_coords = pd.DataFrame(
+			new_trans
+		)
+		print(
+			"\nPoint_coords: \n",
+			self._director.configuration_active.point_coords,
+		)
 		#
 		print(
 			"DEBUG -- in FA machine learning after trans "
-			f"{self._director.evaluations_active.item_names=}")
-		self._director.evaluations_active.nitem = \
+			f"{self._director.evaluations_active.item_names=}"
+		)
+		self._director.evaluations_active.nitem = (
 			self._director.evaluations_active.nreferent
+		)
 		print(
 			"DEBUG -- in FA machine learning before inter point call "
-			f"{self._director.evaluations_active.item_names=}")
+			f"{self._director.evaluations_active.item_names=}"
+		)
 		self._director.configuration_active.inter_point_distances()
 
 		self._director.common.set_axis_extremes_based_on_coordinates(
-			self._director.configuration_active.point_coords)
+			self._director.configuration_active.point_coords
+		)
 
-		self._director.configuration_active.range_points = \
+		self._director.configuration_active.range_points = (
 			self._director.evaluations_active.range_items
-		self._director.configuration_active.point_names = \
+		)
+		self._director.configuration_active.point_names = (
 			self._director.evaluations_active.item_names
-		self._director.configuration_active.point_labels = \
+		)
+		self._director.configuration_active.point_labels = (
 			self._director.evaluations_active.item_labels
+		)
 		self._director.configuration_active.scores = x_new
 		# self._director.configuration_active.x_new
 
 		self._director.configuration_active.scores.reset_index(inplace=True)
 		self._director.configuration_active.scores.rename(
-			columns={'index': 'Resp no'}, inplace=True)
-		self._director.scores_active.scores = \
+			columns={"index": "Resp no"}, inplace=True
+		)
+		self._director.scores_active.scores = (
 			self._director.configuration_active.scores
-		self._director.scores_active.nscores = \
+		)
+		self._director.scores_active.nscores = (
 			self._director.configuration_active.ndim
-		self._director.scores_active.range_scores = \
-			range(self._director.configuration_active.ndim)
-		self._director.scores_active.nscored_individ = \
+		)
+		self._director.scores_active.range_scores = range(
+			self._director.configuration_active.ndim
+		)
+		self._director.scores_active.nscored_individ = (
 			self._director.evaluations_active.nevaluators
-		self._director.scores_active.nscored_items = \
+		)
+		self._director.scores_active.nscored_items = (
 			self._director.evaluations_active.nitem
-		self._director.scores_active.dim_names = \
+		)
+		self._director.scores_active.dim_names = (
 			self._director.configuration_active.dim_names
-		
-		self._director.scores_active.dim_labels = \
+		)
+
+		self._director.scores_active.dim_labels = (
 			self._director.configuration_active.dim_labels
-		self._director.scores_active.score_1 = \
-			self._director.scores_active.scores['factoranalysis0']
-		self._director.scores_active.score_2 = \
-			self._director.scores_active.scores['factoranalysis1']
-		self._director.scores_active.scores = \
+		)
+		self._director.scores_active.score_1 = (
+			self._director.scores_active.scores["factoranalysis0"]
+		)
+		self._director.scores_active.score_2 = (
+			self._director.scores_active.scores["factoranalysis1"]
+		)
+		self._director.scores_active.scores = (
 			self._director.scores_active.scores.rename(
 				columns={
-					'factoranalysis0': 'Factor 1',
-					'factoranalysis1': 'Factor 2'})
+					"factoranalysis0": "Factor 1",
+					"factoranalysis1": "Factor 2",
+				}
+			)
+		)
 		self._director.scores_active.score_1_name = score_1_name
 		# self._director.configuration_active.score_1_name
 		self._director.scores_active.score_2_name = score_2_name
@@ -768,30 +814,28 @@ class FactorAnalysisMachineLearningCommand:
 		# ["a one???", "a two???"]
 
 		self._director.common.set_axis_extremes_based_on_coordinates(
-			self._director.scores_active.scores.iloc[:, 1:])
+			self._director.scores_active.scores.iloc[:, 1:]
+		)
 
 		if self._director.configuration_active.ndim > 1:
-			fig = \
-				self._director.configuration_active.\
+			fig = self._director.configuration_active.\
 				plot_a_configuration_using_matplotlib()
 			self._director.plot_to_gui(fig)
 			#
 			# self._director.create_widgets_for_output_and_log_tabs() <<<< tbd
 			#
 			self._director.show()
-			self._director.set_focus_on_tab('Plot')
+			self._director.set_focus_on_tab("Plot")
 
-
-
-
-
-		print("\nDEBUG -- in FA machine learning execute just before"
-			" _display()")
+		print(
+			"\nDEBUG -- in FA machine learning execute just before _display()"
+		)
 
 		self._display()
 		#  print??????????
-		print("\nDEBUG -- in FA machine learning execute just after"
-			" _display()")
+		print(
+			"\nDEBUG -- in FA machine learning execute just after _display()"
+		)
 		self._fill_configuration()
 		self._director.title_for_table_widget = "Factor analysis"
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -819,9 +863,9 @@ class FactorAnalysisMachineLearningCommand:
 	# ------------------------------------------------------------------------
 
 	def _fill_configuration(self) -> None:
-
-		self._director.configuration_active.nreferent = \
+		self._director.configuration_active.nreferent = (
 			self._director.evaluations_active.nreferent
+		)
 
 		return
 
@@ -829,17 +873,23 @@ class FactorAnalysisMachineLearningCommand:
 
 	def _display(self) -> QTableWidget:
 		#
-		gui_output_as_widget = \
+		gui_output_as_widget = (
 			self._create_table_widget_for_factor_machine_learning()
+		)
 		#
 		self.set_column_and_row_headers(
 			gui_output_as_widget,
 			[
-				"Eigenvalues", "Common Factor\nEigenvalues",
+				"Eigenvalues",
+				"Common Factor\nEigenvalues",
 				"Commonalities",
-				"Uniquenesses", "Item", "Loadings\nFactor 1",
-				"Loadings\nFactor 2"],
-			[])
+				"Uniquenesses",
+				"Item",
+				"Loadings\nFactor 1",
+				"Loadings\nFactor 2",
+			],
+			[],
+		)
 		#
 		self._director.resize_and_set_table_size(gui_output_as_widget, 20)
 		#
@@ -852,68 +902,89 @@ class FactorAnalysisMachineLearningCommand:
 		#
 		# print("DEBUG -- at top of _create_table_widget_for_factor_machine"
 		# 	"_learning")
-		
+
 		ncols = 5 + self._director.configuration_active.ndim
 		table_widget = QTableWidget(
-			self._director.evaluations_active.nreferent, ncols)
+			self._director.evaluations_active.nreferent, ncols
+		)
 		#
 		# Populate the QTableWidget with the DataFrame data
 		for row in range(self._director.evaluations_active.nreferent):
 			for col in range(ncols):
 				match col:
 					case 0:
-						temp_dataframe: pd.DataFrame = \
+						temp_dataframe: pd.DataFrame = (
 							self._director.configuration_active.eigen
+						)
 						item = QTableWidgetItem(
-							f"{temp_dataframe.iloc[row, 0]:6.4f}")
+							f"{temp_dataframe.iloc[row, 0]:6.4f}"
+						)
 						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						)
 						table_widget.setItem(row, col, item)
 					case 1:
-						temp_dataframe = \
+						temp_dataframe = (
 							self._director.configuration_active.eigen_common
+						)
 						item = QTableWidgetItem(
-							f"{temp_dataframe.iloc[row, 0]:6.4f}")
+							f"{temp_dataframe.iloc[row, 0]:6.4f}"
+						)
 						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						)
 						table_widget.setItem(row, col, item)
 					case 2:
-						temp_dataframe = \
+						temp_dataframe = (
 							self._director.configuration_active.commonalities
+						)
 						item = QTableWidgetItem(
-							f"{temp_dataframe.iloc[row, 0]:6.4f}")
+							f"{temp_dataframe.iloc[row, 0]:6.4f}"
+						)
 						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						)
 						table_widget.setItem(row, col, item)
 					case 3:
-						temp_dataframe = \
+						temp_dataframe = (
 							self._director.configuration_active.uniquenesses
+						)
 						item = QTableWidgetItem(
-							f"{temp_dataframe.iiloc[row, 0]:6.4f}")
+							f"{temp_dataframe.iiloc[row, 0]:6.4f}"
+						)
 						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						)
 						table_widget.setItem(row, col, item)
 					case 4:
 						item = QTableWidgetItem(
-							self._director.evaluations_active.item_names[row])
+							self._director.evaluations_active.item_names[row]
+						)
 						item.setTextAlignment(
-							QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+							QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+						)
 						table_widget.setItem(row, col, item)
 					case 5:
-						temp_dataframe = \
+						temp_dataframe = (
 							self._director.configuration_active.loadings
+						)
 						item = QTableWidgetItem(
-							f"{temp_dataframe.iloc[row, 0]:6.4f}")
+							f"{temp_dataframe.iloc[row, 0]:6.4f}"
+						)
 						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						)
 						table_widget.setItem(row, col, item)
 					case 6:
-						temp_dataframe = \
+						temp_dataframe = (
 							self._director.configuration_active.loadings
+						)
 						item = QTableWidgetItem(
-							f"{temp_dataframe.iloc[row, 1]:6.4f}")
+							f"{temp_dataframe.iloc[row, 1]:6.4f}"
+						)
 						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						)
 						table_widget.setItem(row, col, item)
 		return table_widget
 
@@ -925,11 +996,8 @@ class MDSCommand:
 	on the active configuration. An initial configuration and
 	similarities have to have been established.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "MDS"
@@ -946,78 +1014,92 @@ class MDSCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(
-			self,
-			common, # noqa: ANN001, ARG002
-			use_metric: bool=False) -> None: # noqa: FBT001, FBT002
-		
+		self,
+		common,  # noqa: ANN001, ARG002
+		use_metric: bool = False,
+	) -> None:  # noqa: FBT001, FBT002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.use_metric = use_metric
 		self._get_n_components_to_use_from_user(
-			self._mds_components_title, self._mds_components_label,
-			self._mds_components_min_allowed, self._mds_components_max_allowed,
-			self._mds_components_default, self._mds_components_an_integer)
+			self._mds_components_title,
+			self._mds_components_label,
+			self._mds_components_min_allowed,
+			self._mds_components_max_allowed,
+			self._mds_components_default,
+			self._mds_components_an_integer,
+		)
 		self._perform_mds_pick_up_point_labelling_from_similarities()
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		best_stress = self._director.configuration_active.best_stress
 		self._director.configuration_active.inter_point_distances()
-		self._director.similarities_active.\
-			rank_when_similarities_match_configuration(
-				self._director, self.common)
+		self._director.similarities_active.rank_when_similarities_match_configuration(
+			self._director, self.common
+		)
 		self._print_best_stress(ndim, best_stress)
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, self.common
+		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		self._director.title_for_table_widget = (
 			f"Configuration has  {ndim} dimensions and "
-			f"{npoint} points and stress of {best_stress: 6.4f}")
+			f"{npoint} points and stress of {best_stress: 6.4f}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _get_n_components_to_use_from_user_initialize_variables(self) -> None:
-
 		self.missing_n_components_error_title = self._director.command
-		self.missing_n_components_error_message = \
+		self.missing_n_components_error_message = (
 			"Need number of components to use."
-		
-# --------------------------------------------------------------------------
+		)
+
+	# ------------------------------------------------------------------------
 
 	def _get_n_components_to_use_from_user(
-		self, mds_components_title: str, mds_components_label: str,
-		mds_components_min_allowed: int, mds_components_max_allowed: int,
+		self,
+		mds_components_title: str,
+		mds_components_label: str,
+		mds_components_min_allowed: int,
+		mds_components_max_allowed: int,
 		mds_components_default: float,
-		mds_components_an_integer: bool) -> None: # noqa: FBT001
-
+		mds_components_an_integer: bool,
+	) -> None:  # noqa: FBT001
 		self._get_n_components_to_use_from_user_initialize_variables()
 		dialog = SetValueDialog(
-			mds_components_title, mds_components_label,
-			mds_components_min_allowed, mds_components_max_allowed,
-			mds_components_an_integer, mds_components_default)
+			mds_components_title,
+			mds_components_label,
+			mds_components_min_allowed,
+			mds_components_max_allowed,
+			mds_components_an_integer,
+			mds_components_default,
+		)
 		result = dialog.exec()
 		if result == QDialog.Accepted:
 			self._director.configuration_active.n_comp = dialog.getValue()
 		else:
 			raise MissingInformationError(
 				self.missing_n_components_error_title,
-				self.missing_n_components_error_message)
+				self.missing_n_components_error_message,
+			)
 		if self._director.configuration_active.n_comp == 0:
 			raise MissingInformationError(
 				self.missing_n_components_error_title,
-				self.missing_n_components_error_message)
+				self.missing_n_components_error_message,
+			)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _perform_mds_pick_up_point_labelling_from_similarities(self) -> None:
-
-
 		ndim = self._director.configuration_active.ndim
 		n_comp = self._director.configuration_active.n_comp
 		use_metric = self._director.configuration_active.use_metric
@@ -1035,7 +1117,8 @@ class MDSCommand:
 		if ndim == 0:
 			ndim = n_comp
 		configuration_instance = self._director.common.mds(
-			n_comp, use_metric, similarities_instance)
+			n_comp, use_metric, similarities_instance
+		)
 
 		range_points = range(nitem)
 		if len(point_labels) == 0:
@@ -1053,21 +1136,19 @@ class MDSCommand:
 		self._director.configuration_active.item_names = point_names
 		self._director.configuration_active.item_labels = point_labels
 
-		self._director.configuration_active.point_coords = \
+		self._director.configuration_active.point_coords = (
 			configuration_instance.point_coords
+		)
 
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, self.common
+		)
 
 		return
 
-# ------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def _print_best_stress(
-			self,
-			ndim: int,
-			best_stress: float) -> None:
-		
+	def _print_best_stress(self, ndim: int, best_stress: float) -> None:
 		print(f"Best stress in {ndim} dimensions:    {best_stress: 6.4}\n")
 
 		return
@@ -1076,13 +1157,9 @@ class MDSCommand:
 
 
 class PrincipalComponentsCommand:
-	""" The Principal components command
-	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	"""The Principal components command"""
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Principal components"
@@ -1105,70 +1182,76 @@ class PrincipalComponentsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		(pca_transformer,
-			X_pca_transformed, # noqa:N806
-			x_pca_trans, transpose, trans) = \
-			self._perform_principal_component_analysis()
+		(
+			pca_transformer,
+			X_pca_transformed,  # noqa:N806
+			x_pca_trans,
+			transpose,
+			trans,
+		) = self._perform_principal_component_analysis()
 		self._establish_principal_components_as_active_configuration(trans)
 		self._establish_pca_results_as_scores(X_pca_transformed)
 		self._print_pca(
-			pca_transformer,
-			X_pca_transformed,
-			x_pca_trans, transpose)
+			pca_transformer, X_pca_transformed, x_pca_trans, transpose
+		)
 		# Display scree diagram showing eigenvalues by dimensionality
 		# Ask user how many dimensions to be retained
 		# Display configuration with vectors from origin to each point
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
-		print(f"DEBUG -- at bottom of PrincipalComponentsCommand"
-			f" {self._director.configuration_active.point_coords=}")
+		print(
+			f"DEBUG -- at bottom of PrincipalComponentsCommand"
+			f" {self._director.configuration_active.point_coords=}"
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _perform_principal_component_analysis(self) -> tuple:
-
 		item_names = self._director.evaluations_active.item_names
 
-		X_pca = self._director.evaluations_active.evaluations # noqa: N806
+		X_pca = self._director.evaluations_active.evaluations  # noqa: N806
 		pca_transformer = PCA(n_components=2, copy=True, random_state=0)
-		X_pca_transformed = pca_transformer.fit_transform(X_pca) # noqa: N806
-		pd.set_option('display.max_columns', None)
-		pd.set_option('display.precision', 2)
-		pd.set_option('display.max_colwidth', 300)
+		X_pca_transformed = pca_transformer.fit_transform(X_pca)  # noqa: N806
+		pd.set_option("display.max_columns", None)
+		pd.set_option("display.precision", 2)
+		pd.set_option("display.max_colwidth", 300)
 		components = pd.DataFrame(
 			pca_transformer.components_,
 			index=pca_transformer.get_feature_names_out(),
-			columns=item_names)
+			columns=item_names,
+		)
 		x_pca_trans = pd.DataFrame(
-			X_pca_transformed,
-			columns=pca_transformer.get_feature_names_out())
+			X_pca_transformed, columns=pca_transformer.get_feature_names_out()
+		)
 		self._director.configuration_active.pca_covar = pd.DataFrame(
 			pca_transformer.get_covariance(),
 			columns=item_names,
-			index=item_names)
+			index=item_names,
+		)
 		transpose = components.transpose()
 		trans = pd.DataFrame(transpose)
 		return (
-			pca_transformer, X_pca_transformed, x_pca_trans, transpose,
-			trans)
+			pca_transformer,
+			X_pca_transformed,
+			x_pca_trans,
+			transpose,
+			trans,
+		)
 
 	# ------------------------------------------------------------------------
 
 	def _establish_principal_components_as_active_configuration(
-			self,
-			trans: pd.DataFrame) -> None:
-		"""Establish the principal components as the active configuration.
-		"""
+		self, trans: pd.DataFrame
+	) -> None:
+		"""Establish the principal components as the active configuration."""
 		ndim = trans.shape[1]
 		npoint = trans.shape[0]
 		dim_names = []
@@ -1181,7 +1264,7 @@ class PrincipalComponentsCommand:
 
 		for each_dim in range_dims:
 			dim_names.append(trans.columns[each_dim])
-			dim_labels.append("CO"+str(each_dim))
+			dim_labels.append("CO" + str(each_dim))
 		for each_point in range_points:
 			point_names.append(trans.index[each_point])
 			point_labels.append(point_names[each_point][0:4])
@@ -1202,18 +1285,17 @@ class PrincipalComponentsCommand:
 	# ------------------------------------------------------------------------
 
 	def _establish_pca_results_as_scores(
-			self,
-			X_pca_transformed: np.array) -> None: # noqa: N803
-
+		self, X_pca_transformed: np.array
+	) -> None:  # noqa: N803
 		score_1_name = self._director.configuration_active.dim_names[0]
 		score_2_name = self._director.configuration_active.dim_names[1]
 		hor_axis_name = self._director.configuration_active.dim_names[0]
 		vert_axis_name = self._director.configuration_active.dim_names[1]
 		dim_names = self._director.configuration_active.dim_names
-			
+
 		scores = pd.DataFrame(X_pca_transformed, columns=dim_names)
 		scores.reset_index(inplace=True)
-		scores.rename(columns={'index': 'Resp no'}, inplace=True)
+		scores.rename(columns={"index": "Resp no"}, inplace=True)
 
 		self._director.configuration_active.score_1_name = score_1_name
 		self._director.configuration_active.score_2_name = score_2_name
@@ -1226,12 +1308,12 @@ class PrincipalComponentsCommand:
 	# ------------------------------------------------------------------------
 
 	def _print_pca(
-			self,
-			pca_transformer: PCA,
-			X_pca_transformed: np.array, # noqa: N803
-			x_pca_trans: pd.DataFrame,
-			transpose: pd.DataFrame) -> None:
-
+		self,
+		pca_transformer: PCA,
+		X_pca_transformed: np.array,  # noqa: N803
+		x_pca_trans: pd.DataFrame,
+		transpose: pd.DataFrame,
+	) -> None:
 		pca_covar = self._director.configuration_active.pca_covar
 		point_coords = self._director.configuration_active.point_coords
 		scores = self._director.configuration_active.scores
@@ -1242,24 +1324,22 @@ class PrincipalComponentsCommand:
 		print("pca_transformer.get_params(): \n", pca_transformer.get_params())
 		print(
 			"pca_transformer.get_feature_names_out(): ",
-			pca_transformer.get_feature_names_out())
+			pca_transformer.get_feature_names_out(),
+		)
 		print("PCA Covariance: \n", pca_covar)
 		print("\nTranspose: \n", transpose)
 		print("\nPoint_coords: \n", point_coords)
 		print(f"\nScores from components\n {scores=}")
 		return
 
+
 # --------------------------------------------------------------------------
 
 
 class VectorsCommand:
-	""" The Vectors command plots the active configuration using vectors.
-	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	"""The Vectors command plots the active configuration using vectors."""
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Vectors"
@@ -1277,10 +1357,7 @@ class VectorsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:  # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -1290,7 +1367,8 @@ class VectorsCommand:
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
 			f"Vectors are based on the active configuration "
-			f"which has {ndim} dimensions and {npoint} points")
+			f"which has {ndim} dimensions and {npoint} points"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1298,24 +1376,19 @@ class VectorsCommand:
 	# ------------------------------------------------------------------------
 
 	def compute_vector_length_angle_and_angle_degree(
-			self,
-			x: float,
-			y: float) -> tuple[float, float, float]:
-		
-		length = np.sqrt(x ** 2 + y ** 2)
+		self, x: float, y: float
+	) -> tuple[float, float, float]:
+		length = np.sqrt(x**2 + y**2)
 		angle = np.arctan2(y, x)
 		angle_degree = np.rad2deg(angle)
 		return length, angle, angle_degree
+
 
 # --------------------------------------------------------------------------
 
 
 class UncertaintyAnalysis:
-
-	def __init__(
-			self,
-			director: Status) -> None:
-
+	def __init__(self, director: Status) -> None:
 		self._director = director
 		self._hor_dim = director.common.hor_dim
 		self._vert_dim = director.common.vert_dim
@@ -1333,16 +1406,14 @@ class UncertaintyAnalysis:
 		self.item_names: list[str] = []
 		self.item_labels: list[str] = []
 		self.nreferent: int = 0
-		
 
 		self.universe_size: int = 0
-		self.number_of_repetitions: int = 0
+		self.nrepetitions: int = 0
 		self.probability_of_inclusion: float = 0.0
 		self.sample_design: pd.DataFrame = pd.DataFrame()
 		self.sample_design_frequencies: pd.DataFrame = pd.DataFrame()
 		self.sample_repetitions: pd.DataFrame = pd.DataFrame()
-		self.sample_repetitions_stress: list[float] = []
-		self.repetitions_stress_df: pd.DataFrame = pd.DataFrame()
+		self.solutions_stress_df: pd.DataFrame = pd.DataFrame()
 		self.sample_solutions: pd.DataFrame = pd.DataFrame()
 		self.ndim: int = 0
 		self.npoint: int = 0
@@ -1352,153 +1423,155 @@ class UncertaintyAnalysis:
 		self.point_names: list[str] = []
 		self.point_labels: list[str] = []
 		self.target_out: np.ndarray = np.array([])
-		self.repetitions_rotated: pd.DataFrame = pd.DataFrame()
-
-
-
+		self.solutions: pd.DataFrame = pd.DataFrame()
 
 	# ------------------------------------------------------------------------
 
 	def create_table_widget_for_sample_designer(self) -> QTableWidget:
-
-		nrepetitions = self._director.uncertainty_active.number_of_repetitions
-		repetition_freqs = self._director.uncertainty_active. \
-			sample_design_frequencies
+		nrepetitions = self._director.uncertainty_active.nrepetitions
+		repetition_freqs = (
+			self._director.uncertainty_active.sample_design_frequencies
+		)
 		universe_size = self._director.uncertainty_active.universe_size
 
 		table_widget = QTableWidget(nrepetitions, 5)
 
 		for each_repetition in range(1, nrepetitions + 1):
-
 			_repetition_selected = (
-				(repetition_freqs['Repetition'] == each_repetition)
-				& (repetition_freqs['Selected']))
+				repetition_freqs["Repetition"] == each_repetition
+			) & (repetition_freqs["Selected"])
 			_repetition_not_selected = (
-				(repetition_freqs['Repetition'] == each_repetition)
-				& (~repetition_freqs['Selected']))
+				repetition_freqs["Repetition"] == each_repetition
+			) & (~repetition_freqs["Selected"])
 
 			value_1 = f"{each_repetition}"
 			item_1 = QTableWidgetItem(value_1)
 			item_1.setTextAlignment(QtCore.Qt.AlignCenter)
 			table_widget.setItem(
-				each_repetition - 1, 0, QTableWidgetItem(item_1))
+				each_repetition - 1, 0, QTableWidgetItem(item_1)
+			)
 
-			if repetition_freqs.loc[_repetition_selected]['Count'].empty:
+			if repetition_freqs.loc[_repetition_selected]["Count"].empty:
 				value_2 = "0"
 				percent_value_2 = 0.0
 			else:
-				value_2 = \
-					f"{repetition_freqs.loc[\
-						_repetition_selected]['Count'].to_numpy()[0]}"
+				value_2 = f"{
+					repetition_freqs.loc[_repetition_selected][
+						'Count'
+					].to_numpy()[0]
+				}"
 				percent_value_2 = (
-					repetition_freqs.loc[\
-						_repetition_selected]['Count'].to_numpy()[0]
-					/ universe_size)
+					repetition_freqs.loc[_repetition_selected][
+						"Count"
+					].to_numpy()[0]
+					/ universe_size
+				)
 			item_2 = QTableWidgetItem(value_2)
 			item_2.setTextAlignment(QtCore.Qt.AlignCenter)
 			table_widget.setItem(
-				each_repetition - 1, 1, QTableWidgetItem(item_2))
+				each_repetition - 1, 1, QTableWidgetItem(item_2)
+			)
 			value_3 = f"{percent_value_2:.2%}"
 			item_3 = QTableWidgetItem(value_3)
 			item_3.setTextAlignment(QtCore.Qt.AlignCenter)
 			table_widget.setItem(
-				each_repetition - 1, 2, QTableWidgetItem(item_3))
-			if repetition_freqs.loc[_repetition_not_selected]['Count'].empty:
+				each_repetition - 1, 2, QTableWidgetItem(item_3)
+			)
+			if repetition_freqs.loc[_repetition_not_selected]["Count"].empty:
 				value_4 = "0"
 				percent_value_4 = 0.0
 			else:
-				value_4 = \
-					f"{repetition_freqs.loc[\
-						_repetition_not_selected]['Count'].to_numpy()[0]}"
-				percent_value_4 = repetition_freqs.\
-					loc[_repetition_not_selected]['Count'].to_numpy()[0] \
+				value_4 = f"{
+					repetition_freqs.loc[_repetition_not_selected][
+						'Count'
+					].to_numpy()[0]
+				}"
+				percent_value_4 = (
+					repetition_freqs.loc[_repetition_not_selected][
+						"Count"
+					].to_numpy()[0]
 					/ universe_size
+				)
 			item_4 = QTableWidgetItem(value_4)
 			item_4.setTextAlignment(QtCore.Qt.AlignCenter)
 			table_widget.setItem(
-				each_repetition - 1, 3, QTableWidgetItem(item_4))
+				each_repetition - 1, 3, QTableWidgetItem(item_4)
+			)
 			value_5 = f"{percent_value_4:.2%}"
 			item_5 = QTableWidgetItem(value_5)
 			item_5.setTextAlignment(QtCore.Qt.AlignCenter)
 			table_widget.setItem(
-				each_repetition - 1, 4, QTableWidgetItem(item_5))
-			
+				each_repetition - 1, 4, QTableWidgetItem(item_5)
+			)
+
 		return table_widget
 
 	# ------------------------------------------------------------------------
 
 
 class UncertaintyCommand:
-
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Uncertainty"
 
-		self.repetitions_rotated: pd.DataFrame = pd.DataFrame(
-			columns=[self._director.target_active.dim_names])
-		self.repetitions_rotated: pd.DataFrame = pd.DataFrame()
-		self._director.uncertainty_active.sample_solutions: pd.DataFrame = \
+		self.solutions: pd.DataFrame = pd.DataFrame(
+			columns=[self._director.target_active.dim_names]
+		)
+		self.solutions: pd.DataFrame = pd.DataFrame()
+		self._director.uncertainty_active.sample_solutions: pd.DataFrame = (
 			pd.DataFrame()
+		)
 		self.target_out: np.array = np.array([])
 		self.active_out: np.array = np.array([])
 		self.target_adjusted = TargetFeature(self._director)
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None:
+		director = self._director
+		common = self.common
+		uncertainty_active = director.uncertainty_active
+		sample_repetitions = uncertainty_active.sample_repetitions
+		nreferent = director.evaluations_active.nreferent
 
-		peek("DEBUG -- at top of UncertaintyCommand execute")
-		sample_repetitions = \
-			self._director.uncertainty_active.sample_repetitions
-		nreferent = self._director.evaluations_active.nreferent
+		director.record_command_as_selected_and_in_process()
+		director.optionally_explain_what_command_does()
+		director.dependency_checker.detect_dependency_problems()
 
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		self.target_out, self.active_out = self._get_solutions_from_mds(
+			common, sample_repetitions, nreferent
+		)
+		uncertainty_active.target_out = self.target_out
+		uncertainty_active.solutions = self.solutions
+		uncertainty_active.sample_solutions = self.solutions
 
-		self.target_out, self.active_out = self._get_repetition_mds_solutions(
-			common, sample_repetitions, nreferent)
-		self._director.uncertainty_active.target_out = self.target_out
-		self._director.uncertainty_active.repetitions_rotated = \
-			self.repetitions_rotated
-		self._director.uncertainty_active.sample_solutions = \
-			self.repetitions_rotated
-		peek("DEBUG -- after _get_repetition_mds_solutions - solutions")
-		peek(f"{self._director.uncertainty_active.sample_solutions}")
-		self.common.create_uncertainty_table()
+		common.create_solutions_table()
 
-		print(self._director.uncertainty_active.repetitions_stress_df.\
-			to_string(index=False))
-		peek("DEBUG -- after _get_repetition_mds_solutions\n")
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"uncertainty")
-		peek("DEBUG -- after create_plot_for_plot_and_gallery_tabs")
-		self._director.title_for_table_widget = (
+		print(
+			director.uncertainty_active.solutions_stress_df.to_string(
+				index=False
+			)
+		)
+
+		director.common.create_plot_for_plot_and_gallery_tabs("uncertainty")
+		director.title_for_table_widget = (
 			"An ellipse around each point delineates with 95% confidence that "
-			"the point lies within that point's ellipse")
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Plot')
-		self._director.record_command_as_successfully_completed()
+			"the point lies within that point's ellipse"
+		)
+		director.create_widgets_for_output_and_log_tabs()
+		director.set_focus_on_tab("Plot")
+		director.record_command_as_successfully_completed()
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def _get_repetition_mds_solutions(
-			self,
-			common: Spaces,
-			sample_repetitions: pd.DataFrame,
-			nreferent: int) -> tuple[np.array, np.array]:
-
+	def _get_solutions_from_mds(
+		self, common: Spaces, sample_repetitions: pd.DataFrame, nreferent: int
+	) -> tuple[np.array, np.array]:
 		director = self._director
 		configuration_active = director.configuration_active
 		target_active = director.target_active
@@ -1506,9 +1579,8 @@ class UncertaintyCommand:
 		dim_names = target_active.dim_names
 		# dim_labels = target_active.dim_labels
 		self.ndim = target_active.ndim
-		repetition_freqs = \
-			uncertainty_active.sample_design_frequencies
-		nrepetitions = uncertainty_active.number_of_repetitions
+		repetition_freqs = uncertainty_active.sample_design_frequencies
+		nrepetitions = uncertainty_active.nrepetitions
 		range_repetitions = range(nrepetitions)
 		# current_repetition: EvaluationsFeature = \
 		# EvaluationsFeature(self._director)
@@ -1521,57 +1593,69 @@ class UncertaintyCommand:
 		item_labels = uncertainty_active.item_labels
 
 		repetition_sizes = self.get_repetition_sizes(
-			range_repetitions, repetition_freqs)
+			range_repetitions, repetition_freqs
+		)
 
 		start_case = 0
 		extract_ndim = 2
 		repetition_n = 1
+		stress_data = []
 		for repetition_size in repetition_sizes:
-
 			(current_repetition, start_case) = self.get_current_repetition(
-				start_case, repetition_size, sample_repetitions,
-				nreferent, item_names, item_labels)
+				start_case,
+				repetition_size,
+				sample_repetitions,
+				nreferent,
+				item_names,
+				item_labels,
+			)
 
 			line_of_sight = self._director.common.los(current_repetition)
 			self.duplicate_repetition_line_of_sight(common, line_of_sight)
 
 			the_loadings = self._director.common.mds(
-				extract_ndim, use_metric, line_of_sight)
+				extract_ndim, use_metric, line_of_sight
+			)
 
-			uncertainty_active.sample_repetitions_stress.append(
-				the_loadings.best_stress)
+			stress_data.append([repetition_n, the_loadings.best_stress])
 
 			active_in = np.array(the_loadings.point_coords)
 
 			target_in = np.array(target_active.point_coords)
 
-			target_out, active_out, disparity = \
-				procrustes(target_in, active_in)
+			target_out, active_out, disparity = procrustes(
+				target_in, active_in
+			)
 
 			active_out_as_df = pd.DataFrame(active_out)
 			# print(f"\nDEBUG -- in _get_repetition after procrustes plus "
 			# 	f"\nactive_out_as_df: \n{active_out_as_df}")
-			self.repetitions_rotated = pd.concat(
-				[self.repetitions_rotated, active_out_as_df], ignore_index=True
+			self.solutions = pd.concat(
+				[self.solutions, active_out_as_df], ignore_index=True
 			)
 
 			# start_case = end_case
 			repetition_n += 1
 
-		repetitions_rotated_columns = dim_names
+		# Create solutions_stress_df from the collected stress data
+		uncertainty_active.solutions_stress_df = pd.DataFrame(
+			stress_data, columns=["Solution", "Stress"]
+		)
+
+		solutions_columns = dim_names
 
 		self.target_out = target_out
 		self.active_out = active_out
 
 		self.target_last = target_out
-		self.repetitions_rotated.columns = repetitions_rotated_columns
+		self.solutions.columns = solutions_columns
 		target_active = self._director.target_active
 
 		self.establish_sample_solutions_info()
 
 		# uncertainty_active.nrepetitions = nrepetitions
 
-		# peek("At end of _get_repetition_mds_solutions\n",
+		# peek("At end of _get_solutions_from_mds\n",
 		# 	"self._director.uncertainty_active.sample_solutions: \n"
 		# 	f"{self._director.uncertainty_active.sample_solutions}\n"
 		# 	"self._director.uncertainty_active.sample_repetitions_stress: \n"
@@ -1580,55 +1664,53 @@ class UncertaintyCommand:
 
 		return target_out, active_out
 
-# -------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def establish_sample_solutions_info(self) -> None:
-
 		uncertainty_active = self._director.uncertainty_active
 		target_active = self._director.target_active
-		uncertainty_active.point_coords = \
-			uncertainty_active.repetitions_rotated
+		uncertainty_active.point_coords = uncertainty_active.solutions
 		uncertainty_active.npoints = target_active.npoint
 		uncertainty_active.ndim = target_active.ndim
 		uncertainty_active.dim_names = target_active.dim_names
 		uncertainty_active.dim_labels = target_active.dim_labels
 		uncertainty_active.point_names = target_active.point_names
 		uncertainty_active.point_labels = target_active.point_labels
-		uncertainty_active.nsolutions = \
-			uncertainty_active.number_of_repetitions
-		
+		uncertainty_active.nsolutions = uncertainty_active.nrepetitions
+		uncertainty_active.range_points = range(uncertainty_active.npoints)
+
 		return
-# -------------------------------------------------------------------------
+
+	# -------------------------------------------------------------------------
 
 	def get_repetition_sizes(
-			self,
-			range_repetitions: range,
-			repetition_freqs: pd.DataFrame) -> list[int]:
-
+		self, range_repetitions: range, repetition_freqs: pd.DataFrame
+	) -> list[int]:
 		repetition_sizes = []
 		for each_repetition in range_repetitions:
 			row_with_repetition_size: int = (each_repetition * 2) + 1
 			column_with_repetition_size: int = 2
-			size = repetition_freqs \
-				.iloc[row_with_repetition_size, column_with_repetition_size]
+			size = repetition_freqs.iloc[
+				row_with_repetition_size, column_with_repetition_size
+			]
 			repetition_sizes.append(size)
 
 		return repetition_sizes
 
-# -------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def get_current_repetition(
-			self,
-			start_case: int,
-			repetition_size: int,
-			sample_repetitions: pd.DataFrame,
-			nreferent: int,
-			item_names: list[str],
-			item_labels:list[str]) -> \
-				tuple[EvaluationsFeature, int]:
+		self,
+		start_case: int,
+		repetition_size: int,
+		sample_repetitions: pd.DataFrame,
+		nreferent: int,
+		item_names: list[str],
+		item_labels: list[str],
+	) -> tuple[EvaluationsFeature, int]:
 		"""
 		Creates an EvaluationsFeature instance for the current repetition.
-		
+
 		Parameters:
 		-----------
 		start_case : int
@@ -1641,7 +1723,7 @@ class UncertaintyCommand:
 			Number of referents in the evaluation
 		item_names_and_labels : tuple
 			Tuple containing (item_names, item_labels)
-		
+
 		Returns:
 		--------
 		tuple
@@ -1652,9 +1734,11 @@ class UncertaintyCommand:
 
 		end_case = start_case + repetition_size
 		current_repetition: EvaluationsFeature = EvaluationsFeature(
-			self._director)
+			self._director
+		)
 		current_repetition.evaluations = sample_repetitions.iloc[
-			start_case:end_case]
+			start_case:end_case
+		]
 		current_repetition.nreferent = nreferent
 		current_repetition.item_names = item_names
 		current_repetition.item_labels = item_labels
@@ -1662,13 +1746,11 @@ class UncertaintyCommand:
 		start_case = end_case + 1
 		return current_repetition, start_case
 
-# -------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def duplicate_repetition_line_of_sight(
-			self,
-			common: Spaces,
-			line_of_sight: SimilaritiesFeature) -> None:
-
+		self, common: Spaces, line_of_sight: SimilaritiesFeature
+	) -> None:
 		(
 			line_of_sight.similarities_as_dataframe,
 			line_of_sight.similarities_as_dict,
@@ -1677,21 +1759,20 @@ class UncertaintyCommand:
 			line_of_sight.sorted_similarities_w_pairs,
 			line_of_sight.ndyad,
 			line_of_sight.range_dyads,
-			line_of_sight.range_items) = \
-			common.duplicate_in_different_structures(
-				line_of_sight.similarities,
-				line_of_sight.item_names,
-				line_of_sight.item_labels,
-				line_of_sight.nitem,
-				line_of_sight.value_type)
+			line_of_sight.range_items,
+		) = common.duplicate_in_different_structures(
+			line_of_sight.similarities,
+			line_of_sight.item_names,
+			line_of_sight.item_labels,
+			line_of_sight.nitem,
+			line_of_sight.value_type,
+		)
 
 	# ------------------------------------------------------------------------
 
 	def _display(self) -> QTableWidget:
-		
 		table_widget = StatisticalTableWidget(self._director)
 		gui_output_as_widget = table_widget.display_table("uncertainty")
-		
+
 		self._director.output_widget_type = "Table"
 		return gui_output_as_widget
-

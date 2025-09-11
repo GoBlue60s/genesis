@@ -2,26 +2,20 @@ import math
 import numpy as np
 from numpy.linalg import svd
 from numpy import asarray
-import peek # noqa: F401
+import peek  # noqa: F401
 import pandas as pd
-from PySide6.QtWidgets import (
-	QDialog
-)
-from dialogs import(
-	MoveDialog, SelectItemsDialog, SetValueDialog
-)
-from exceptions import (
-	MissingInformationError, SelectionError, SpacesError
-)
+from PySide6.QtWidgets import QDialog
+from dialogs import MoveDialog, SelectItemsDialog, SetValueDialog
+from exceptions import MissingInformationError, SelectionError, SpacesError
 from common import Spaces
 from director import Status
 from scipy.spatial import procrustes
 
-	# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 
 
 class CompareCommand:
-	""" The compare command performs a Procrustes rotation of the
+	"""The compare command performs a Procrustes rotation of the
 	active configuration to match the target configuration. This is useful
 	when the target configuration is a reference configuration and the
 	active configuration needs to be rotated to match it.
@@ -30,11 +24,8 @@ class CompareCommand:
 	It requires the target has the same number of points and dimensions
 	as the active configuration.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Compare"
@@ -45,10 +36,7 @@ class CompareCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:
-
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -59,11 +47,13 @@ class CompareCommand:
 		self._director.common.create_plot_for_plot_and_gallery_tabs("compare")
 		disparity = self._director.target_active.disparity
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-				self._director, common)
+			self._director, common
+		)
 		self._director.title_for_table_widget = (
 			f"After procrustean rotation active configuration "
 			f"matches target configuration with disparity of "
-			f"{disparity:8.4f}")
+			f"{disparity:8.4f}"
+		)
 		# peek("In Compare about to create widgets for output and log tabs")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -72,7 +62,6 @@ class CompareCommand:
 	# ------------------------------------------------------------------------
 
 	def _compare(self) -> float:
-
 		dim_labels = self._director.configuration_active.dim_labels
 		point_names = self._director.configuration_active.point_names
 		point_coords = self._director.configuration_active.point_coords
@@ -83,18 +72,14 @@ class CompareCommand:
 		active_out, target_out, disparity = procrustes(active_in, target_in)
 
 		point_coords = pd.DataFrame(
-			active_out,
-			columns=dim_labels,
-			index=point_names)
+			active_out, columns=dim_labels, index=point_names
+		)
 		target_coords = pd.DataFrame(
-			target_out,
-			columns=dim_labels,
-			index=point_names)
+			target_out, columns=dim_labels, index=point_names
+		)
 		compared = point_coords.merge(
-			target_coords,
-			how="inner",
-			left_index=True,
-			right_index=True)
+			target_coords, how="inner", left_index=True, right_index=True
+		)
 
 		self._director.configuration_active.point_coords = point_coords
 		self._director.target_active.point_coords = target_coords
@@ -102,43 +87,44 @@ class CompareCommand:
 
 		return disparity
 
-# --------------------------------------------------------------------------
+	# -----------------------------------------------------------------------
 
 	def _create_compare_table(self) -> pd.DataFrame:
 		"""Create a DataFrame comparing active configuration with
 		target configuration.
-		
+
 		Returns:
 			pd.DataFrame: DataFrame with the active and target coordinates
 		"""
 		# Get configuration objects
 		active_config = self._director.configuration_active
 		target_config = self._director.target_active
-		
+
 		# Get the dimensions we're using
 		common = self._director.common
 		hor_dim = common.hor_dim
 		vert_dim = common.vert_dim
-		
+
 		# Create an empty DataFrame with point names as index
 		compare_df = pd.DataFrame(index=active_config.point_names)
-		
+
 		# Add the coordinates in an object-oriented way
 		# Use a loop to iterate over dimensions and set X/Y coordinates
-		for index, dim in [(hor_dim, 'X'), (vert_dim, 'Y')]:
-			compare_df[f'Active_{dim}'] = \
-				active_config.point_coords.iloc[:, index]
-			compare_df[f'Target_{dim}'] = \
-				target_config.point_coords.iloc[:, index]
-		
+		for index, dim in [(hor_dim, "X"), (vert_dim, "Y")]:
+			compare_df[f"Active_{dim}"] = active_config.point_coords.iloc[
+				:, index
+			]
+			compare_df[f"Target_{dim}"] = target_config.point_coords.iloc[
+				:, index
+			]
+
 		self._director.target_active.compare_df = compare_df
 
 		return compare_df
-	
+
 	# ------------------------------------------------------------------------
 
 	def _print_comparison(self) -> None:
-
 		point_coords = self._director.configuration_active.point_coords
 		target_coords = self._director.target_active.point_coords
 
@@ -154,14 +140,11 @@ class CompareCommand:
 
 
 class CenterCommand:
-	""" The Center command shifts points to be centered around the origin.
-		This is useful when coordinates are Lat long degrees.
+	"""The Center command shifts points to be centered around the origin.
+	This is useful when coordinates are Lat long degrees.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		director.command = "Center"
@@ -170,25 +153,25 @@ class CenterCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:
-
+	def execute(self, common: Spaces) -> None:
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
-		
+
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._center_by_subtracting_mean_from_coordinates()
 		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, common)
+			self._director, common
+		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
+			f"Configuration has {ndim} dimensions and {npoint} points"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -196,16 +179,16 @@ class CenterCommand:
 	# ------------------------------------------------------------------------
 
 	def _center_by_subtracting_mean_from_coordinates(self) -> None:
-
 		point_coords = self._director.configuration_active.point_coords
 		point_labels = self._director.configuration_active.point_labels
 
 		dim_avg = point_coords.mean()
 		for index_dim in range(len(dim_avg)):
 			for index_point, _ in enumerate(point_labels):
-				point_coords.iloc[index_point, index_dim] \
-					= point_coords.iloc[index_point, index_dim] \
+				point_coords.iloc[index_point, index_dim] = (
+					point_coords.iloc[index_point, index_dim]
 					- dim_avg.iloc[index_dim]
+				)
 
 		self._director.configuration_active.point_coords = point_coords
 
@@ -215,13 +198,9 @@ class CenterCommand:
 
 
 class InvertCommand:
-	""" The Invert command is used to invert dimensions
-	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	"""The Invert command is used to invert dimensions"""
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Invert"
@@ -232,63 +211,67 @@ class InvertCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:
-
+	def execute(self, common: Spaces) -> None:
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		selected_items, dims_indexes = self._select_dimensions_to_invert(
-			self._dimensions_to_invert_title, self._dimensions)
+			self._dimensions_to_invert_title, self._dimensions
+		)
 		self._invert(dims_indexes)
 		rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, self.common
+		)
 		self._director.configuration_active.print_active_function()
 		if self._director.common.have_reference_points():
 			rivalry.use_reference_points_to_define_segments(
-				self._director, common)
-			if self._director.common.have_scores() \
-				and not self._director.common.have_segments():
+				self._director, common
+			)
+			if (
+				self._director.common.have_scores()
+				and not self._director.common.have_segments()
+			):
 				rivalry.assign_to_segments()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
+			f"Configuration has {ndim} dimensions and {npoint} points"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-	
-# -- ------------------------------------------------------------------------
-	def _select_dimensions_to_invert_initialize_variables(self) -> None:
 
+	# -- ---------------------------------------------------------------------
+
+	def _select_dimensions_to_invert_initialize_variables(self) -> None:
 		self.select_dim_to_invert_error_title = "Invert dimensions"
 		self.select_dim_to_invert_error_message = (
-			"Please select at least one dimension to invert.")
+			"Please select at least one dimension to invert."
+		)
 
 	# ------------------------------------------------------------------------
 
 	def _select_dimensions_to_invert(
-		self, dimensions_to_invert_title: str,
-		dimensions: list[str]) -> tuple[list, list]:
-
+		self, dimensions_to_invert_title: str, dimensions: list[str]
+	) -> tuple[list, list]:
 		self._select_dimensions_to_invert_initialize_variables()
-		
+
 		range_dims = self._director.configuration_active.range_dims
 		dim_names = self._director.configuration_active.dim_names
 
 		# selected_items = []
 		# dims_indexes = []
-		dialog = SelectItemsDialog(
-			dimensions_to_invert_title, dimensions)
+		dialog = SelectItemsDialog(dimensions_to_invert_title, dimensions)
 		if dialog.exec() == QDialog.Accepted:
 			# try:
 			selected_items = dialog.selected_items()
 			dims_indexes = [
-				j for i in range(len(selected_items))
+				j
+				for i in range(len(selected_items))
 				for j in range_dims
 				if selected_items[i] == dim_names[j]
 			]
@@ -296,15 +279,13 @@ class InvertCommand:
 			print("Canceled")
 			raise SelectionError(
 				self.select_dim_to_invert_error_title,
-				self.select_dim_to_invert_error_message)
+				self.select_dim_to_invert_error_message,
+			)
 		return selected_items, dims_indexes
 
 	# ------------------------------------------------------------------------
 
-	def _invert(
-			self,
-			dims_indexes: list[int]) -> None:
-
+	def _invert(self, dims_indexes: list[int]) -> None:
 		range_dims = self._director.configuration_active.range_dims
 		range_scores = self._director.scores_active.range_scores
 
@@ -319,10 +300,14 @@ class InvertCommand:
 					self._inverter(checked_dim)
 		if self._director.common.have_scores():
 			cols = []
-			cols.extend([_scores.columns[each_dim + 1]
-				for each_dim in range_scores
-				for checked_dim in dims_indexes
-				if each_dim == checked_dim])
+			cols.extend(
+				[
+					_scores.columns[each_dim + 1]
+					for each_dim in range_scores
+					for checked_dim in dims_indexes
+					if each_dim == checked_dim
+				]
+			)
 			_scores[cols] = _scores[cols].mul(-1)
 
 		self._director.scores_active.scores = _scores
@@ -330,31 +315,25 @@ class InvertCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _inverter(
-			self,
-			which_dim: int) -> None:
-
+	def _inverter(self, which_dim: int) -> None:
 		point_coords = self._director.configuration_active.point_coords
 		range_points = self._director.configuration_active.range_points
 		# ndim = self._director.configuration_active.ndim
 
 		for each_point in range_points:
-			point_coords.iloc[each_point, which_dim] \
-				= point_coords.iloc[each_point, which_dim] * -1
-
+			point_coords.iloc[each_point, which_dim] = (
+				point_coords.iloc[each_point, which_dim] * -1
+			)
 
 	# ------------------------------------------------------------------------
 
 
 class MoveCommand:
-	""" The Move command allows the used to add
-		or subtract a constant form all points on one or more dimensions.
+	"""The Move command allows the used to add
+	or subtract a constant form all points on one or more dimensions.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Move"
@@ -366,70 +345,68 @@ class MoveCommand:
 		ndim = director.configuration_active.ndim
 		npoint = director.configuration_active.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
+			f"Configuration has {ndim} dimensions and {npoint} points"
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:
-
+	def execute(self, common: Spaces) -> None:
 		# point_coords = self._director.configuration_active.point_coords
 
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		(selected_option, decimal_value) = \
+		(selected_option, decimal_value) = (
 			self._get_dimension_to_move_and_amount_from_user(
-				self._move_title, self._move_value_title,
-				self._move_options)
+				self._move_title, self._move_value_title, self._move_options
+			)
+		)
 		self._move(selected_option, decimal_value)
 
 		rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, self.common
+		)
 		if common.have_reference_points():
 			rivalry.use_reference_points_to_define_segments(
-				self._director, common)
+				self._director, common
+			)
 		self._director.configuration_active.inter_point_distances()
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
 
-# ----------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def _move(
-			self,
-			which_dim: int,
-			value: float) -> None:
-
+	def _move(self, which_dim: int, value: float) -> None:
 		point_coords = self._director.configuration_active.point_coords
 		range_points = self._director.configuration_active.range_points
 
 		for each_point in range_points:
-			point_coords.iloc[each_point, which_dim] = \
-				((point_coords.iloc[each_point, which_dim]) + value)
+			point_coords.iloc[each_point, which_dim] = (
+				(point_coords.iloc[each_point, which_dim]) + value
+			)
 		return
 
-# ------------------------------------------------------------------------
-	def _get_dimension_to_move_and_amount_from_user_initialize_variables(\
-			self) -> None:
-		
+	# ------------------------------------------------------------------------
+	def _get_dimension_to_move_and_amount_from_user_initialize_variables(
+		self,
+	) -> None:
 		self.missing_dimension_and_value_error_title = self._director.command
 		self.missing_dimension_and_value_error_message = (
-			"Need dimension and value to move.")
+			"Need dimension and value to move."
+		)
+
 	# ------------------------------------------------------------------------
 
 	def _get_dimension_to_move_and_amount_from_user(
-			self,
-			move_title: str,
-			move_value_title: str,
-			move_options: list[str]) -> tuple[int, float]:
-
+		self, move_title: str, move_value_title: str, move_options: list[str]
+	) -> tuple[int, float]:
 		self._get_dimension_to_move_and_amount_from_user_initialize_variables()
 		selected_option = 0
 		decimal_value = 0.0
@@ -441,24 +418,23 @@ class MoveCommand:
 			if decimal_value == 0.0:
 				raise MissingInformationError(
 					self.missing_dimension_and_value_error_title,
-					self.missing_dimension_and_value_error_message)
+					self.missing_dimension_and_value_error_message,
+				)
 		elif result == QDialog.Rejected:
 			raise MissingInformationError(
 				self.missing_dimension_and_value_error_title,
-				self.missing_dimension_and_value_error_message)
+				self.missing_dimension_and_value_error_message,
+			)
 		return selected_option, decimal_value
+
 
 # ------------------------------------------------------------------------
 
 
 class RescaleCommand:
-	""" The Rescale command is used to rescale one or more dimensions.
-	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	"""The Rescale command is used to rescale one or more dimensions."""
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		# rivalry = self._director.rivalry
@@ -468,8 +444,9 @@ class RescaleCommand:
 		self._rescale_title = "Select dimension to rescale"
 		self._rescale_dims = self._director.configuration_active.dim_names
 		self._rescale_by_title = "Rescale configuration"
-		self._rescale_by_label = ("Amount by which to multiple every point \n"
-			"on selected dimensions")
+		self._rescale_by_label = (
+			"Amount by which to multiple every point \non selected dimensions"
+		)
 		self._rescale_by_min_val = -9999.9
 		self._rescale_by_max_val = 9999.9
 		self._rescale_by_an_integer = False
@@ -477,52 +454,54 @@ class RescaleCommand:
 		_ndim = director.configuration_active.ndim
 		_npoint = director.configuration_active.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {_ndim} dimensions and {_npoint} points")
+			f"Configuration has {_ndim} dimensions and {_npoint} points"
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		selected_items = \
-			self._get_dimension_to_rescale_from_user(
-				self._rescale_title, self._rescale_dims)
+		selected_items = self._get_dimension_to_rescale_from_user(
+			self._rescale_title, self._rescale_dims
+		)
 		value = self._get_amount_to_rescale_from_user(
-			self._rescale_by_title, self._rescale_by_label,
-			self._rescale_by_min_val, self._rescale_by_max_val,
-			self._rescale_by_an_integer, self._rescale_by_default)
+			self._rescale_by_title,
+			self._rescale_by_label,
+			self._rescale_by_min_val,
+			self._rescale_by_max_val,
+			self._rescale_by_an_integer,
+			self._rescale_by_default,
+		)
 		self._rescale_selected_dimensions(selected_items, value)
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, self.common
+		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-	
+
 	# ------------------------------------------------------------------------
 
 	def _get_dimension_to_rescale_from_user_initialize_variables(self) -> None:
-		
 		self._need_dimension_to_rescale_error_title = self._director.command
 		self._need_dimension_to_rescale_error_message = (
-			"A dimension to rescale is needed.")
+			"A dimension to rescale is needed."
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _get_dimension_to_rescale_from_user(
-			self,
-			rescale_title: str,
-			rescale_dims: list[str]) -> list[str]:
-
+		self, rescale_title: str, rescale_dims: list[str]
+	) -> list[str]:
 		self._get_dimension_to_rescale_from_user_initialize_variables()
 		dialog = SelectItemsDialog(rescale_title, rescale_dims)
 		# selected_items = []
@@ -533,16 +512,19 @@ class RescaleCommand:
 			except ValueError:
 				raise SpacesError(
 					self._need_dimension_to_rescale_error_title,
-					self._need_dimension_to_rescale_error_message) from None
+					self._need_dimension_to_rescale_error_message,
+				) from None
 
 		else:
 			raise SpacesError(
 				self._need_dimension_to_rescale_error_title,
-				self._need_dimension_to_rescale_error_message) from None
+				self._need_dimension_to_rescale_error_message,
+			) from None
 		if len(selected_items) == 0:
 			raise SpacesError(
 				self._need_dimension_to_rescale_error_title,
-				self._need_dimension_to_rescale_error_message) from None
+				self._need_dimension_to_rescale_error_message,
+			) from None
 
 		del dialog
 		return selected_items
@@ -550,51 +532,56 @@ class RescaleCommand:
 	# ------------------------------------------------------------------------
 
 	def _get_amount_to_rescale_from_user_initialize_variables(self) -> None:
-		
 		self._need_amount_to_rescale_error_title = self._director.command
 		self._need_amount_to_rescale_error_message = (
-			"An amount to rescale by is needed.")
+			"An amount to rescale by is needed."
+		)
 
 		return
+
 	# ------------------------------------------------------------------------
 
 	def _get_amount_to_rescale_from_user(
-			self,
-			rescale_by_title: str,
-			rescale_by_label: str,
-			rescale_by_min_val: float,
-			rescale_by_max_val: float,
-			rescale_by_an_integer: bool, # noqa: FBT001
-			rescale_by_default: float) -> float:
-
+		self,
+		rescale_by_title: str,
+		rescale_by_label: str,
+		rescale_by_min_val: float,
+		rescale_by_max_val: float,
+		rescale_by_an_integer: bool,  # noqa: FBT001
+		rescale_by_default: float,
+	) -> float:
 		self._get_amount_to_rescale_from_user_initialize_variables()
 		value = 0.0
 		dialog = SetValueDialog(
-			rescale_by_title, rescale_by_label,
-			rescale_by_min_val, rescale_by_max_val,
-			rescale_by_an_integer, rescale_by_default)
+			rescale_by_title,
+			rescale_by_label,
+			rescale_by_min_val,
+			rescale_by_max_val,
+			rescale_by_an_integer,
+			rescale_by_default,
+		)
 		result = dialog.exec()
 		if result == QDialog.Accepted:
 			value = dialog.getValue()
 		else:
 			raise SpacesError(
 				self._need_amount_to_rescale_error_title,
-				self._need_amount_to_rescale_error_message)
+				self._need_amount_to_rescale_error_message,
+			)
 
 		if value == 0.0:
 			raise SpacesError(
 				self._need_amount_to_rescale_error_title,
-				self._need_amount_to_rescale_error_message)
+				self._need_amount_to_rescale_error_message,
+			)
 
 		return value
 
 	# ------------------------------------------------------------------------
 
 	def _rescale_selected_dimensions(
-			self,
-			selected_items: list[str],
-			value: float) -> None:
-
+		self, selected_items: list[str], value: float
+	) -> None:
 		dim_names = self._director.configuration_active.dim_names
 		range_dims = self._director.configuration_active.range_dims
 		point_coords = self._director.configuration_active.point_coords
@@ -609,21 +596,17 @@ class RescaleCommand:
 
 
 class RotateCommand:
-	""" The Rotate command is used to rotate the active configuration.
-	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	"""The Rotate command is used to rotate the active configuration."""
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Rotate"
 		# self._director.rivalry.bisector.case = "Unknown"
 		self._rotate_title = "Degree to rotate configuration"
 		self._rotate_label = (
-			"Positive is counter-clockwise"
-			"\nNegative is clockwise")
+			"Positive is counter-clockwise\nNegative is clockwise"
+		)
 		self._rotate_min_val = -360
 		self._rotate_max_val = 360
 		self._rotate_default = 0
@@ -633,29 +616,33 @@ class RotateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		deg = self._get_degree_to_rotate_from_user(
-			self._rotate_title, self._rotate_label, self._rotate_min_val,
+			self._rotate_title,
+			self._rotate_label,
+			self._rotate_min_val,
 			self._rotate_max_val,
-			self._rotate_an_integer, self._rotate_default)
+			self._rotate_an_integer,
+			self._rotate_default,
+		)
 		radians = math.radians(float(deg))
 		self._rotate(radians)
 		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, self.common
+		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
+			f"Configuration has {ndim} dimensions and {npoint} points"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -663,38 +650,40 @@ class RotateCommand:
 	# ------------------------------------------------------------------------
 
 	def _get_degree_to_rotate_from_user(
-			self,
-			rotate_title: str,
-			rotate_label: str,
-			rotate_min_val: int,
-			rotate_max_val: int,
-			rotate_an_integer: bool, # noqa: FBT001
-			rotate_default: int) -> int:
-
+		self,
+		rotate_title: str,
+		rotate_label: str,
+		rotate_min_val: int,
+		rotate_max_val: int,
+		rotate_an_integer: bool,  # noqa: FBT001
+		rotate_default: int,
+	) -> int:
 		command = self._director.command
 
 		dialog = SetValueDialog(
-			rotate_title, rotate_label, rotate_min_val, rotate_max_val,
-			rotate_an_integer, rotate_default)
+			rotate_title,
+			rotate_label,
+			rotate_min_val,
+			rotate_max_val,
+			rotate_an_integer,
+			rotate_default,
+		)
 		result = dialog.exec()
 		if result == QDialog.Accepted:
 			deg = int(dialog.getValue())
 		else:
 			raise SpacesError(
-				command,
-				"Degree to rotate configuration is needed.")
+				command, "Degree to rotate configuration is needed."
+			)
 		if deg == 0:
 			raise SpacesError(
-				command,
-				"Degree to rotate configuration is needed.")
+				command, "Degree to rotate configuration is needed."
+			)
 		return deg
 
 	# ------------------------------------------------------------------------
 
-	def _rotate(
-			self,
-			radians: float) -> None:
-
+	def _rotate(self, radians: float) -> None:
 		hor_dim = self._director.common.hor_dim
 		vert_dim = self._director.common.vert_dim
 		point_coords = self._director.configuration_active.point_coords
@@ -702,45 +691,36 @@ class RotateCommand:
 
 		for each_point in range_points:
 			new_x = (
-				(math.cos(radians) * point_coords.iloc[each_point, hor_dim])
-				- (math.sin(radians) * \
-					point_coords.iloc[each_point, vert_dim]))
+				math.cos(radians) * point_coords.iloc[each_point, hor_dim]
+			) - (math.sin(radians) * point_coords.iloc[each_point, vert_dim])
 			new_y = (
-				(math.sin(radians) * point_coords.iloc[each_point, hor_dim])
-				+ (math.cos(radians) * \
-					point_coords.iloc[each_point, vert_dim]))
+				math.sin(radians) * point_coords.iloc[each_point, hor_dim]
+			) + (math.cos(radians) * point_coords.iloc[each_point, vert_dim])
 			point_coords.iloc[each_point, hor_dim] = new_x
 			point_coords.iloc[each_point, vert_dim] = new_y
 
 		return
 
-
-
 	# ------------------------------------------------------------------------
 
 
 class VarimaxCommand:
-	""" The Varimax command performs a varimax rotation on the
+	"""The Varimax command performs a varimax rotation on the
 	active configuration.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Varimax"
-		self._director.title_for_table_widget \
-			= "Varimax rotation of active configuration"
+		self._director.title_for_table_widget = (
+			"Varimax rotation of active configuration"
+		)
 		return
-		
+
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:
-
+	def execute(self, common: Spaces) -> None:
 		ndim = self._director.configuration_active.ndim
 		point_coords = self._director.configuration_active.point_coords
 		point_names = self._director.configuration_active.point_names
@@ -757,18 +737,20 @@ class VarimaxCommand:
 			"DEBUG --in varimax command before rotation-- "
 			f"{point_coords=}"
 			f"{ndim=} {npoint=}"
-			f"{nreferent=}")
+			f"{nreferent=}"
+		)
 		self._perform_varimax_rotation()
 
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, common)
+			self._director, common
+		)
 		print(
-			f"DEBUG -- after -- {point_coords=}"
-			f"{ndim=} {npoint=}"
-			f"{nreferent=}")
+			f"DEBUG -- after -- {point_coords=}{ndim=} {npoint=}{nreferent=}"
+		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
+			"configuration"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -776,7 +758,6 @@ class VarimaxCommand:
 	# ------------------------------------------------------------------------
 
 	def _perform_varimax_rotation(self) -> None:
-
 		dim_labels = self._director.configuration_active.dim_labels
 		point_names = self._director.configuration_active.point_names
 		point_coords = self._director.configuration_active.point_coords
@@ -785,14 +766,13 @@ class VarimaxCommand:
 		to_be_rotated = np.array(point_coords)
 		print(f"\nDEBUG -- in _perform_varimax_rotation {to_be_rotated=}")
 		rotated = self._varimax_function(
-			to_be_rotated, gamma=1.0, q=20, tol=1e-6)
+			to_be_rotated, gamma=1.0, q=20, tol=1e-6
+		)
 		print(f"\nDEBUG -- in process {rotated=}")
-		print(
-			f"\nDEBUG -- {dim_labels=}"
-			f"{point_names=}"
-			f"{item_names=}")
+		print(f"\nDEBUG -- {dim_labels=}{point_names=}{item_names=}")
 		point_coords = pd.DataFrame(
-			rotated, columns=dim_labels, index=item_names)
+			rotated, columns=dim_labels, index=item_names
+		)
 
 		self._director.configuration_active.point_coords = point_coords
 		return
@@ -801,11 +781,11 @@ class VarimaxCommand:
 
 	@staticmethod
 	def _varimax_function(
-			Phi: np.ndarray,  # noqa: N803
-			gamma: float=1.0,
-			q: int=20,
-			tol: float=1e-6) -> np.array:
-		
+		Phi: np.ndarray,  # noqa: N803
+		gamma: float = 1.0,
+		q: int = 20,
+		tol: float = 1e-6,
+	) -> np.array:
 		p, k = np.shape(Phi)
 		# R = eye(k)
 		R = np.zeros(k)  # noqa: N806
@@ -822,9 +802,13 @@ class VarimaxCommand:
 			# 	dot(Phi.T, asarray(Lambda) ** 3 - (gamma / p) * dot(
 			# 	 	Lambda, np.diagonal(np.diagonal(dot(Lambda.T, Lambda))))))
 			u, s, vh = svd(
-				Phi.T @ (
-					asarray(Lambda) ** 3 - (gamma / p)
-					* (Lambda @ np.diagonal(np.diagonal(Lambda.T @ Lambda)))))
+				Phi.T
+				@ (
+					asarray(Lambda) ** 3
+					- (gamma / p)
+					* (Lambda @ np.diagonal(np.diagonal(Lambda.T @ Lambda)))
+				)
+			)
 			# R = dot(u, vh)
 			R = u @ vh  # noqa: N806
 			d = sum(s)
@@ -833,6 +817,3 @@ class VarimaxCommand:
 
 		# return dot(Phi, R)
 		return Phi @ R
-
-
-

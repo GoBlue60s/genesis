@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import peek
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph import BarGraphItem, PlotWidget
 from PySide6 import QtGui, QtWidgets
 
 from constants import (
-    CORE_SIZE_FULL,
+	CORE_SIZE_FULL,
 	CORE_SIZE_HALF,
-    MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
+	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 )
 from typing import TYPE_CHECKING
 
@@ -21,18 +20,18 @@ if TYPE_CHECKING:
 
 from exceptions import DependencyError, UnderDevelopmentError
 
+
 class PyQtGraphMethods:
 	def __init__(self, director: Status) -> None:
 		from director import Status  # noqa: PLC0415, F401
+
 		self._director = director
 
-
-	
 	# ------------------------------------------------------------------------
 
 	def request_alike_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -45,14 +44,15 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self._plot_alike_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
-		
+			tab_plot_widget, tab_gallery_widget
+		)
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_alike_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-		""" plot alike  -creates a plot with a line joining points with
+		"""plot alike  -creates a plot with a line joining points with
 		high similarity.
 		A plot of the configuration will be created with a line joining pairs
 		of points with
@@ -72,7 +72,7 @@ class PyQtGraphMethods:
 				" using Alike."
 			)
 			raise DependencyError(title, message)
-		
+
 		a_x_alike = similarities_active.a_x_alike
 		a_y_alike = similarities_active.a_y_alike
 		b_x_alike = similarities_active.b_x_alike
@@ -81,14 +81,14 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
 
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None))
-		plot = pyqtgraph_common.\
-			set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
+
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_configuration_to_pyqtgraph_plot(plot)
@@ -98,43 +98,43 @@ class PyQtGraphMethods:
 			plot.plot(
 				(a_x_alike[each_alike], b_x_alike[each_alike]),
 				(a_y_alike[each_alike], b_y_alike[each_alike]),
-				color="k")
+				color="k",
+			)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def request_base_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
-		
-		base_groups_to_show = \
-			director.current_command._base_groups_to_show
+
+		base_groups_to_show = director.current_command._base_groups_to_show
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
-		tab_plot_widget = \
-			self._plot_base_using_pyqtgraph(base_groups_to_show)
-		tab_gallery_widget = \
-			self._plot_base_using_pyqtgraph(base_groups_to_show)
-		
+		tab_plot_widget = self._plot_base_using_pyqtgraph(base_groups_to_show)
+		tab_gallery_widget = self._plot_base_using_pyqtgraph(
+			base_groups_to_show
+		)
+
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
-		
+			tab_plot_widget, tab_gallery_widget
+		)
+
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _plot_base_using_pyqtgraph(
-			self,
-			base_groups_to_show: str) -> pg.GraphicsLayoutWidget:
-
+		self, base_groups_to_show: str
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
@@ -142,12 +142,12 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
+
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"Base Supporters"))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Base Supporters")
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
@@ -157,22 +157,24 @@ class PyQtGraphMethods:
 		pyqtgraph_common.add_east_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_west_to_pyqtgraph_plot(plot)
 
-		base_people_points = self._director.configuration_active.\
-			_populate_base_groups_to_show(base_groups_to_show)
+		base_people_points = (
+			self._director.configuration_active._populate_base_groups_to_show(
+				base_groups_to_show
+			)
+		)
 		pyqtgraph_plotter._fill_base_regions_in_pyqtgraph_plot(
-			plot, base_people_points)
+			plot, base_people_points
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
-	
-# --------------------------------------------------------------------------
+
+	# ------------------------------------------------------------------------
 
 	def _fill_base_regions_in_pyqtgraph_plot(
-			self,
-			plot: pg.PlotItem,
-			base_people_points: PeoplePoints) -> None:
-
+		self, plot: pg.PlotItem, base_people_points: PeoplePoints
+	) -> None:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -184,8 +186,7 @@ class PyQtGraphMethods:
 
 		left_region = pg.QtGui.QPainterPath()
 		left_region.moveTo(base_left._x[0], base_left._y[0])
-		for x_, y_ in zip(
-			base_left._x[1:], base_left._y[1:], strict=True):
+		for x_, y_ in zip(base_left._x[1:], base_left._y[1:], strict=True):
 			left_region.lineTo(x_, y_)
 		left_region_item = pg.QtWidgets.QGraphicsPathItem(left_region)
 		left_brush = pg.QtGui.QBrush(pg.QtGui.QColor(base_left._fill))
@@ -195,8 +196,7 @@ class PyQtGraphMethods:
 
 		right_region = pg.QtGui.QPainterPath()
 		right_region.moveTo(base_right._x[0], base_right._y[0])
-		for x_, y_ in zip(
-				base_right._x[1:], base_right._y[1:], strict=True):
+		for x_, y_ in zip(base_right._x[1:], base_right._y[1:], strict=True):
 			right_region.lineTo(x_, y_)
 		right_region_item = pg.QtWidgets.QGraphicsPathItem(right_region)
 		right_brush = pg.QtGui.QBrush(pg.QtGui.QColor(base_right._fill))
@@ -204,42 +204,49 @@ class PyQtGraphMethods:
 		right_region_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
 		plot.addItem(right_region_item)
 		plot.scatterPlot(
-			x=base_people_points.x, y=base_people_points.y,
-			pen=score_color, size=point_size)
+			x=base_people_points.x,
+			y=base_people_points.y,
+			pen=score_color,
+			size=point_size,
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def request_battleground_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		battleground_groups_to_show = \
+		battleground_groups_to_show = (
 			director.current_command._battleground_groups_to_show
+		)
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 
 		tab_plot_widget = self._plot_battleground_using_pyqtgraph(
-			battleground_groups_to_show)
+			battleground_groups_to_show
+		)
 		tab_gallery_widget = self._plot_battleground_using_pyqtgraph(
-			battleground_groups_to_show)
+			battleground_groups_to_show
+		)
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
-		
+			tab_plot_widget, tab_gallery_widget
+		)
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_battleground_using_pyqtgraph(
-			self,
-			battleground_groups_to_show: str) -> pg.GraphicsLayoutWidget:
-		""" show battleground function - creates a plot showing the reference
+		self, battleground_groups_to_show: str
+	) -> pg.GraphicsLayoutWidget:
+		"""show battleground function - creates a plot showing the reference
 		points and an area where battleground supporters are most likely
 		found.
 		"""
@@ -253,9 +260,9 @@ class PyQtGraphMethods:
 		bisector_cross_y = rivalry.bisector._cross_y
 
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Battleground"))
-		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(
-			plot)
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Battleground")
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
@@ -265,27 +272,29 @@ class PyQtGraphMethods:
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)
 		bisector_middle_name = pg.TextItem(
-			text="M", color=(0, 0, 0), anchor=(1.0, 0.0))
+			text="M", color=(0, 0, 0), anchor=(1.0, 0.0)
+		)
 		bisector_middle_name.setPos(bisector_cross_x, bisector_cross_y)
 		plot.addItem(bisector_middle_name)
 
-		battleground_people_points = \
+		battleground_people_points = (
 			configuration_active._populate_battleground_groups_to_show(
-				battleground_groups_to_show)
+				battleground_groups_to_show
+			)
+		)
 		pyqtgraph_plotter._fill_battleground_regions_in_pyqtgraph_plot(
-			plot, battleground_people_points)
-		
-		director.set_focus_on_tab('Plot')
+			plot, battleground_people_points
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
-	
-	def _fill_battleground_regions_in_pyqtgraph_plot(
-			self,
-			plot: pg.PlotItem,
-			battleground_people_points: PeoplePoints) -> None:
 
+	def _fill_battleground_regions_in_pyqtgraph_plot(
+		self, plot: pg.PlotItem, battleground_people_points: PeoplePoints
+	) -> None:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -297,15 +306,20 @@ class PyQtGraphMethods:
 
 		battleground_region = QtGui.QPainterPath()
 		battleground_region.moveTo(
-			battleground_segment._x[0], battleground_segment._y[0])
+			battleground_segment._x[0], battleground_segment._y[0]
+		)
 		for x_, y_ in zip(
-			battleground_segment._x[1:], battleground_segment._y[1:],
-			strict=True):
+			battleground_segment._x[1:],
+			battleground_segment._y[1:],
+			strict=True,
+		):
 			battleground_region.lineTo(x_, y_)
 		battleground_region_item = QtWidgets.QGraphicsPathItem(
-			battleground_region)
+			battleground_region
+		)
 		battleground_region_brush = QtGui.QBrush(
-			QtGui.QColor(battleground_segment._fill))
+			QtGui.QColor(battleground_segment._fill)
+		)
 		battleground_region_item.setBrush(battleground_region_brush)
 		battleground_region_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
 		plot.addItem(battleground_region_item)
@@ -313,7 +327,10 @@ class PyQtGraphMethods:
 			points = pg.ScatterPlotItem(
 				battleground_people_points.x,
 				battleground_people_points.y,
-				pen=score_color, symbol="o", size=point_size)
+				pen=score_color,
+				symbol="o",
+				size=point_size,
+			)
 			plot.addItem(points)
 
 		return
@@ -321,31 +338,30 @@ class PyQtGraphMethods:
 	# --------------------------------------------------------------**--------
 
 	def request_compare_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		target = director.target_active
 		point_coords = target.point_coords
 
-
-		common.set_axis_extremes_based_on_coordinates(
-			point_coords)
+		common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self.plot_compare_using_pyqtgraph(target)
 		tab_gallery_widget = self.plot_compare_using_pyqtgraph(target)
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
-		
-		director.set_focus_on_tab('Plot')
+			tab_plot_widget, tab_gallery_widget
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return
 
 	# ----------------------------------------------------------**------------
 
-	def plot_compare_using_pyqtgraph(self, target: TargetFeature) \
-			-> pg.GraphicsLayoutWidget:
-
+	def plot_compare_using_pyqtgraph(
+		self, target: TargetFeature
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
@@ -356,14 +372,15 @@ class PyQtGraphMethods:
 		ndim = target.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
 
 		mid_x_s: list[float] = []
 		mid_y_s: list[float] = []
 
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
@@ -371,13 +388,13 @@ class PyQtGraphMethods:
 
 		for each_label in range_points:
 			mid_x = (
-				(point_coords.iloc[each_label, 0]
-					+ target.point_coords.iloc[each_label, 0])
-				/ 2)
+				point_coords.iloc[each_label, 0]
+				+ target.point_coords.iloc[each_label, 0]
+			) / 2
 			mid_y = (
-				(point_coords.iloc[each_label, 1]
-					+ target.point_coords.iloc[each_label, 1])
-				/ 2)
+				point_coords.iloc[each_label, 1]
+				+ target.point_coords.iloc[each_label, 1]
+			) / 2
 			mid_x_s.append(mid_x)
 			mid_y_s.append(mid_y)
 			point_label = pg.TextItem(text=point_labels[each_label], color="k")
@@ -387,29 +404,37 @@ class PyQtGraphMethods:
 			a_label = pg.TextItem(text="A", color="black")
 			a_label.setPos(
 				point_coords.iloc[each_label, 0],
-				point_coords.iloc[each_label, 1] + 0.04)
+				point_coords.iloc[each_label, 1] + 0.04,
+			)
 			plot.addItem(a_label)
 			t_label = pg.TextItem(text="T", color="black")
 			t_label.setPos(
 				target.point_coords.iloc[each_label, 0],
-				target.point_coords.iloc[each_label, 1] + 0.04)
+				target.point_coords.iloc[each_label, 1] + 0.04,
+			)
 			plot.addItem(t_label)
 			plot.plot(
-				[point_coords.iloc[each_label, 0],
-					target.point_coords.iloc[each_label, 0]],
-				[point_coords.iloc[each_label, 1],
-					target.point_coords.iloc[each_label, 1]],
-				color="black", width=4)
+				[
+					point_coords.iloc[each_label, 0],
+					target.point_coords.iloc[each_label, 0],
+				],
+				[
+					point_coords.iloc[each_label, 1],
+					target.point_coords.iloc[each_label, 1],
+				],
+				color="black",
+				width=4,
+			)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
-# --------------------------------------------------------------------------
-	
-	def request_configuration_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
+	# ------------------------------------------------------------------------
 
+	def request_configuration_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -418,49 +443,46 @@ class PyQtGraphMethods:
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 
-		tab_plot_widget = \
-			self.plot_a_configuration_using_pyqtgraph()
-		tab_gallery_widget = \
-			self.plot_a_configuration_using_pyqtgraph()
+		tab_plot_widget = self.plot_a_configuration_using_pyqtgraph()
+		tab_gallery_widget = self.plot_a_configuration_using_pyqtgraph()
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def plot_a_configuration_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
-		graphics_layout_widget, plot = \
+
+		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
-		plot = pyqtgraph_common.\
-			set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
+
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_configuration_to_pyqtgraph_plot(plot)
-		
-		director.set_focus_on_tab('Plot')
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_contest_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -470,16 +492,16 @@ class PyQtGraphMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self._plot_contest_using_pyqtgraph()
 		tab_gallery_widget = self._plot_contest_using_pyqtgraph()
-		
+
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
-		
+			tab_plot_widget, tab_gallery_widget
+		)
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_contest_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-		
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -495,53 +517,58 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
 
 		x_coords: list[int] = []
 		y_coords: list[int] = []
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Contest"))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Contest")
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pen = pg.mkPen(color=(255, 0, 0))
 		rival_a_label = pg.TextItem(
-			text=point_labels[rival_a.index],
-			color="k",  border='w', fill=None)
+			text=point_labels[rival_a.index], color="k", border="w", fill=None
+		)
 		rival_a_label.setPos(
 			point_coords.iloc[rival_a.index, hor_dim],
-			point_coords.iloc[rival_a.index, vert_dim] + 0.04)
+			point_coords.iloc[rival_a.index, vert_dim] + 0.04,
+		)
 		plot.addItem(rival_a_label)
 		rival_b_label = pg.TextItem(
-			text=point_labels[
-				rivalry.rival_b.index],
-			color="k",  border='w', fill=None)
+			text=point_labels[rivalry.rival_b.index],
+			color="k",
+			border="w",
+			fill=None,
+		)
 		rival_b_label.setPos(
 			point_coords.iloc[rival_b.index, hor_dim],
-			point_coords.iloc[rival_b.index, vert_dim] + 0.04)
+			point_coords.iloc[rival_b.index, vert_dim] + 0.04,
+		)
 		plot.addItem(rival_b_label)
-		x_coords.append(
-			point_coords.iloc[rival_a.index, hor_dim])
-		y_coords.append(
-			point_coords.iloc[rival_a.index, vert_dim])
-		x_coords.append(
-			point_coords.iloc[rival_b.index, hor_dim])
-		y_coords.append(
-			point_coords.iloc[rival_b.index, vert_dim])
+		x_coords.append(point_coords.iloc[rival_a.index, hor_dim])
+		y_coords.append(point_coords.iloc[rival_a.index, vert_dim])
+		x_coords.append(point_coords.iloc[rival_b.index, hor_dim])
+		y_coords.append(point_coords.iloc[rival_b.index, vert_dim])
 		plot.scatterPlot(x_coords, y_coords, symbolSize=5, symbol="o", pen=pen)
 		core_a = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_a.index, hor_dim] - connector.length * .2,
-			point_coords.iloc[rival_a.index, vert_dim] - connector.length * .2,
-			connector.length * .4,
-			connector.length * .4)
+			point_coords.iloc[rival_a.index, hor_dim] - connector.length * 0.2,
+			point_coords.iloc[rival_a.index, vert_dim]
+			- connector.length * 0.2,
+			connector.length * 0.4,
+			connector.length * 0.4,
+		)
 		core_a.setPen(pen)
 		plot.addItem(core_a)
 		core_b = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_b.index, hor_dim] - connector.length * .2,
-			point_coords.iloc[rival_b.index, vert_dim] - connector.length * .2,
-			connector.length * .4,
-			connector.length * .4)
+			point_coords.iloc[rival_b.index, hor_dim] - connector.length * 0.2,
+			point_coords.iloc[rival_b.index, vert_dim]
+			- connector.length * 0.2,
+			connector.length * 0.4,
+			connector.length * 0.4,
+		)
 		core_b.setPen(pen)
 		plot.addItem(core_b)
 		pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)
@@ -550,64 +577,65 @@ class PyQtGraphMethods:
 		pyqtgraph_common.add_east_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_first_dim_divider_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_second_dim_divider_to_pyqtgraph_plot(plot)
-		m_label = pg.TextItem(
-			text="M",
-			color="k",  border='w', fill=None)
+		m_label = pg.TextItem(text="M", color="k", border="w", fill=None)
 		m_label.setPos(
-			rivalry.bisector._cross_x,
-			rivalry.bisector._cross_y + 0.04)
+			rivalry.bisector._cross_x, rivalry.bisector._cross_y + 0.04
+		)
 		plot.addItem(m_label)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_convertible_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		convertible_groups_to_show = \
+		convertible_groups_to_show = (
 			director.current_command._convertible_groups_to_show
+		)
 
-		common.set_axis_extremes_based_on_coordinates(
-			point_coords)
+		common.set_axis_extremes_based_on_coordinates(point_coords)
 
 		tab_plot_widget = self._plot_convertible_using_pyqtgraph(
-			convertible_groups_to_show)
+			convertible_groups_to_show
+		)
 		tab_gallery_widget = self._plot_convertible_using_pyqtgraph(
-			convertible_groups_to_show)
+			convertible_groups_to_show
+		)
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_convertible_using_pyqtgraph(
-			self,
-			convertible_groups_to_show: str) -> pg.GraphicsLayoutWidget:
-
+		self, convertible_groups_to_show: str
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
-		
+
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
 
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Convertible"))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Convertible")
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		
+
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
@@ -615,22 +643,24 @@ class PyQtGraphMethods:
 		pyqtgraph_common.add_west_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_east_to_pyqtgraph_plot(plot)
 
-		convertible_people_points = configuration_active.\
-			_populate_convertible_groups_to_show(convertible_groups_to_show)
+		convertible_people_points = (
+			configuration_active._populate_convertible_groups_to_show(
+				convertible_groups_to_show
+			)
+		)
 		pyqtgraph_plotter._fill_convertible_regions_in_pyqtgraph_plot(
-			plot, convertible_people_points)
-		
-		director.set_focus_on_tab('Plot')
+			plot, convertible_people_points
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def _fill_convertible_regions_in_pyqtgraph_plot(
-			self,
-			plot: pg.PlotItem,
-			convertible_people_points: PeoplePoints) -> None:
-
+		self, plot: pg.PlotItem, convertible_people_points: PeoplePoints
+	) -> None:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -642,86 +672,102 @@ class PyQtGraphMethods:
 
 		convertible_to_right_region = QtGui.QPainterPath()
 		convertible_to_right_region.moveTo(
-			convertible_to_right._x[0], convertible_to_right._y[0])
+			convertible_to_right._x[0], convertible_to_right._y[0]
+		)
 		for x_, y_ in zip(
-			convertible_to_right._x[1:], convertible_to_right._y[1:],
-			strict=True):
+			convertible_to_right._x[1:],
+			convertible_to_right._y[1:],
+			strict=True,
+		):
 			convertible_to_right_region.lineTo(x_, y_)
-		convertible_to_right_region_item = \
-			QtWidgets.QGraphicsPathItem(convertible_to_right_region)
+		convertible_to_right_region_item = QtWidgets.QGraphicsPathItem(
+			convertible_to_right_region
+		)
 		convertible_to_right_region_brush = QtGui.QBrush(
-			QtGui.QColor(convertible_to_right._fill))
+			QtGui.QColor(convertible_to_right._fill)
+		)
 		convertible_to_right_region_item.setBrush(
-			convertible_to_right_region_brush)
+			convertible_to_right_region_brush
+		)
 		convertible_to_right_region_item.setPen(
-			pg.mkPen(color=(0, 0, 0), width=2))
+			pg.mkPen(color=(0, 0, 0), width=2)
+		)
 		plot.addItem(convertible_to_right_region_item)
 
 		convertible_to_left_region = QtGui.QPainterPath()
 		convertible_to_left_region.moveTo(
-			convertible_to_left._x[0], convertible_to_left._y[0])
+			convertible_to_left._x[0], convertible_to_left._y[0]
+		)
 		for x_, y_ in zip(
-			convertible_to_left._x[1:], convertible_to_left._y[1:],
-			strict=True):
+			convertible_to_left._x[1:], convertible_to_left._y[1:], strict=True
+		):
 			convertible_to_left_region.lineTo(x_, y_)
-		convertible_to_left_region_item = \
-			QtWidgets.QGraphicsPathItem(convertible_to_left_region)
+		convertible_to_left_region_item = QtWidgets.QGraphicsPathItem(
+			convertible_to_left_region
+		)
 		convertible_to_left_region_brush = QtGui.QBrush(
-			QtGui.QColor(convertible_to_left._fill))
+			QtGui.QColor(convertible_to_left._fill)
+		)
 		convertible_to_left_region_item.setBrush(
-			convertible_to_left_region_brush)
+			convertible_to_left_region_brush
+		)
 		convertible_to_left_region_item.setPen(
-			pg.mkPen(color=(0, 0, 0), width=2))
+			pg.mkPen(color=(0, 0, 0), width=2)
+		)
 		plot.addItem(convertible_to_left_region_item)
-		
+
 		plot.scatterPlot(
-			convertible_people_points.x, convertible_people_points.y,
-			pen=score_color, symbol='o', size=point_size)
-		
+			convertible_people_points.x,
+			convertible_people_points.y,
+			pen=score_color,
+			symbol="o",
+			size=point_size,
+		)
+
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def request_core_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-		
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		core_groups_to_show = \
-			director.current_command.core_groups_to_show
+		core_groups_to_show = director.current_command.core_groups_to_show
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self._plot_core_using_pyqtgraph(core_groups_to_show)
-		tab_gallery_widget = \
-			self._plot_core_using_pyqtgraph(core_groups_to_show)
+		tab_gallery_widget = self._plot_core_using_pyqtgraph(
+			core_groups_to_show
+		)
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _plot_core_using_pyqtgraph(
-		self,
-		core_groups_to_show: str) -> pg.GraphicsLayoutWidget:
-
+		self, core_groups_to_show: str
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
+
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"Core Supporters"))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Core Supporters")
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
@@ -729,33 +775,35 @@ class PyQtGraphMethods:
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
 
-		core_people_points = configuration_active.\
-			_populate_core_groups_to_show(core_groups_to_show)
+		core_people_points = (
+			configuration_active._populate_core_groups_to_show(
+				core_groups_to_show
+			)
+		)
 
 		pyqtgraph_plotter._fill_core_regions_in_pyqtgraph_plot(
-			plot, core_people_points)
-		
-		director.set_focus_on_tab('Plot')
+			plot, core_people_points
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	# def _determine_circles_defining_core_regions_using_pyqtgraph(self)\
 	#  -> None:
 
 	# 	title: str = "Determine circles defining core regions using pyqtgraph"
 	# 	message: str = "Must be created"
-		
+
 	# 	raise UnderDevelopmentError(title, message)
 
-# --------------------------------------------------------------------------
-	
-	def _fill_core_regions_in_pyqtgraph_plot(
-		self,
-		plot: pg.PlotItem,
-		core_people_points: PeoplePoints) -> None:
+	# ------------------------------------------------------------------------
 
+	def _fill_core_regions_in_pyqtgraph_plot(
+		self, plot: pg.PlotItem, core_people_points: PeoplePoints
+	) -> None:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -773,53 +821,61 @@ class PyQtGraphMethods:
 			core_left_center.x - connector.length * CORE_SIZE_HALF,
 			core_left_center.y - connector.length * CORE_SIZE_HALF,
 			connector.length * CORE_SIZE_FULL,
-			connector.length * CORE_SIZE_FULL)
-		core_a.setPen(pg.mkPen(color='b'))
+			connector.length * CORE_SIZE_FULL,
+		)
+		core_a.setPen(pg.mkPen(color="b"))
 
 		core_a.setBrush(pg.mkBrush(color=core_left._fill))
 		plot.addItem(core_a)
 		core_b = pg.QtWidgets.QGraphicsEllipseItem(
-			core_right_center.x - connector.length * .2,
-			core_right_center.y - connector.length * .2,
-			connector.length * .4,
-			connector.length * .4)
-		core_b.setPen(pg.mkPen(color='b'))
+			core_right_center.x - connector.length * 0.2,
+			core_right_center.y - connector.length * 0.2,
+			connector.length * 0.4,
+			connector.length * 0.4,
+		)
+		core_b.setPen(pg.mkPen(color="b"))
 		core_b.setBrush(pg.mkBrush(color=core_right._fill))
 		plot.addItem(core_b)
 		plot.scatterPlot(
-			core_people_points.x, core_people_points.y,
-			pen=score_color, symbol='o', size=point_size)
-		
+			core_people_points.x,
+			core_people_points.y,
+			pen=score_color,
+			symbol="o",
+			size=point_size,
+		)
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def request_cutoff_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		similarities_active = director.similarities_active
 
 		tab_plot_widget = self._plot_cutoff_using_pyqtgraph(
-			similarities_active.value_type)
+			similarities_active.value_type
+		)
 		gallery_plot_widget = self._plot_cutoff_using_pyqtgraph(
-			similarities_active.value_type)
-		
+			similarities_active.value_type
+		)
+
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, gallery_plot_widget)
+			tab_plot_widget, gallery_plot_widget
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_cutoff_using_pyqtgraph(
-			self,
-			value_type: str) -> pg.GraphicsLayoutWidget:
-
+		self, value_type: str
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		similarities_active = director.similarities_active
-		
+
 		similarities_as_list = similarities_active.similarities_as_list
 		range_similarities = similarities_active.range_similarities
 
@@ -832,51 +888,62 @@ class PyQtGraphMethods:
 			x_coords.append(sorted_list[each_pair])
 			y_coords.append(each_pair * 100.0 / list_size)
 		graphics_layout_widget, plot = (
-			self._director.common.begin_pyqtgraph_plot_with_title(None))
+			self._director.common.begin_pyqtgraph_plot_with_title(None)
+		)
 		plot.showGrid(x=True, y=True)
 		pen = pg.mkPen(color=(255, 0, 0))
 		line = pg.PlotDataItem(
-			x_coords, y_coords, pen=pen, symbol='o',
-			symbolPen='k', symbolBrush=(255, 0, 0))
+			x_coords,
+			y_coords,
+			pen=pen,
+			symbol="o",
+			symbolPen="k",
+			symbolBrush=(255, 0, 0),
+		)
 		plot.addItem(line)
-		plot.setLabel('bottom', "Cutoff", color="k", size='15pt')
+		plot.setLabel("bottom", "Cutoff", color="k", size="15pt")
 		if value_type == "similarities":
 			plot.setLabel(
-				'left', "Percentage of Pairs Above Similarity",
-				color="k", size='15pt')
+				"left",
+				"Percentage of Pairs Above Similarity",
+				color="k",
+				size="15pt",
+			)
 		else:
 			plot.setLabel(
-				'left', "Percentage of Pairs Below Dissimilarity",
-				color="k", size='15pt')
-			
-		director.set_focus_on_tab('Plot')
+				"left",
+				"Percentage of Pairs Below Dissimilarity",
+				color="k",
+				size="15pt",
+			)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
-	
+
 	# ------------------------------------------------------------------------
 
 	def request_directions_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		pyqtgraph_common.set_axis_extremes_based_on_coordinates(
-			point_coords)
+		pyqtgraph_common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self._plot_directions_using_pyqtgraph()
 		tab_gallery_widget = self._plot_directions_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_directions_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -890,19 +957,22 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
 
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		x = [
 			point_coords.iloc[each_point, hor_dim]
-			for each_point in range_points]
+			for each_point in range_points
+		]
 		y = [
 			point_coords.iloc[each_point, vert_dim]
-			for each_point in range_points]
+			for each_point in range_points
+		]
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
@@ -912,7 +982,7 @@ class PyQtGraphMethods:
 			# Normalize the point so that it lies on the unit circle
 			unit_x, unit_y = x[each_point] / distance, y[each_point] / distance
 			arrow_len = 0.1  # adjust the size of the arrow
-			line_pen = pg.mkPen('r', width=3)
+			line_pen = pg.mkPen("r", width=3)
 			# create line from origin to the (normalized) point
 			line = pg.PlotDataItem([0, unit_x], [0, unit_y], pen=line_pen)
 			plot.addItem(line)
@@ -921,34 +991,43 @@ class PyQtGraphMethods:
 			angle = np.degrees(np.arctan2(unit_y, unit_x)) + 180
 			# Add an ArrowItem at each (normalized) point
 			arrow = pg.ArrowItem(
-				pos=(unit_x, unit_y), angle=angle,
-				headLen=arrow_len, tipAngle=45, baseAngle=20,
-				brush='y')
+				pos=(unit_x, unit_y),
+				angle=angle,
+				headLen=arrow_len,
+				tipAngle=45,
+				baseAngle=20,
+				brush="y",
+			)
 			plot.addItem(arrow)
 			a_label = pg.TextItem(
 				text=self.point_labels[each_point],
-				color="k", anchor=(.5, 1), border='w', fill=None)
+				color="k",
+				anchor=(0.5, 1),
+				border="w",
+				fill=None,
+			)
 			nudge_x = unit_x + 0.2 if unit_x >= 0.0 else unit_x - 0.2
 			nudge_y = unit_y if unit_y >= 0.0 else unit_y - 0.2
 			a_label.setPos(nudge_x, nudge_y)
 			plot.addItem(a_label)
 		# Add a unit circle
 		x = np.linspace(-1, 1, 500)
-		y1 = np.sqrt(1 - x ** 2)
-		y2 = -np.sqrt(1 - x ** 2)
-		plot.plot(x, y1, pen='b')
-		plot.plot(x, y2, pen='b')
+		y1 = np.sqrt(1 - x**2)
+		y2 = -np.sqrt(1 - x**2)
+		plot.plot(x, y1, pen="b")
+		plot.plot(x, y2, pen="b")
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# --------------------------------------------------------------**--------
 
 	def request_evaluations_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-	# consider renaming
-		
+		self,
+	) -> None:
+		# consider renaming
+
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -956,83 +1035,83 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self.plot_evaluation_means_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
-		
+			tab_plot_widget, tab_gallery_widget
+		)
+
 		return
 
 	# ---------------------------------------------------------------**-------
 
 	def plot_evaluation_means_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-
 		director = self._director
 		evaluations_active = director.evaluations_active
 		avg_eval = evaluations_active.avg_eval
 		names_eval_sorted = evaluations_active.names_eval_sorted
 
 		graphics_layout_widget = PlotWidget()
-		
+
 		# Get the mean values in sorted order (highest to lowest)
 		# Use names_eval_sorted to get the correct order
 		mean_values = [avg_eval[name] for name in names_eval_sorted]
 		mean_values.reverse()  # Reverse to match original order
-		
+
 		indices = range(len(mean_values))
 		# the position on the y-axis of the bars
 		# Adjust the centers and the widths of the bars
 		centers = [val / 2 for val in mean_values]
 		widths = mean_values
 		bar_graph_item = BarGraphItem(
-			x=centers,
-			height=0.6,
-			width=widths,
-			y=indices,
-			brush='b', pen='k')
+			x=centers, height=0.6, width=widths, y=indices, brush="b", pen="k"
+		)
 		graphics_layout_widget.addItem(bar_graph_item)
-		
-		# Custom ticks (labels) on the y-axis
-		y_axis = graphics_layout_widget.getAxis('left')
-		y_labels = names_eval_sorted[::-1]  # Reverse order-match mean_values
-		
-		y_axis.setTicks([[(i, label) for i, label in enumerate(y_labels)]])
-		graphics_layout_widget.getAxis('bottom').setLabel('Average Evaluation')
-		graphics_layout_widget.setBackground('w')
 
-		director.set_focus_on_tab('Plot')
+		# Custom ticks (labels) on the y-axis
+		y_axis = graphics_layout_widget.getAxis("left")
+		y_labels = names_eval_sorted[::-1]  # Reverse order-match mean_values
+
+		y_axis.setTicks([[(i, label) for i, label in enumerate(y_labels)]])
+		graphics_layout_widget.getAxis("bottom").setLabel("Average Evaluation")
+		graphics_layout_widget.setBackground("w")
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_first_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		first_dim_groups_to_show = \
+		first_dim_groups_to_show = (
 			director.current_command._first_dim_groups_to_show
+		)
 
-		common.set_axis_extremes_based_on_coordinates(
-			point_coords)
+		common.set_axis_extremes_based_on_coordinates(point_coords)
 
-		tab_plot_widget = \
-			self._plot_first_using_pyqtgraph(first_dim_groups_to_show)
-		tab_gallery_widget = \
-			self._plot_first_using_pyqtgraph(first_dim_groups_to_show)
+		tab_plot_widget = self._plot_first_using_pyqtgraph(
+			first_dim_groups_to_show
+		)
+		tab_gallery_widget = self._plot_first_using_pyqtgraph(
+			first_dim_groups_to_show
+		)
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
 	# --------------------------------------------------------------------
 
-	def _plot_first_using_pyqtgraph(self, first_dim_groups_to_show: str) \
-		-> pg.GraphicsLayoutWidget:
-
+	def _plot_first_using_pyqtgraph(
+		self, first_dim_groups_to_show: str
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
@@ -1040,37 +1119,40 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
+
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"First Dimension Supporters"))
-		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(
-			plot)
-		
+				"First Dimension Supporters"
+			)
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
+
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
 
-		first_dim_people_points = configuration_active.\
-			_populate_first_dim_groups_to_show(first_dim_groups_to_show)
+		first_dim_people_points = (
+			configuration_active._populate_first_dim_groups_to_show(
+				first_dim_groups_to_show
+			)
+		)
 		pyqtgraph_plotter._fill_first_dim_regions_in_pyqtgraph_plot(
-			plot, first_dim_people_points)
-		
-		director.set_focus_on_tab('Plot')
+			plot, first_dim_people_points
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
-	
+
 	# ------------------------------------------------------------------------
 
 	def _fill_first_dim_regions_in_pyqtgraph_plot(
-			self,
-			plot: pg.PlotItem,
-			first_dim_people_points: PeoplePoints) -> None:
-
+		self, plot: pg.PlotItem, first_dim_people_points: PeoplePoints
+	) -> None:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -1082,38 +1164,40 @@ class PyQtGraphMethods:
 
 		first_left_region = QtGui.QPainterPath()
 		first_left_region.moveTo(first_left._x[0], first_left._y[0])
-		for x_, y_ in zip(
-			first_left._x[1:], first_left._y[1:], strict=True):
+		for x_, y_ in zip(first_left._x[1:], first_left._y[1:], strict=True):
 			first_left_region.lineTo(x_, y_)
-		first_left_region_item = QtWidgets.QGraphicsPathItem(
-			first_left_region)
+		first_left_region_item = QtWidgets.QGraphicsPathItem(first_left_region)
 		first_left_brush = QtGui.QBrush(QtGui.QColor(first_left._fill))
 		first_left_region_item.setBrush(first_left_brush)
 		first_left_region_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
 		plot.addItem(first_left_region_item)
 		first_right_region = QtGui.QPainterPath()
 		first_right_region.moveTo(first_right._x[0], first_right._y[0])
-		for x_, y_ in zip(
-				first_right._x[1:], first_right._y[1:], strict=True):
+		for x_, y_ in zip(first_right._x[1:], first_right._y[1:], strict=True):
 			first_right_region.lineTo(x_, y_)
 		first_right_region_item = QtWidgets.QGraphicsPathItem(
-			first_right_region)
+			first_right_region
+		)
 		first_right_brush = QtGui.QBrush(QtGui.QColor(first_right._fill))
 		first_right_region_item.setBrush(first_right_brush)
 		first_right_region_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
 		plot.addItem(first_right_region_item)
 		points = plot.scatterPlot(
-			x=first_dim_people_points.x, y=first_dim_people_points.y,
-			pen=score_color, symbol='o', size=point_size)
+			x=first_dim_people_points.x,
+			y=first_dim_people_points.y,
+			pen=score_color,
+			symbol="o",
+			size=point_size,
+		)
 		plot.addItem(points)
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def request_grouped_data_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1125,14 +1209,14 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self.plot_grouped_data_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
-# ------------------------------------------------------------------**--------
+	# -----------------------------------------------------------------------
 
 	def plot_grouped_data_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-
 		director = self._director
 		grouped_data_active = director.grouped_data_active
 		hor_dim = grouped_data_active._hor_dim
@@ -1144,46 +1228,54 @@ class PyQtGraphMethods:
 
 		ndim = grouped_data_active.ndim
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
 
 		graphics_layout_widget, plot = (
 			self._director.pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"Groups"))
+				"Groups"
+			)
+		)
 		plot = self._director.pyqtgraph_common.\
-			set_aspect_and_grid_in_pyqtgraph_plot(plot)
+			set_aspect_and_grid_in_pyqtgraph_plot(plot
+		)
 		x = [
 			group_coords.iloc[each_point, hor_dim]
-			for each_point in range_groups]
+			for each_point in range_groups
+		]
 		y = [
 			group_coords.iloc[each_point, vert_dim]
-			for each_point in range_groups]
+			for each_point in range_groups
+		]
 		# self._director.pyqtgraph_common.\
 		# add_axes_labels_to_pyqtgraph_plot(plot)
-		plot.setLabel(
-			'left', dim_names[vert_dim], color="k", size='15pt')
-		plot.setLabel(
-			'bottom', dim_names[hor_dim], color="k", size='15pt')
+		plot.setLabel("left", dim_names[vert_dim], color="k", size="15pt")
+		plot.setLabel("bottom", dim_names[hor_dim], color="k", size="15pt")
 		self._director.pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		for each_label in range_groups:
 			a_label = pg.TextItem(
 				text=group_labels[each_label],
-				color="k", anchor=(.5, 1), border='w', fill=None)
+				color="k",
+				anchor=(0.5, 1),
+				border="w",
+				fill=None,
+			)
 			a_label.setPos(x[each_label], y[each_label])
 			plot.addItem(a_label)
 		# pen = pg.mkPen(color=(255, 0, 0))
 		plot.scatterPlot(
-			x, y, pen="black", symbol='o', symbolSize=5, symbolBrush='k')
-		
-		director.set_focus_on_tab('Plot')
+			x, y, pen="black", symbol="o", symbolSize=5, symbolBrush="k"
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_heatmap_corr_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1191,37 +1283,41 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self.plot_a_heatmap_corr_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def plot_a_heatmap_corr_using_pyqtgraph(
-			self) -> pg.GraphicsLayoutWidget:
-
+	def plot_a_heatmap_corr_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		correlations_active = director.correlations_active
 		item_labels = correlations_active.item_labels
 		item_names = correlations_active.item_names
-		correlations_as_square = \
-			correlations_active.correlations_as_square
+		correlations_as_square = correlations_active.correlations_as_square
 
 		correlations_as_lower_triangle = np.tril(correlations_as_square, k=0)
 
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
-			"Correlations", correlations_as_lower_triangle, "PiYG",
-			item_names, item_labels, "Items")
+			"Correlations",
+			correlations_as_lower_triangle,
+			"PiYG",
+			item_names,
+			item_labels,
+			"Items",
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return layout_widget
-# --------------------------------------------------------------------------
+
+	# ------------------------------------------------------------------------
 
 	def request_heatmap_dist_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1229,14 +1325,14 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self.plot_a_heatmap_dist_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def plot_a_heatmap_dist_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
@@ -1247,148 +1343,172 @@ class PyQtGraphMethods:
 		title = "Inter-point distances"
 		distances_as_lower_triangle = np.tril(distances_as_square, k=0)
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
-			title, distances_as_lower_triangle, "binary",
-			point_names, point_labels, "Items")
+			title,
+			distances_as_lower_triangle,
+			"binary",
+			point_names,
+			point_labels,
+			"Items",
+		)
 
-		director.set_focus_on_tab('Plot')
-		
+		director.set_focus_on_tab("Plot")
+
 		return layout_widget
 
 	# ------------------------------------------------------------------------
 
-	def \
-	request_heatmap_rank_diff_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
+	def request_heatmap_rank_diff_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
+		self,
+	) -> None:
+		director = self._director
+		pyqtgraph_common = director.pyqtgraph_common
 
-			director = self._director
-			pyqtgraph_common = director.pyqtgraph_common
+		tab_plot_widget = self.plot_a_heatmap_rank_diff_using_pyqtgraph()
+		tab_gallery_widget = self.plot_a_heatmap_rank_diff_using_pyqtgraph()
 
-			tab_plot_widget = self.plot_a_heatmap_rank_diff_using_pyqtgraph()
-			tab_gallery_widget = \
-				self.plot_a_heatmap_rank_diff_using_pyqtgraph()
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
 
-			pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-				tab_plot_widget, tab_gallery_widget)
+		return
 
-			return
 	# ------------------------------------------------------------------------
 
 	def plot_a_heatmap_rank_diff_using_pyqtgraph(
-			self) -> pg.GraphicsLayoutWidget:
-
+		self,
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		similarities_active = director.similarities_active
 		item_labels = similarities_active.item_labels
 		item_names = similarities_active.item_names
-		differences_of_ranks_as_square = \
+		differences_of_ranks_as_square = (
 			similarities_active.differences_of_ranks_as_square
-		
+		)
+
 		title = "Differences of Ranks"
 
 		differences_as_lower_triangle = np.tril(
-			differences_of_ranks_as_square, k=0)
+			differences_of_ranks_as_square, k=0
+		)
 
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
-			title, differences_as_lower_triangle, "PiYG",
-			item_names, item_labels, "Items")
+			title,
+			differences_as_lower_triangle,
+			"PiYG",
+			item_names,
+			item_labels,
+			"Items",
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return layout_widget
-		
+
 	# ------------------------------------------------------------------------
 
-	def \
-	request_heatmap_ranked_dist_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
+	def request_heatmap_ranked_dist_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
+		self,
+	) -> None:
+		director = self._director
+		pyqtgraph_common = director.pyqtgraph_common
 
+		tab_plot_widget = self.plot_a_heatmap_ranked_dist_using_pyqtgraph()
+		tab_gallery_widget = self.plot_a_heatmap_ranked_dist_using_pyqtgraph()
 
-			director = self._director
-			pyqtgraph_common = director.pyqtgraph_common
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
 
-			tab_plot_widget = self.plot_a_heatmap_ranked_dist_using_pyqtgraph()
-			tab_gallery_widget = \
-				self.plot_a_heatmap_ranked_dist_using_pyqtgraph()
+		return
 
-			pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-				tab_plot_widget, tab_gallery_widget)
-
-			return
 	# ------------------------------------------------------------------------
 
 	def plot_a_heatmap_ranked_dist_using_pyqtgraph(
-			self) -> pg.GraphicsLayoutWidget:
-
+		self,
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		item_labels = configuration_active.item_labels
 		item_names = configuration_active.item_names
-		ranked_distances_as_square = \
+		ranked_distances_as_square = (
 			configuration_active.ranked_distances_as_square
-		
+		)
+
 		title = "Ranked Distances"
 
 		ranked_distances_as_lower_triangle = np.tril(
-			ranked_distances_as_square, k=0)
+			ranked_distances_as_square, k=0
+		)
 
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
-			title, ranked_distances_as_lower_triangle, "binary",
-			item_names, item_labels, "Items")
+			title,
+			ranked_distances_as_lower_triangle,
+			"binary",
+			item_names,
+			item_labels,
+			"Items",
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return layout_widget
-		
+
 	# ------------------------------------------------------------------------
 
-	def \
-	request_heatmap_ranked_simi_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
+	def request_heatmap_ranked_simi_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
+		self,
+	) -> None:
+		director = self._director
+		pyqtgraph_common = director.pyqtgraph_common
 
+		tab_plot_widget = self.plot_a_heatmap_ranked_simi_using_pyqtgraph()
+		tab_gallery_widget = self.plot_a_heatmap_ranked_simi_using_pyqtgraph()
 
-			director = self._director
-			pyqtgraph_common = director.pyqtgraph_common
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
 
-			tab_plot_widget = self.plot_a_heatmap_ranked_simi_using_pyqtgraph()
-			tab_gallery_widget = \
-				self.plot_a_heatmap_ranked_simi_using_pyqtgraph()
+		return
 
-			pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-				tab_plot_widget, tab_gallery_widget)
-
-			return
 	# ------------------------------------------------------------------------
 
 	def plot_a_heatmap_ranked_simi_using_pyqtgraph(
-			self) -> pg.GraphicsLayoutWidget:
-
+		self,
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		similarities_active = director.similarities_active
 		item_labels = similarities_active.item_labels
 		item_names = similarities_active.item_names
-		ranked_similarities_as_square = \
+		ranked_similarities_as_square = (
 			similarities_active.ranked_similarities_as_square
-		
+		)
+
 		ranked_similarities_as_lower_triangle = np.tril(
-			ranked_similarities_as_square, k=0)
+			ranked_similarities_as_square, k=0
+		)
 
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
-			"Ranked Similarities", ranked_similarities_as_lower_triangle,
-			"binary", item_names, item_labels, "Items")
+			"Ranked Similarities",
+			ranked_similarities_as_lower_triangle,
+			"binary",
+			item_names,
+			item_labels,
+			"Items",
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return layout_widget
-		
+
 	# ------------------------------------------------------------------------
 
 	def request_heatmap_simi_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
-	# Consider renaming
+		self,
+	) -> None:
+		# Consider renaming
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1396,15 +1516,14 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self.plot_a_heatmap_simi_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
-# -------------------------------------------------------------------**-------
-
+	# ------------------------------------------------------------------------
 
 	def plot_a_heatmap_simi_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		similarities_active = director.similarities_active
@@ -1414,7 +1533,7 @@ class PyQtGraphMethods:
 		similarities_as_square = similarities_active.similarities_as_square
 
 		similarities_as_lower_triangle = np.tril(similarities_as_square, k=0)
-		
+
 		if value_type == "similarities":
 			title = "Similarities"
 			shading = "gist_gray"
@@ -1423,22 +1542,24 @@ class PyQtGraphMethods:
 			shading = "gist_yarg"
 
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
-			title, similarities_as_lower_triangle, shading,
-			item_names, item_labels, "Items")
+			title,
+			similarities_as_lower_triangle,
+			shading,
+			item_names,
+			item_labels,
+			"Items",
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_individuals_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
-		title = (
-			"Request Individuals Plot for Plot "
-			"and Gallery using PyQtGraph"
-		)
+		self,
+	) -> None:
+		title = "Request Individuals Plot for Plot and Gallery using PyQtGraph"
 		message = "Must be created"
 		raise UnderDevelopmentError(title, message)
 
@@ -1446,21 +1567,19 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def plot_individuals_using_pyqtgraph(
-			self) -> None:
-
+	def plot_individuals_using_pyqtgraph(self) -> None:
 		title = "Plot Individuals using PyQtGraph"
-		
+
 		message = "Must be created"
 		raise UnderDevelopmentError(title, message)
 
 		return
-	
+
 	# ------------------------------------------------------------------------
 
 	def request_joint_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1468,14 +1587,14 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self._plot_joint_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_joint_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-		
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1487,43 +1606,46 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
+
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"Candidates and Voters"))
+				"Candidates and Voters"
+			)
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		# pen = pg.mkPen(color=(0, 255, 0))
 		plot.scatterPlot(
-			score_1, score_2,
-			pen=score_color, symbol='o', symbolSize=5, symbolBrush=(0, 255, 0))
+			score_1,
+			score_2,
+			pen=score_color,
+			symbol="o",
+			symbolSize=5,
+			symbolBrush=(0, 255, 0),
+		)
 		if common.have_reference_points():
-			pyqtgraph_common.\
-				add_connector_to_pyqtgraph_plot(plot)
-			pyqtgraph_common.\
-				add_bisector_to_pyqtgraph_plot(plot)
+			pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
+			pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)
 			if common.show_just_reference_points:
-				pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(
-					plot)
+				pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 				# pen)
 			else:
-				pyqtgraph_common.add_configuration_to_pyqtgraph_plot(
-					plot)
+				pyqtgraph_common.add_configuration_to_pyqtgraph_plot(plot)
 		else:
 			pyqtgraph_common.add_configuration_to_pyqtgraph_plot(plot)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_likely_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1534,24 +1656,26 @@ class PyQtGraphMethods:
 
 		# likely_groups_to_show = configuration_active.\
 		# 	_populate_likely_groups_to_show
-		likely_groups_to_show = \
-			director.current_command._likely_groups_to_show
+		likely_groups_to_show = director.current_command._likely_groups_to_show
 
-		tab_plot_widget = \
-			self._plot_likely_using_pyqtgraph(likely_groups_to_show)
-		tab_gallery_widget = \
-			self._plot_likely_using_pyqtgraph(likely_groups_to_show)
+		tab_plot_widget = self._plot_likely_using_pyqtgraph(
+			likely_groups_to_show
+		)
+		tab_gallery_widget = self._plot_likely_using_pyqtgraph(
+			likely_groups_to_show
+		)
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _plot_likely_using_pyqtgraph(
-			self, likely_groups_to_show: str) -> pg.GraphicsLayoutWidget:
-
+		self, likely_groups_to_show: str
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
@@ -1559,37 +1683,39 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
+
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"Likely Supporters"))
-		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(
-			plot)
+				"Likely Supporters"
+			)
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
-		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(
-			plot)
+		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
 
-		likely_people_points = configuration_active.\
-			_populate_likely_groups_to_show(likely_groups_to_show)
+		likely_people_points = (
+			configuration_active._populate_likely_groups_to_show(
+				likely_groups_to_show
+			)
+		)
 		pyqtgraph_plotter._fill_likely_regions_in_pyqtgraph_plot(
-			plot, likely_people_points)
-		
-		director.set_focus_on_tab('Plot')
+			plot, likely_people_points
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
-	
+
 	# ------------------------------------------------------------------------
 
 	def _fill_likely_regions_in_pyqtgraph_plot(
-			self,
-			plot: pg.PlotItem,
-			likely_people_points: PeoplePoints) -> None:
-
+		self, plot: pg.PlotItem, likely_people_points: PeoplePoints
+	) -> None:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -1603,28 +1729,37 @@ class PyQtGraphMethods:
 		likely_left_region.moveTo(likely_left._x[0], likely_left._y[0])
 		for x_, y_ in zip(likely_left._x[1:], likely_left._y[1:], strict=True):
 			likely_left_region.lineTo(x_, y_)
-		likely_left_region_item = \
-			QtWidgets.QGraphicsPathItem(likely_left_region)
-		likely_left_region_brush = \
-			QtGui.QBrush(QtGui.QColor(likely_left._fill))
+		likely_left_region_item = QtWidgets.QGraphicsPathItem(
+			likely_left_region
+		)
+		likely_left_region_brush = QtGui.QBrush(
+			QtGui.QColor(likely_left._fill)
+		)
 		likely_left_region_item.setBrush(likely_left_region_brush)
 		likely_left_region_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
 		plot.addItem(likely_left_region_item)
 		likely_right_region = QtGui.QPainterPath()
 		likely_right_region.moveTo(likely_right._x[0], likely_right._y[0])
-		for x_, y_ in zip(likely_right._x[1:], likely_right._y[1:],
-			strict=True):
+		for x_, y_ in zip(
+			likely_right._x[1:], likely_right._y[1:], strict=True
+		):
 			likely_right_region.lineTo(x_, y_)
-		likely_right_region_item = \
-			QtWidgets.QGraphicsPathItem(likely_right_region)
-		likely_right_region_brush = \
-			QtGui.QBrush(QtGui.QColor(likely_right._fill))
+		likely_right_region_item = QtWidgets.QGraphicsPathItem(
+			likely_right_region
+		)
+		likely_right_region_brush = QtGui.QBrush(
+			QtGui.QColor(likely_right._fill)
+		)
 		likely_right_region_item.setBrush(likely_right_region_brush)
 		likely_right_region_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
 		plot.addItem(likely_right_region_item)
 		points = pg.ScatterPlotItem(
-			x=likely_people_points.x, y=likely_people_points.y,
-			pen=score_color, symbol='o', size=point_size)
+			x=likely_people_points.x,
+			y=likely_people_points.y,
+			pen=score_color,
+			symbol="o",
+			size=point_size,
+		)
 		plot.addItem(points)
 
 		return
@@ -1632,8 +1767,8 @@ class PyQtGraphMethods:
 	# ----------------------------------------------------------------**------
 
 	def request_scores_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-		
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1653,7 +1788,8 @@ class PyQtGraphMethods:
 		tab_plot_widget = self.plot_scores_using_pyqtgraph()
 		tab_gallery_widget = self.plot_scores_using_pyqtgraph()
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		self.score_1 = score_1
 		self.score_1_name = score_1_name
@@ -1665,7 +1801,6 @@ class PyQtGraphMethods:
 	# -----------------------------------------------------------------**-----
 
 	def plot_scores_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1680,72 +1815,80 @@ class PyQtGraphMethods:
 		point_size = common.point_size
 
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Scores"))
-		plot = pyqtgraph_common.\
-			set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		plot.setLabel('left', hor_axis_name, color="k", size=15)
-		plot.setLabel('bottom',  vert_axis_name, color="k", size=15)
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Scores")
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
+		plot.setLabel("left", hor_axis_name, color="k", size=15)
+		plot.setLabel("bottom", vert_axis_name, color="k", size=15)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		x_coords = [
 			scores.iloc[each_point, hor_dim + 1]
-			for each_point in range(nscored)]
+			for each_point in range(nscored)
+		]
 		y_coords = [
 			scores.iloc[each_point, vert_dim + 1]
-			for each_point in range(nscored)]
+			for each_point in range(nscored)
+		]
 		# pen = pg.mkPen(color=score_color)   # had been 255, 0, 0))
 		plot.scatterPlot(
-			x_coords, y_coords, pen=score_color, symbol='o',
-			symbolSize=point_size, symbolBrush='k')
+			x_coords,
+			y_coords,
+			pen=score_color,
+			symbol="o",
+			symbolSize=point_size,
+			symbolBrush="k",
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_scree_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
-		title = (
-			"Request Scree Plot for Plot "
-			"and Gallery using PyQtGraph"
-		)
+		self,
+	) -> None:
+		title = "Request Scree Plot for Plot and Gallery using PyQtGraph"
 		message = "Must be created"
 		raise UnderDevelopmentError(title, message)
 
 		return
+
 	# ------------------------------------------------------------------------
 
 	def request_second_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		second_dim_groups_to_show = \
+		second_dim_groups_to_show = (
 			director.current_command._second_dim_groups_to_show
+		)
 
-		common.set_axis_extremes_based_on_coordinates(
-			point_coords)
+		common.set_axis_extremes_based_on_coordinates(point_coords)
 
 		tab_plot_widget = self._plot_second_using_pyqtgraph(
-			second_dim_groups_to_show)
+			second_dim_groups_to_show
+		)
 		tab_gallery_widget = self._plot_second_using_pyqtgraph(
-			second_dim_groups_to_show)
+			second_dim_groups_to_show
+		)
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
 	# --------------------------------------------------------------------
 
-	def _plot_second_using_pyqtgraph(self,
-		second_dim_groups_to_show: str) -> pg.GraphicsLayoutWidget:
-
+	def _plot_second_using_pyqtgraph(
+		self, second_dim_groups_to_show: str
+	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
@@ -1753,31 +1896,34 @@ class PyQtGraphMethods:
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"Second Dimension Supporters"))
-		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(
-			plot)
+				"Second Dimension Supporters"
+			)
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
 
-		second_dim_people_points = configuration_active.\
-			_populate_second_dim_groups_to_show(second_dim_groups_to_show)
+		second_dim_people_points = (
+			configuration_active._populate_second_dim_groups_to_show(
+				second_dim_groups_to_show
+			)
+		)
 		pyqtgraph_plotter._fill_second_dim_regions_in_pyqtgraph_plot(
-			plot, second_dim_people_points)
-		
-		director.set_focus_on_tab('Plot')
+			plot, second_dim_people_points
+		)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
-	
+
 	# ------------------------------------------------------------------------
 
 	def _fill_second_dim_regions_in_pyqtgraph_plot(
-			self,
-			plot: pg.PlotItem,
-			second_dim_people_points: PeoplePoints) -> None:
-
+		self, plot: pg.PlotItem, second_dim_people_points: PeoplePoints
+	) -> None:
 		director = self._director
 		common = director.common
 		rivalry = director.rivalry
@@ -1789,8 +1935,7 @@ class PyQtGraphMethods:
 
 		second_up_region = QtGui.QPainterPath()
 		second_up_region.moveTo(second_up._x[0], second_up._y[0])
-		for x_, y_ in zip(
-			second_up._x[1:], second_up._y[1:], strict=True):
+		for x_, y_ in zip(second_up._x[1:], second_up._y[1:], strict=True):
 			second_up_region.lineTo(x_, y_)
 		second_up_region_item = QtWidgets.QGraphicsPathItem(second_up_region)
 		second_up_brush = QtGui.QBrush(QtGui.QColor(second_up._fill))
@@ -1799,18 +1944,22 @@ class PyQtGraphMethods:
 		plot.addItem(second_up_region_item)
 		second_down_region = QtGui.QPainterPath()
 		second_down_region.moveTo(second_down._x[0], second_down._y[0])
-		for x_, y_ in zip(
-			second_down._x[1:], second_down._y[1:], strict=True):
+		for x_, y_ in zip(second_down._x[1:], second_down._y[1:], strict=True):
 			second_down_region.lineTo(x_, y_)
 		second_down_region_item = QtWidgets.QGraphicsPathItem(
-			second_down_region)
+			second_down_region
+		)
 		second_down_brush = QtGui.QBrush(QtGui.QColor(second_down._fill))
 		second_down_region_item.setBrush(second_down_brush)
 		second_down_region_item.setPen(pg.mkPen(color=(0, 0, 0), width=2))
 		plot.addItem(second_down_region_item)
 		points = plot.scatterPlot(
-			x=second_dim_people_points.x, y=second_dim_people_points.y,
-			pen=score_color, symbol='o', size=point_size)
+			x=second_dim_people_points.x,
+			y=second_dim_people_points.y,
+			pen=score_color,
+			symbol="o",
+			size=point_size,
+		)
 		plot.addItem(points)
 
 		return
@@ -1818,8 +1967,8 @@ class PyQtGraphMethods:
 	# ---------------------------------------------------------------------**--
 
 	def request_target_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-		
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1831,17 +1980,18 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self.plot_target_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def plot_target_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
+		(hor_max, hor_min, vert_max, vert_min) = (
+			self._director.common.use_plot_ranges()
+		)
 
-		(hor_max, hor_min, vert_max, vert_min) \
-			= self._director.common.use_plot_ranges()
-		
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		target_active = director.target_active
@@ -1855,62 +2005,70 @@ class PyQtGraphMethods:
 		ndim = target_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
+
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
 		x = [
 			point_coords.iloc[each_point, hor_dim]
-			for each_point in range_points]
+			for each_point in range_points
+		]
 		y = [
 			point_coords.iloc[each_point, vert_dim]
-			for each_point in range_points]
-		plot.setLabel('left', dim_names[vert_dim], color="k", size='15pt')
-		plot.setLabel('bottom', dim_names[hor_dim], color="k", size='15pt')
+			for each_point in range_points
+		]
+		plot.setLabel("left", dim_names[vert_dim], color="k", size="15pt")
+		plot.setLabel("bottom", dim_names[hor_dim], color="k", size="15pt")
 		plot.setXRange(hor_max, hor_min, padding=None)
 		plot.setYRange(vert_min, vert_max, padding=None)
 		for each_label in range_points:
 			a_label = pg.TextItem(
 				text=point_labels[each_label],
-				color="k", anchor=(.5, 1), border='w', fill=None)
+				color="k",
+				anchor=(0.5, 1),
+				border="w",
+				fill=None,
+			)
 			a_label.setPos(x[each_label], y[each_label])
 			plot.addItem(a_label)
 		pen = pg.mkPen(color=(255, 0, 0))
-		plot.scatterPlot(x, y, pen=pen, symbol='o',
-			symbolSize=point_size, symbolBrush='k')
+		plot.scatterPlot(
+			x, y, pen=pen, symbol="o", symbolSize=point_size, symbolBrush="k"
+		)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
-
 
 	# ------------------------------------------------------------------------
 
 	def request_uncertainty_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		uncertainty_active = director.uncertainty_active
 
 		common.set_axis_extremes_based_on_coordinates(
-			uncertainty_active.repetitions_rotated)
+			uncertainty_active.solutions
+		)
 		tab_plot_widget = self.plot_uncertainty_using_pyqtgraph()
 		tab_gallery_widget = self.plot_uncertainty_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
-	
+			tab_plot_widget, tab_gallery_widget
+		)
+
 		return
-	
-# --------------------------------------------------------------------------
+
+	# ------------------------------------------------------------------------
 
 	def plot_uncertainty_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-		
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1918,76 +2076,360 @@ class PyQtGraphMethods:
 		uncertainty_active = director.uncertainty_active
 		hor_dim = common.hor_dim
 		vert_dim = common.vert_dim
-		dim_names = target_active.dim_names
-		point_labels = target_active.point_labels
+		dim_names = uncertainty_active.dim_names
+		point_labels = uncertainty_active.point_labels
 		point_size = common.point_size
-		range_points = target_active.range_points
-		npoint = target_active.npoint
-		ndim = target_active.ndim
+		range_points = uncertainty_active.range_points
+		npoint = uncertainty_active.npoints
+		ndim = uncertainty_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
 			return None
 
-		repetitions_rotated = \
-			uncertainty_active.repetitions_rotated
+		solutions = uncertainty_active.solutions
 
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Uncertainty"))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Uncertainty")
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		plot.setLabel('left', dim_names[vert_dim], color="k", size='15pt')
-		plot.setLabel('bottom', dim_names[hor_dim], color="k", size='15pt')
+		plot.setLabel("left", dim_names[vert_dim], color="k", size="15pt")
+		plot.setLabel("bottom", dim_names[hor_dim], color="k", size="15pt")
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
 		for each_point in range_points:
-
-			point_coordinates_for_repetition = repetitions_rotated.iloc[
-				each_point::npoint]
+			point_coordinates_for_repetition = solutions.iloc[
+				each_point::npoint
+			]
 			x_coords = point_coordinates_for_repetition.iloc[:, 0].to_numpy()
 			y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
-			x_mean = np.mean(x_coords)
-			y_mean = np.mean(y_coords)
+			x_mean, y_mean = common.solutions_means(each_point)
 			point_label = pg.TextItem(
 				text=point_labels[each_point],
-				color="k", anchor=(0.5, 0.5), border='w', fill=None)
+				color="k",
+				anchor=(0.5, 0.5),
+				border="w",
+				fill=None,
+			)
 			point_label.setPos(x_mean, y_mean)
 			plot.addItem(point_label)
 			scatter = pg.ScatterPlotItem(
-				x=x_coords, y=y_coords,
-				pen='r', symbol='o', size=point_size, brush='r')
+				x=x_coords,
+				y=y_coords,
+				pen="r",
+				symbol="o",
+				size=point_size,
+				brush="r",
+			)
 			plot.addItem(scatter)
 			ellipse = pyqtgraph_common.confidence_ellipse_using_pyqtgraph(
-				x_coords, y_coords, n_std=2.0)
+				x_coords, y_coords, n_std=2.0
+			)
 			plot.addItem(ellipse)
 
-		director.set_focus_on_tab('Plot')
+		director.set_focus_on_tab("Plot")
+
+		return graphics_layout_widget
+
+	# ------------------------------------------------------------------------
+
+	def request_spatial_uncertainty_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
+		self,
+	) -> None:
+		director = self._director
+		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
+		uncertainty_active = director.uncertainty_active
+
+		common.set_axis_extremes_based_on_coordinates(
+			uncertainty_active.solutions
+		)
+		tab_plot_widget = self.plot_spatial_uncertainty_using_pyqtgraph()
+		tab_gallery_widget = self.plot_spatial_uncertainty_using_pyqtgraph()
+
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def plot_spatial_uncertainty_using_pyqtgraph(
+		self,
+	) -> pg.GraphicsLayoutWidget:
+		director = self._director
+		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
+		uncertainty_active = director.uncertainty_active
+		hor_dim = common.hor_dim
+		vert_dim = common.vert_dim
+		dim_names = uncertainty_active.dim_names
+		point_labels = uncertainty_active.point_labels
+		point_size = common.point_size
+		range_points = uncertainty_active.range_points
+		npoint = uncertainty_active.npoints
+		ndim = uncertainty_active.ndim
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
+
+		# Get the visualization mode from the ViewSpatialUncertainty command
+		plot_to_show = getattr(director, "plot_to_show", "ellipses")
+
+		solutions = uncertainty_active.solutions
+
+		title = f"Spatial Uncertainty ({plot_to_show})"
+		graphics_layout_widget, plot = (
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(title)
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
+		plot.setLabel("left", dim_names[vert_dim], color="k", size="15pt")
+		plot.setLabel("bottom", dim_names[hor_dim], color="k", size="15pt")
+		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
+
+		for each_point in range_points:
+			point_coordinates_for_repetition = solutions.iloc[
+				each_point::npoint
+			]
+			x_coords = point_coordinates_for_repetition.iloc[:, 0].to_numpy()
+			y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
+			x_mean, y_mean = common.solutions_means(each_point)
+			point_label = pg.TextItem(
+				text=point_labels[each_point],
+				color="k",
+				anchor=(0.5, 0.5),
+				border="w",
+				fill=None,
+			)
+			point_label.setPos(x_mean, y_mean)
+			plot.addItem(point_label)
+			scatter = pg.ScatterPlotItem(
+				x=x_coords,
+				y=y_coords,
+				pen="r",
+				symbol="o",
+				size=point_size,
+				brush="r",
+			)
+			plot.addItem(scatter)
+
+			if plot_to_show == "ellipses":
+				# Default ellipse mode - same as regular uncertainty
+				ellipse = pyqtgraph_common.confidence_ellipse_using_pyqtgraph(
+					x_coords, y_coords, n_std=2.0
+				)
+				plot.addItem(ellipse)
+			elif plot_to_show == "boxes":
+				# Box mode using point_solutions_extrema
+				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
+					each_point
+				)
+				# Create box connecting corner points
+				box_x = [x_max, x_min, x_min, x_max, x_max]
+				box_y = [y_max, y_max, y_min, y_min, y_max]
+				box_line = pg.PlotCurveItem(x=box_x, y=box_y, pen="r")
+				plot.addItem(box_line)
+			elif plot_to_show == "lines":
+				# Lines mode using point_solutions_extrema
+				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
+					each_point
+				)
+				# Draw cross lines from center to extremes
+				line_up = pg.PlotCurveItem(
+					x=[x_mean, x_mean], y=[y_mean, y_max], pen="r"
+				)
+				line_down = pg.PlotCurveItem(
+					x=[x_mean, x_mean], y=[y_mean, y_min], pen="r"
+				)
+				line_right = pg.PlotCurveItem(
+					x=[x_mean, x_max], y=[y_mean, y_mean], pen="r"
+				)
+				line_left = pg.PlotCurveItem(
+					x=[x_mean, x_min], y=[y_mean, y_mean], pen="r"
+				)
+				plot.addItem(line_up)
+				plot.addItem(line_down)
+				plot.addItem(line_right)
+				plot.addItem(line_left)
+			elif plot_to_show == "circles":
+				# Circle mode using largest_uncertainty as radius
+				radius = common.largest_uncertainty(each_point)
+				circle = pg.QtWidgets.QGraphicsEllipseItem(
+					x_mean - radius, y_mean - radius, 2 * radius, 2 * radius
+				)
+				circle.setPen(pg.mkPen("r"))
+				circle.setBrush(pg.mkBrush(None))
+				plot.addItem(circle)
+
+		director.set_focus_on_tab("Plot")
+
+		return graphics_layout_widget
+
+	# ------------------------------------------------------------------------
+
+	def request_point_uncertainty_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
+		self,
+	) -> None:
+		director = self._director
+		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
+		uncertainty_active = director.uncertainty_active
+
+		common.set_axis_extremes_based_on_coordinates(
+			uncertainty_active.solutions
+		)
+		tab_plot_widget = self.plot_point_uncertainty_using_pyqtgraph()
+		tab_gallery_widget = self.plot_point_uncertainty_using_pyqtgraph()
+
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def plot_point_uncertainty_using_pyqtgraph(
+		self,
+	) -> pg.GraphicsLayoutWidget:
+		director = self._director
+		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
+		uncertainty_active = director.uncertainty_active
+		hor_dim = common.hor_dim
+		vert_dim = common.vert_dim
+		dim_names = uncertainty_active.dim_names
+		point_labels = uncertainty_active.point_labels
+		point_size = common.point_size
+		range_points = uncertainty_active.range_points
+		npoint = uncertainty_active.npoints
+		ndim = uncertainty_active.ndim
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
+
+		# Get the visualization mode from the ViewPointUncertainty command
+		plot_to_show = getattr(director, "plot_to_show", "ellipses")
+
+		# Get selected points from the command instance
+		selected_point_indices = getattr(
+			director, "selected_point_indices", range_points
+		)
+
+		solutions = uncertainty_active.solutions
+
+		title = "Point Uncertainty"
+		graphics_layout_widget, plot = (
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(title)
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
+		plot.setLabel("left", dim_names[vert_dim])
+		plot.setLabel("bottom", dim_names[hor_dim])
+		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
+
+		# Show labels for ALL points
+		for each_point in range_points:
+			x_mean, y_mean = common.solutions_means(each_point)
+			label_text = pg.TextItem(text=point_labels[each_point], color="k")
+			label_text.setPos(x_mean, y_mean)
+			plot.addItem(label_text)
+
+		# Show uncertainty visualization only for SELECTED points
+		for each_point in selected_point_indices:
+			point_coordinates_for_repetition = solutions.iloc[
+				each_point::npoint
+			]
+			x_coords = point_coordinates_for_repetition.iloc[:, 0].to_numpy()
+			y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
+			x_mean, y_mean = common.solutions_means(each_point)
+
+			# Plot scatter points
+			scatter = pg.ScatterPlotItem(
+				x_coords,
+				y_coords,
+				size=0.5,
+				pen=pg.mkPen("r"),
+				brush=pg.mkBrush("r"),
+			)
+			plot.addItem(scatter)
+
+			if plot_to_show == "ellipses":
+				# Ellipse mode - need to implement ellipse for pyqtgraph
+				# For now, use circle as approximation
+				radius = np.sqrt(np.var(x_coords) + np.var(y_coords))
+				circle = pg.CircleROI(
+					[x_mean - radius, y_mean - radius],
+					[2 * radius, 2 * radius],
+					movable=False,
+				)
+				circle.setPen(pg.mkPen("r"))
+				circle.setBrush(pg.mkBrush(None))
+				plot.addItem(circle)
+			elif plot_to_show == "boxes":
+				# Box mode using point_solutions_extrema
+				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
+					each_point
+				)
+				box_x = [x_max, x_min, x_min, x_max, x_max]
+				box_y = [y_max, y_max, y_min, y_min, y_max]
+				box_line = pg.PlotDataItem(box_x, box_y, pen=pg.mkPen("r"))
+				plot.addItem(box_line)
+			elif plot_to_show == "lines":
+				# Lines mode using point_solutions_extrema
+				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
+					each_point
+				)
+				# Draw cross lines from center to extremes
+				v_line = pg.PlotDataItem(
+					[x_mean, x_mean], [y_min, y_max], pen=pg.mkPen("r")
+				)
+				h_line = pg.PlotDataItem(
+					[x_min, x_max], [y_mean, y_mean], pen=pg.mkPen("r")
+				)
+				plot.addItem(v_line)
+				plot.addItem(h_line)
+			elif plot_to_show == "circles":
+				# Circle mode using largest_uncertainty as radius
+				radius = common.largest_uncertainty(each_point)
+				circle = pg.CircleROI(
+					[x_mean - radius, y_mean - radius],
+					[2 * radius, 2 * radius],
+					movable=False,
+				)
+				circle.setPen(pg.mkPen("r"))
+				circle.setBrush(pg.mkBrush(None))
+				plot.addItem(circle)
+
+		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_vectors_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
+		self,
+	) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		pyqtgraph_common.set_axis_extremes_based_on_coordinates(
-			point_coords)
+		pyqtgraph_common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self._plot_vectors_using_pyqtgraph()
 		tab_gallery_widget = self._plot_vectors_using_pyqtgraph()
 
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget)
+			tab_plot_widget, tab_gallery_widget
+		)
 
 		return
 
-	#-------------------------------------------------------------------------
+	# -------------------------------------------------------------------------
 
 	def _plot_vectors_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-		
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
@@ -1996,11 +2438,12 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab('Output')
+			director.set_focus_on_tab("Output")
 			return None
-		
+
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None))
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
+		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
@@ -2010,38 +2453,39 @@ class PyQtGraphMethods:
 			y = point_coords.iloc[each_point][1]
 			arrow_len = 20  # adjust the size of the arrow (
 			# to indicate relative vector magnitude if necessary)
-			line_pen = pg.mkPen('r', width=3)
+			line_pen = pg.mkPen("r", width=3)
 			line = pg.PlotDataItem([0, x], [0, y], pen=line_pen)
 			plot.addItem(line)
-			angle = - np.degrees(np.arctan2(y, x)) + 180
+			angle = -np.degrees(np.arctan2(y, x)) + 180
 			arrow = pg.ArrowItem(
-				pos=(x, y), angle=angle, headLen=arrow_len,
-				tipAngle=30, baseAngle=0, brush='r')
+				pos=(x, y),
+				angle=angle,
+				headLen=arrow_len,
+				tipAngle=30,
+				baseAngle=0,
+				brush="r",
+			)
 			plot.addItem(arrow)
 
-		director.set_focus_on_tab('Plot')
-		
+		director.set_focus_on_tab("Plot")
+
 		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
 	def request_view_custom_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-			self) -> None:
-
-		title = (
-			"Request Custom Plot for Plot "
-			"and Gallery using PyQtGraph"
-		)
+		self,
+	) -> None:
+		title = "Request Custom Plot for Plot and Gallery using PyQtGraph"
 		message = "Must be created"
 		raise UnderDevelopmentError(title, message)
 
 		return
-	
-# --------------------------------------------------------------------------
+
+	# ------------------------------------------------------------------------
 
 	def _plot_custom_using_pyqtgraph(self) -> None:
-
 		title: str = "Plot Custom using pyqtgraph"
 		message: str = "Must be created"
-		
+
 		raise UnderDevelopmentError(title, message)

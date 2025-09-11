@@ -1,18 +1,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from director import Spaces, Status
+	from director import Spaces, Status
 
 
 # --------------------------------------------------------------------------
 
 
 class AbstractCommand:
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 
@@ -20,10 +18,7 @@ class AbstractCommand:
 
 
 class ASupporterGrouping(AbstractCommand):
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:
 		super().__init__(director, common)
 
 		self._hor_dim = self._director.common.hor_dim
@@ -59,7 +54,7 @@ class ASupporterGrouping(AbstractCommand):
 
 			self._convertible_to_left = rivalry.convertible_to_left
 			self._convertible_to_right = rivalry.convertible_to_right
-			
+
 			self._convertible_settled = rivalry.convertible_settled
 			self._first_left = rivalry.first_left
 			self._first_right = rivalry.first_right
@@ -72,5 +67,3 @@ class ASupporterGrouping(AbstractCommand):
 
 		self._nscored_individ = self._director.scores_active.nscored_individ
 		return
-
-

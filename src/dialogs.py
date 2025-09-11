@@ -2,12 +2,23 @@ from __future__ import annotations
 
 import sys
 
-import peek # noqa: F401
+import peek  # noqa: F401
 from PySide6.QtWidgets import (
 	QCheckBox,
-    QDialog,  QHBoxLayout, QRadioButton, QPushButton,
-    QLabel, QLineEdit,QDialogButtonBox, QGridLayout, QDoubleSpinBox,
-    QScrollArea, QSpinBox, QVBoxLayout, QWidget)
+	QDialog,
+	QHBoxLayout,
+	QRadioButton,
+	QPushButton,
+	QLabel,
+	QLineEdit,
+	QDialogButtonBox,
+	QGridLayout,
+	QDoubleSpinBox,
+	QScrollArea,
+	QSpinBox,
+	QVBoxLayout,
+	QWidget,
+)
 from PySide6 import QtCore
 from constants import MUST_HAVE_EXACTLY_TWO_SELECTIONS
 from exceptions import SelectionError
@@ -17,11 +28,12 @@ from exceptions import SelectionError
 
 class ChoseOptionDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			options_title: str,
-			options: list[str],
-			parent: QWidget | None = None) -> None:
+		self,
+		title: str,
+		options_title: str,
+		options: list[str],
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 
 		self.setWindowTitle(title)
@@ -49,10 +61,7 @@ class ChoseOptionDialog(QDialog):
 
 	# ------------------------------------------------------------------------
 
-	def _update_selected_option(
-			self,
-			checked: bool) -> None: #noqa: FBT001
-		
+	def _update_selected_option(self, checked: bool) -> None:  # noqa: FBT001
 		if checked:
 			sender = self.sender()
 			self.selected_option = self.options.index(sender.text())
@@ -63,12 +72,13 @@ class ChoseOptionDialog(QDialog):
 
 class MatrixDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			label: list[str],
-			column_labels: list[str],
-			row_labels: list[str],
-			parent: QWidget | None = None) -> None:
+		self,
+		title: str,
+		label: list[str],
+		column_labels: list[str],
+		row_labels: list[str],
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 
 		self.spin_boxes: object = None
@@ -77,11 +87,9 @@ class MatrixDialog(QDialog):
 		self.setWindowTitle(title)
 		self.init_ui(label)
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def init_ui(
-			self,
-			label: str) -> None:
+	def init_ui(self, label: str) -> None:
 		"""Initialize the dialog's UI components.
 
 		Args:
@@ -95,13 +103,17 @@ class MatrixDialog(QDialog):
 		for j, col_label in enumerate(self.column_labels):
 			column_label_widget = QLabel(col_label)
 			grid_layout.addWidget(
-				column_label_widget, 0, j + 1,
-				QtCore.Qt.AlignmentFlag.AlignHCenter)
+				column_label_widget,
+				0,
+				j + 1,
+				QtCore.Qt.AlignmentFlag.AlignHCenter,
+			)
 
 		for i, row_label_text in enumerate(self.row_labels):
 			row_label = QLabel(row_label_text)
 			grid_layout.addWidget(
-				row_label, i + 1, 0, QtCore.Qt.AlignmentFlag.AlignRight)
+				row_label, i + 1, 0, QtCore.Qt.AlignmentFlag.AlignRight
+			)
 
 			row_spin_boxes = []
 			for j in range(len(self.column_labels)):
@@ -115,7 +127,8 @@ class MatrixDialog(QDialog):
 		layout.addLayout(grid_layout)
 
 		button_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+		)
 		button_box.accepted.connect(self.accept)
 		button_box.rejected.connect(self.reject)
 
@@ -124,22 +137,26 @@ class MatrixDialog(QDialog):
 
 	def get_matrix(self) -> list[list[float]]:
 		matrix = [
-			[self.spin_boxes[i][j].value() for j \
-				in range(len(self.column_labels))]
+			[
+				self.spin_boxes[i][j].value()
+				for j in range(len(self.column_labels))
+			]
 			for i in range(len(self.row_labels))
 		]
 		return matrix
+
 
 # --------------------------------------------------------------------------
 
 
 class ModifyItemsDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			items: list[str],
-			default_values: list[bool] | None=None,
-			parent: QWidget | None = None) -> None:
+		self,
+		title: str,
+		items: list[str],
+		default_values: list[bool] | None = None,
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 
 		self.setWindowTitle(title)
@@ -147,14 +164,19 @@ class ModifyItemsDialog(QDialog):
 		self.items = items
 		self.checkboxes = []
 		self.layout = QVBoxLayout()
-		for item, default_value in zip(
-			items, default_values or [], strict=False):
+		for i, item in enumerate(items):
+			default_value = (
+				default_values[i]
+				if default_values and i < len(default_values)
+				else False
+			)
 			checkbox = QCheckBox(item)
 			self.checkboxes.append(checkbox)
 			checkbox.setChecked(default_value)
 			self.layout.addWidget(checkbox)
 		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+		)
 		self.checkbox_box.accepted.connect(self.accept)
 		self.checkbox_box.rejected.connect(self.reject)
 
@@ -170,19 +192,22 @@ class ModifyItemsDialog(QDialog):
 		selected = [
 			self.items[i]
 			for i, checkbox in enumerate(self.checkboxes)
-			if checkbox.isChecked()]
+			if checkbox.isChecked()
+		]
 		return selected
+
 
 # --------------------------------------------------------------------------
 
 
 class ModifyTextDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			items: list[str],
-			default_values: list[str] | None=None,
-			parent: QWidget | None = None) -> None:
+		self,
+		title: str,
+		items: list[str],
+		default_values: list[str] | None = None,
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 
 		self.setWindowTitle(title)
@@ -190,8 +215,9 @@ class ModifyTextDialog(QDialog):
 		self.items = items
 		self.spinboxes = []
 		self.layout = QVBoxLayout()
-		for item, default_value in zip(items, default_values or [],
-			strict=False):
+		for item, default_value in zip(
+			items, default_values or [], strict=False
+		):
 			hbox = QHBoxLayout()
 			label = QLabel(item)
 			spinbox = QSpinBox()
@@ -206,7 +232,8 @@ class ModifyTextDialog(QDialog):
 
 			self.layout.addLayout(hbox)
 		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+		)
 		self.checkbox_box.accepted.connect(self.accept)
 		self.checkbox_box.rejected.connect(self.reject)
 
@@ -221,27 +248,32 @@ class ModifyTextDialog(QDialog):
 	def selected_items(self) -> list[tuple[str, int]]:
 		selected = [
 			(self.items[i], self.spinboxes[i].value())
-			for i
-			in range(len(self.items))]
+			for i in range(len(self.items))
+		]
 		return selected
+
 
 # --------------------------------------------------------------------------
 
 
 class ModifyValuesDialog(QDialog):
 	def __init__(
-		self, title: str, items: list[str],
-		integers: bool, # noqa:FBT001
+		self,
+		title: str,
+		items: list[str],
+		integers: bool,  # noqa:FBT001
 		default_values: list[int] | None = None,
-		parent: QWidget | None = None) -> None:
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 		self.setWindowTitle(title)
 		self.setFixedWidth(325)
 		self.items = items
 		self.spinboxes = []
 		self.layout = QVBoxLayout()
-		for item, default_value in zip(items, default_values or [],
-			strict=False):
+		for item, default_value in zip(
+			items, default_values or [], strict=False
+		):
 			hbox = QHBoxLayout()
 			label = QLabel(item)
 			spinbox = QSpinBox() if integers else QDoubleSpinBox()
@@ -257,7 +289,8 @@ class ModifyValuesDialog(QDialog):
 
 			self.layout.addLayout(hbox)
 		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+		)
 		self.checkbox_box.accepted.connect(self.accept)
 		self.checkbox_box.rejected.connect(self.reject)
 
@@ -269,25 +302,27 @@ class ModifyValuesDialog(QDialog):
 		self.layout.addLayout(checkbox_layout)
 		self.setLayout(self.layout)
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def selected_items(self) -> list[tuple[str, int]]:
 		selected = [
 			(self.items[i], self.spinboxes[i].value())
-			for i
-			in range(len(self.items))]
+			for i in range(len(self.items))
+		]
 		return selected
+
 
 # --------------------------------------------------------------------------
 
 
 class MoveDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			value_title: str,
-			options: list[str],
-			parent: QWidget | None = None) -> None:
+		self,
+		title: str,
+		value_title: str,
+		options: list[str],
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 
 		self.setWindowTitle(title)
@@ -317,36 +352,33 @@ class MoveDialog(QDialog):
 		self.main_layout.addLayout(self.group)
 		self.setLayout(self.main_layout)
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _updateSelectedOption(  # noqa: N802
-			self,
-			checked: bool) -> None: # noqa: FBT001
-		
+		self, checked: bool
+	) -> None:  # noqa: FBT001
 		if checked:
 			sender = self.sender()
 			self.selected_option = self.options.index(sender.text())
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def getSelectedOption(self) -> int:  # noqa: N802
 		return self.selected_option
-	
-# --------------------------------------------------------------------------
 
-	def getDecimalValue(self) -> float: # noqa: N802
+	# ------------------------------------------------------------------------
+
+	def getDecimalValue(self) -> float:  # noqa: N802
 		return self.decimal_input.value()
-	
-	
+
+
 # --------------------------------------------------------------------------
 
 
 class PairofPointsDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			items: list[str],
-			parent: QWidget | None = None) -> None:
+		self, title: str, items: list[str], parent: QWidget | None = None
+	) -> None:
 		super().__init__(parent)
 		self.setWindowTitle(title)
 		# self.setFixedWidth(225)
@@ -359,7 +391,8 @@ class PairofPointsDialog(QDialog):
 			self.checkboxes.append(checkbox)
 			self.layout.addWidget(checkbox)
 		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+		)
 		self.checkbox_box.accepted.connect(self.accept)
 		self.checkbox_box.rejected.connect(self.reject)
 
@@ -372,33 +405,31 @@ class PairofPointsDialog(QDialog):
 		self.setLayout(self.layout)
 		self.selection_error_title = "Selection Error"
 		self.selection_error_message = (
-				"Exactly 2 points must be selected for this operation.")
+			"Exactly 2 points must be selected for this operation."
+		)
 
 	# -----------------------------------------------------------------------
 
 	def selected_items(self) -> list[str]:
-		
 		selected = [
 			self.items[i]
-			for i, checkbox
-			in enumerate(self.checkboxes)
-			if checkbox.isChecked()]
+			for i, checkbox in enumerate(self.checkboxes)
+			if checkbox.isChecked()
+		]
 		if len(selected) != MUST_HAVE_EXACTLY_TWO_SELECTIONS:
-
 			raise SelectionError(
-				self.selection_error_title,
-				self.selection_error_message)
+				self.selection_error_title, self.selection_error_message
+			)
 
 		return selected
 
 	# ------------------------------------------------------------------------
-	
+
+
 class SelectItemsDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			items: list[str],
-			parent: QWidget | None = None) -> None:
+		self, title: str, items: list[str], parent: QWidget | None = None
+	) -> None:
 		super().__init__(parent)
 		self.setWindowTitle(title)
 		self.setFixedWidth(225)
@@ -409,9 +440,10 @@ class SelectItemsDialog(QDialog):
 			checkbox = QCheckBox(item)
 			self.checkboxes.append(checkbox)
 			self.layout.addWidget(checkbox)
-		
+
 		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+		)
 		self.checkbox_box.accepted.connect(self.accept)
 		self.checkbox_box.rejected.connect(self.reject)
 
@@ -420,31 +452,33 @@ class SelectItemsDialog(QDialog):
 		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
 		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
 		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		
+
 		# THIS LINE WAS MISSING - add the button layout to the main layout
 		self.layout.addLayout(checkbox_layout)
-		
+
 		self.setLayout(self.layout)
-		
+
 	def selected_items(self) -> list[str]:
 		selected = [
 			self.items[i]
-			for i, checkbox
-			in enumerate(self.checkboxes)
-			if checkbox.isChecked()]
+			for i, checkbox in enumerate(self.checkboxes)
+			if checkbox.isChecked()
+		]
 		return selected
+
 
 # --------------------------------------------------------------------------
 
 
 class SetNamesDialog(QDialog):
 	def __init__(
-			self,
-			title: str,
-			label: str,
-			default_names: list[str],
-			max_chars: int,
-			parent: QWidget | None = None) -> None:
+		self,
+		title: str,
+		label: str,
+		default_names: list[str],
+		max_chars: int,
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 
 		self.setWindowTitle(title)
@@ -478,7 +512,8 @@ class SetNamesDialog(QDialog):
 
 		# Create a button box with OK and Cancel buttons
 		button_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self
+		)
 		button_box.accepted.connect(self.validate_and_accept)
 		button_box.rejected.connect(self.reject)
 
@@ -488,7 +523,7 @@ class SetNamesDialog(QDialog):
 		# Set the dialog to return the value of the line edits when accepted
 		self.setResult(0)
 
-	def getNames(self) -> list: # noqa: N802
+	def getNames(self) -> list:  # noqa: N802
 		# Retrieve the text of the line edits when the dialog is accepted
 		return [line_edit.text() for line_edit in self.line_edits]
 
@@ -496,21 +531,28 @@ class SetNamesDialog(QDialog):
 		#
 		if len(self.line_edits) != len(set(self.line_edits)):
 			title = "Duplicate Names/labels"
-			message = ("All names/labels must be distinct. "
+			message = (
+				"All names/labels must be distinct. "
 				"Please correct the duplicate names."
 			)
 			raise SelectionError(title, message)
 		self.accept()
 
+
 # --------------------------------------------------------------------------
 
 
 class SetValueDialog(QDialog):
-	def __init__( # noqa: PLR0913
-		self, title: str, label: str, min_val: float, max_val: float,
-		an_integer: bool, # noqa: FBT001
+	def __init__(  # noqa: PLR0913
+		self,
+		title: str,
+		label: str,
+		min_val: float,
+		max_val: float,
+		an_integer: bool,  # noqa: FBT001
 		default_value: float,
-		parent: QWidget | None = None) -> None:
+		parent: QWidget | None = None,
+	) -> None:
 		super().__init__(parent)
 
 		self.setWindowTitle(title)
@@ -521,7 +563,7 @@ class SetValueDialog(QDialog):
 
 		# Create a label and spin box to allow the user to set a value
 		label = QLabel(label, self)
-		if an_integer:       # == True
+		if an_integer:  # == True
 			self.spin_box = QSpinBox(self)
 		else:
 			self.spin_box = QDoubleSpinBox(self)
@@ -538,7 +580,8 @@ class SetValueDialog(QDialog):
 
 		# Create a button box with OK and Cancel buttons
 		button_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self
+		)
 		button_box.accepted.connect(self.accept)
 		button_box.rejected.connect(self.reject)
 
@@ -548,8 +591,6 @@ class SetValueDialog(QDialog):
 		# Set the dialog to return the value of the spin box when accepted
 		self.setResult(0)
 
-	def getValue(self) -> float: # noqa: N802
+	def getValue(self) -> float:  # noqa: N802
 		# Retrieve the value of the spin box when the dialog is accepted
 		return self.spin_box.value()
-
-

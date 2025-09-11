@@ -1,4 +1,3 @@
-
 import random
 import pandas as pd
 import peek
@@ -7,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QTableWidget
 
 from common import Spaces
 
-from dialogs import (ModifyValuesDialog, PairofPointsDialog)
+from dialogs import ModifyValuesDialog, PairofPointsDialog
 from director import Status
 from exceptions import SpacesError
 
@@ -18,10 +17,7 @@ from table_builder import StatisticalTableWidget
 
 
 class BaseCommand(ASupporterGrouping):
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:
 		super().__init__(director, common)
 
 		self._director = director
@@ -32,16 +28,12 @@ class BaseCommand(ASupporterGrouping):
 		self._base_pcts = rivalry.base_pcts
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
-		
+
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces, # noqa:ARG002
-			groups_to_show: str) -> None:
-
+	def execute(self, common: Spaces, groups_to_show: str) -> None:
 		director = self._director
 		common = director.common
 		director.record_command_as_selected_and_in_process()
@@ -50,27 +42,23 @@ class BaseCommand(ASupporterGrouping):
 		director.current_command._base_groups_to_show = groups_to_show
 		common.create_plot_for_plot_and_gallery_tabs("base")
 		director.title_for_table_widget = (
-			f"Base supporters of {self._rival_a.name}"
-			f" and {self._rival_b.name}")
+			f"Base supporters of {self._rival_a.name} and {self._rival_b.name}"
+		)
 		director.create_widgets_for_output_and_log_tabs()
 		director.record_command_as_successfully_completed()
 
 		return
 
 
-
-
 # --------------------------------------------------------------------------
 
 
 class BattlegroundCommand(ASupporterGrouping):
-	""" The Battleground command creates a plot with a lines
+	"""The Battleground command creates a plot with a lines
 	delineating area with battleground individuals.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			command: str) -> None:
+
+	def __init__(self, director: Status, command: str) -> None:
 		super().__init__(director, director.common)
 
 		self._director = director
@@ -82,20 +70,22 @@ class BattlegroundCommand(ASupporterGrouping):
 
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def execute(
-			self,
-			common: Spaces, # noqa: ARG002
-			groups_to_show: str) -> None:
-
+		self,
+		common: Spaces,  # noqa: ARG002
+		groups_to_show: str,
+	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._battleground_groups_to_show = \
+		self._director.current_command._battleground_groups_to_show = (
 			groups_to_show
+		)
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"battleground")
+			"battleground"
+		)
 		self._director.title_for_table_widget = "Size of battleground"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -105,13 +95,9 @@ class BattlegroundCommand(ASupporterGrouping):
 
 
 class ContestCommand(ASupporterGrouping):
-	""" contest command - identifies regions defined by reference points
-	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	"""contest command - identifies regions defined by reference points"""
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Contest"
@@ -123,10 +109,7 @@ class ContestCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -136,7 +119,8 @@ class ContestCommand(ASupporterGrouping):
 		self._rival_b = rivalry.rival_b
 		self._director.title_for_table_widget = (
 			f"Segments are based on a contest between "
-			f"{self._rival_a.name} and {self._rival_b.name}")
+			f"{self._rival_a.name} and {self._rival_b.name}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -145,13 +129,11 @@ class ContestCommand(ASupporterGrouping):
 
 
 class ConvertibleCommand(ASupporterGrouping):
-	""" The convertible supporters command identifies regions of opponent
+	"""The convertible supporters command identifies regions of opponent
 	supporters that may be convertible
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+
+	def __init__(self, director: Status, common: Spaces) -> None:
 		super().__init__(director, common)
 
 		self._director.command = "Convertible"
@@ -166,33 +148,33 @@ class ConvertibleCommand(ASupporterGrouping):
 	# ------------------------------------------------------------------------
 
 	def execute(
-			self,
-			common: Spaces, # noqa: ARG002
-			groups_to_show: str) -> None:
-
+		self,
+		common: Spaces,  # noqa: ARG002
+		groups_to_show: str,
+	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._convertible_groups_to_show = \
+		self._director.current_command._convertible_groups_to_show = (
 			groups_to_show
+		)
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"convertible")
+			"convertible"
+		)
 		self._director.title_for_table_widget = (
 			f"Potential supporters convertible to "
-			f"{self._rival_a.name} and {self._rival_b.name}")
+			f"{self._rival_a.name} and {self._rival_b.name}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
+
 
 # ------------------------------------------------------------------------
 
 
 class CoreSupportersCommand(ASupporterGrouping):
-
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:
 		super().__init__(director, common)
 		self._director = director
 		self.common = common
@@ -205,37 +187,34 @@ class CoreSupportersCommand(ASupporterGrouping):
 		self._rival_b = rivalry.rival_b
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def execute(
-			self,
-			common: Spaces, # noqa: ARG002
-			groups_to_show: str) -> None:
-
+		self,
+		common: Spaces,  # noqa: ARG002
+		groups_to_show: str,
+	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command.core_groups_to_show = groups_to_show
 		self._director.common.create_plot_for_plot_and_gallery_tabs("core")
 		self._director.title_for_table_widget = (
-			f"Core supporters of {self._rival_a.name} "
-			f"and {self._rival_b.name}")
+			f"Core supporters of {self._rival_a.name} and {self._rival_b.name}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-
 
 	# ------------------------------------------------------------------------
 
 
 class FirstDimensionCommand(ASupporterGrouping):
-	""" The first_dim command - identifies regions defined by the
+	"""The first_dim command - identifies regions defined by the
 	first dimension
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+
+	def __init__(self, director: Status, common: Spaces) -> None:
 		super().__init__(director, common)
 
 		self._director = director
@@ -247,39 +226,34 @@ class FirstDimensionCommand(ASupporterGrouping):
 		self._first_div = rivalry.first_div
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
-		
+
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces,
-			groups_to_show: str) -> None:
-
+	def execute(self, common: Spaces, groups_to_show: str) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._first_dim_groups_to_show = \
+		self._director.current_command._first_dim_groups_to_show = (
 			groups_to_show
+		)
 		common.create_plot_for_plot_and_gallery_tabs("first")
 		self._director.title_for_table_widget = "Party oriented segments"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
 
+
 # ----------------------------------------------------------------------------
 
 
 class JointCommand:
-	""" The Joint command is used to create a plot with the reference
+	"""The Joint command is used to create a plot with the reference
 	points and individuals.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Joint"
@@ -288,10 +262,7 @@ class JointCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -299,21 +270,17 @@ class JointCommand:
 		self._director.title_for_table_widget = (
 			"Warning: Make sure the scores "
 			"match the \ndimensions AND orientation of the active"
-			"configuration.")
+			"configuration."
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-
-
 
 	# ------------------------------------------------------------------------
 
 
 class LikelySupportersCommand(ASupporterGrouping):
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:
 		super().__init__(director, common)
 
 		""" The Likely supporters command identifies regions defining
@@ -333,10 +300,10 @@ class LikelySupportersCommand(ASupporterGrouping):
 	# ------------------------------------------------------------------------
 
 	def execute(
-			self,
-			common: Spaces, # noqa: ARG002
-			groups_to_show: str) -> None:
-
+		self,
+		common: Spaces,  # noqa: ARG002
+		groups_to_show: str,
+	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -344,25 +311,22 @@ class LikelySupportersCommand(ASupporterGrouping):
 		self._director.common.create_plot_for_plot_and_gallery_tabs("likely")
 		self._director.title_for_table_widget = (
 			f"Likely supporters of {self._rival_a.name} "
-			f"and {self._rival_b.name}")
+			f"and {self._rival_b.name}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
-		
-		return
 
+		return
 
 	# ------------------------------------------------------------------------
 
 
 class ReferencePointsCommand:
-	""" The Reference command is used to establish a pair of
-		points to be used as reference points.
+	"""The Reference command is used to establish a pair of
+	points to be used as reference points.
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-		
+
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		rivalry = self._director.rivalry
 		self.common = common
@@ -371,25 +335,25 @@ class ReferencePointsCommand:
 		self.rival_a = rivalry.rival_a
 		self.rival_b = rivalry.rival_b
 		self._refs_title: str = "Select a pair of reference points"
-		self._refs_items: list[str] = \
+		self._refs_items: list[str] = (
 			self._director.configuration_active.point_names
+		)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:
-
+	def execute(self, common: Spaces) -> None:
 		peek("At top of ReferencePointsCommand.execute()")
 		rivalry = self._director.rivalry
 		point_names = self._director.configuration_active.point_names
 		point_labels = self._director.configuration_active.point_labels
 		rival_a = rivalry.rival_a
 		rival_b = rivalry.rival_b
-		peek("After setting up rivalry and point names in "
-			"ReferencePointsCommand")
+		peek(
+			"After setting up rivalry and point names in "
+			"ReferencePointsCommand"
+		)
 		peek(rival_a)
 		peek(rival_b)
 
@@ -398,8 +362,9 @@ class ReferencePointsCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_configuration()
 		self._get_reference_points_from_user(
-			self._refs_title, self._refs_items)
-				
+			self._refs_title, self._refs_items
+		)
+
 		rivalry.rival_a.name = point_names[rival_a.index]
 		rivalry.rival_b.name = point_names[rival_b.index]
 		rivalry.rival_a.label = point_labels[rival_a.index]
@@ -407,66 +372,66 @@ class ReferencePointsCommand:
 
 		self._print_reference_points()
 
-		rivalry.create_or_revise_rivalry_attributes(
-			self._director, common)
+		rivalry.create_or_revise_rivalry_attributes(self._director, common)
 
-		rivalry.use_reference_points_to_define_segments(
-			self._director, common)
+		rivalry.use_reference_points_to_define_segments(self._director, common)
 
-		if self._director.common.have_scores() \
-			and not self._director.common.have_segments():
+		if (
+			self._director.common.have_scores()
+			and not self._director.common.have_segments()
+		):
 			rivalry.assign_to_segments()
-		
+
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration")
-		
+			"configuration"
+		)
+
 		self._director.title_for_table_widget = (
-			f"Reference points will be {rival_a.name}"
-			f" and {rival_b.name}")
+			f"Reference points will be {rival_a.name} and {rival_b.name}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Plot')
+		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
-
-
 
 	# ------------------------------------------------------------------------
 
 	def _get_reference_points_from_user_initialize_variables(self) -> None:
-
 		self.need_reference_points_error_title = self._director.command
 		self.need_reference_points_error_message = (
-			"A pair of reference points needs to be established.")
+			"A pair of reference points needs to be established."
+		)
 
 	# ------------------------------------------------------------------------
 
 	def _get_reference_points_from_user(
-			self,
-			refs_title: str,
-			refs_items: list[str]) -> None:
-
+		self, refs_title: str, refs_items: list[str]
+	) -> None:
 		self._get_reference_points_from_user_initialize_variables()
 		rivalry = self._director.rivalry
 		range_points = self._director.configuration_active.range_points
 		point_names = self._director.configuration_active.point_names
 
 		dialog = PairofPointsDialog(refs_title, refs_items)
-		
+
 		if dialog.exec() == QDialog.Accepted:
 			selected_items = dialog.selected_items()
 		else:
 			del dialog
 			raise SpacesError(
 				self.need_reference_points_error_title,
-				self.need_reference_points_error_message)
+				self.need_reference_points_error_message,
+			)
 
 		del dialog
-		
+
 		refs_indexes = [
-			j for i in range(2)
+			j
+			for i in range(2)
 			for j in range_points
-			if selected_items[i] == point_names[j]]
-		
+			if selected_items[i] == point_names[j]
+		]
+
 		refs_a = refs_indexes[0]
 		refs_b = refs_indexes[1]
 		rivalry.rival_a.index = refs_a
@@ -477,7 +442,6 @@ class ReferencePointsCommand:
 	# ------------------------------------------------------------------------
 
 	def _print_reference_points(self) -> None:
-
 		rivalry = self._director.rivalry
 		rival_a = rivalry.rival_a
 		rival_b = rivalry.rival_b
@@ -491,118 +455,118 @@ class ReferencePointsCommand:
 
 
 class SampleDesignerCommand:
-
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-		"""The Sample designer command is used to create a sample design.
-		"""
+	def __init__(self, director: Status, common: Spaces) -> None:
+		"""The Sample designer command is used to create a sample design."""
 		self._director = director
 		self.common = common
 		self._director.command = "Sample designer"
 		self._director.uncertainty_active.universe_size = 0
 		self._director.uncertainty_active.probability_of_inclusion = 0
-		self._director.uncertainty_active.number_of_repetitions = 0
-		self._director.uncertainty_active.sample_design =\
-			pd.DataFrame(columns=["RespId", "Repetition", "Selected"])
-		self._director.uncertainty_active.sample_design_frequencies = \
+		self._director.uncertainty_active.nrepetitions = 0
+		self._director.uncertainty_active.sample_design = pd.DataFrame(
+			columns=["RespId", "Repetition", "Selected"]
+		)
+		self._director.uncertainty_active.sample_design_frequencies = (
 			pd.DataFrame(columns=["Repetition", "Selected", "Count"])
+		)
 		self._designer_title = "Set sample parameters.."
 		self._designer_items = [
 			"Size of universe",
 			"Probability of inclusion",
-			"Number of repetitions"]
+			"Number of repetitions",
+		]
 		self._designer_integers = [True, True, True]
 		self._designer_default_values = [100, 50, 2]
-		self._director.uncertainty_active.sample_design_frequencies_as_json = \
+		self._director.uncertainty_active.sample_design_frequencies_as_json = (
 			""
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> QTableWidget: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> QTableWidget:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._establish_sample_designer_sizes(
-			self._designer_title, self._designer_items,
-			self._designer_integers, self._designer_default_values)
+			self._designer_title,
+			self._designer_items,
+			self._designer_integers,
+			self._designer_default_values,
+		)
 
 		self._create_sample_design()
 
 		universe_size = self._director.uncertainty_active.universe_size
-		probability_of_inclusion = \
+		probability_of_inclusion = (
 			self._director.uncertainty_active.probability_of_inclusion
+		)
 		self.common.create_sample_design_analysis_table()
 		self._print_sample_design_analysis_results()
-		self._director.title_for_table_widget = \
-			(
-				f"Sample design - Size of universe: {universe_size}, "
-				f"Probability of inclusion: {probability_of_inclusion}")
+		self._director.title_for_table_widget = (
+			f"Sample design - Size of universe: {universe_size}, "
+			f"Probability of inclusion: {probability_of_inclusion}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Output')
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
-# ------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _establish_sample_designer_sizes_initialize_variables(self) -> None:
-
 		self._need_sample_sizes_error_title = "Sample parameters"
 		self._need_sample_sizes_error_message = (
-			"Need sample parameters to create a sample design.")
-		
+			"Need sample parameters to create a sample design."
+		)
+
 	# ------------------------------------------------------------------------
 
 	def _establish_sample_designer_sizes(
-			self,
-			title: str,
-			items: list[str],
-			integers: list[bool],
-			default_values: list[int]) -> None:
-
+		self,
+		title: str,
+		items: list[str],
+		integers: list[bool],
+		default_values: list[int],
+	) -> None:
 		self._establish_sample_designer_sizes_initialize_variables()
 		dialog = ModifyValuesDialog(
-			title, items, integers,
-			default_values=default_values)
+			title, items, integers, default_values=default_values
+		)
 		dialog.selected_items()
 		result = dialog.exec()
 		if result == QDialog.Accepted:
 			value = dialog.selected_items()
 			universe_size = value[0][1]
 			probability_of_inclusion = value[1][1]
-			number_of_repetitions = value[2][1]
+			nrepetitions = value[2][1]
 		else:
 			raise SpacesError(
 				self._need_sample_sizes_error_title,
-				self._need_sample_sizes_error_message)
+				self._need_sample_sizes_error_message,
+			)
 
 		self._director.uncertainty_active.universe_size = universe_size
-		self._director.uncertainty_active.probability_of_inclusion = \
+		self._director.uncertainty_active.probability_of_inclusion = (
 			probability_of_inclusion
-		self._director.uncertainty_active.number_of_repetitions = \
-			number_of_repetitions
+		)
+		self._director.uncertainty_active.nrepetitions = nrepetitions
 		return
 
 	# ------------------------------------------------------------------------
-	
-	def _create_sample_design(self) -> None:
 
+	def _create_sample_design(self) -> None:
 		universe_size = self._director.uncertainty_active.universe_size
-		probability_of_inclusion = \
+		probability_of_inclusion = (
 			self._director.uncertainty_active.probability_of_inclusion
-		number_of_repetitions = \
-			self._director.uncertainty_active.number_of_repetitions
+		)
+		nrepetitions = self._director.uncertainty_active.nrepetitions
 		sample_design = self._director.uncertainty_active.sample_design
 
 		# sample_size = int(universe_size * probability_of_inclusion / 100)
 		range_of_universe = range(universe_size)
 		# range_of_sample = range(sample_size)
-		range_of_repetitions = range(1, number_of_repetitions + 1)
+		range_of_repetitions = range(1, nrepetitions + 1)
 		n_selected = 0
 		next_out = 0
 		for each_repetition in range_of_repetitions:
@@ -613,59 +577,66 @@ class SampleDesignerCommand:
 					n_selected += 1
 				else:
 					select = False
-				sample_design.loc[next_out] = (
-					{"RespId": each_case, "Repetition": each_repetition,
-						"Selected": select})
+				sample_design.loc[next_out] = {
+					"RespId": each_case,
+					"Repetition": each_repetition,
+					"Selected": select,
+				}
 
 				next_out += 1
 
 		sample_design.sort_values(by=["Repetition", "RespId"], inplace=True)
 
 		sample_design_frequencies = (
-			sample_design.groupby(
-				['Repetition', 'Selected']).size().reset_index(name='Count'))
-		sample_design_frequencies_as_json = (
-			sample_design_frequencies.to_json(orient="records"))
+			sample_design.groupby(["Repetition", "Selected"])
+			.size()
+			.reset_index(name="Count")
+		)
+		sample_design_frequencies_as_json = sample_design_frequencies.to_json(
+			orient="records"
+		)
 
 		self._director.uncertainty_active.sample_design = sample_design
-		self._director.uncertainty_active.sample_design_n_repetitions = \
-			number_of_repetitions
-		self._director.uncertainty_active.sample_design_frequencies = \
+		self._director.uncertainty_active.sample_design_nrepetitions = (
+			nrepetitions
+		)
+		self._director.uncertainty_active.sample_design_frequencies = (
 			sample_design_frequencies
-		self._director.uncertainty_active.sample_design_frequencies_as_json = \
+		)
+		self._director.uncertainty_active.sample_design_frequencies_as_json = (
 			sample_design_frequencies_as_json
-		
+		)
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _display(self) -> QTableWidget:
-		
 		table_widget = StatisticalTableWidget(self._director)
 		gui_output_as_widget = table_widget.display_table("sample_design")
-		
+
 		self._director.output_widget_type = "Table"
 		return gui_output_as_widget
 
-# ------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _print_sample_design_analysis_results(self) -> None:
 		"""Print sample design analysis results with fixed-width columns
 		and proper alignment.
 		"""
-		
+
 		df = self._director.uncertainty_active.sample_design_analysis_df
-		
+
 		# Fixed-width string constants
 		header1 = "                Selected       Not Selected      "
 		header2 = "Repetition      N      %        N      %      "
 		separator = "-------------------------------------------"
-		
+
 		# Print headers and separator
 		print("\n" + header1)
 		print(header2)
 		print(separator)
-		
+
 		# Print each row of data with fixed spacing
 		for _, row in df.iterrows():
 			print(
@@ -673,21 +644,19 @@ class SampleDesignerCommand:
 				f"{int(row['Selected Count']):6d}  "
 				f"{row['Selected Percent']:5.2f}   "
 				f"{int(row['Not Selected Count']):6d}  "
-				f"{row['Not Selected Percent']:5.2f}")
-		
+				f"{row['Not Selected Percent']:5.2f}"
+			)
+
 		return
+
 
 # ------------------------------------------------------------------------
 
 
 class SampleRepetitionsCommand:
-
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-		"""The Sample repetitions command is used to create sample repetitions.
-		"""
+	def __init__(self, director: Status, common: Spaces) -> None:
+		"""The Sample repetitions command is used to create
+		sample repetitions."""
 		self._director = director
 		self.common = common
 		self._director.command = "Sample repetitions"
@@ -698,10 +667,7 @@ class SampleRepetitionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		# peek("At top of SampleRepetitionsCommand.execute()"
 		# 	" - self._director.uncertainty_active.sample_design: ",
 		# 	f"{self._director.uncertainty_active.sample_design}")
@@ -711,28 +677,28 @@ class SampleRepetitionsCommand:
 		self._check_that_sizes_match()
 		self._create_sample_repetitions()
 		universe_size = self._director.uncertainty_active.universe_size
-		self._director.title_for_table_widget = \
+		self._director.title_for_table_widget = (
 			f"Sample repetitions - Size of universe: {universe_size}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Output')
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
-# ------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def _check_that_sizes_match_initialize_variables(self) -> None:
-
 		universe_size = self._director.uncertainty_active.universe_size
 		evaluations = self._director.evaluations_active.evaluations
 		self._sample_size_mismatch_error_title = "Sample size mismatch"
 		self._sample_size_mismatch_error_message = (
 			f"Size in sample design: {universe_size} "
-			f"does not match size of evaluations: {len(evaluations)}")
+			f"does not match size of evaluations: {len(evaluations)}"
+		)
 
 	# ------------------------------------------------------------------------
 
 	def _check_that_sizes_match(self) -> None:
-
 		self._check_that_sizes_match_initialize_variables()
 		universe_size = self._director.uncertainty_active.universe_size
 		evaluations = self._director.evaluations_active.evaluations
@@ -742,43 +708,44 @@ class SampleRepetitionsCommand:
 		else:
 			raise SpacesError(
 				self._sample_size_mismatch_error_title,
-				self._sample_size_mismatch_error_message)
+				self._sample_size_mismatch_error_message,
+			)
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def _create_sample_repetitions(self) -> None:
-
 		evaluations = self._director.evaluations_active.evaluations
 		universe_size = self._director.uncertainty_active.universe_size
-		number_of_repetitions = \
-			self._director.uncertainty_active.number_of_repetitions
+		nrepetitions = self._director.uncertainty_active.nrepetitions
 		sample_design = self._director.uncertainty_active.sample_design
 
 		columns = evaluations.columns
 
 		sample_repetitions = pd.DataFrame(columns=columns)
-		range_of_repetitions = range(1, number_of_repetitions + 1)
+		range_of_repetitions = range(1, nrepetitions + 1)
 
 		next_out = 0
 		for each_repetition in range_of_repetitions:
 			n_selected_for_repetition = 0
 			repetition_start = 0 + (each_repetition - 1) * universe_size
-			repetition_end = (each_repetition * universe_size)
+			repetition_end = each_repetition * universe_size
 			range_of_this_repetition = range(repetition_start, repetition_end)
 			restart = (each_repetition - 1) * universe_size
 			for each_case in range_of_this_repetition:
 				if sample_design.loc[each_case]["Selected"]:
 					n_selected_for_repetition += 1
-					sample_repetitions.loc[next_out] = (
-						evaluations.loc[each_case - 0 - restart])
+					sample_repetitions.loc[next_out] = evaluations.loc[
+						each_case - 0 - restart
+					]
 					next_out += 1
 				else:
 					pass
 
-		self._director.uncertainty_active.sample_repetitions = \
+		self._director.uncertainty_active.sample_repetitions = (
 			sample_repetitions
+		)
 
 		return
 
@@ -786,15 +753,20 @@ class SampleRepetitionsCommand:
 
 	def _display(self) -> QTableWidget:
 		#
-		gui_output_as_widget = \
-			self._director.uncertainty_active.\
-				create_table_widget_for_sample_designer()
+		gui_output_as_widget = self._director.uncertainty_active.\
+			create_table_widget_for_sample_designer()
 		#
 		self._director.set_column_and_row_headers(
 			gui_output_as_widget,
-			["Repetition", "Selected \n N", "Percent", "Not selected \n N",
-				"Percent"],
-			[])
+			[
+				"Repetition",
+				"Selected \n N",
+				"Percent",
+				"Not selected \n N",
+				"Percent",
+			],
+			[],
+		)
 		#
 		self._director.resize_and_set_table_size(gui_output_as_widget, 4)
 		#
@@ -805,13 +777,8 @@ class SampleRepetitionsCommand:
 
 
 class ScoreIndividualsCommand:
-
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
-		""" The Score individuals command computes scores.
-		"""
+	def __init__(self, director: Status, common: Spaces) -> None:
+		"""The Score individuals command computes scores."""
 
 		self._director = director
 		self.common = common
@@ -820,12 +787,9 @@ class ScoreIndividualsCommand:
 		self._director.scores_active.scores = pd.DataFrame()
 		return
 
-# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -838,8 +802,8 @@ class ScoreIndividualsCommand:
 		nscores = self._director.scores_active.nscores
 		nscored = self._director.scores_active.nscored_individ
 		self._director.title_for_table_widget = (
-			f"There are {nscores} active "
-			f"scores for {nscored} individuals.")
+			f"There are {nscores} active scores for {nscored} individuals."
+		)
 		# self._director.scores_active. \
 		# create_scores_plot_for_plot_and_gallery_tabs(self._director)
 		self._director.common.create_plot_for_plot_and_gallery_tabs("scores")
@@ -850,7 +814,6 @@ class ScoreIndividualsCommand:
 	# ------------------------------------------------------------------------
 
 	def _calculate_scores(self) -> None:
-
 		dim_names = self._director.configuration_active.dim_names
 		# dim_labels = self._director.configuration_active.dim_labels
 		# ndim = self._director.configuration_active.ndim
@@ -862,8 +825,8 @@ class ScoreIndividualsCommand:
 		score_2_name = dim_names[1]
 
 		scores_df = pd.DataFrame(
-			columns=[score_1_name, score_2_name],
-			index=evaluations.index)
+			columns=[score_1_name, score_2_name], index=evaluations.index
+		)
 		nscored = len(evaluations)
 
 		range_nscored = range(nevaluators)
@@ -871,18 +834,20 @@ class ScoreIndividualsCommand:
 			score_1 = 0
 			score_2 = 0
 			for each_var in range(len(evaluations.columns)):
-				score_1 += \
-					evaluations.iloc[each_ind, each_var] \
+				score_1 += (
+					evaluations.iloc[each_ind, each_var]
 					* point_coords.iloc[each_var, 0]
-				score_2 += \
-					evaluations.iloc[each_ind, each_var] \
+				)
+				score_2 += (
+					evaluations.iloc[each_ind, each_var]
 					* point_coords.iloc[each_var, 1]
+				)
 				# score_1 += evaluations.iloc[each_ind, each_var]
 				# * point_coords.iloc[each_var, score_1_name]
 				# score_2 += evaluations.iloc[each_ind, each_var]
 				# * point_coords.iloc[each_var, score_2_name]
 			# scores_df.loc[each_ind][0] = score_1
-			#scores_df.loc[each_ind][1] = score_2
+			# scores_df.loc[each_ind][1] = score_2
 			scores_df.loc[each_ind, score_1_name] = score_1
 			scores_df.loc[each_ind, score_2_name] = score_2
 			# scores_df.loc[score_1_name][each_ind] = score_1
@@ -890,7 +855,7 @@ class ScoreIndividualsCommand:
 		scores_df = (scores_df - scores_df.mean()) / scores_df.std()
 		scores = scores_df.copy()
 		scores.reset_index(inplace=True)
-		scores.rename(columns={'index': 'Resp no'}, inplace=True)
+		scores.rename(columns={"index": "Resp no"}, inplace=True)
 
 		nscores = scores.shape[1] - 1
 		nscored = scores.shape[0]
@@ -913,13 +878,11 @@ class ScoreIndividualsCommand:
 
 
 class SecondDimensionCommand(ASupporterGrouping):
-	""" The Second dimension command identifies regions defined
+	"""The Second dimension command identifies regions defined
 	by the second dimension
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
+
+	def __init__(self, director: Status, common: Spaces) -> None:
 		super().__init__(director, common)
 
 		self._director = director
@@ -931,21 +894,22 @@ class SecondDimensionCommand(ASupporterGrouping):
 		self._second_div = rivalry.second_div
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
-		
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(
-			self,
-			common: Spaces, # noqa: ARG002
-			groups_to_show: str) -> None:
-
+		self,
+		common: Spaces,  # noqa: ARG002
+		groups_to_show: str,
+	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._second_dim_groups_to_show = \
+		self._director.current_command._second_dim_groups_to_show = (
 			groups_to_show
+		)
 
 		self._director.common.create_plot_for_plot_and_gallery_tabs("second")
 		self._director.title_for_table_widget = "Social oriented segments"
@@ -957,14 +921,11 @@ class SecondDimensionCommand(ASupporterGrouping):
 
 
 class SegmentsCommand:
-	""" The Segments command identifies regions defined by the
+	"""The Segments command identifies regions defined by the
 	individual scores
 	"""
-	def __init__(
-			self,
-			director: Status,
-			common: Spaces) -> None:
 
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Segments"
@@ -977,10 +938,7 @@ class SegmentsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None: # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		width = self._segs_width
 		decimals = self._segs_decimals
 
@@ -993,19 +951,16 @@ class SegmentsCommand:
 		self._print_segments(width, decimals)
 		self._director.title_for_table_widget = (
 			f"Segments defined by contest between "
-			f"{self._rival_a.name} and {self._rival_b.name}")
+			f"{self._rival_a.name} and {self._rival_b.name}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab('Output')
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _print_segments(
-			self,
-			width: int,
-			decimals: int) -> None:
-
+	def _print_segments(self, width: int, decimals: int) -> None:
 		rivalry = self._director.rivalry
 		likely_pcts = rivalry.likely_pcts
 		base_pcts = rivalry.base_pcts
@@ -1019,30 +974,37 @@ class SegmentsCommand:
 		#
 		print(
 			f"Percent likely left:  {likely_pcts[1]:{width}.{decimals}f}"
-			f"\tPercent likely right: {likely_pcts[2]:{width}.{decimals}f}")
+			f"\tPercent likely right: {likely_pcts[2]:{width}.{decimals}f}"
+		)
 		print(
 			f"Percent base left:    {base_pcts[1]:{width}.{decimals}f}"
 			f"\tPercent base right:   {base_pcts[3]:{width}.{decimals}f}"
-			f"\tPercent base neither:   {base_pcts[2]:{width}.{decimals}f}")
+			f"\tPercent base neither:   {base_pcts[2]:{width}.{decimals}f}"
+		)
 		print(
 			f"Percent core left:    {core_pcts[1]:{width}.{decimals}f}"
 			f"\tPercent core right:   {core_pcts[3]:{width}.{decimals}f}"
-			f"\tPercent core neither:   {core_pcts[2]:{width}.{decimals}f}")
+			f"\tPercent core neither:   {core_pcts[2]:{width}.{decimals}f}"
+		)
 		print(
 			f"Percent left only:    {first_pcts[1]:{width}.{decimals}f}"
-			f"\tPercent right only:   {first_pcts[2]:{width}.{decimals}f}")
+			f"\tPercent right only:   {first_pcts[2]:{width}.{decimals}f}"
+		)
 		print(
 			f"Percent up only:      {second_pcts[1]:{width}.{decimals}f}"
-			f"\tPercent down only:    {second_pcts[2]:{width}.{decimals}f}")
+			f"\tPercent down only:    {second_pcts[2]:{width}.{decimals}f}"
+		)
 		print(
 			f"Percent battleground:    "
 			f"{battleground_pcts[1]:{width}.{decimals}f}"
 			f"\tPercent settled:      "
-			f"{battleground_pcts[2]:{width}.{decimals}f}")
+			f"{battleground_pcts[2]:{width}.{decimals}f}"
+		)
 		print(
 			f"Percent convertible to left:    "
 			f"{conv_pcts[1]:{width}.{decimals}f}"
 			f"\tPercent convertible to right:   "
 			f"{conv_pcts[2]:{width}.{decimals}f}"
-			f"\tPercent settled:    {conv_pcts[3]:{width}.{decimals}f}")
+			f"\tPercent settled:    {conv_pcts[3]:{width}.{decimals}f}"
+		)
 		return
