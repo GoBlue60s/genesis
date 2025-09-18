@@ -62,7 +62,7 @@ class Spaces:
 	def __init__(self, parent: Status, director: Status) -> None:
 		self.parent = parent
 		self._director = director
-		self._plot_type_dict = None
+		self._plot_type_dict = None  # ???????????????? is this needed
 		self.plot_ranges = PlotExtremes()
 		self.presentation_layer: str = "Matplotlib"
 
@@ -102,7 +102,7 @@ class Spaces:
 		self.shepard_axis: str = ""
 		self.point_to_plot_index: int = 0
 
-		self.plot_dict: dict = {}
+		self.plot_dict: dict = {}  # ?????????? is this needed
 		return
 
 	# ------------------------------------------------------------------------
@@ -812,8 +812,12 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def have_clusters(self) -> bool:
-		# this needs to be updated once clusters command is implemented <<<<<<
-		return False
+		return (
+			hasattr(self._director.scores_active, 'cluster_labels')
+			and hasattr(self._director.scores_active, 'cluster_centers')
+			and self._director.scores_active.cluster_labels is not None
+			and self._director.scores_active.cluster_centers is not None
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -2040,3 +2044,51 @@ class Spaces:
 				self.file_exists_lower_triangle_error_message,
 			) from exc
 		return
+
+	# ------------------------------------------------------------------------
+
+	def get_components_to_extract_from_user_initialize_variables(
+		self, title: str
+	) -> tuple[str, str]:
+		"""Initialize variables for the component extraction dialog."""
+		zero_components_error_title = title
+		zero_components_error_message = "Need number of components."
+		return zero_components_error_title, zero_components_error_message
+
+	# ------------------------------------------------------------------------
+
+	def get_components_to_extract_from_user(
+		self,
+		title: str,
+		label: str,
+		min_allowed: int,
+		max_allowed: int,
+		an_integer: bool,  # noqa: FBT001
+		default: int,
+	) -> int:
+		"""Get number of components to extract from user via dialog."""
+		from dialogs import SetValueDialog
+
+		(
+			zero_components_error_title,
+			zero_components_error_message,
+		) = self.\
+			get_components_to_extract_from_user_initialize_variables(title)
+
+		ext_comp_dialog = SetValueDialog(
+			title, label, min_allowed, max_allowed, an_integer, default
+		)
+		result = ext_comp_dialog.exec()
+		if result == QDialog.Accepted:
+			ext_comp = ext_comp_dialog.getValue()
+		else:
+			raise SpacesError(
+				zero_components_error_title, zero_components_error_message
+			)
+
+		if ext_comp == 0:
+			raise SpacesError(
+				zero_components_error_title, zero_components_error_message
+			)
+
+		return ext_comp

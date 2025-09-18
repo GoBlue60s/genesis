@@ -107,6 +107,79 @@ Key external dependencies include:
 - **scipy**: Statistical functions
 - **sklearn**: Machine learning utilities (manifold learning)
 
+## Spaces Application Guidelines
+
+When working with the Spaces application, follow these domain-specific patterns and conventions:
+
+### GUI Architecture
+
+- **Dictionary-driven GUI**: Spaces uses a large GUI (150+ menu items) built with PySide6 using a dictionary-based system to add items
+- **Menu Organization**: GUI is split across separate files corresponding to menus (`filemenu.py`, `editmenu.py`, etc.) to manage the 100+ commands
+- **Icons and Toolbar**: Most commands have icons and some are used in a toolbar for common operations
+
+### Error Handling and User Experience
+
+- **Exception-based Error Handling**: All error conditions are trapped and handled by custom exceptions (see `exceptions.py`) to inform users so they can resolve problems
+- **Dependency Checking**: Many commands check for dependencies (see `dependencies.py`) that must be satisfied before execution since users may get ahead of themselves
+- **User Dialogs**: Commands requiring additional user input use dialogs (see `dialogs.py`) to obtain information after command selection
+
+### Application Flow and Interaction
+
+- **Director Pattern**: The `director` instance handles user interaction and often relies on `common` for shared functions
+- **Tab System**: GUI uses tabs to display:
+  - **Plot**: For visualizations
+  - **Output**: For recent command results
+  - **Gallery**: For plot history
+  - **Log**: For output history
+  - **Record**: For print-oriented output
+- **Focus Management**: Commands with plots set focus to Plot tab, otherwise to Output tab
+
+### Plotting Architecture
+
+- **Dual Presentation Layers**: Two plotting systems available:
+  - `matplotlib_plots.py` for matplotlib-based plots
+  - `pyqtgraph_plots.py` for pyqtgraph-based plots
+  - Common functions in corresponding `_common` files
+
+### Command Structure Standards
+
+All new commands should follow this consistent structure:
+
+- **Class Structure**: Most command classes have:
+  - `__init__` method containing strings used in error messaging
+  - `exec` method that should be kept flat (minimal nesting)
+- **Exception Handling**: All exceptions should be raised below the `exec` method, not within it
+- **Avoid hasattr**: Don't use `hasattr()` - there's likely a checking function in `director` instead
+- **Follow Patterns**: Study existing commands to maintain consistency in structure and flow
+
+### Data Presentation and Tables
+
+- **Table Builder System**: The Output tab uses table widgets built with `table_builder` which supports different table types (square, statistical, etc.)
+- **Widget Organization**: Spaces has 100+ widgets organized in a dictionary called `widget_dict`
+
+### Plot Types and Consistency
+
+- **Plot Type Concept**: Spaces uses a plot type system that allows for reuse of common plot types and ensures consistency of presentation across the application
+- **Standardized Visualization**: Follow existing plot type patterns when creating new visualizations to maintain consistency
+
+### Features and Data Validation
+
+- **Feature System**: Spaces uses a feature concept to prevent inconsistent data requests from users
+- **Data Type Handling**: Features handle data types and expect file formats to supply metadata for consistency testing
+- **Metadata Integration**: File formats should provide metadata that feeds into the consistency testing process
+
+### User Experience and Documentation
+
+- **Command Explanations**: All commands have explanations available to users
+- **Verbosity Toggle**: Default mode is Terse; users can toggle verbosity to include detailed explanations
+- **Help Integration**: Ensure new commands include proper explanations that work with the verbosity toggle system
+
+### Development Best Practices
+
+- **Live User Focus**: Remember that Spaces is designed for interactive use by live users, so prioritize clear error messages and graceful degradation
+- **Check Dependencies First**: Always validate dependencies before command execution
+- **Use Director Functions**: Leverage existing checking functions in `director` rather than implementing custom attribute checking
+
 ## Archive Structure
 
 The `archive/` directory contains historical versions and development snapshots, organized chronologically with descriptive folder names indicating major refactoring milestones.

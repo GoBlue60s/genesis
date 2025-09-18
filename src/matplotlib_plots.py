@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import peek
 
 from matplotlib import pyplot as plt
 
@@ -863,9 +864,10 @@ class MatplotlibMethods:
 		evaluations_active = director.evaluations_active
 		avg_eval = evaluations_active.avg_eval
 
-		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
-			"Average Evaluations"
-		)
+		fig, ax = matplotlib_common.\
+			begin_matplotlib_plot_with_title(
+				"Average Evaluations"
+			)
 		x = avg_eval.index
 		y = avg_eval
 		plt.barh(x, y)
@@ -1519,7 +1521,7 @@ class MatplotlibMethods:
 		score_1_name = dim_names[0]
 		score_2_name = dim_names[1]
 
-		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:])
+		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
 
 		fig = self.plot_scores_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
@@ -1560,6 +1562,219 @@ class MatplotlibMethods:
 		self.score_2 = score_2
 
 		director.set_focus_on_tab("Plot")
+
+		return fig
+
+	# ------------------------------------------------------------------------
+
+	def request_clusters_plot_for_plot_and_gallery_tabs_using_matplotlib(
+		self,
+	) -> None:
+		"""Create a clusters plot for the plot and gallery tabs using
+		matplotlib.
+
+		This method generates a scatter plot of the scores with cluster
+		centroids, displays it in the GUI, and sets the focus to the
+		'Plot' tab. It also updates internal attributes with the plotted
+		score data.
+		"""
+
+		director = self._director
+		common = director.common
+		matplotlib_common = director.matplotlib_common
+		scores_active = director.scores_active
+		hor_axis_name = scores_active.hor_axis_name
+		vert_axis_name = scores_active.vert_axis_name
+		scores = scores_active.scores
+		dim_names = scores_active.dim_names
+
+		score_1 = scores[hor_axis_name]
+		score_2 = scores[vert_axis_name]
+		score_1_name = dim_names[0]
+		score_2_name = dim_names[1]
+
+		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
+
+		fig = self.plot_clusters_using_matplotlib()
+		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+
+		self.score_1 = score_1
+		self.score_1_name = score_1_name
+		self.score_2 = score_2
+		self.score_2_name = score_2_name
+
+		return
+
+	# -------------------------------------------------------------**---------
+
+	def plot_clusters_using_matplotlib(self) -> plt.Figure:
+		director = self._director
+		common = director.common
+		matplotlib_common = director.matplotlib_common
+		scores_active = director.scores_active
+		hor_axis_name = scores_active.hor_axis_name
+		vert_axis_name = scores_active.vert_axis_name
+		scores = scores_active.scores
+		point_size = common.point_size
+
+		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title("Clusters")
+		ax = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax)
+
+		ax.set_xlabel(hor_axis_name)
+		ax.set_ylabel(vert_axis_name)
+
+		matplotlib_common.set_ranges_for_matplotlib_plot(ax)
+
+		score_1 = scores[hor_axis_name]
+		score_2 = scores[vert_axis_name]
+
+		# Color points by cluster assignment
+		cluster_labels = scores_active.cluster_labels
+		colors = [
+			'red', 'blue', 'green', 'orange', 'purple',
+			'brown', 'pink', 'gray', 'olive', 'cyan'
+		]
+		# Create color array for each point based on its cluster
+		point_colors = [
+			colors[label % len(colors)] for label in cluster_labels
+		]
+		ax.scatter(score_1, score_2, c=point_colors, s=point_size)
+
+		# Add cluster centroids as plus signs with different colors
+		if common.have_clusters():
+			cluster_centers = scores_active.cluster_centers
+			# Extract centroid coordinates for the current axes
+			centroid_1 = cluster_centers[:, 0]  # First dimension
+			centroid_2 = cluster_centers[:, 1]  # Second dimension
+
+			# Create different colors for each centroid
+			colors = [
+				'red', 'blue', 'green', 'orange', 'purple',
+				'brown', 'pink', 'gray', 'olive', 'cyan'
+			]
+			n_centroids = len(centroid_1)
+
+			for i in range(n_centroids):
+				color = colors[i % len(colors)]
+				ax.plot(
+					centroid_1[i], centroid_2[i], marker='+', color=color,
+					markersize=12,
+					linestyle='None'
+				)
+		# markeredgewidth=3,
+		# markersize=point_size // 2
+		self.score_1 = score_1
+		self.score_2 = score_2
+
+		director.set_focus_on_tab("Plot")
+
+		return fig
+
+	# ------------------------------------------------------------------------
+
+	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_matplotlib(
+		self,
+	) -> None:
+		matplotlib_common = self._director.matplotlib_common
+
+		fig = self._plot_stress_contribution_by_point_using_matplotlib()
+		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		self._director.set_focus_on_tab("Plot")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _plot_stress_contribution_by_point_using_matplotlib(
+		self,
+	) -> plt.Figure:
+		# point = self._point_to_plot_label
+		matplotlib_common = self._director.matplotlib_common
+		point_label = self._director.current_command._point_to_plot_label
+		peek(f"in _plot label {point_label}")
+		point_index = self._director.current_command._point_to_plot_index
+		peek(f"in _plot index {self._director.current_command._point_to_plot_index}")
+		# point_index = self._director.common.point_to_plot_index
+		peek(f"in _plot label {point_label} index {point_index}")
+		ranks_df = self._director.similarities_active.ranks_df
+		item_names = self._director.similarities_active.item_names
+		range_similarities = (
+			self._director.similarities_active.range_similarities
+		)
+		ndyad = self._director.similarities_active.ndyad
+		# point_index = self._director.current_command._point_to_plot_index
+
+		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
+			"Stress contribution of " + item_names[point_index]
+		)
+		ax = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax)
+		plt.close()
+		#
+		x_others = []
+		y_others = []
+		label_others = []
+		index_others = []
+		column_a_label = ranks_df.columns.get_loc("A_label")
+		column_a_name = ranks_df.columns.get_loc("A_name")
+		column_b_label = ranks_df.columns.get_loc("B_label")
+		column_b_name = ranks_df.columns.get_loc("B_name")
+		column_sim_rank = ranks_df.columns.get_loc("Similarity_Rank")
+		column_dist_rank = ranks_df.columns.get_loc("Distance_Rank")
+		for each_dyad in range_similarities:
+			if ranks_df.iloc[each_dyad, column_a_label] == point_label:
+				x_others.append(ranks_df.iloc[each_dyad, column_sim_rank])
+				y_others.append(ranks_df.iloc[each_dyad, column_dist_rank])
+				label_others.append(ranks_df.iloc[each_dyad, column_b_name])
+				index_others.append(each_dyad)
+			if ranks_df.iloc[each_dyad, column_b_label] == point_label:
+				x_others.append(ranks_df.iloc[each_dyad, column_sim_rank])
+				y_others.append(ranks_df.iloc[each_dyad, column_dist_rank])
+				label_others.append(ranks_df.iloc[each_dyad, column_a_name])
+				index_others.append(each_dyad)
+		#
+		# Create plot for selected item
+
+		ax.set_xlabel("Similarity Rank")
+		ax.set_ylabel("Distance Rank")
+		ax.scatter(x_others, y_others)
+		other_range = range(len(x_others))
+		for each_item in other_range:
+			ax.text(
+				x_others[each_item],
+				y_others[each_item],
+				label_others[each_item],
+			)
+			if index_others[each_item] + 1 == x_others[each_item]:
+				ax.plot(
+					[index_others[each_item] + 1, x_others[each_item]],
+					[index_others[each_item] + 1, y_others[each_item]],
+					"b",
+				)
+			else:
+				difference = index_others[each_item] + 1 - x_others[each_item]
+				if difference > 0:
+					ax.plot(
+						[x_others[each_item], x_others[each_item]],
+						[
+							index_others[each_item] + difference,
+							y_others[each_item],
+						],
+						"b",
+					)
+				else:
+					ax.plot(
+						[x_others[each_item], x_others[each_item]],
+						[
+							index_others[each_item] + 1 - difference,
+							y_others[each_item],
+						],
+						"b",
+					)
+		#
+		# Add line to indicate what a perfect relationship, no stress, would be
+		#
+		ax.plot((1, ndyad + 1), (1, ndyad + 1), "r")
+
+		self._director.similarities_active.ranks_df = ranks_df
 
 		return fig
 
@@ -1852,7 +2067,7 @@ class MatplotlibMethods:
 
 		solutions = uncertainty_active.solutions
 
-		title = f"Spatial Uncertainty ({plot_to_show})"
+		title = "Uncertainty"
 		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(title)
 		ax = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax)
 		ax.set_xlabel(dim_names[hor_dim])
@@ -1964,7 +2179,7 @@ class MatplotlibMethods:
 
 		solutions = uncertainty_active.solutions
 
-		title = "Point Uncertainty"
+		title = "Uncertainty"
 		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(title)
 		ax = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax)
 		ax.set_xlabel(dim_names[hor_dim])

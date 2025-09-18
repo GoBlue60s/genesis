@@ -101,7 +101,7 @@ class ConfigurationCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# peek("\nAt top of ConfigurationCommand.execute()")
+
 		director = self._director
 		common = director.common
 		# configuration_candidate = director.configuration_candidate
@@ -2119,11 +2119,12 @@ class OpenSampleSolutionsCommand:
 			# Line 1: File type identifier
 			file_type = f.readline().strip()
 			if file_type != "Solutions":
+				error_title = "Invalid File Type"
 				error_msg = (
-					f"Invalid file type: expected 'Solutions', "
-					f"got '{file_type}'"
+					"Expecting Solutions type file but got "
+					f"{file_type} type file instead."
 				)
-				raise ValueError(error_msg)
+				raise ProblemReadingFileError(error_title, error_msg)
 
 			# Line 2: Basic parameters (I4 format)
 			parameters_line = f.readline()
@@ -2566,11 +2567,7 @@ class PrintScoresCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		peek(
-			"At top of PrintSampleRepetitionsCommand.execute()"
-			" - self._director.uncertainty_active.sample_design: ",
-			f"{self._director.uncertainty_active.sample_design}",
-		)
+
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()

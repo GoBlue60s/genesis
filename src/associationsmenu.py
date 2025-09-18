@@ -6,7 +6,7 @@ from __future__ import annotations
 # Third-party imports
 import numpy as np
 import pandas as pd
-import peek  # noqa: F401
+import peek
 
 from PySide6.QtWidgets import QDialog, QTableWidget
 from sklearn import manifold
@@ -917,7 +917,10 @@ class StressContributionCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(
+			self,
+			common: Spaces) -> None:  # noqa: ARG002
+
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -929,41 +932,34 @@ class StressContributionCommand:
 		index = self.common.get_focal_item_from_user(
 			self._contributions_title,
 			self._contributions_label,
-			self._contributions_items,
-		)
+			self._contributions_items)
+		peek(index)
+		peek(self._director.configuration_active.point_names[index])
 
-		stress_contribution_df = self._create_stress_contribution_df(
-			index, worst_fit
-		)
-		self._director.similarities_active.stress_contribution_df = (
+		stress_contribution_df = \
+			self._create_stress_contribution_df(index, worst_fit)
+		self._director.similarities_active.stress_contribution_df = \
 			stress_contribution_df
-		)
 
 		# Get the label based on the returned index
 		point_labels = self._director.configuration_active.point_labels
 		point_to_plot_label = point_labels[index]
-
+		peek(point_to_plot_label)
 		# Store the values with original names
 		self._point_to_plot_label = point_to_plot_label
 		self._point_to_plot_index = index
+		peek(self._point_to_plot_label)
+		peek(self._point_to_plot_index)
 
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"stress_contribution"
-		)
+			"stress_contribution")
 		point_names = self._director.configuration_active.point_names
 		self._director.title_for_table_widget = (
-			f"Stress contribution of {point_names[index]}"
-		)
+			f"Stress contribution of "
+			f"{point_names[index]}")
 
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
-
-		self._worst_fit = worst_fit
-		self._director.current_command._point_to_plot_label = (
-			point_to_plot_label
-		)
-		self._director.current_command._point_to_plot_index = index
-		self._director.common.point_to_plot_label = point_to_plot_label
 		return
 
 	# ------------------------------------------------------------------------
@@ -1029,58 +1025,73 @@ class StressContributionCommand:
 		"""
 		point_names = self._director.configuration_active.point_names
 		point_labels = self._director.configuration_active.point_labels
-		# focal_name = point_names[index]
 		focal_label = point_labels[index]
 
-		# Filter worst_fit to only include rows where the selected point
-		#  is involved
 		contributions = []
+		label_to_name_map = self._create_label_to_name_mapping(
+			point_labels, point_names
+		)
 
 		for _, row in worst_fit.iterrows():
-			# Check if focal point is involved in this pair as A
-			if row["A_label"] == focal_label:
-				other_label = row["B_label"]
-				# Find the name corresponding to this label
-				other_name = None
-				for i, label in enumerate(point_labels):
-					if label == other_label:
-						other_name = point_names[i]
-						break
-
+			other_label = self._get_other_label_if_focal_involved(
+				row, focal_label
+			)
+			if other_label:
+				other_name = label_to_name_map.get(other_label)
 				if other_name:
 					contributions.append(
-						{
-							"Item": other_name,
-							"Stress Contribution": row["Pct_of_Stress"],
-						}
+						self._create_contribution_entry(
+							other_name, row["Pct_of_Stress"]
+						)
 					)
 
-			# Check if focal point is involved in this pair as B
-			if row["B_label"] == focal_label:
-				other_label = row["A_label"]
-				# Find the name corresponding to this label
-				other_name = None
-				for i, label in enumerate(point_labels):
-					if label == other_label:
-						other_name = point_names[i]
-						break
+		result_df = self._create_and_sort_dataframe(contributions)
+		self.stress_contribution_df = result_df
+		return result_df
 
-				if other_name:
-					contributions.append(
-						{
-							"Item": other_name,
-							"Stress Contribution": row["Pct_of_Stress"],
-						}
-					)
+	# ------------------------------------------------------------------------
 
-		# Create DataFrame and sort by stress contribution (descending)
+	def _create_label_to_name_mapping(
+		self, point_labels: list[str], point_names: list[str]
+	) -> dict[str, str]:
+		"""Create a mapping from point labels to point names."""
+		return dict(zip(point_labels, point_names, strict=True))
+
+	# ------------------------------------------------------------------------
+
+	def _get_other_label_if_focal_involved(
+		self, row: pd.Series, focal_label: str
+	) -> str | None:
+		"""Return the other label if focal point is involved in this pair."""
+		if row["A_label"] == focal_label:
+			return row["B_label"]
+		if row["B_label"] == focal_label:
+			return row["A_label"]
+		return None
+
+	# ------------------------------------------------------------------------
+
+	def _create_contribution_entry(
+		self, item_name: str, stress_contribution: float
+	) -> dict[str, str | float]:
+		"""Create a contribution entry dictionary."""
+		return {
+			"Item": item_name,
+			"Stress Contribution": stress_contribution,
+		}
+
+	# ------------------------------------------------------------------------
+
+	def _create_and_sort_dataframe(
+		self, contributions: list[dict[str, str | float]]
+	) -> pd.DataFrame:
+		"""Create DataFrame from contributions and sort by stress
+		contribution."""
 		result_df = pd.DataFrame(contributions)
 		if not result_df.empty:
 			result_df = result_df.sort_values(
 				by="Stress Contribution", ascending=False
 			)
-
-		self.stress_contribution_df = result_df
 		return result_df
 
 	# ------------------------------------------------------------------------

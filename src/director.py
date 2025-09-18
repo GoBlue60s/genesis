@@ -844,12 +844,6 @@ class Status(QMainWindow):
 				"alike",
 				"Select most alike points",
 			],
-			"Cluster": {
-				"icon": "spaces_cluster_icon.jpg",
-				"command": "cluster",
-				"enabled": False,
-				"tooltip": "Cluster the active configuration",
-			},
 			"Distances": [
 				"spaces_distances_icon.jpg",
 				"distances",
@@ -907,6 +901,11 @@ class Status(QMainWindow):
 	def create_model_menu(self) -> dict:
 		"""Create dictionary structure for the Model menu"""
 		return {
+			"Cluster": [
+				"spaces_cluster_icon.png",
+				"cluster",
+				"Cluster the active configuration",
+			],
 			"Principal Components": [
 				"spaces_pca_icon.jpg",
 				"principal",
@@ -1377,6 +1376,7 @@ class Status(QMainWindow):
 
 				menu.addAction(action)
 				if next_command in [
+					"cluster",
 					"deactivate",
 					"open_grouped_data",
 					"open_correlations",
@@ -1540,7 +1540,7 @@ class Status(QMainWindow):
 			"View spatial uncertainty",
 			"View target",
 		)
-		peek(len(self.commands))
+		# peek(len(self.commands))
 
 	# ------------------------------------------------------------------------
 
@@ -2469,7 +2469,6 @@ class BuildTrafficDict:
 
 		from associationsmenu import (  # noqa: PLC0415
 			AlikeCommand,
-			ClusterCommand,
 			DistancesCommand,
 			LineOfSightCommand,
 			PairedCommand,
@@ -2548,6 +2547,7 @@ class BuildTrafficDict:
 			VerboseCommand,
 		)
 		from modelmenu import (  # noqa: PLC0415
+			ClusterCommand,
 			DirectionsCommand,
 			FactorAnalysisCommand,
 			FactorAnalysisMachineLearningCommand,
@@ -2786,7 +2786,7 @@ class BuildTrafficDict:
 			"verbose": (VerboseCommand, None),
 			"tester": (TesterCommand, None),
 		}
-		peek(len(self.traffic_dict))
+		# peek(len(self.traffic_dict))
 
 
 # --------------------------------------------------------------------------
@@ -2796,7 +2796,6 @@ class BuildWidgetDict:
 	def __init__(self, parent: Status) -> None:
 		from associationsmenu import (  # noqa: PLC0415
 			AlikeCommand,
-			ClusterCommand,
 			DistancesCommand,
 			LineOfSightCommand,
 			PairedCommand,
@@ -2863,6 +2862,7 @@ class BuildWidgetDict:
 			VerboseCommand,
 		)
 		from modelmenu import (  # noqa: PLC0415
+			ClusterCommand,
 			DirectionsCommand,
 			FactorAnalysisCommand,
 			FactorAnalysisMachineLearningCommand,
@@ -2944,7 +2944,7 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.tables.display_table("configuration"),
 			],
-			"Cluster": [ClusterCommand, "shared", parent.display_coming_soon],
+			"Cluster": [ClusterCommand, "unique", None],
 			"Compare": [
 				CompareCommand,
 				"shared",
@@ -3375,7 +3375,7 @@ class BuildWidgetDict:
 				lambda: parent.tables.display_table("target"),
 			],
 		}
-		peek(len(self.widget_dict))
+		# peek(len(self.widget_dict))
 
 
 # --------------------------------------------------------------------------

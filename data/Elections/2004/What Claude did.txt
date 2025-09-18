@@ -1,0 +1,26 @@
+● Perfect! I've successfully fixed the factoranalysismachinelearningcommand. Here's a summary of what I mapped and fixed:
+
+  Variable Mappings
+
+  I mapped the scikit-learn variables to the classic factor analysis format:
+
+  1. transformer.mean_ → eigen ("Feature Means" column)
+  2. transformer.noise_variance_ → eigen_common ("Noise Variance" column)
+  3. transformer.components_.T → loadings ("Components Factor 1/2" columns)
+  4. Calculated pseudo-communalities from loadings → commonalities ("Pseudo Communalities" column)
+  5. Calculated pseudo-uniquenesses (1 - communalities) → uniquenesses ("Pseudo Uniquenesses" column)
+
+  Key Fixes Applied
+
+  1. Variable Storage: Added proper DataFrame storage of sklearn results before the _display() call
+  2. Table Headers: Updated column headers to reflect machine learning terminology:
+    - "Eigenvalues" → "Feature Means"
+    - "Common Factor Eigenvalues" → "Noise Variance"
+    - "Commonalities" → "Pseudo Communalities"
+    - "Uniquenesses" → "Pseudo Uniquenesses"
+    - "Loadings" → "Components"
+  3. Bug Fix: Fixed typo iiloc → iloc in the table creation
+  4. Table Title: Changed title to "Factor analysis (Machine Learning)" to distinguish it from the classic version
+
+  The table widget should now work properly with the machine learning command and display the sklearn results in a comparable format to the classic factor analysis, with appropriate column names that reflect the different     
+  mathematical approach.

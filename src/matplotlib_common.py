@@ -131,7 +131,7 @@ class MatplotlibCommon:
 		hor_dim = self._director.common.hor_dim
 		vert_dim = self._director.common.vert_dim
 		point_coords = self._director.configuration_active.point_coords
-		point_labels = self._director.configuration_active.point_labels
+		point_names = self._director.configuration_active.point_names
 		offset = self._director.common.plot_ranges.offset
 		range_points = self._director.configuration_active.range_points
 
@@ -151,7 +151,7 @@ class MatplotlibCommon:
 				# conf.item(each_point).label)
 				point_coords.iloc[each_point, hor_dim] + offset,
 				point_coords.iloc[each_point, vert_dim],
-				point_labels[each_point],
+				point_names[each_point],
 			)
 
 		# x_coords = conf.dim_1_coords
@@ -312,109 +312,6 @@ class MatplotlibCommon:
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
 		self._director.set_focus_on_tab("Plot")
 		return
-
-	# ------------------------------------------------------------------------
-
-	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
-		matplotlib_common = self._director.matplotlib_common
-
-		fig = self._plot_stress_contribution_by_point_using_matplotlib()
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
-		self._director.set_focus_on_tab("Plot")
-		return
-
-	# ------------------------------------------------------------------------
-
-	def _plot_stress_contribution_by_point_using_matplotlib(
-		self,
-	) -> plt.Figure:
-		# point = self._point_to_plot_label
-		point_label = self._director.current_command._point_to_plot_label
-		point_index = self._director.common.point_to_plot_index
-		ranks_df = self._director.similarities_active.ranks_df
-		item_names = self._director.similarities_active.item_names
-		range_similarities = (
-			self._director.similarities_active.range_similarities
-		)
-		ndyad = self._director.similarities_active.ndyad
-		# point_index = self._director.current_command._point_to_plot_index
-
-		fig, ax = self._director.common.begin_matplotlib_plot_with_title(
-			"Stress contribution of " + item_names[point_index]
-		)
-		ax = self._director.common.set_aspect_and_grid_in_matplotlib_plot(ax)
-		plt.close()
-		#
-		x_others = []
-		y_others = []
-		label_others = []
-		index_others = []
-		column_a_label = ranks_df.columns.get_loc("A_label")
-		column_a_name = ranks_df.columns.get_loc("A_name")
-		column_b_label = ranks_df.columns.get_loc("B_label")
-		column_b_name = ranks_df.columns.get_loc("B_name")
-		column_sim_rank = ranks_df.columns.get_loc("Similarity_Rank")
-		column_dist_rank = ranks_df.columns.get_loc("Distance_Rank")
-		for each_dyad in range_similarities:
-			if ranks_df.iloc[each_dyad, column_a_label] == point_label:
-				x_others.append(ranks_df.iloc[each_dyad, column_sim_rank])
-				y_others.append(ranks_df.iloc[each_dyad, column_dist_rank])
-				label_others.append(ranks_df.iloc[each_dyad, column_b_name])
-				index_others.append(each_dyad)
-			if ranks_df.iloc[each_dyad, column_b_label] == point_label:
-				x_others.append(ranks_df.iloc[each_dyad, column_sim_rank])
-				y_others.append(ranks_df.iloc[each_dyad, column_dist_rank])
-				label_others.append(ranks_df.iloc[each_dyad, column_a_name])
-				index_others.append(each_dyad)
-		#
-		# Create plot for selected item
-
-		ax.set_xlabel("Similarity Rank")
-		ax.set_ylabel("Distance Rank")
-		ax.scatter(x_others, y_others)
-		other_range = range(len(x_others))
-		for each_item in other_range:
-			ax.text(
-				x_others[each_item],
-				y_others[each_item],
-				label_others[each_item],
-			)
-			if index_others[each_item] + 1 == x_others[each_item]:
-				ax.plot(
-					[index_others[each_item] + 1, x_others[each_item]],
-					[index_others[each_item] + 1, y_others[each_item]],
-					"b",
-				)
-			else:
-				difference = index_others[each_item] + 1 - x_others[each_item]
-				if difference > 0:
-					ax.plot(
-						[x_others[each_item], x_others[each_item]],
-						[
-							index_others[each_item] + difference,
-							y_others[each_item],
-						],
-						"b",
-					)
-				else:
-					ax.plot(
-						[x_others[each_item], x_others[each_item]],
-						[
-							index_others[each_item] + 1 - difference,
-							y_others[each_item],
-						],
-						"b",
-					)
-		#
-		# Add line to indicate what a perfect relationship, no stress, would be
-		#
-		ax.plot((1, ndyad + 1), (1, ndyad + 1), "r")
-
-		self._director.similarities_active.ranks_df = ranks_df
-
-		return fig
 
 	# -- The following comes from rivalry ------------------------------------
 

@@ -646,6 +646,16 @@ class StatisticalTableWidget:
 				row_height = 4
 				format_spec = ["d", "8.4f"]
 
+			case "cluster_results":
+				data = self._director.cluster_results
+				row_headers = []
+				# Use the actual column names from the data
+				column_headers = list(data.columns)
+				row_height = 4
+				# Format spec should match the actual number of columns
+				# Cluster (int->str), Color (str), Percent (str), then coordinates (float)
+				format_spec = ["s", "s", "s"] + ["8.3f"] * (len(data.columns) - 3)
+
 			case _:
 				raise SpacesError(
 					self.unknown_statistical_table_error_title,
@@ -754,6 +764,7 @@ class StatisticalTableWidget:
 				except (ValueError, TypeError) as e:
 					# Handle formatting errors for cell values
 					print(f"Error formatting cell ({row}, {col}): {e!s}")
+					print(f"Value: {value}, Column format: {column_format}, Format spec: {format_spec}")
 					table_widget.setItem(row, col, QTableWidgetItem("Error"))
 
 		# Set headers and visual properties

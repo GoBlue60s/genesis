@@ -466,7 +466,7 @@ class ViewPointUncertaintyCommand:
 			common.create_plot_for_plot_and_gallery_tabs("point_uncertainty")
 
 			director.title_for_table_widget = (
-				f"Point Uncertainty ({plot_to_show}) - "
+				f"Point Uncertainty - "
 				f"{len(selected_indices)} points: {', '.join(selected_items)}"
 			)
 			director.create_widgets_for_output_and_log_tabs()
@@ -735,11 +735,6 @@ class ViewSpatialUncertaintyCommand:
 		ndim = uncertainty_active.ndim
 		npoint = uncertainty_active.npoints
 
-		peek(
-			"At top of ViewSpatialUncertaintyCommand.execute()"
-			" - self._director.uncertainty_active.sample_solutions: ",
-			f"{uncertainty_active.sample_solutions}",
-		)
 		self.plot_to_show = plot_to_show
 		director.plot_to_show = plot_to_show  # Store for plotting functions
 		director.record_command_as_selected_and_in_process()
@@ -752,7 +747,7 @@ class ViewSpatialUncertaintyCommand:
 		common.create_plot_for_plot_and_gallery_tabs("spatial_uncertainty")
 
 		director.title_for_table_widget = (
-			f"Spatial Uncertainty ({plot_to_show}) - {nsolutions} solutions "
+			f"Spatial Uncertainty - {nsolutions} solutions "
 			f"with {ndim} dimensions and {npoint} points"
 		)
 		director.create_widgets_for_output_and_log_tabs()

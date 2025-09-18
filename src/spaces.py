@@ -64,9 +64,12 @@ class MyApplication:
 		print(
 			f"\nIn this version of Spaces there are "
 			f"{len(self.director.traffic_dict)} "
-			f"menu items available."
+			f"menu items, "
+			f"{len(self.director.widget_dict)} widgets, "
+			f"and {len(self.director.commands)} commands "
+			f"available."
 		)
-		peek("Peek seems to be working")
+		# peek("Peek seems to be working")
 		self.start_event_loop()
 		self.print_debug_logs()
 		sys.exit()
