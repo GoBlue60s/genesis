@@ -1,0 +1,12 @@
+# This project uses latest versions of all dependencies
+# Older versions are not tested or supported
+pandas
+numpy
+matplotlib
+PySide6
+scipy
+scikit-learn
+pyqtgraph
+factor-analyzer
+tabulate
+peek-python
