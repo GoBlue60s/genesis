@@ -1264,7 +1264,26 @@ class Status(QMainWindow):
 			"Valid keys are 'icon', 'command', 'enabled', "
 			"'shortcut', 'items', 'tooltip'."
 		)
-
+		self.valid_keys = {
+			"icon",
+			"command",
+			"enabled",
+			"shortcut",
+			"items",
+			"tooltip",
+		}
+		self.needs_separator = [
+					"cluster",
+					"deactivate",
+					"open_grouped_data",
+					"open_correlations",
+					"print_target",
+					"print_grouped_data",
+					"print_similarities",
+					"line_of_sight",
+					"contest",
+					"joint",
+		]
 	# ------------------------------------------------------------------------
 
 	def add_submenus(self, menu: QMenu, submenus: dict) -> None:
@@ -1273,14 +1292,9 @@ class Status(QMainWindow):
 		self.add_menus_initialize_variables()
 
 		icon_directory = "Spaces_icons"
-		valid_keys = {
-			"icon",
-			"command",
-			"enabled",
-			"shortcut",
-			"items",
-			"tooltip",
-		}
+		valid_keys = self.valid_keys
+		needs_separator = self.needs_separator
+
 
 		for submenu_name, action_or_submenu in submenus.items():
 			if isinstance(action_or_submenu, dict):
@@ -1375,18 +1389,7 @@ class Status(QMainWindow):
 					)
 
 				menu.addAction(action)
-				if next_command in [
-					"cluster",
-					"deactivate",
-					"open_grouped_data",
-					"open_correlations",
-					"print_target",
-					"print_grouped_data",
-					"print_similarities",
-					"line_of_sight",
-					"contest",
-					"joint",
-				]:
+				if next_command in needs_separator:
 					menu.addSeparator()
 
 	def create_lambda_with_toggle(self, next_command: str) -> Callable:
