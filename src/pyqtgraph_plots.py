@@ -13,7 +13,7 @@ from constants import (
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	# import pandas as pd
+	import pandas as pd
 	from director import Status
 	from features import TargetFeature
 	from geometry import PeoplePoints
@@ -334,6 +334,128 @@ class PyQtGraphMethods:
 			plot.addItem(points)
 
 		return
+
+	# ------------------------------------------------------------------------
+
+	def request_clusters_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
+		self,
+	) -> None:
+		director = self._director
+		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
+		scores_active = director.scores_active
+		hor_axis_name = scores_active.hor_axis_name
+		vert_axis_name = scores_active.vert_axis_name
+		scores = scores_active.scores
+		dim_names = scores_active.dim_names
+
+		score_1 = scores[hor_axis_name]
+		score_2 = scores[vert_axis_name]
+		score_1_name = dim_names[0]
+		score_2_name = dim_names[1]
+
+		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:])
+
+		tab_plot_widget = self.plot_clusters_using_pyqtgraph()
+		tab_gallery_widget = self.plot_clusters_using_pyqtgraph()
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
+
+		self.score_1 = score_1
+		self.score_1_name = score_1_name
+		self.score_2 = score_2
+		self.score_2_name = score_2_name
+
+		return
+
+	# -----------------------------------------------------------------**-----
+
+	def plot_clusters_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
+		director = self._director
+		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
+		scores_active = director.scores_active
+		hor_axis_name = scores_active.hor_axis_name
+		vert_axis_name = scores_active.vert_axis_name
+		hor_dim = scores_active._hor_dim
+		vert_dim = scores_active._vert_dim
+		scores = scores_active.scores
+		nscored = scores_active.nscored_individ
+		point_size = common.point_size
+
+		graphics_layout_widget, plot = (
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Clusters")
+		)
+		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
+		plot.setLabel("left", hor_axis_name, color="k", size=15)
+		plot.setLabel("bottom", vert_axis_name, color="k", size=15)
+		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
+		x_coords = [
+			scores.iloc[each_point, hor_dim + 1]
+			for each_point in range(nscored)
+		]
+		y_coords = [
+			scores.iloc[each_point, vert_dim + 1]
+			for each_point in range(nscored)
+		]
+
+		# Color points by cluster assignment
+		cluster_labels = scores_active.cluster_labels
+		colors = [
+			'r', 'b', 'g', 'orange', 'purple',
+			'brown', 'pink', 'gray', 'olive', 'cyan'
+		]
+
+		# Group points by cluster and plot each cluster with its color
+		for cluster_id in set(cluster_labels):
+			cluster_color = colors[cluster_id % len(colors)]
+			# Get indices for this cluster
+			cluster_indices = [
+				i for i, label in enumerate(cluster_labels)
+				if label == cluster_id
+			]
+			# Get coordinates for this cluster
+			cluster_x = [x_coords[i] for i in cluster_indices]
+			cluster_y = [y_coords[i] for i in cluster_indices]
+
+			plot.scatterPlot(
+				cluster_x,
+				cluster_y,
+				pen=cluster_color,
+				symbol="o",
+				symbolSize=point_size,
+				symbolBrush=cluster_color,
+			)
+
+		# Add cluster centroids as plus signs with different colors
+		if common.have_clusters():
+			cluster_centers = scores_active.cluster_centers
+			# Extract centroid coordinates for the current axes
+			centroid_x = cluster_centers[:, 0].tolist()  # First dimension
+			centroid_y = cluster_centers[:, 1].tolist()  # Second dimension
+
+			# Create different colors for each centroid
+			colors = [
+				'r', 'b', 'g', 'orange', 'purple',
+				'brown', 'pink', 'gray', 'olive', 'cyan'
+			]
+			n_centroids = len(centroid_x)
+
+			for i in range(n_centroids):
+				color = colors[i % len(colors)]
+				plot.scatterPlot(
+					[centroid_x[i]],
+					[centroid_y[i]],
+					pen=color,
+					symbol="+",
+					symbolSize=point_size * 3,
+					symbolBrush=None,
+				)
+
+		director.set_focus_on_tab("Plot")
+
+		return graphics_layout_widget
 
 	# --------------------------------------------------------------**--------
 
@@ -1845,128 +1967,6 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_clusters_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
-		director = self._director
-		common = director.common
-		pyqtgraph_common = director.pyqtgraph_common
-		scores_active = director.scores_active
-		hor_axis_name = scores_active.hor_axis_name
-		vert_axis_name = scores_active.vert_axis_name
-		scores = scores_active.scores
-		dim_names = scores_active.dim_names
-
-		score_1 = scores[hor_axis_name]
-		score_2 = scores[vert_axis_name]
-		score_1_name = dim_names[0]
-		score_2_name = dim_names[1]
-
-		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:])
-
-		tab_plot_widget = self.plot_clusters_using_pyqtgraph()
-		tab_gallery_widget = self.plot_clusters_using_pyqtgraph()
-		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget
-		)
-
-		self.score_1 = score_1
-		self.score_1_name = score_1_name
-		self.score_2 = score_2
-		self.score_2_name = score_2_name
-
-		return
-
-	# -----------------------------------------------------------------**-----
-
-	def plot_clusters_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-		director = self._director
-		common = director.common
-		pyqtgraph_common = director.pyqtgraph_common
-		scores_active = director.scores_active
-		hor_axis_name = scores_active.hor_axis_name
-		vert_axis_name = scores_active.vert_axis_name
-		hor_dim = scores_active._hor_dim
-		vert_dim = scores_active._vert_dim
-		scores = scores_active.scores
-		nscored = scores_active.nscored_individ
-		point_size = common.point_size
-
-		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Clusters")
-		)
-		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		plot.setLabel("left", hor_axis_name, color="k", size=15)
-		plot.setLabel("bottom", vert_axis_name, color="k", size=15)
-		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
-		x_coords = [
-			scores.iloc[each_point, hor_dim + 1]
-			for each_point in range(nscored)
-		]
-		y_coords = [
-			scores.iloc[each_point, vert_dim + 1]
-			for each_point in range(nscored)
-		]
-
-		# Color points by cluster assignment
-		cluster_labels = scores_active.cluster_labels
-		colors = [
-			'r', 'b', 'g', 'orange', 'purple',
-			'brown', 'pink', 'gray', 'olive', 'cyan'
-		]
-
-		# Group points by cluster and plot each cluster with its color
-		for cluster_id in set(cluster_labels):
-			cluster_color = colors[cluster_id % len(colors)]
-			# Get indices for this cluster
-			cluster_indices = [
-				i for i, label in enumerate(cluster_labels)
-				if label == cluster_id
-			]
-			# Get coordinates for this cluster
-			cluster_x = [x_coords[i] for i in cluster_indices]
-			cluster_y = [y_coords[i] for i in cluster_indices]
-
-			plot.scatterPlot(
-				cluster_x,
-				cluster_y,
-				pen=cluster_color,
-				symbol="o",
-				symbolSize=point_size,
-				symbolBrush=cluster_color,
-			)
-
-		# Add cluster centroids as plus signs with different colors
-		if common.have_clusters():
-			cluster_centers = scores_active.cluster_centers
-			# Extract centroid coordinates for the current axes
-			centroid_x = cluster_centers[:, 0].tolist()  # First dimension
-			centroid_y = cluster_centers[:, 1].tolist()  # Second dimension
-
-			# Create different colors for each centroid
-			colors = [
-				'r', 'b', 'g', 'orange', 'purple',
-				'brown', 'pink', 'gray', 'olive', 'cyan'
-			]
-			n_centroids = len(centroid_x)
-
-			for i in range(n_centroids):
-				color = colors[i % len(colors)]
-				plot.scatterPlot(
-					[centroid_x[i]],
-					[centroid_y[i]],
-					pen=color,
-					symbol="+",
-					symbolSize=point_size * 3,
-					symbolBrush=None,
-				)
-
-		director.set_focus_on_tab("Plot")
-
-		return graphics_layout_widget
-
-	# ------------------------------------------------------------------------
-
 	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_pyqtgraph(  # noqa: E501
 		self,
 	) -> None:
@@ -1988,7 +1988,6 @@ class PyQtGraphMethods:
 	def _plot_stress_contribution_by_point_using_pyqtgraph(
 		self,
 	) -> pg.GraphicsLayoutWidget:
-		pyqtgraph_common = self._director.pyqtgraph_common
 		point_label = self._director.current_command._point_to_plot_label
 		ranks_df = self._director.similarities_active.ranks_df
 		ndyad = self._director.similarities_active.ndyad
@@ -1996,22 +1995,49 @@ class PyQtGraphMethods:
 		range_similarities = (
 			self._director.similarities_active.range_similarities
 		)
-
-		director = self._director
-		common = director.common
-		point_size = common.point_size
+		point_size = self._director.common.point_size
 		point_index = self._director.current_command._point_to_plot_index
 
+		x_others, y_others, label_others, index_others = (
+			self._extract_dyad_data_for_point(
+				point_label, ranks_df, range_similarities
+			)
+		)
+
+		title = "Stress contribution of " + item_names[point_index]
+		graphics_layout_widget, plot = self._setup_stress_contribution_plot(
+			title, ndyad
+		)
+
+		self._add_scatter_points_and_labels(
+			plot, x_others, y_others, label_others, point_size
+		)
+
+		self._add_stress_contribution_lines(
+			plot, x_others, y_others, index_others
+		)
+
+		self._director.similarities_active.ranks_df = ranks_df
+
+		return graphics_layout_widget
+
+# ------------------------------------------------------------------------
+
+	def _extract_dyad_data_for_point(
+		self, point_label: str, ranks_df: pd.DataFrame, range_similarities: range
+	) -> tuple[list[int], list[int], list[str], list[int]]:
 		x_others = []
 		y_others = []
 		label_others = []
 		index_others = []
+
 		column_a_label = ranks_df.columns.get_loc("A_label")
 		column_a_name = ranks_df.columns.get_loc("A_name")
 		column_b_label = ranks_df.columns.get_loc("B_label")
 		column_b_name = ranks_df.columns.get_loc("B_name")
 		column_sim_rank = ranks_df.columns.get_loc("Similarity_Rank")
 		column_dist_rank = ranks_df.columns.get_loc("Distance_Rank")
+
 		for each_dyad in range_similarities:
 			if ranks_df.iloc[each_dyad, column_a_label] == point_label:
 				x_others.append(ranks_df.iloc[each_dyad, column_sim_rank])
@@ -2024,18 +2050,33 @@ class PyQtGraphMethods:
 				label_others.append(ranks_df.iloc[each_dyad, column_a_name])
 				index_others.append(each_dyad)
 
-		other_range = range(len(x_others))
+		return x_others, y_others, label_others, index_others
+
+	# ------------------------------------------------------------------------
+
+	def _setup_stress_contribution_plot(
+		self, title: str, ndyad: int
+	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem]:
+		pyqtgraph_common = self._director.pyqtgraph_common
 		graphics_layout_widget, plot = (
-			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
-				"Stress contribution of " + item_names[point_index]
-			)
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(title)
 		)
 		plot.showGrid(x=True, y=True)
 		plot.setLabel("bottom", "Similarity Rank", color="k", size="15pt")
 		plot.setLabel("left", "Distance Rank", color="k", size="15pt")
+
 		pen = pg.mkPen(color=(255, 0, 0))
 		line = pg.PlotDataItem((1, ndyad + 1), (1, ndyad + 1), pen=pen)
 		plot.addItem(line)
+
+		return graphics_layout_widget, plot
+
+# ------------------------------------------------------------------------
+
+	def _add_scatter_points_and_labels(
+		self, plot: pg.PlotItem, x_others: list[int], y_others: list[int],
+		label_others: list[str], point_size: int
+	) -> None:
 		points = pg.ScatterPlotItem(
 			x_others,
 			y_others,
@@ -2045,48 +2086,44 @@ class PyQtGraphMethods:
 			brush=pg.mkBrush(0, 0, 255, 120),
 		)
 		plot.addItem(points)
-		for each_item in other_range:
+
+		for i, label in enumerate(label_others):
 			a_name = pg.TextItem(
-				text=label_others[each_item],
+				text=label,
 				color=(0, 0, 0),
 				anchor=(1.0, 0.0),
 			)
-			a_name.setPos(x_others[each_item], y_others[each_item])
+			a_name.setPos(x_others[i], y_others[i])
 			plot.addItem(a_name)
-			# [index_others[each_item] + 1, x_others[each_item]],
-			if index_others[each_item] + 1 == x_others[each_item]:
+
+# ------------------------------------------------------------------------
+
+	def _add_stress_contribution_lines(
+		self, plot: pg.PlotItem, x_others: list[int], y_others: list[int],
+		index_others: list[int]
+	) -> None:
+		for i in range(len(x_others)):
+			if index_others[i] + 1 == x_others[i]:
 				other_line = pg.PlotDataItem(
-					[index_others[each_item] + 1, x_others[each_item]],
-					[index_others[each_item] + 1, y_others[each_item]],
+					[index_others[i] + 1, x_others[i]],
+					[index_others[i] + 1, y_others[i]],
 					pen=pg.mkPen("b"),
 				)
 			else:
-				difference = index_others[each_item] + 1 - x_others[each_item]
-
+				difference = index_others[i] + 1 - x_others[i]
 				if difference > 0:
 					other_line = pg.PlotDataItem(
-						[x_others[each_item], x_others[each_item]],
-						[
-							index_others[each_item] + difference,
-							y_others[each_item],
-						],
+						[x_others[i], x_others[i]],
+						[index_others[i] + difference, y_others[i]],
 						pen=pg.mkPen("b"),
 					)
 				else:
 					other_line = pg.PlotDataItem(
-						[x_others[each_item], x_others[each_item]],
-						[
-							index_others[each_item] + 1 - difference,
-							y_others[each_item],
-						],
+						[x_others[i], x_others[i]],
+						[index_others[i] + 1 - difference, y_others[i]],
 						pen=pg.mkPen("b"),
 					)
-
 			plot.addItem(other_line)
-
-		self._director.similarities_active.ranks_df = ranks_df
-
-		return graphics_layout_widget
 
 	# ------------------------------------------------------------------------
 
@@ -2316,23 +2353,49 @@ class PyQtGraphMethods:
 	def plot_uncertainty_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		common = director.common
+		uncertainty_active = director.uncertainty_active
+		range_points = uncertainty_active.range_points
+		npoint = uncertainty_active.npoints
+		solutions = uncertainty_active.solutions
+
+		result = self._initialize_uncertainty_plot()
+		if result is None:
+			return None
+		graphics_layout_widget, plot = result
+
+		for each_point in range_points:
+			x_coords, y_coords = self._extract_point_coordinates(
+				solutions, each_point, npoint
+			)
+			x_mean, y_mean = common.solutions_means(each_point)
+
+			self._add_point_scatter_and_label(
+				plot, each_point, x_coords, y_coords, x_mean, y_mean
+			)
+			self._add_ellipse_visualization(plot, x_coords, y_coords)
+
+		director.set_focus_on_tab("Plot")
+
+		return graphics_layout_widget
+
+# ------------------------------------------------------------------------
+
+	def _initialize_uncertainty_plot(
+		self,
+	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem] | None:
+		"""Initialize the uncertainty plot with title and labels."""
+		director = self._director
+		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
-		target_active = director.target_active
 		uncertainty_active = director.uncertainty_active
 		hor_dim = common.hor_dim
 		vert_dim = common.vert_dim
 		dim_names = uncertainty_active.dim_names
-		point_labels = uncertainty_active.point_labels
-		point_size = common.point_size
-		range_points = uncertainty_active.range_points
-		npoint = uncertainty_active.npoints
 		ndim = uncertainty_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
-
-		solutions = uncertainty_active.solutions
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Uncertainty")
@@ -2342,39 +2405,18 @@ class PyQtGraphMethods:
 		plot.setLabel("bottom", dim_names[hor_dim], color="k", size="15pt")
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
-		for each_point in range_points:
-			point_coordinates_for_repetition = solutions.iloc[
-				each_point::npoint
-			]
-			x_coords = point_coordinates_for_repetition.iloc[:, 0].to_numpy()
-			y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
-			x_mean, y_mean = common.solutions_means(each_point)
-			point_label = pg.TextItem(
-				text=point_labels[each_point],
-				color="k",
-				anchor=(0.5, 0.5),
-				border="w",
-				fill=None,
-			)
-			point_label.setPos(x_mean, y_mean)
-			plot.addItem(point_label)
-			scatter = pg.ScatterPlotItem(
-				x=x_coords,
-				y=y_coords,
-				pen="r",
-				symbol="o",
-				size=point_size,
-				brush="r",
-			)
-			plot.addItem(scatter)
-			ellipse = pyqtgraph_common.confidence_ellipse_using_pyqtgraph(
-				x_coords, y_coords, n_std=2.0
-			)
-			plot.addItem(ellipse)
+		return graphics_layout_widget, plot
 
-		director.set_focus_on_tab("Plot")
+# ------------------------------------------------------------------------
 
-		return graphics_layout_widget
+	def _extract_point_coordinates(
+		self, solutions: pd.DataFrame, each_point: int, npoint: int
+	) -> tuple[np.ndarray, np.ndarray]:
+		"""Extract x and y coordinates for a point across repetitions."""
+		point_coordinates_for_repetition = solutions.iloc[each_point::npoint]
+		x_coords = point_coordinates_for_repetition.iloc[:, 0].to_numpy()
+		y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
+		return x_coords, y_coords
 
 	# ------------------------------------------------------------------------
 
@@ -2405,25 +2447,61 @@ class PyQtGraphMethods:
 	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		common = director.common
+		uncertainty_active = director.uncertainty_active
+		range_points = uncertainty_active.range_points
+		npoint = uncertainty_active.npoints
+		solutions = uncertainty_active.solutions
+
+		result = self._initialize_spatial_uncertainty_plot()
+		if result is None:
+			return None
+		graphics_layout_widget, plot = result
+
+		plot_to_show = getattr(director, "plot_to_show", "ellipses")
+
+		for each_point in range_points:
+			point_coordinates_for_repetition = solutions.iloc[
+				each_point::npoint
+			]
+			x_coords = point_coordinates_for_repetition.iloc[:, 0].to_numpy()
+			y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
+			x_mean, y_mean = common.solutions_means(each_point)
+
+			self._add_point_scatter_and_label(
+				plot, each_point, x_coords, y_coords, x_mean, y_mean
+			)
+			self._add_uncertainty_visualization(
+				plot,
+				plot_to_show,
+				each_point,
+				x_coords,
+				y_coords,
+				x_mean,
+				y_mean,
+			)
+
+		director.set_focus_on_tab("Plot")
+
+		return graphics_layout_widget
+	
+	# ------------------------------------------------------------------------
+
+	def _initialize_spatial_uncertainty_plot(
+		self,
+	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem] | None:
+		"""Initialize the spatial uncertainty plot with title and labels."""
+		director = self._director
+		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		uncertainty_active = director.uncertainty_active
 		hor_dim = common.hor_dim
 		vert_dim = common.vert_dim
 		dim_names = uncertainty_active.dim_names
-		point_labels = uncertainty_active.point_labels
-		point_size = common.point_size
-		range_points = uncertainty_active.range_points
-		npoint = uncertainty_active.npoints
 		ndim = uncertainty_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
-
-		# Get the visualization mode from the ViewSpatialUncertainty command
-		plot_to_show = getattr(director, "plot_to_show", "ellipses")
-
-		solutions = uncertainty_active.solutions
 
 		title = "Uncertainty"
 		graphics_layout_widget, plot = (
@@ -2434,82 +2512,146 @@ class PyQtGraphMethods:
 		plot.setLabel("bottom", dim_names[hor_dim], color="k", size="15pt")
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
-		for each_point in range_points:
-			point_coordinates_for_repetition = solutions.iloc[
-				each_point::npoint
-			]
-			x_coords = point_coordinates_for_repetition.iloc[:, 0].to_numpy()
-			y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
-			x_mean, y_mean = common.solutions_means(each_point)
-			point_label = pg.TextItem(
-				text=point_labels[each_point],
-				color="k",
-				anchor=(0.5, 0.5),
-				border="w",
-				fill=None,
-			)
-			point_label.setPos(x_mean, y_mean)
-			plot.addItem(point_label)
-			scatter = pg.ScatterPlotItem(
-				x=x_coords,
-				y=y_coords,
-				pen="r",
-				symbol="o",
-				size=point_size,
-				brush="r",
-			)
-			plot.addItem(scatter)
+		return graphics_layout_widget, plot
 
-			if plot_to_show == "ellipses":
-				# Default ellipse mode - same as regular uncertainty
-				ellipse = pyqtgraph_common.confidence_ellipse_using_pyqtgraph(
-					x_coords, y_coords, n_std=2.0
-				)
-				plot.addItem(ellipse)
-			elif plot_to_show == "boxes":
-				# Box mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				# Create box connecting corner points
-				box_x = [x_max, x_min, x_min, x_max, x_max]
-				box_y = [y_max, y_max, y_min, y_min, y_max]
-				box_line = pg.PlotCurveItem(x=box_x, y=box_y, pen="r")
-				plot.addItem(box_line)
-			elif plot_to_show == "lines":
-				# Lines mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				# Draw cross lines from center to extremes
-				line_up = pg.PlotCurveItem(
-					x=[x_mean, x_mean], y=[y_mean, y_max], pen="r"
-				)
-				line_down = pg.PlotCurveItem(
-					x=[x_mean, x_mean], y=[y_mean, y_min], pen="r"
-				)
-				line_right = pg.PlotCurveItem(
-					x=[x_mean, x_max], y=[y_mean, y_mean], pen="r"
-				)
-				line_left = pg.PlotCurveItem(
-					x=[x_mean, x_min], y=[y_mean, y_mean], pen="r"
-				)
-				plot.addItem(line_up)
-				plot.addItem(line_down)
-				plot.addItem(line_right)
-				plot.addItem(line_left)
-			elif plot_to_show == "circles":
-				# Circle mode using largest_uncertainty as radius
-				radius = common.largest_uncertainty(each_point)
-				circle = pg.QtWidgets.QGraphicsEllipseItem(
-					x_mean - radius, y_mean - radius, 2 * radius, 2 * radius
-				)
-				circle.setPen(pg.mkPen("r"))
-				plot.addItem(circle)
+# ------------------------------------------------------------------------
 
-		director.set_focus_on_tab("Plot")
+	def _add_point_scatter_and_label(
+		self,
+		plot: pg.PlotItem,
+		each_point: int,
+		x_coords: np.ndarray,
+		y_coords: np.ndarray,
+		x_mean: float,
+		y_mean: float,
+	) -> None:
+		"""Add scatter plot and label for a single point."""
+		director = self._director
+		common = director.common
+		uncertainty_active = director.uncertainty_active
+		point_labels = uncertainty_active.point_labels
+		point_size = common.point_size
 
-		return graphics_layout_widget
+		point_label = pg.TextItem(
+			text=point_labels[each_point],
+			color="k",
+			anchor=(0.5, 0.5),
+			border="w",
+			fill=None,
+		)
+		point_label.setPos(x_mean, y_mean)
+		plot.addItem(point_label)
+		scatter = pg.ScatterPlotItem(
+			x=x_coords,
+			y=y_coords,
+			pen="r",
+			symbol="o",
+			size=point_size,
+			brush="r",
+		)
+		plot.addItem(scatter)
+
+# ------------------------------------------------------------------------
+
+	def _add_ellipse_visualization(
+		self, plot: pg.PlotItem, x_coords: np.ndarray, y_coords: np.ndarray
+	) -> None:
+		"""Add ellipse visualization to the plot."""
+		director = self._director
+		pyqtgraph_common = director.pyqtgraph_common
+
+		ellipse = pyqtgraph_common.confidence_ellipse_using_pyqtgraph(
+			x_coords, y_coords, n_std=2.0
+		)
+		plot.addItem(ellipse)
+
+# ------------------------------------------------------------------------
+
+	def _add_box_visualization(
+		self, plot: pg.PlotItem, each_point: int
+	) -> None:
+		"""Add box visualization to the plot."""
+		director = self._director
+		common = director.common
+
+		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
+		box_x = [x_max, x_min, x_min, x_max, x_max]
+		box_y = [y_max, y_max, y_min, y_min, y_max]
+		box_line = pg.PlotCurveItem(x=box_x, y=box_y, pen="r")
+		plot.addItem(box_line)
+
+# ------------------------------------------------------------------------
+
+	def _add_lines_visualization(
+		self,
+		plot: pg.PlotItem,
+		each_point: int,
+		x_mean: float,
+		y_mean: float,
+	) -> None:
+		"""Add cross lines visualization to the plot."""
+		director = self._director
+		common = director.common
+
+		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
+		line_up = pg.PlotCurveItem(
+			x=[x_mean, x_mean], y=[y_mean, y_max], pen="r"
+		)
+		line_down = pg.PlotCurveItem(
+			x=[x_mean, x_mean], y=[y_mean, y_min], pen="r"
+		)
+		line_right = pg.PlotCurveItem(
+			x=[x_mean, x_max], y=[y_mean, y_mean], pen="r"
+		)
+		line_left = pg.PlotCurveItem(
+			x=[x_mean, x_min], y=[y_mean, y_mean], pen="r"
+		)
+		plot.addItem(line_up)
+		plot.addItem(line_down)
+		plot.addItem(line_right)
+		plot.addItem(line_left)
+
+# ------------------------------------------------------------------------
+
+	def _add_circle_visualization(
+		self,
+		plot: pg.PlotItem,
+		each_point: int,
+		x_mean: float,
+		y_mean: float,
+	) -> None:
+		"""Add circle visualization to the plot."""
+		director = self._director
+		common = director.common
+
+		radius = common.largest_uncertainty(each_point)
+		circle = pg.QtWidgets.QGraphicsEllipseItem(
+			x_mean - radius, y_mean - radius, 2 * radius, 2 * radius
+		)
+		circle.setPen(pg.mkPen("r"))
+		plot.addItem(circle)
+
+# ------------------------------------------------------------------------
+
+	def _add_uncertainty_visualization(
+		self,
+		plot: pg.PlotItem,
+		plot_to_show: str,
+		each_point: int,
+		x_coords: np.ndarray,
+		y_coords: np.ndarray,
+		x_mean: float,
+		y_mean: float,
+	) -> None:
+		"""Add the appropriate uncertainty visualization based on plot mode."""
+		if plot_to_show == "ellipses":
+			self._add_ellipse_visualization(plot, x_coords, y_coords)
+		elif plot_to_show == "boxes":
+			self._add_box_visualization(plot, each_point)
+		elif plot_to_show == "lines":
+			self._add_lines_visualization(plot, each_point, x_mean, y_mean)
+		elif plot_to_show == "circles":
+			self._add_circle_visualization(plot, each_point, x_mean, y_mean)
 
 	# ------------------------------------------------------------------------
 

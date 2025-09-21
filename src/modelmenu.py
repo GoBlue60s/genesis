@@ -15,7 +15,8 @@ from scipy.spatial import procrustes
 from tabulate import tabulate
 
 if TYPE_CHECKING:
-	from sklearn.decomposition import PCA
+	from sklearn.decomposition import PCA, FactorAnalysis
+	from sklearn.preprocessing import StandardScaler
 	from director import Status
 	from common import Spaces
 
@@ -840,30 +841,23 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+
 		#
 		# Perform factor analysis - move to separate function
 		#
 		item_names = self._director.evaluations_active.item_names
-		# covar = self._director.configuration_active.covar
 		evaluations = self._director.evaluations_active.evaluations
+		nreferent = self._director.evaluations_active.nreferent
+		
 		dim_names = []
 		dim_labels = []
 
 		X = evaluations  # noqa: N806
 		scaler = StandardScaler()
-		print("\n\nscaler: \n", scaler)
 		scaler.fit(X)
-		print("\nScaler.fit(X): \n", scaler.fit(X))
 		StandardScaler()
-		print("\nStandardScaler(): \n", StandardScaler())
-		print("\nscaler.mean_: \n", scaler.mean_)
 		scaler.transform(X)
-		print("\nScaler.transform(X): ", scaler.transform(X))
 		#
-		# X, _ = load_digits(return_X_y=True)
-		# transformer = FactorAnalysis(
-		# 	n_components=2, svd_method="lapack", copy=True, rotation="varimax",
-		# 	random_state=0)
 		# Get number of components from user
 		n_components = self.command.get_components_to_extract_from_user(
 			title="Factor Analysis",
@@ -881,12 +875,7 @@ class FactorAnalysisMachineLearningCommand:
 			rotation="varimax",
 			random_state=0,
 		)
-		print("\n\tTransformer: ", transformer)
-		# x_fit = transformer.fit(X)
-		# print("\nX-fit: \n", x_fit)
 		X_transformed = transformer.fit_transform(X)  # noqa: N806
-		print("\nX_transformed.shape: ", X_transformed.shape)
-		# print("\ncomponents_\n", transformer.components_)
 		pd.set_option("display.max_columns", None)
 		pd.set_option("display.precision", 2)
 		pd.set_option("display.max_colwidth", 300)
@@ -896,80 +885,39 @@ class FactorAnalysisMachineLearningCommand:
 			columns=item_names,
 		)
 
-		# X_transformed.columns = transformer.get_feature_names_out() badddd
 		x_trans = pd.DataFrame(
 			X_transformed, columns=transformer.get_feature_names_out()
 		)
-		# x_trans = pd.DataFrame(
-		# 	X_transformed, columns=["Factor 1", "Factor 2"])
-		print("\nX_Trans: \n", x_trans)
 
-		print("\ntransformer.get_params(): \n", transformer.get_params())
-		print(
-			"\ntransformer.get_feature_names_out(): ",
-			transformer.get_feature_names_out(),
-		)
-		# dim_names = transformer.get_feature_names_out()
-		# dim_names = ["Factor 1", "Factor 2"]
-		#  print("Get_covariance: ", transformer.get_covariance())
 		covar = pd.DataFrame(
 			transformer.get_covariance(), columns=item_names, index=item_names
 		)
 
-		print("\nCovariance: \n", covar)
-		print("\nPrecision: ", transformer.get_precision())
-		print("\nScore: \n", transformer.score(X))
-		print("\nScore_samples: \n", transformer.score_samples(X))
-		print("\n\tComponents_: \n", transformer.components_)
-		print("\n\tn_features_in_: ", transformer.n_features_in_)
-		print("\n\tnoise_variance_: \n", transformer.noise_variance_)
-		print("\n\tmean_: \n", transformer.mean_)
 		x_new = pd.DataFrame(
 			transformer.transform(X),
 			columns=transformer.get_feature_names_out(),
 		)
-		# self._director.configuration_active.x_new = pd.DataFrame(
-		# 	transformer.transform(X),
-		# 	columns=["Factor 1", "Factor 2"])
-		print("\nX_new: \n", x_new)
 
 		transpose = components.transpose()
-		print("\nTranspose: \n", transpose)
 		trans = pd.DataFrame(transpose)
-		print(f"\nDEBUG -- in execute {trans=}\n")
 
 		ndim = len(trans.columns)
 		nitem = len(trans.index)
-		print(f"DEBUG -- {ndim=}")
-		print(f"DEBUG -- in FA machine learning execute {nitem=}")
 		range_dims = range(ndim)
-		print(f"\nDEBUG -- {range_dims=}")
 		range_items = range(nitem)
-		print(f"DEBUG -- {trans.columns=}")
-		print(f"DEBUG -- {trans.columns[0]=}")
 		for each_dim in range_dims:
-			# print(f"DEBUG -- {each_dim=}")
-			# dim_names.append(trans.columns[each_dim])
 			dim_names.append("Factor " + str(each_dim))
 			dim_labels.append("FA" + str(each_dim))
-		print(f"DEBUG -- in FA machine learning {item_names=}")
-		print(f"DEBUG -- in FA machine learning {range_items=}")
 
 		score_1_name = "Factor 1"
 		score_2_name = "Factor 2"
-		# self._director.configuration_active.first_label = "Fa1"
-		# self._director.configuration_active.second_label = "Fa2"
 
 		for each_point in range_items:
 			# print(f"DEBUG -- {each_point=}")
 			self._director.evaluations_active.item_labels.append(
 				self._director.evaluations_active.item_names[each_point][0:4]
 			)
-		# rivalry.rival_a.index = -1
-		# rivalry.rival_b.index = -1
 
-		# self._director.configuration_active.bisector.case = "Unknown"
-		# self._director.configuration_active.bisector.direction = "Unknown"
 		self._director.common.show_bisector = False
 		self._director.common.show_connector = False
 		self._director.configuration_active.distances.clear()
@@ -984,32 +932,15 @@ class FactorAnalysisMachineLearningCommand:
 		]
 		self._director.configuration_active.dim_labels = ["FA1", "FA2"]
 		scaler2 = StandardScaler()
-		print("\n\nscaler2: \n", scaler2)
 		scaler2.fit(trans)
-		print("\nScaler2.fit(X): \n", scaler2.fit(trans))
 		StandardScaler()
-		print("\nStandardScaler(): \n", StandardScaler())
-		print("\nscaler2.mean_: \n", scaler2.mean_)
 		new_trans = scaler2.transform(trans)
-		print("\nnew_trans: ", new_trans)
 		self._director.configuration_active.point_coords = pd.DataFrame(
 			new_trans
 		)
-		print(
-			"\nPoint_coords: \n",
-			self._director.configuration_active.point_coords,
-		)
 		#
-		print(
-			"DEBUG -- in FA machine learning after trans "
-			f"{self._director.evaluations_active.item_names=}"
-		)
 		self._director.evaluations_active.nitem = (
 			self._director.evaluations_active.nreferent
-		)
-		print(
-			"DEBUG -- in FA machine learning before inter point call "
-			f"{self._director.evaluations_active.item_names=}"
 		)
 		self._director.configuration_active.inter_point_distances()
 
@@ -1027,7 +958,6 @@ class FactorAnalysisMachineLearningCommand:
 			self._director.evaluations_active.item_labels
 		)
 		self._director.configuration_active.scores = x_new
-		# self._director.configuration_active.x_new
 
 		self._director.configuration_active.scores.reset_index(inplace=True)
 		self._director.configuration_active.scores.rename(
@@ -1070,14 +1000,8 @@ class FactorAnalysisMachineLearningCommand:
 			)
 		)
 		self._director.scores_active.score_1_name = score_1_name
-		# self._director.configuration_active.score_1_name
 		self._director.scores_active.score_2_name = score_2_name
-		# self._director.configuration_active.score_2_name
-		# potentially summarize here
 		self._director.scores_active.summarize_scores()
-
-		# self._director.configuration_active.dim_names =
-		# ["a one???", "a two???"]
 
 		self._director.common.set_axis_extremes_based_on_coordinates(
 			self._director.scores_active.scores.iloc[:, 1:]
@@ -1095,7 +1019,6 @@ class FactorAnalysisMachineLearningCommand:
 		
 		# Create DataFrames for sklearn results to match classic FA format
 		item_names = self._director.evaluations_active.item_names
-		nreferent = len(item_names)
 		
 		# Calculate proper eigenvalues from correlation matrix for
 		#  scree diagram
@@ -1143,29 +1066,38 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.configuration_active.\
 			transformer_noise_variance = transformer.noise_variance_
 
-		print(
-			"\nDEBUG -- in FA machine learning execute just before _display()"
+		# Call helper function to print all debug and output information
+		self._print_Factor_Analysis_M_L(
+			scaler,
+			X,
+			transformer,
+			X_transformed,
+			x_trans,
+			covar,
+			trans,
+			ndim,
+			nitem,
+			range_dims,
+			item_names,
+			range_items,
+			scaler2,
+			new_trans,
+			eigenvalues,
+			nreferent
 		)
 
-		# Print eigenvalues
-		print("\nEigenvalues:")
-		for i, eigenvalue in enumerate(eigenvalues[:nreferent]):
-			print(f"  Component {i+1}: {eigenvalue:.4f}")
-		
 		# Create scree diagram with proper eigenvalues
 		self._director.common.create_plot_for_plot_and_gallery_tabs("scree")
-		
+
 		self._display()
-		#  print??????????
-		print(
-			"\nDEBUG -- in FA machine learning execute just after _display()"
-		)
-		self._fill_configuration()
+
+		self._director.configuration_active.nreferent = nreferent
 		self._director.title_for_table_widget = \
 			"Factor analysis (Machine Learning)"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
+
 		self._director.configuration_active.dim_names = dim_names
 		self._director.configuration_active.dim_labels = dim_labels
 		self._director.configuration_active.covar = covar
@@ -1178,16 +1110,81 @@ class FactorAnalysisMachineLearningCommand:
 		#
 		# Display configuration with vectors from origin to each point
 		#
-		print("DEBUG -- at the end of FA machine learning execute")
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _fill_configuration(self) -> None:
-		self._director.configuration_active.nreferent = (
-			self._director.evaluations_active.nreferent
+	# def _fill_configuration(self) -> None:
+	# 	self._director.configuration_active.nreferent = (
+	# 		self._director.evaluations_active.nreferent
+	# 	)
+
+	# 	return
+
+	# ------------------------------------------------------------------------
+
+	def _print_Factor_Analysis_M_L(
+		self,
+		scaler: "StandardScaler",
+		X: np.ndarray,
+		transformer: "FactorAnalysis",
+		X_transformed: np.ndarray,
+		x_trans: pd.DataFrame,
+		covar: pd.DataFrame,
+		trans: pd.DataFrame,
+		ndim: int,
+		nitem: int,
+		range_dims: range,
+		item_names: list[str],
+		range_items: range,
+		scaler2: "StandardScaler",
+		new_trans: np.ndarray,
+		eigenvalues: np.ndarray,
+		nreferent: int
+	) -> None:
+		"""Print all Factor Analysis Machine Learning debug and
+		output information."""
+		from sklearn.preprocessing import StandardScaler
+		print("\n\nscaler: \n", scaler)
+		print("\nScaler.fit(X): \n", scaler.fit(X))
+		print("\nStandardScaler(): \n", StandardScaler())
+		print("\nscaler.mean_: \n", scaler.mean_)
+		print("\nScaler.transform(X): ", scaler.transform(X))
+		print("\n\tTransformer: ", transformer)
+		print("\nX_transformed.shape: ", X_transformed.shape)
+		print("\nX_Trans: \n", x_trans)
+		print("\ntransformer.get_params(): \n", transformer.get_params())
+		print(
+			"\ntransformer.get_feature_names_out(): ",
+			transformer.get_feature_names_out(),
 		)
+		print("\nCovariance: \n", covar)
+		print("\nPrecision: ", transformer.get_precision())
+		print("\nScore: \n", transformer.score(X))
+		print("\nScore_samples: \n", transformer.score_samples(X))
+		print("\n\tComponents_: \n", transformer.components_)
+		print("\n\tn_features_in_: ", transformer.n_features_in_)
+		print("\n\tnoise_variance_: \n", transformer.noise_variance_)
+		print("\n\tmean_: \n", transformer.mean_)
+		x_new = pd.DataFrame(
+			transformer.transform(X),
+			columns=transformer.get_feature_names_out(),
+		)
+		print("\nX_new: \n", x_new)
+		print("\nTranspose: \n", trans)
+		print("\n\nscaler2: \n", scaler2)
+		print("\nScaler2.fit(X): \n", scaler2.fit(trans))
+		print("\nStandardScaler(): \n", StandardScaler())
+		print("\nscaler2.mean_: \n", scaler2.mean_)
+		print("\nnew_trans: ", new_trans)
+		print(
+			"\nPoint_coords: \n",
+			self._director.configuration_active.point_coords,
+		)
+		print("\nEigenvalues:")
+		for i, eigenvalue in enumerate(eigenvalues[:nreferent]):
+			print(f"  Component {i+1}: {eigenvalue:.4f}")
 
 		return
 

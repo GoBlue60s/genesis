@@ -926,38 +926,25 @@ class StressContributionCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		worst_fit = self._calculate_and_sort_stress_contributions()
 		self._print_highest_stress_contributions(worst_fit)
-		self._director.configuration_active.print_the_configuration()
-
-		# Get the item using the common get_focal_item_from_user method
+		# self._director.configuration_active.print_the_configuration()
 		index = self.common.get_focal_item_from_user(
 			self._contributions_title,
 			self._contributions_label,
 			self._contributions_items)
-		peek(index)
-		peek(self._director.configuration_active.point_names[index])
-
 		stress_contribution_df = \
 			self._create_stress_contribution_df(index, worst_fit)
 		self._director.similarities_active.stress_contribution_df = \
 			stress_contribution_df
-
-		# Get the label based on the returned index
 		point_labels = self._director.configuration_active.point_labels
 		point_to_plot_label = point_labels[index]
-		peek(point_to_plot_label)
-		# Store the values with original names
 		self._point_to_plot_label = point_to_plot_label
 		self._point_to_plot_index = index
-		peek(self._point_to_plot_label)
-		peek(self._point_to_plot_index)
-
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
 			"stress_contribution")
 		point_names = self._director.configuration_active.point_names
 		self._director.title_for_table_widget = (
 			f"Stress contribution of "
 			f"{point_names[index]}")
-
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -971,14 +958,14 @@ class StressContributionCommand:
 		ranks_df["Absolute_Difference"] = abs(ranks_df["AB_Rank_Difference"])
 		ranks_df["Pct_of_Stress"] = ranks_df["Absolute_Difference"]
 		total_differences = np.sum(ranks_df["Pct_of_Stress"])
-		print(
-			f"\nDEBUG -- in middle of _calculate_and_sort..."
-			f"\n{total_differences=}"
-		)
+		# print(
+		# 	f"\nDEBUG -- in middle of _calculate_and_sort..."
+		# 	f"\n{total_differences=}"
+		# )
 		ranks_df["Pct_of_Stress"] = (
 			ranks_df["Pct_of_Stress"] / total_differences
 		) * 100
-		print(f"\n\nDEBUG -- nxt...\n{ranks_df['Pct_of_Stress'].sum()=}")
+		# print(f"\n\nDEBUG -- nxt...\n{ranks_df['Pct_of_Stress'].sum()=}")
 		sorted_dyads = ranks_df.sort_values(
 			by="Absolute_Difference", ascending=False
 		)
@@ -994,10 +981,10 @@ class StressContributionCommand:
 
 		self._director.similarities_active.ranks_df = ranks_df
 
-		print(
-			"\nDEBUG -- at bottom of _calculate_and_sort_stress_contributions"
-		)
-		print(f"\nDEBUG -- worst_fit:\n{worst_fit}")
+		# print(
+		# 	"\nDEBUG -- at bottom of _calculate_and_sort_stress_contributions"
+		# )
+		# print(f"\nDEBUG -- worst_fit:\n{worst_fit}")
 
 		return worst_fit
 
@@ -1100,5 +1087,5 @@ class StressContributionCommand:
 		self, worst_fit: pd.DataFrame
 	) -> None:
 		print("\n\tThe following pairs contribute the most to Stress: \n")
-		print(worst_fit.head(n=20))
+		print(worst_fit.head(n=20).to_string(index=False))
 		return

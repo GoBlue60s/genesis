@@ -73,12 +73,15 @@ This project follows specific coding standards defined in `.github/copilot-instr
 - **Line length**: 79 characters maximum
 - **Quotes**: Double quotes for string literals
 - **Imports**: Standard library, third-party, then local imports
+- **Formatting**: Never use Ruff to reformat.
 
 ### Naming Conventions
 
 - **Functions/variables**: snake_case
 - **Classes**: PascalCase  
 - **Constants**: UPPER_CASE (see `constants.py`)
+- **INDEXES**: Use decriptive names such as each_point, each_name,
+normally derived from the range instead of i, or idx
 - Avoid single-letter variable names
 
 ### Code Structure
@@ -87,6 +90,7 @@ This project follows specific coding standards defined in `.github/copilot-instr
 - Use type hints (imported from `__future__ import annotations`)
 - Include docstrings for classes and functions
 - Use specific exception handling with meaningful error messages
+- Helper functions should be placed AFTER the functions they help
 
 ### Critical Code Quality Requirements
 

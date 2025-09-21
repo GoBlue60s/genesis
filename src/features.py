@@ -87,6 +87,7 @@ class ConfigurationFeature:
 
 		self.item_labels: list[str] = []
 		self.item_names: list[str] = []
+		self.eigen: pd.DataFrame = pd.DataFrame()
 
 		return
 

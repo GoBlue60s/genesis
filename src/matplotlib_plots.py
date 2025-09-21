@@ -1690,19 +1690,13 @@ class MatplotlibMethods:
 		# point = self._point_to_plot_label
 		matplotlib_common = self._director.matplotlib_common
 		point_label = self._director.current_command._point_to_plot_label
-		peek(f"in _plot label {point_label}")
 		point_index = self._director.current_command._point_to_plot_index
-		peek(f"in _plot index {self._director.current_command._point_to_plot_index}")
-		# point_index = self._director.common.point_to_plot_index
-		peek(f"in _plot label {point_label} index {point_index}")
 		ranks_df = self._director.similarities_active.ranks_df
 		item_names = self._director.similarities_active.item_names
 		range_similarities = (
 			self._director.similarities_active.range_similarities
 		)
 		ndyad = self._director.similarities_active.ndyad
-		# point_index = self._director.current_command._point_to_plot_index
-
 		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
 			"Stress contribution of " + item_names[point_index]
 		)

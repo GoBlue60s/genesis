@@ -1444,57 +1444,50 @@ class Spaces:
 		values: list[float],
 		width: int,
 	) -> None:
-		"""This - is used by commands to print values in a
-		lower triangular format. Within print_lower_triangle the elements
-		of the matrix are considered values regardless of whether the
-		calling routine called them correlations, similarities or even
-		dissimilarities. Analogously within this function it refers to
-		labels and names rather than item_labels and item_names. And
-		lastly it uses nelements rather than npoints.
+		"""Print values in lower triangular matrix format.
 
+		This method prints a lower triangular matrix with row/column labels
+		and item names. Used by commands to display correlations, similarities,
+		dissimilarities, and distances.
+
+		Args:
+			decimals: Number of decimal places for values
+			labels: Short labels (up to 4 chars) for items
+			names: Full names for items
+			nelements: Number of items/points in the matrix
+			values: Lower triangular matrix values as list of lists
+			width: Field width for formatting numbers
 		"""
+		if not labels or not names or not values or nelements <= 0:
+			return
 
-		#
-		# 	Define needed variables
-		#
-		one_less = int(width - 1)
-		#
-		# Print the labels and names of points in the lower triangle
-		#
-		# print("\n\tItems:")
-		for index, each_item in enumerate(labels):
-			print("\t\t", each_item, "\t", names[index])
-		#
-		# Print column headings using the labels of the points
-		#
-		formatted_labels = ""
-		range_labels = range(len(labels))
-		for each_label in range_labels:
-			formatted_labels = formatted_labels + "{:>{width}}".format(
-				labels[each_label], width=width
+		label_indent = "  "
+		name_separator = "\t"
+
+		# Print items with their labels and names
+		for label, name in zip(labels, names, strict=True):
+			print(f"\t\t{label}{name_separator}{name}")
+
+		# Calculate spacing to align headers with data columns
+		# Account for label_indent (2 spaces) + max label width + 1 space
+		max_label_width = max(len(label) for label in labels)
+		header_spacing = len(label_indent) + max_label_width + 1
+
+		# Format and print column headers
+		header_line = "".join(f"{label:>{width}}" for label in labels)
+		print(f"\n{' ' * header_spacing}{header_line}")
+
+		# Print first row (just the label, no values)
+		print(f"{label_indent}{labels[0]:<{max_label_width + 1}}")
+
+		# Print remaining rows with values
+		for row_idx in range(1, nelements):
+			row_values = values[row_idx - 1]
+			formatted_values = "".join(
+				f"{value:{width}.{decimals}f}" for value in row_values
 			)
-		print("\n", (one_less * " "), formatted_labels)
-		#
-		# Print line with just the label of the first item
-		#
-		an_item = 0
-		print("  ", labels[an_item], "   -----")
-		#
-		# Assemble a line with the values for all the points below this point
-		# Print a line for each of the remaining points in the lower triangle
-		#
-		npoints = range(1, nelements)
-		for each_point in npoints:
-			curr_values = values[each_point - 1]
-			formatted_values = ""
-			for value in curr_values:
-				formatted_values = (
-					formatted_values
-					+ "{:{width}.{decimals}f}".format(
-						value, width=width, decimals=decimals
-					)
-				)
-			print("  ", labels[each_point], formatted_values)
+			print(f"{label_indent}{labels[row_idx]:<{max_label_width + 1}}{formatted_values}")
+
 		return
 
 		# --------------------------------------------------------------------
