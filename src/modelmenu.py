@@ -580,10 +580,14 @@ class FactorAnalysisCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		ext_fact = self.common.get_components_to_extract_from_user(
+		director = self._director
+		common = self.common
+
+		configuration_active = director.configuration_active
+		director.record_command_as_selected_and_in_process()
+		director.optionally_explain_what_command_does()
+		director.dependency_checker.detect_dependency_problems()
+		ext_fact = common.get_components_to_extract_from_user(
 			self._title,
 			self._label,
 			self._min_allowed,
@@ -591,15 +595,15 @@ class FactorAnalysisCommand:
 			self._an_integer,
 			self._default,
 		)
-		self._director.configuration_active.ndim = int(ext_fact)
+		configuration_active.ndim = int(ext_fact)
 		self._factors_and_scores()
 		self._director.common.create_plot_for_plot_and_gallery_tabs("scree")
 		self._create_factor_analysis_table()
 		self._print_factor_analysis_results()
 		self._fill_configuration()
-		self._director.title_for_table_widget = "Factor analysis"
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
+		director.title_for_table_widget = "Factor analysis"
+		director.create_widgets_for_output_and_log_tabs()
+		director.record_command_as_successfully_completed()
 		return
 
 	# ------------------------------------------------------------------------
@@ -609,6 +613,9 @@ class FactorAnalysisCommand:
 		nreferent = self._director.evaluations_active.nreferent
 		evaluations = self._director.evaluations_active.evaluations
 		item_names = self._director.evaluations_active.item_names
+		configuration_active = self._director.configuration_active
+		scores_active = self._director.scores_active
+		evaluations_active = self._director.evaluations_active
 
 		score_1_name = "Factor 1"
 		score_2_name = "Factor 2"
@@ -627,24 +634,10 @@ class FactorAnalysisCommand:
 			dim_labels.append("FA" + str(each_dim + 1))
 		range_items = range(nreferent)
 		range_points = range(nreferent)
-		# print(f"DEBUG -- in FA classic {range_points=}")
-		# print(f"DEBUG -- {dim_names=} \n{item_names=}")
-		# print(f"DEBUG -- just before fa.loadings {nreferent=}")
-		# print(
-		# 	"DEBUG -- in FA classic also just before fa.loadings"
-		# 	f" {range_items=}"
-		# )
 		the_loadings = fa.loadings_
-		# print(
-		# 	"DEBUG -- in FA classic also just after fa.loadings"
-		# 	f" {the_loadings=}"
-		# )
-		# print(f"DEBUG -- {dim_names=} \n{item_names=}")
 		loadings = pd.DataFrame(
 			the_loadings, columns=dim_names, index=item_names
 		)
-		# print(f"DEBUG -- in FA classic just after loadings {range_items=}")
-
 		point_coords = pd.DataFrame(
 			loadings, columns=dim_names, index=item_names
 		)
@@ -653,10 +646,7 @@ class FactorAnalysisCommand:
 		ev, v = fa.get_eigenvalues()
 
 		eigen = pd.DataFrame(data=ev, columns=["Eigenvalue"])
-		# print(f"DEBUG in factors_and_scores -- {eigen=}")
-
 		eigen_common = pd.DataFrame(data=v, columns=["Eigenvalue"])
-		# print(f"DEBUG in factors_and_scores -- {eigen_common=}")
 		get_commonalities = fa.get_communalities()
 		commonalities = pd.DataFrame(
 			data=get_commonalities, columns=["Commonality"], index=item_names
@@ -676,58 +666,38 @@ class FactorAnalysisCommand:
 		score_1 = scores[score_1_name]
 		score_2 = scores[score_2_name]
 
-		self._director.configuration_active.range_dims = range_dims
-		self._director.configuration_active.point_coords = point_coords
-		self._director.configuration_active.dim_names = dim_names
-		self._director.configuration_active.eigen = eigen
-		self._director.configuration_active.eigen_common = eigen_common
-		self._director.configuration_active.commonalities = commonalities
-		self._director.configuration_active.factor_variance = factor_variance
-		self._director.configuration_active.uniquenesses = uniquenesses
-		self._director.evaluations_active.range_items = range_items
-		self._director.evaluations_active.range_points = range_points
-		self._director.configuration_active.fa = fa
-		self._director.configuration_active.loadings = loadings
+		configuration_active.range_dims = range_dims
+		configuration_active.point_coords = point_coords
+		configuration_active.dim_names = dim_names
+		configuration_active.eigen = eigen
+		configuration_active.eigen_common = eigen_common
+		configuration_active.commonalities = commonalities
+		configuration_active.factor_variance = factor_variance
+		configuration_active.uniquenesses = uniquenesses
+		configuration_active.range_items = range_items
+		configuration_active.range_points = range_points
+		configuration_active.fa = fa
+		configuration_active.loadings = loadings
 		# potentially move summarize scores to separate function
 
-		self._director.configuration_active.npoint = (
-			self._director.evaluations_active.nreferent
-		)
-		self._director.configuration_active.nreferent = (
-			self._director.evaluations_active.nreferent
-		)
-		self._director.configuration_active.point_names = (
-			self._director.evaluations_active.item_names
-		)
-		self._director.configuration_active.point_labels = (
-			self._director.evaluations_active.item_labels
-		)
-		self._director.configuration_active.range_points = (
-			self._director.evaluations_active.range_items
-		)
-		self._director.configuration_active.inter_point_distances()
-		self._director.scores_active.scores = scores
-		self._director.scores_active.score_1 = score_1
-		self._director.scores_active.score_2 = score_2
-		self._director.scores_active.nscores = (
-			self._director.configuration_active.ndim
-		)
-		self._director.scores_active.nscored_individ = (
-			self._director.evaluations_active.nevaluators
-		)
-		self._director.scores_active.nscored_items = (
-			self._director.configuration_active.npoint
-		)
-		self._director.scores_active.dim_names = (
-			self._director.configuration_active.dim_names
-		)
-		self._director.scores_active.dim_labels = (
-			self._director.configuration_active.dim_labels
-		)
-		self._director.scores_active.score_1_name = score_1_name
-		self._director.scores_active.score_2_name = score_2_name
-		self._director.scores_active.hor_axis_name = score_1_name
-		self._director.scores_active.vert_axis_name = score_2_name
+		configuration_active.npoint = evaluations_active.nreferent
+		configuration_active.nreferent = evaluations_active.nreferent
+		configuration_active.point_names = evaluations_active.item_names
+		configuration_active.point_labels = evaluations_active.item_labels
+		configuration_active.range_points = evaluations_active.range_items
+		configuration_active.inter_point_distances()
+		scores_active.scores = scores
+		scores_active.score_1 = score_1
+		scores_active.score_2 = score_2
+		scores_active.nscores = configuration_active.ndim
+		scores_active.nscored_individ = evaluations_active.nevaluators
+		scores_active.nscored_items = configuration_active.npoint
+		scores_active.dim_names = configuration_active.dim_names
+		scores_active.dim_labels = configuration_active.dim_labels
+		scores_active.score_1_name = score_1_name
+		scores_active.score_2_name = score_2_name
+		scores_active.hor_axis_name = score_1_name
+		scores_active.vert_axis_name = score_2_name
 
 		return
 
@@ -1126,9 +1096,9 @@ class FactorAnalysisMachineLearningCommand:
 
 	def _print_Factor_Analysis_M_L(
 		self,
-		scaler: "StandardScaler",
+		scaler: StandardScaler,
 		X: np.ndarray,
-		transformer: "FactorAnalysis",
+		transformer: FactorAnalysis,
 		X_transformed: np.ndarray,
 		x_trans: pd.DataFrame,
 		covar: pd.DataFrame,

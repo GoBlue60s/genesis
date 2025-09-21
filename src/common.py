@@ -970,16 +970,31 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def los(self, evaluations: pd.DataFrame) -> SimilaritiesFeature:
-		# peek("\nAt top of los in common"
-		# 	f"\n evaluations.evaluations = {evaluations.evaluations}")
+		"""Line of sight analysis to extract similarities from evaluations."""
+		line_of_sight = self._initialize_similarities_feature(evaluations)
+		df = self._apply_reflection_if_needed(evaluations.evaluations)
+		sums_s_star, diffs_d_star = self._calculate_sums_and_diffs(
+			df, line_of_sight.nreferent
+		)
+		ordered = self._create_ranked_data(
+			sums_s_star, diffs_d_star, line_of_sight
+		)
+		best_ranking = self._find_best_ranking(ordered, evaluations)
+		self._build_final_similarities(line_of_sight, best_ranking)
 
+		return line_of_sight
+
+	def _initialize_similarities_feature(
+		self, evaluations: pd.DataFrame
+	) -> SimilaritiesFeature:
+		"""Initialize and configure a SimilaritiesFeature object."""
 		from features import SimilaritiesFeature  # noqa: PLC0415
 
 		line_of_sight = SimilaritiesFeature(self._director)
 		line_of_sight.nreferent = 0
 		line_of_sight.value_type = "dissimilarities"
 
-		reflect = "Yes"
+		# Initialize empty data structures
 		line_of_sight.item_names = []
 		line_of_sight.item_labels = []
 		line_of_sight.similarities = []
@@ -988,45 +1003,47 @@ class Spaces:
 		line_of_sight.similarities_as_square = []
 		line_of_sight.similarities_as_dataframe = pd.DataFrame()
 		line_of_sight.sorted_similarities = {}
-
 		line_of_sight.a_item_label = []
 		line_of_sight.b_item_label = []
 		line_of_sight.a_item_name = []
 		line_of_sight.b_item_name = []
-		best_ranking = []
-		sums_s_star = pd.DataFrame()
-		diffs_d_star = pd.DataFrame()
-		cum_b_hat = pd.DataFrame()
-		df = pd.DataFrame()
+
+		# Set up dimensions and item data
 		df_orig = evaluations.evaluations
-
 		(line_of_sight.n_individ, line_of_sight.nreferent) = df_orig.shape
-
 		line_of_sight.nitem = line_of_sight.nreferent
-		# line_of_sight.npoints = evaluations.nreferent
 		line_of_sight.npoints = line_of_sight.nreferent
-		# line_of_sight.range_items = range(evaluations.nreferent)
 		line_of_sight.range_items = range(line_of_sight.nreferent)
 		line_of_sight.item_names = df_orig.columns.tolist()
-
-		# line_of_sight.range_similarities = (
-		# 	range(len(evaluations.item_names)))
 		line_of_sight.range_similarities = range(len(line_of_sight.item_names))
-		#
+
+		# Create item labels (first 4 characters)
 		for each_item in line_of_sight.range_similarities:
 			line_of_sight.item_labels.append(
 				line_of_sight.item_names[each_item][0:4]
 			)
-			# evaluations.item_names[each_item][0:4])
-		if reflect == "Yes":
-			# col_max = pd.DataFrame.max(df_orig)
 
-			df = df_orig.apply(lambda x: x.max() - x)
-		# n_items_less_one = evaluations.nreferent - 1
-		n_items_less_one = line_of_sight.nreferent - 1
+		return line_of_sight
+
+	def _apply_reflection_if_needed(
+		self, df_orig: pd.DataFrame
+	) -> pd.DataFrame:
+		"""Apply reflection transformation to the data if needed."""
+		reflect = "Yes"
+		if reflect == "Yes":
+			return df_orig.apply(lambda x: x.max() - x)
+		return df_orig
+
+	def _calculate_sums_and_diffs(
+		self, df: pd.DataFrame, nreferent: int
+	) -> tuple[pd.DataFrame, pd.DataFrame]:
+		"""Calculate sum and difference matrices for all item pairs."""
+		sums_s_star = pd.DataFrame()
+		diffs_d_star = pd.DataFrame()
+		n_items_less_one = nreferent - 1
+
 		for an_item in range(n_items_less_one):
-			# to_pts = range(an_item + 1, evaluations.nreferent)
-			to_pts = range(an_item + 1, line_of_sight.nreferent)
+			to_pts = range(an_item + 1, nreferent)
 			for another_item in to_pts:
 				new_name = str(
 					df.columns[an_item] + "_" + df.columns[another_item]
@@ -1039,41 +1056,67 @@ class Spaces:
 					df[str(df.columns[an_item])]
 					- df[str(df.columns[another_item])]
 				)
-		# line_of_sight.n_pairs = (
-		# 	int(evaluations.nreferent * n_items_less_one / 2))
+
+		return sums_s_star, diffs_d_star
+
+	def _create_ranked_data(
+		self,
+		sums_s_star: pd.DataFrame,
+		diffs_d_star: pd.DataFrame,
+		line_of_sight: SimilaritiesFeature,
+	) -> pd.DataFrame:
+		"""Create ranked data from sums and differences."""
+		n_items_less_one = line_of_sight.nreferent - 1
 		line_of_sight.n_pairs = int(
 			line_of_sight.nreferent * n_items_less_one / 2
 		)
 		line_of_sight.range_similarities = range(line_of_sight.n_pairs)
-		sumsort_s = sums_s_star
-		diffsort_d = diffs_d_star
 
+		sumsort_s = sums_s_star.copy()
+		diffsort_d = diffs_d_star.copy()
+
+		# Sort columns in each dataframe
 		for each_row in line_of_sight.range_similarities:
 			a_col = list(sums_s_star[str(sums_s_star.columns[each_row])])
 			a_col.sort()
 			sumsort_s[str(sums_s_star.columns[each_row])] = a_col
+
 			a_col = list(diffs_d_star[str(diffs_d_star.columns[each_row])])
 			a_col.sort(reverse=True)
 			diffsort_d[str(diffs_d_star.columns[each_row])] = a_col
+
+		# Combine and create cumulative sums
 		combo_b = sumsort_s + diffsort_d
+		cum_b_hat = pd.DataFrame()
 		for each_pair in line_of_sight.range_similarities:
 			cum_b_hat[str(diffs_d_star.columns[each_pair])] = combo_b[
 				str(diffs_d_star.columns[each_pair])
 			].cumsum(axis=0)
-		ordered = cum_b_hat.rank(axis=1, method="average")
+
+		return cum_b_hat.rank(axis=1, method="average")
+
+	def _find_best_ranking(
+		self, ordered: pd.DataFrame, evaluations: pd.DataFrame
+	) -> pd.Series:
+		"""Find the best ranking through optimization."""
+		# Calculate iteration control parameter (unused but preserved)
 		if evaluations.nevaluators < MAXIMUM_NUMBER_OF_EVALUATORS:
-			itcon = 4
+			_itcon = 4
 		else:
-			itcon = int(evaluations.nevaluators / 150)
+			_itcon = int(evaluations.nevaluators / 150)
+
 		maxadeq = 0
-		# range_rows = range(1, self._director.evaluations_active.nevaluators)
+		best_ranking = pd.Series()
+		loc_best = 0
 		range_rows = range(1, evaluations.nevaluators)
+
 		for each_row in range_rows:
 			rho = spearmanr(
 				ordered.iloc[each_row], ordered.iloc[each_row - 1]
 			)[0]
 			unique_vals = ordered.iloc[each_row].nunique()
-			discrim = (unique_vals - 1) / line_of_sight.n_pairs
+			n_pairs = len(ordered.columns)
+			discrim = (unique_vals - 1) / n_pairs
 			dense = (
 				evaluations.nevaluators - each_row
 			) / evaluations.nevaluators
@@ -1085,16 +1128,18 @@ class Spaces:
 				loc_best = each_row
 			elif maxadeq >= dense:
 				print("\nMaxadeq value greater than dense value")
-			# return conf, dyad, flags, people			break
 			elif (each_row - loc_best) == EXHAUSTED_EVALUATIONS:
-				# print("\nMaxadeq has stabilized")
 				break
-		#
-		# Create similarities as a list and a dictionary keyed by a dyad
+
+		return best_ranking
+
+	def _build_final_similarities(
+		self, line_of_sight: SimilaritiesFeature, best_ranking: pd.Series
+	) -> None:
+		"""Build the final similarities structure from the best ranking."""
 		line_of_sight.similarities_as_list = list(best_ranking)
-		#
+
 		# Create rows and columns from similarities_as_list
-		# for each_row in range(evaluations.nreferent - 1):
 		for each_row in range(line_of_sight.nreferent - 1):
 			row = []
 			row.append(line_of_sight.similarities_as_list[each_row])
@@ -1104,10 +1149,8 @@ class Spaces:
 				indexer = last_index + line_of_sight.nreferent - each_col - 2
 				last_index = indexer
 				row.append(line_of_sight.similarities_as_list[indexer])
-			#
-			line_of_sight.similarities.append(row)
 
-		return line_of_sight
+			line_of_sight.similarities.append(row)
 
 	# ------------------------------------------------------------------------
 
@@ -1477,16 +1520,26 @@ class Spaces:
 		header_line = "".join(f"{label:>{width}}" for label in labels)
 		print(f"\n{' ' * header_spacing}{header_line}")
 
-		# Print first row (just the label, no values)
-		print(f"{label_indent}{labels[0]:<{max_label_width + 1}}")
+		# Print first row (just the label with diagonal "----")
+		diagonal_placeholder = "----".rjust(width)
+		first_row = (
+			f"{label_indent}{labels[0]:<{max_label_width + 1}}"
+			f"{diagonal_placeholder}"
+		)
+		print(first_row)
 
-		# Print remaining rows with values
+		# Print remaining rows with values and diagonal "----"
 		for row_idx in range(1, nelements):
 			row_values = values[row_idx - 1]
 			formatted_values = "".join(
 				f"{value:{width}.{decimals}f}" for value in row_values
 			)
-			print(f"{label_indent}{labels[row_idx]:<{max_label_width + 1}}{formatted_values}")
+			diagonal_placeholder = "----".rjust(width)
+			row_output = (
+				f"{label_indent}{labels[row_idx]:<{max_label_width + 1}}"
+				f"{formatted_values}{diagonal_placeholder}"
+			)
+			print(row_output)
 
 		return
 

@@ -7,7 +7,6 @@ from pathlib import Path
 # from dataclasses import dataclass
 
 import pandas as pd
-import peek
 import pyqtgraph as pg
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
@@ -1288,109 +1287,125 @@ class Status(QMainWindow):
 
 	def add_submenus(self, menu: QMenu, submenus: dict) -> None:
 		"""Add submenus and menu items recursively"""
-
 		self.add_menus_initialize_variables()
-
-		icon_directory = "Spaces_icons"
-		valid_keys = self.valid_keys
-		needs_separator = self.needs_separator
-
 
 		for submenu_name, action_or_submenu in submenus.items():
 			if isinstance(action_or_submenu, dict):
-				# Check for invalid dictionary keys
-				for key in action_or_submenu:
-					if key not in valid_keys:
-						raise SpacesError(
-							self.menu_dict_key_error_title,
-							self.menu_dict_key_error_message,
-						)
-
-				if "command" in action_or_submenu:  # Menu item with properties
-					# Create action
-					if action_or_submenu.get("icon"):
-						action = QAction(
-							QIcon(
-								str(
-									Path(self.basedir)
-									/ icon_directory
-									/ action_or_submenu["icon"]
-								)
-							),
-							submenu_name,
-							self,
-						)
-					else:
-						action = QAction(submenu_name, self)
-
-					if "tooltip" in action_or_submenu:
-						action.setToolTip(action_or_submenu["tooltip"])
-
-					# Handle other properties
-					if action_or_submenu.get("enabled") is False:
-						# Only w False
-						action.setEnabled(False)
-					if "shortcut" in action_or_submenu:
-						action.setShortcut(action_or_submenu["shortcut"])
-
-					action.triggered.connect(
-						self.create_lambda_with_toggle(
-							action_or_submenu["command"]
-						)
-					)
-					menu.addAction(action)
-
-				else:  # This is a submenu
-					submenu = menu.addMenu(submenu_name)
-					submenu.setToolTipsVisible(True)
-					if "icon" in action_or_submenu:
-						if action_or_submenu["icon"] is not None:
-							submenu.setIcon(
-								QIcon(
-									str(
-										Path(self.basedir)
-										/ icon_directory
-										/ action_or_submenu["icon"]
-									)
-								)
-							)
-						self.add_submenus(submenu, action_or_submenu["items"])
-					if submenu_name == "Multi-Dimensional Scaling":
-						menu.addSeparator()
-
-			else:  # Simple [icon, command] menu item
-				if (
-					len(action_or_submenu)
-					== TEST_IF_ACTION_OR_SUBMENU_HAS_THREE_ITEMS
-				):
-					icon, next_command, tooltip = action_or_submenu
-				else:
-					icon, next_command = action_or_submenu
-					tooltip = None
-				if icon:
-					action = QAction(
-						QIcon(str(Path(self.basedir) / icon_directory / icon)),
-						submenu_name,
-						self,
+				self._validate_menu_dict_keys(action_or_submenu)
+				if "command" in action_or_submenu:
+					self._create_menu_action_from_dict(
+						menu, submenu_name, action_or_submenu
 					)
 				else:
-					action = QAction(submenu_name, self)
-				if tooltip:
-					action.setToolTip(tooltip)
-					action.setWhatsThis(tooltip)
-
-				if submenu_name == "Verbose":
-					action.setCheckable(True)
-					self.help_verbosity_action = action
-					action.triggered.connect(self.toggle_verbosity)
-				else:
-					action.triggered.connect(
-						self.create_lambda_with_toggle(next_command)
+					self._create_submenu_from_dict(
+						menu, submenu_name, action_or_submenu
 					)
+			else:
+				self._create_simple_menu_action(
+					menu, submenu_name, action_or_submenu
+				)
 
-				menu.addAction(action)
-				if next_command in needs_separator:
-					menu.addSeparator()
+	def _validate_menu_dict_keys(self, action_or_submenu: dict) -> None:
+		"""Validate that all keys in the menu dictionary are allowed"""
+		for key in action_or_submenu:
+			if key not in self.valid_keys:
+				raise SpacesError(
+					self.menu_dict_key_error_title,
+					self.menu_dict_key_error_message,
+				)
+
+	def _create_icon_path(self, icon_name: str) -> str:
+		"""Create the full path for an icon file"""
+		return str(Path(self.basedir) / "Spaces_icons" / icon_name)
+
+	def _create_action_with_icon(
+		self, name: str, icon_name: str | None
+	) -> QAction:
+		"""Create a QAction with or without an icon"""
+		if icon_name:
+			return QAction(
+				QIcon(self._create_icon_path(icon_name)), name, self
+			)
+		return QAction(name, self)
+
+	def _configure_action_properties(
+		self, action: QAction, properties: dict
+	) -> None:
+		"""Configure action properties like tooltip, enabled state, etc."""
+		if "tooltip" in properties:
+			action.setToolTip(properties["tooltip"])
+
+		if properties.get("enabled") is False:
+			action.setEnabled(False)
+
+		if "shortcut" in properties:
+			action.setShortcut(properties["shortcut"])
+
+	def _create_menu_action_from_dict(
+		self, menu: QMenu, name: str, properties: dict
+	) -> None:
+		"""Create a menu action from a dictionary of properties"""
+		action = self._create_action_with_icon(name, properties.get("icon"))
+		self._configure_action_properties(action, properties)
+
+		action.triggered.connect(
+			self.create_lambda_with_toggle(properties["command"])
+		)
+		menu.addAction(action)
+
+	def _create_submenu_from_dict(
+		self, menu: QMenu, name: str, properties: dict
+	) -> None:
+		"""Create a submenu from a dictionary of properties"""
+		submenu = menu.addMenu(name)
+		submenu.setToolTipsVisible(True)
+
+		if properties.get("icon"):
+			submenu.setIcon(QIcon(self._create_icon_path(properties["icon"])))
+
+		self.add_submenus(submenu, properties["items"])
+
+		# Special case for Multi-Dimensional Scaling submenu
+		if name == "Multi-Dimensional Scaling":
+			menu.addSeparator()
+
+	def _create_simple_menu_action(
+		self, menu: QMenu, name: str, action_data: list
+	) -> None:
+		"""Create a simple menu action from a list [icon, command] or
+		[icon, command, tooltip]"""
+		icon, command, tooltip = self._parse_simple_action_data(action_data)
+
+		action = self._create_action_with_icon(name, icon)
+
+		if tooltip:
+			action.setToolTip(tooltip)
+			action.setWhatsThis(tooltip)
+
+		self._connect_action_command(action, name, command)
+		menu.addAction(action)
+
+		if command in self.needs_separator:
+			menu.addSeparator()
+
+	def _parse_simple_action_data(
+		self, action_data: list
+	) -> tuple[str | None, str, str | None]:
+		"""Parse simple action data and return icon, command, and tooltip"""
+		if len(action_data) == TEST_IF_ACTION_OR_SUBMENU_HAS_THREE_ITEMS:
+			return action_data[0], action_data[1], action_data[2]
+		return action_data[0], action_data[1], None
+
+	def _connect_action_command(
+		self, action: QAction, name: str, command: str
+	) -> None:
+		"""Connect the action to the appropriate command handler"""
+		if name == "Verbose":
+			action.setCheckable(True)
+			self.help_verbosity_action = action
+			action.triggered.connect(self.toggle_verbosity)
+		else:
+			action.triggered.connect(self.create_lambda_with_toggle(command))
 
 	def create_lambda_with_toggle(self, next_command: str) -> Callable:
 		return lambda: self.traffic_control(next_command)

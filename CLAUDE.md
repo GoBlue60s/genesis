@@ -99,6 +99,16 @@ normally derived from the range instead of i, or idx
 - **Proper Parameter Types**: Use specific types like `pd.DataFrame` instead of generic `object` or missing annotations
 - **Import Consistency**: Follow the existing import pattern with `from __future__ import annotations`
 
+### Ruff Warnings and Code Quality
+
+- **Address ALL ruff warnings**: Never ignore complexity warnings (C901, C902) but may ignore too many arguments warnings (PLR0913)
+- **Function Complexity**: If ruff flags complexity issues, refactor by:
+  - Breaking large functions into smaller helper functions
+  - Extracting complex logic into separate methods
+  - Reducing nested conditionals and loops
+- **Statement Count**: Keep functions under the complexity threshold by splitting functionality
+- **Refactoring Priority**: Always refactor code that triggers complexity warnings before considering the task complete
+
 ## Dependencies
 
 Key external dependencies include:

@@ -440,7 +440,7 @@ class LineOfSightCommand:
 			f" items"
 		)
 		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"similarities"
+			"heatmap_simi"
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")

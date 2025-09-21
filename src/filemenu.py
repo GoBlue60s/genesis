@@ -1,4 +1,6 @@
 # Standard library imports
+from __future__ import annotations
+
 import copy
 import sys
 from pathlib import Path
@@ -32,7 +34,10 @@ from experimental import Item, ItemFrame
 from common import Spaces
 from director import Status
 
-from typing import TextIO
+from typing import TYPE_CHECKING, TextIO
+
+if TYPE_CHECKING:
+	from modelmenu import UncertaintyAnalysis
 from constants import (
 	# MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 	ITEM_LABEL_FIRST_COLUMN,
@@ -2113,101 +2118,138 @@ class OpenSampleSolutionsCommand:
 			file_name: Path to the input file
 		"""
 		uncertainty_active = self._director.uncertainty_active
-
 		file_path = Path(file_name)
+
 		with file_path.open(encoding="utf-8") as f:
-			# Line 1: File type identifier
-			file_type = f.readline().strip()
-			if file_type != "Solutions":
-				error_title = "Invalid File Type"
-				error_msg = (
-					"Expecting Solutions type file but got "
-					f"{file_type} type file instead."
-				)
-				raise ProblemReadingFileError(error_title, error_msg)
-
-			# Line 2: Basic parameters (I4 format)
-			parameters_line = f.readline()
-			ndim = int(parameters_line[0:4])
-			npoint = int(parameters_line[4:8])
-			nsolutions = int(parameters_line[8:12])
-
-			# Set basic parameters
-			uncertainty_active.ndim = ndim
-			uncertainty_active.npoints = npoint
-			uncertainty_active.nsolutions = nsolutions
-			uncertainty_active.nrepetitions = nsolutions
-
-			# Section: Description of dimensions
-			dim_labels = []
-			dim_names = []
-			for _i in range(ndim):
-				dim_line = f.readline().strip()
-				parts = dim_line.split(";")
-				dim_labels.append(parts[0])
-				dim_names.append(parts[1])
-
-			uncertainty_active.dim_labels = dim_labels
-			uncertainty_active.dim_names = dim_names
-			uncertainty_active.range_dims = range(ndim)
-
-			# Section: Description of points
-			point_labels = []
-			point_names = []
-			for _i in range(npoint):
-				point_line = f.readline().strip()
-				parts = point_line.split(";")
-				point_labels.append(parts[0])
-				point_names.append(parts[1])
-
-			uncertainty_active.point_labels = point_labels
-			uncertainty_active.point_names = point_names
-			uncertainty_active.range_points = range(npoint)
-
-			# Section: Read stress information for each repetition
-			stress_data = []
-			for i in range(nsolutions):
-				stress_line = f.readline()
-				repetition = int(stress_line[0:4])
-				stress = float(stress_line[4:12])
-				stress_data.append([repetition, stress])
-
-			# Create stress DataFrame and store it
-			stress_df = pd.DataFrame(
-				stress_data, columns=["Solution", "Stress"]
+			self._validate_file_header(f)
+			ndim, npoint, nsolutions = self._parse_basic_parameters(
+				f, uncertainty_active
 			)
-			uncertainty_active.solutions_stress_df = stress_df
+			_, dim_names = self._read_dimensions_section(
+				f, ndim, uncertainty_active
+			)
+			self._read_points_section(f, npoint, uncertainty_active)
+			self._read_stress_section(f, nsolutions, uncertainty_active)
+			self._read_coordinates_section(
+				f, ndim, npoint, nsolutions, dim_names, uncertainty_active
+			)
 
-			# Section: Coordinates for all points for all solutions
-			# Prepare data structure
-			total_rows = npoint * nsolutions
-			solutions_data = np.zeros((total_rows, ndim))
+	def _validate_file_header(self, f: TextIO) -> None:
+		"""Validate the file type identifier."""
+		file_type = f.readline().strip()
+		if file_type != "Solutions":
+			error_title = "Invalid File Type"
+			error_msg = (
+				"Expecting Solutions type file but got "
+				f"{file_type} type file instead."
+			)
+			raise ProblemReadingFileError(error_title, error_msg)
 
-			# Read coordinates
-			for solution_idx in range(nsolutions):
-				for point_idx in range(npoint):
-					coord_line = f.readline().rstrip(
-						"\n\r"
-					)  # Only strip newlines, preserve leading spaces
-					row_idx = solution_idx * npoint + point_idx
+	def _parse_basic_parameters(
+			self, f: TextIO, uncertainty_active: UncertaintyAnalysis
+		) -> tuple[int, int, int]:
+		"""Parse basic parameters and set them on uncertainty_active."""
+		parameters_line = f.readline()
+		ndim = int(parameters_line[0:4])
+		npoint = int(parameters_line[4:8])
+		nsolutions = int(parameters_line[8:12])
 
-					# Parse coordinates (8.4f format)
-					coords = []
-					for dim_idx in range(ndim):
-						start_pos = dim_idx * 8
-						end_pos = start_pos + 8
-						coord_str = coord_line[start_pos:end_pos].strip()
-						coords.append(float(coord_str))
+		uncertainty_active.ndim = ndim
+		uncertainty_active.npoints = npoint
+		uncertainty_active.nsolutions = nsolutions
+		uncertainty_active.nrepetitions = nsolutions
 
-					solutions_data[row_idx] = coords
+		return ndim, npoint, nsolutions
 
-			# Create DataFrame with proper column names
-			solutions_df = pd.DataFrame(solutions_data, columns=dim_names)
+	def _read_dimensions_section(
+			self, f: TextIO, ndim: int, uncertainty_active: UncertaintyAnalysis
+		) -> tuple[list[str], list[str]]:
+		"""Read dimension labels and names from the file."""
+		dim_labels = []
+		dim_names = []
+		for _each_dim in range(ndim):
+			dim_line = f.readline().strip()
+			parts = dim_line.split(";")
+			dim_labels.append(parts[0])
+			dim_names.append(parts[1])
 
-			# Store the solutions data
-			uncertainty_active.sample_solutions = solutions_df
-			uncertainty_active.repetitions_rotated = solutions_df
-			uncertainty_active.solutions = solutions_df
+		uncertainty_active.dim_labels = dim_labels
+		uncertainty_active.dim_names = dim_names
+		uncertainty_active.range_dims = range(ndim)
+
+		return dim_labels, dim_names
+
+	def _read_points_section(
+			self,
+			f: TextIO,
+			npoint: int,
+			uncertainty_active: UncertaintyAnalysis,
+		) -> None:
+		"""Read point labels and names from the file."""
+		point_labels = []
+		point_names = []
+		for _each_point in range(npoint):
+			point_line = f.readline().strip()
+			parts = point_line.split(";")
+			point_labels.append(parts[0])
+			point_names.append(parts[1])
+
+		uncertainty_active.point_labels = point_labels
+		uncertainty_active.point_names = point_names
+		uncertainty_active.range_points = range(npoint)
+
+	def _read_stress_section(
+			self,
+			f: TextIO,
+			nsolutions: int,
+			uncertainty_active: UncertaintyAnalysis,
+		) -> None:
+		"""Read stress information for each solution."""
+		stress_data = []
+		for _each_solution in range(nsolutions):
+			stress_line = f.readline()
+			repetition = int(stress_line[0:4])
+			stress = float(stress_line[4:12])
+			stress_data.append([repetition, stress])
+
+		stress_df = pd.DataFrame(stress_data, columns=["Solution", "Stress"])
+		uncertainty_active.solutions_stress_df = stress_df
+
+	def _read_coordinates_section(
+			self,
+			f: TextIO,
+			ndim: int,
+			npoint: int,
+			nsolutions: int,
+			dim_names: list[str],
+			uncertainty_active: UncertaintyAnalysis,
+		) -> None:
+		"""Read coordinate data for all points across all solutions."""
+		total_rows = npoint * nsolutions
+		solutions_data = np.zeros((total_rows, ndim))
+
+		for solution_idx in range(nsolutions):
+			for point_idx in range(npoint):
+				coord_line = f.readline().rstrip("\n\r")
+				row_idx = solution_idx * npoint + point_idx
+				coords = self._parse_coordinate_line(coord_line, ndim)
+				solutions_data[row_idx] = coords
+
+		solutions_df = pd.DataFrame(solutions_data, columns=dim_names)
+		uncertainty_active.sample_solutions = solutions_df
+		uncertainty_active.solutions = solutions_df
+
+	def _parse_coordinate_line(
+			self, coord_line: str, ndim: int
+		) -> list[float]:
+		"""Parse coordinates from a single line (8.4f format)."""
+		coords = []
+		for dim_idx in range(ndim):
+			start_pos = dim_idx * 8
+			end_pos = start_pos + 8
+			coord_str = coord_line[start_pos:end_pos].strip()
+			coords.append(float(coord_str))
+		return coords
 
 	# ------------------------------------------------------------------------
 
