@@ -661,9 +661,9 @@ class Spaces:
 
 	# ----------------------------------------------------------------------
 
-	def create_plot_for_plot_and_gallery_tabs_initialize_variables(
-		self, plot_type: str
-	) -> None:
+	def create_plot_for_tabs_initialize_variables(self, plot_type: str) \
+		-> None:
+
 		self.unknown_plot_type_error_title = "Unknown plot type"
 		self.unknown_plot_type_error_message = (
 			f"Plot type '{plot_type}' is not recognized."
@@ -672,22 +672,22 @@ class Spaces:
 
 	# ----------------------------------------------------------------------
 
-	def create_plot_for_plot_and_gallery_tabs(self, plot_type: str) -> None:
+	def create_plot_for_tabs(self, plot_type: str) -> None:
 		if self._director.common.presentation_layer == "PyQtGraph":
 			try:
 				getattr(
 					self._director.pyqtgraph_plotter,
-					f"request_{plot_type}_plot_for_plot_and_gallery_tabs_using_pyqtgraph",
+					f"request_{plot_type}_plot_for_tabs_using_pyqtgraph",
 				)()
 			except UnknownTypeError:
 				getattr(
 					self._director.matplotlib_plotter,
-					f"request_{plot_type}_plot_for_plot_and_gallery_tabs_using_matplotlib",
+					f"request_{plot_type}_plot_for_tabs_using_matplotlib",
 				)()
 		elif self._director.common.presentation_layer == "Matplotlib":
 			getattr(
 				self._director.matplotlib_plotter,
-				f"request_{plot_type}_plot_for_plot_and_gallery_tabs_using_matplotlib",
+				f"request_{plot_type}_plot_for_tabs_using_matplotlib",
 			)()
 
 	# ------------------------------------------------------------------------

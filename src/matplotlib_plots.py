@@ -30,9 +30,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_alike_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_alike_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -101,9 +99,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_base_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_base_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -187,9 +183,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_battleground_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_battleground_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
@@ -295,9 +289,7 @@ class MatplotlibMethods:
 
 	# --------------------------------------------------------------**--------
 
-	def request_compare_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_compare_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -364,9 +356,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_configuration_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_configuration_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		common = director.common
@@ -407,9 +397,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_contest_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_contest_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -484,9 +472,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_convertible_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_convertible_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -586,9 +572,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_core_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_core_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -704,9 +688,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_cutoff_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_cutoff_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		similarities_active = director.similarities_active
@@ -759,9 +741,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_directions_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_directions_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -844,9 +824,7 @@ class MatplotlibMethods:
 
 	# --------------------------------------------------------------**--------
 
-	def request_evaluations_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_evaluations_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 
@@ -878,9 +856,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_first_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_first_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -964,9 +940,7 @@ class MatplotlibMethods:
 
 	# ----------------------------------------------------------------**------
 
-	def request_grouped_data_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_grouped_data_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -1030,9 +1004,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_corr_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_heatmap_corr_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 
@@ -1070,9 +1042,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_dist_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_heatmap_dist_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 
@@ -1110,9 +1080,7 @@ class MatplotlibMethods:
 
 	# ----------------------------------------------------------------------
 
-	def request_heatmap_rank_diff_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_heatmap_rank_diff_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 
@@ -1155,9 +1123,8 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_ranked_dist_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_heatmap_ranked_dist_plot_for_tabs_using_matplotlib(self) \
+		-> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 
@@ -1200,9 +1167,8 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_ranked_simi_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_heatmap_ranked_simi_plot_for_tabs_using_matplotlib(self) \
+		-> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 
@@ -1243,9 +1209,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_simi_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_heatmap_simi_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 
@@ -1290,9 +1254,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_individuals_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_individuals_plot_for_tabs_using_matplotlib(self) -> None:
 		title = (
 			"Request Individuals Plot for Plot and Gallery using Matplotlib"
 		)
@@ -1349,9 +1311,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_joint_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_joint_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -1407,9 +1367,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_likely_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_likely_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -1498,9 +1456,7 @@ class MatplotlibMethods:
 
 	# ---------------------------------------------------------------**-------
 
-	def request_scores_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_scores_plot_for_tabs_using_matplotlib(self) -> None:
 		"""Create a scores plot for the plot and gallery tabs using matplotlib.
 
 		This method generates a scatter plot of the scores, displays it in the
@@ -1567,9 +1523,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_clusters_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_clusters_plot_for_tabs_using_matplotlib(self) -> None:
 		"""Create a clusters plot for the plot and gallery tabs using
 		matplotlib.
 
@@ -1672,9 +1626,8 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_stress_contribution_plot_for_tabs_using_matplotlib(self) \
+		-> None:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self._plot_stress_contribution_by_point_using_matplotlib()
@@ -1774,9 +1727,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_scree_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_scree_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		evaluations = director.evaluations_active.evaluations
@@ -1798,9 +1749,7 @@ class MatplotlibMethods:
 
 	# -------------------------------------------------------------------------
 
-	def request_second_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_second_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -1882,11 +1831,9 @@ class MatplotlibMethods:
 
 		return
 
-	# ----------------------------------------------------------------**------
+	# ----------------------------------------------------------------------
 
-	def request_target_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_target_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -1948,9 +1895,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_uncertainty_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_uncertainty_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		common = director.common
@@ -2020,9 +1965,8 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_spatial_uncertainty_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_spatial_uncertainty_plot_for_tabs_using_matplotlib(self) \
+		-> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		common = director.common
@@ -2127,9 +2071,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_point_uncertainty_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_point_uncertainty_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		common = director.common
@@ -2244,9 +2186,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_vectors_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_vectors_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		common = director.common
@@ -2311,9 +2251,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_view_custom_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_view_custom_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		matplotlib_plotter = director.matplotlib_plotter
 		matplotlib_common = director.matplotlib_common

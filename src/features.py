@@ -1090,7 +1090,7 @@ class SimilaritiesFeature:
 		# defines the columns in ranks_df to be displayed
 
 		# self.name_item_selected_for_stress_contribution: str = ""
-		# self.create_heatmap_plot_for_plot_and_gallery_tabs_using_matplotlib:
+		# self.create_heatmap_plot_for_tabs_using_matplotlib:
 		# object = None
 
 	# ------------------------------------------------------------------------

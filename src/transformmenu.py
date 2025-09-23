@@ -44,7 +44,7 @@ class CompareCommand:
 		self._director.target_active.disparity = self._compare()
 		self._create_compare_table()
 		self._print_comparison()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("compare")
+		self._director.common.create_plot_for_tabs("compare")
 		disparity = self._director.target_active.disparity
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, common
@@ -166,9 +166,7 @@ class CenterCommand:
 			self._director, common
 		)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		self._director.title_for_table_widget = (
 			f"Configuration has {ndim} dimensions and {npoint} points"
 		)
@@ -233,9 +231,7 @@ class InvertCommand:
 				and not self._director.common.have_segments()
 			):
 				rivalry.assign_to_segments()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
@@ -374,9 +370,7 @@ class MoveCommand:
 			)
 		self._director.configuration_active.inter_point_distances()
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -480,9 +474,7 @@ class RescaleCommand:
 			self._director, self.common
 		)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -635,9 +627,7 @@ class RotateCommand:
 			self._director, self.common
 		)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
@@ -748,9 +738,7 @@ class VarimaxCommand:
 			f"DEBUG -- after -- {point_coords=}{ndim=} {npoint=}{nreferent=}"
 		)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

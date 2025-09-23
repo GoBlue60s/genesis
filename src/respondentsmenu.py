@@ -40,7 +40,7 @@ class BaseCommand(ASupporterGrouping):
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
 		director.current_command._base_groups_to_show = groups_to_show
-		common.create_plot_for_plot_and_gallery_tabs("base")
+		common.create_plot_for_tabs("base")
 		director.title_for_table_widget = (
 			f"Base supporters of {self._rival_a.name} and {self._rival_b.name}"
 		)
@@ -83,9 +83,7 @@ class BattlegroundCommand(ASupporterGrouping):
 		self._director.current_command._battleground_groups_to_show = (
 			groups_to_show
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"battleground"
-		)
+		self._director.common.create_plot_for_tabs("battleground")
 		self._director.title_for_table_widget = "Size of battleground"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -114,7 +112,7 @@ class ContestCommand(ASupporterGrouping):
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("contest")
+		self._director.common.create_plot_for_tabs("contest")
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
 		self._director.title_for_table_widget = (
@@ -158,9 +156,7 @@ class ConvertibleCommand(ASupporterGrouping):
 		self._director.current_command._convertible_groups_to_show = (
 			groups_to_show
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"convertible"
-		)
+		self._director.common.create_plot_for_tabs("convertible")
 		self._director.title_for_table_widget = (
 			f"Potential supporters convertible to "
 			f"{self._rival_a.name} and {self._rival_b.name}"
@@ -198,7 +194,7 @@ class CoreSupportersCommand(ASupporterGrouping):
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command.core_groups_to_show = groups_to_show
-		self._director.common.create_plot_for_plot_and_gallery_tabs("core")
+		self._director.common.create_plot_for_tabs("core")
 		self._director.title_for_table_widget = (
 			f"Core supporters of {self._rival_a.name} and {self._rival_b.name}"
 		)
@@ -238,7 +234,7 @@ class FirstDimensionCommand(ASupporterGrouping):
 		self._director.current_command._first_dim_groups_to_show = (
 			groups_to_show
 		)
-		common.create_plot_for_plot_and_gallery_tabs("first")
+		common.create_plot_for_tabs("first")
 		self._director.title_for_table_widget = "Party oriented segments"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -266,7 +262,7 @@ class JointCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("joint")
+		self._director.common.create_plot_for_tabs("joint")
 		self._director.title_for_table_widget = (
 			"Warning: Make sure the scores "
 			"match the \ndimensions AND orientation of the active"
@@ -308,7 +304,7 @@ class LikelySupportersCommand(ASupporterGrouping):
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command.likely_groups_to_show = groups_to_show
-		self._director.common.create_plot_for_plot_and_gallery_tabs("likely")
+		self._director.common.create_plot_for_tabs("likely")
 		self._director.title_for_table_widget = (
 			f"Likely supporters of {self._rival_a.name} "
 			f"and {self._rival_b.name}"
@@ -382,9 +378,7 @@ class ReferencePointsCommand:
 		):
 			rivalry.assign_to_segments()
 
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 
 		self._director.title_for_table_widget = (
 			f"Reference points will be {rival_a.name} and {rival_b.name}"
@@ -805,8 +799,8 @@ class ScoreIndividualsCommand:
 			f"There are {nscores} active scores for {nscored} individuals."
 		)
 		# self._director.scores_active. \
-		# create_scores_plot_for_plot_and_gallery_tabs(self._director)
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scores")
+		# create_scores_plot_for_tabs(self._director)
+		self._director.common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -911,7 +905,7 @@ class SecondDimensionCommand(ASupporterGrouping):
 			groups_to_show
 		)
 
-		self._director.common.create_plot_for_plot_and_gallery_tabs("second")
+		self._director.common.create_plot_for_tabs("second")
 		self._director.title_for_table_widget = "Social oriented segments"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()

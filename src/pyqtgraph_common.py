@@ -412,9 +412,7 @@ class PyQtGraphCommon:
 
 	# ------------------------------------------------------------------------
 
-	def request_differences_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_differences_plot_for_tabs_using_pyqtgraph(self) -> None:
 		under_development_error_title = "This method is not yet implemented"
 		under_development_error_message = (
 			"Consider using the matplotlib version"
@@ -427,9 +425,7 @@ class PyQtGraphCommon:
 
 	# ------------------------------------------------------------------------
 
-	def request_scree_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_scree_plot_for_tabs_using_pyqtgraph(self) -> None:
 		pyqtgraph_common = self._director.pyqtgraph_common
 		tab_plot_widget = self._plot_scree_using_pyqtgraph()
 		tab_gallery_widget = self._plot_scree_using_pyqtgraph()
@@ -441,9 +437,7 @@ class PyQtGraphCommon:
 
 	# ------------------------------------------------------------------------
 
-	def request_shepard_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_shepard_plot_for_tabs_using_pyqtgraph(self) -> None:
 		pyqtgraph_common = self._director.pyqtgraph_common
 		tab_plot_widget = self.plot_shep_using_pyqtgraph()
 		tab_gallery_widget = self.plot_shep_using_pyqtgraph()

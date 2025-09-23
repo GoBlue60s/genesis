@@ -142,7 +142,7 @@ class ConfigurationCommand:
 		if common.have_similarities():
 			similarities_active.create_ranked_similarities_dataframe()
 		director.configuration_active.print_the_configuration()
-		common.create_plot_for_plot_and_gallery_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		ndim = director.configuration_active.ndim
 		npoint = director.configuration_active.npoint
 		director.title_for_table_widget = (
@@ -340,7 +340,7 @@ class CorrelationsCommand:
 		)
 		# director.correlations_active.print_the_correlations(
 		# 	director.width, director.decimals, common)
-		common.create_plot_for_plot_and_gallery_tabs("heatmap_corr")
+		common.create_plot_for_tabs("heatmap_corr")
 		nitem = director.correlations_active.nitem
 		director.title_for_table_widget = (
 			f"Correlation matrix has {nitem} items"
@@ -439,7 +439,7 @@ class CreateCommand:
 		if common.have_similarities():
 			director.similarities_active.rank_similarities()
 		director.configuration_active.print_active_function()
-		common.create_plot_for_plot_and_gallery_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		ndim = director.configuration_active.ndim
 		npoint = director.configuration_active.npoint
 		director.title_for_table_widget = (
@@ -1058,9 +1058,7 @@ class EvaluationsCommand:
 		self._director.evaluations_active.summarize_evaluations()
 		self._compute_correlations_from_evaluations(common)
 		self._director.title_for_table_widget = command
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"evaluations"
-		)
+		self._director.common.create_plot_for_tabs("evaluations")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 
@@ -1218,9 +1216,7 @@ class GroupedDataCommand:
 		)
 		self._director.grouped_data_last = self._director.grouped_data_active
 		self._director.grouped_data_active.print_grouped_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"grouped_data"
-		)
+		self._director.common.create_plot_for_tabs("grouped_data")
 		grouping_var = self._director.grouped_data_active.grouping_var
 		ndim = self._director.grouped_data_active.ndim
 		ngroups = self._director.grouped_data_active.ngroups
@@ -1393,7 +1389,7 @@ class IndividualsCommand:
 		self._director.title_for_table_widget = (
 			f"The file contains {n_individ} individuals."
 		)
-		# self._director.common.create_plot_for_plot_and_gallery_tabs(
+		# self._director.common.create_plot_for_tabs(
 		# "individuals")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -1574,7 +1570,7 @@ class NewGroupedDataCommand:
 		)
 		self._director.grouped_data_last = self._director.grouped_data_active
 		self._director.grouped_data_candidate.print_grouped_function()
-		self._create_grouped_plot_for_plot_and_gallery_tabs()
+		self._create_grouped_plot_for_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.title_for_table_widget = (
 			"Configuration is based on "
@@ -1828,7 +1824,7 @@ class NewGroupedDataCommand:
 
 	# -----------------------------------------------------------------------
 
-	def _create_grouped_plot_for_plot_and_gallery_tabs(self) -> None:
+	def _create_grouped_plot_for_tabs(self) -> None:
 		fig = self._director.grouped_data_candidate.\
 			plot_grouped_using_matplotlib()
 		self._director.plot_to_gui(fig)
@@ -2011,7 +2007,7 @@ class OpenSampleRepetitionsCommand:
 			self._open_sample_repetitions_filter,
 		)
 		self._read_sample_repetitions_from_file(file)
-		# self._director.common.create_plot_for_plot_and_gallery_tabs(
+		# self._director.common.create_plot_for_tabs(
 		# "sample_design")
 		self._director.title_for_table_widget = (
 			"Sample repetitions file has "
@@ -2089,7 +2085,7 @@ class OpenSampleSolutionsCommand:
 		)
 		# Use the new Solutions format reader
 		self.read_a_solutions_type_file(file)
-		# self._director.common.create_plot_for_plot_and_gallery_tabs(
+		# self._director.common.create_plot_for_tabs(
 		# "sample_design")
 		common.print_sample_solutions()
 
@@ -2103,7 +2099,7 @@ class OpenSampleSolutionsCommand:
 			"solutions."
 		)
 		common.create_solutions_table()
-		common.create_plot_for_plot_and_gallery_tabs("uncertainty")
+		common.create_plot_for_tabs("uncertainty")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -2295,7 +2291,7 @@ class OpenScoresCommand:
 		)
 		self._director.scores_active.summarize_scores()
 		self._director.scores_active.print_scores()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scores")
+		self._director.common.create_plot_for_tabs("scores")
 		self._director.title_for_table_widget = (
 			f"Scores file has {self._director.scores_active.nscores} "
 			"scores for "
@@ -3658,9 +3654,7 @@ class SettingsPlaneCommand:
 			self._hor_axis_options,
 		)
 		self._director.common.print_plane_settings()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		self._director.title_for_table_widget = "Plane settings"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
@@ -4288,9 +4282,7 @@ class SimilaritiesCommand:
 		self._director.similarities_active.print_the_similarities(
 			width, decimals, common
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_simi"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_simi")
 		nreferent = self._director.similarities_active.nreferent
 
 		self._director.title_for_table_widget = (
@@ -4347,7 +4339,7 @@ class TargetCommand:
 		self._director.target_original = self._director.target_active
 		self._director.target_last = self._director.target_active
 		self._director.target_active.print_target()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("target")
+		self._director.common.create_plot_for_tabs("target")
 		ndim = self._director.target_candidate.ndim
 		npoint = self._director.target_candidate.npoint
 		self._director.title_for_table_widget = (

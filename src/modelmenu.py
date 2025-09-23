@@ -108,7 +108,7 @@ class ClusterCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 
 		# Create cluster plot
-		self._director.common.create_plot_for_plot_and_gallery_tabs("clusters")
+		self._director.common.create_plot_for_tabs("clusters")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -420,9 +420,7 @@ class DirectionsCommand:
 		self._calculate_point_directions()
 		# self._director.configuration_active.print_active_function()
 		self._print_directions_df()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"directions"
-		)
+		self._director.common.create_plot_for_tabs("directions")
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
@@ -597,7 +595,7 @@ class FactorAnalysisCommand:
 		)
 		configuration_active.ndim = int(ext_fact)
 		self._factors_and_scores()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scree")
+		self._director.common.create_plot_for_tabs("scree")
 		self._create_factor_analysis_table()
 		self._print_factor_analysis_results()
 		self._fill_configuration()
@@ -897,7 +895,7 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		n_components = self._get_components_from_user()
 		self._perform_factor_analysis_m_l_and_setup(n_components)
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scree")
+		self._director.common.create_plot_for_tabs("scree")
 		self._display()
 		self._director.title_for_table_widget = \
 			"Factor analysis (Machine Learning)"
@@ -1075,7 +1073,7 @@ class FactorAnalysisMachineLearningCommand:
 
 		if configuration_active.ndim > 1:
 			matplotlib_plotter.\
-				request_configuration_plot_for_plot_and_gallery_tabs_using_matplotlib()
+				request_configuration_plot_for_tabs_using_matplotlib()
 
 	# ------------------------------------------------------------------------
 
@@ -1450,9 +1448,7 @@ class MDSCommand:
 			self._director, self.common
 		)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		self._director.title_for_table_widget = (
 			f"Configuration has  {ndim} dimensions and "
 			f"{npoint} points and stress of {best_stress: 6.4f}"
@@ -1607,9 +1603,7 @@ class PrincipalComponentsCommand:
 		# Display scree diagram showing eigenvalues by dimensionality
 		# Ask user how many dimensions to be retained
 		# Display configuration with vectors from origin to each point
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		print(
@@ -1770,7 +1764,7 @@ class VectorsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("vectors")
+		self._director.common.create_plot_for_tabs("vectors")
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
@@ -1962,7 +1956,7 @@ class UncertaintyCommand:
 			)
 		)
 
-		director.common.create_plot_for_plot_and_gallery_tabs("uncertainty")
+		director.common.create_plot_for_tabs("uncertainty")
 		director.title_for_table_widget = (
 			"An ellipse around each point delineates with 95% confidence that "
 			"the point lies within that point's ellipse"

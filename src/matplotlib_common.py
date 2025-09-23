@@ -283,9 +283,7 @@ class MatplotlibCommon:
 
 	# ------------------------------------------------------------------------
 
-	def request_differences_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_differences_plot_for_tabs_using_matplotlib(self) -> None:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self._director.current_command.plot_a_heatmap_using_matplotlib()
@@ -294,9 +292,7 @@ class MatplotlibCommon:
 
 	# ------------------------------------------------------------------------
 
-	def request_scree_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_scree_plot_for_tabs_using_matplotlib(self) -> None:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self._plot_scree_using_matplotlib()
@@ -306,9 +302,7 @@ class MatplotlibCommon:
 
 	# ------------------------------------------------------------------------
 
-	def request_shepard_plot_for_plot_and_gallery_tabs_using_matplotlib(
-		self,
-	) -> None:
+	def request_shepard_plot_for_tabs_using_matplotlib(self) -> None:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self.plot_shep_using_matplotlib()

@@ -64,7 +64,7 @@ class UndoCommand:
 			#
 			if self._director.common.have_active_configuration():
 				self._director.configuration_active.print_active_function()
-				self._director.create_configuration_plot_for_plot_and_gallery_tabs()
+				self._director.create_configuration_plot_for_tabs()
 			del undo_stack[-1]
 			del undo_stack_source[-1]
 		else:

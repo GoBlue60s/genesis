@@ -138,9 +138,7 @@ class ViewConfigurationCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_configuration()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"configuration"
-		)
+		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
@@ -177,9 +175,7 @@ class ViewCorrelationsCommand:
 			self._director.common.width, self._director.common.decimals, common
 		)
 		# self._director.correlations_active)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_corr"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_corr")
 		nreferent = self._director.correlations_active.nreferent
 		self._director.title_for_table_widget = (
 			f"Correlation matrix has {nreferent} items"
@@ -211,7 +207,7 @@ class ViewCustomCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._print_view_custom()
-		self._create_view_custom_plot_for_plot_and_gallery_tabs_using_matplotlib()
+		self._create_view_custom_plot_for_tabs_using_matplotlib()
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
@@ -301,9 +297,7 @@ class ViewDistancesCommand:
 		self._director.configuration_active.print_the_distances(
 			self._width, self._decimals, common
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_dist"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_dist")
 		self._director.title_for_table_widget = "Inter-point distances"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
@@ -331,9 +325,7 @@ class ViewEvaluationsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"evaluations"
-		)
+		self._director.common.create_plot_for_tabs("evaluations")
 		self._director.title_for_table_widget = "Evaluations"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -359,9 +351,7 @@ class ViewGroupedDataCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.grouped_data_active.print_grouped_function()
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"grouped_data"
-		)
+		self._director.common.create_plot_for_tabs("grouped_data")
 		grouping_var = self._director.grouped_data_active.grouping_var
 		self._director.title_for_table_widget = (
 			f"Configuration is based on {grouping_var}"
@@ -394,7 +384,7 @@ class ViewIndividualsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.individuals_active.print_individuals()
-		# self._director.common.create_plot_for_plot_and_gallery_tabs(
+		# self._director.common.create_plot_for_tabs(
 		# "individuals")
 		self._director.title_for_table_widget = "Individuals"
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -463,7 +453,7 @@ class ViewPointUncertaintyCommand:
 			director.selected_point_indices = selected_indices
 
 			# Create the point uncertainty plot
-			common.create_plot_for_plot_and_gallery_tabs("point_uncertainty")
+			common.create_plot_for_tabs("point_uncertainty")
 
 			director.title_for_table_widget = (
 				f"Point Uncertainty - "
@@ -623,7 +613,7 @@ class ViewSampleSolutionsCommand:
 		)
 		common.create_solutions_table()
 		common.print_sample_solutions()
-		common.create_plot_for_plot_and_gallery_tabs("uncertainty")
+		common.create_plot_for_tabs("uncertainty")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -668,7 +658,7 @@ class ViewScoresCommand:
 		self._director.title_for_table_widget = (
 			f"There are {nscores} active scores for {nscored} individuals."
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scores")
+		self._director.common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -705,9 +695,7 @@ class ViewSimilaritiesCommand:
 		self._director.title_for_table_widget = (
 			f"The {value_type} matrix has {nreferent} items"
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_simi"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -744,7 +732,7 @@ class ViewSpatialUncertaintyCommand:
 		print(sample_solutions)
 
 		# Create the plot with the specified visualization mode
-		common.create_plot_for_plot_and_gallery_tabs("spatial_uncertainty")
+		common.create_plot_for_tabs("spatial_uncertainty")
 
 		director.title_for_table_widget = (
 			f"Spatial Uncertainty - {nsolutions} solutions "
@@ -777,7 +765,7 @@ class ViewTargetCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.target_active.print_target()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("target")
+		self._director.common.create_plot_for_tabs("target")
 		self._director.title_for_table_widget = (
 			f"Target configuration has {ndim} dimensions and {npoint} points"
 		)
@@ -807,7 +795,7 @@ class ViewUncertaintyCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.scores_active.print_scores()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scores")
+		self._director.common.create_plot_for_tabs("scores")
 		self._director.title_for_table_widget = (
 			f"There are {nscores} active scores for {nscored} individuals."
 		)

@@ -69,7 +69,7 @@ class AlikeCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		# self._director.detect_limitations_violations()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("cutoff")
+		self._director.common.create_plot_for_tabs("cutoff")
 		self._get_cutoff_from_user()
 		self._determine_alike_pairs()
 		self._print_alike_pairs()
@@ -78,7 +78,7 @@ class AlikeCommand:
 		self._director.title_for_table_widget = (
 			f"Pairs with similarity using cutoff: {cut_point}"
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs("alike")
+		self._director.common.create_plot_for_tabs("alike")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 
@@ -373,9 +373,7 @@ class DistancesCommand:
 		self._director.configuration_active.print_the_distances(
 			self._width, self._decimals, common
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_dist"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_dist")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -439,9 +437,7 @@ class LineOfSightCommand:
 			f"matrix has {self._director.similarities_active.nreferent}"
 			f" items"
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_simi"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -630,13 +626,11 @@ class RanksDifferencesCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		# self._create_rank_plot_for_plot_and_gallery_tabs()
+		# self._create_rank_plot_for_tabs()
 		# columns_to_print = \
 		# 	self._director.similarities_active.columns_for_ranks[self._columns]
 		# print(columns_to_print)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_rank_diff"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_rank_diff")
 		# "differences")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -668,9 +662,7 @@ class RanksDistancesCommand:
 			self._director.configuration_active.ranked_distances,
 			self._director.common.width,
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_ranked_dist"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_ranked_dist")
 		# "ranked_distances")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -702,9 +694,7 @@ class RanksSimilaritiesCommand:
 			self._director.similarities_active.ranked_similarities,
 			self._director.common.width,
 		)
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"heatmap_ranked_simi"
-		)
+		self._director.common.create_plot_for_tabs("heatmap_ranked_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		self._director.set_focus_on_tab("Plot")
@@ -745,7 +735,7 @@ class ScreeCommand:
 			self._scree_title, self._scree_options_title, self._scree_options
 		)
 		self._scree()
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scree")
+		self._director.common.create_plot_for_tabs("scree")
 		self._director.title_for_table_widget = "Best stress by dimensionality"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -878,7 +868,7 @@ class ShepardCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		self.shepard_axis = axis
 		self._director.common.shepard_axis = axis
-		self._director.common.create_plot_for_plot_and_gallery_tabs("shepard")
+		self._director.common.create_plot_for_tabs("shepard")
 		self._director.title_for_table_widget = (
 			"Rank of similarity above diagonal, "
 			"rank of distance below diagonal"
@@ -939,8 +929,7 @@ class StressContributionCommand:
 		point_to_plot_label = point_labels[index]
 		self._point_to_plot_label = point_to_plot_label
 		self._point_to_plot_index = index
-		self._director.common.create_plot_for_plot_and_gallery_tabs(
-			"stress_contribution")
+		self._director.common.create_plot_for_tabs("stress_contribution")
 		point_names = self._director.configuration_active.point_names
 		self._director.title_for_table_widget = (
 			f"Stress contribution of "

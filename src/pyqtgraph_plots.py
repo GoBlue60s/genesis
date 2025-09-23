@@ -29,9 +29,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_alike_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_alike_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -107,9 +105,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_base_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_base_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -214,9 +210,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_battleground_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_battleground_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -337,9 +331,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_clusters_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_clusters_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -459,9 +451,7 @@ class PyQtGraphMethods:
 
 	# --------------------------------------------------------------**--------
 
-	def request_compare_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_compare_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -554,9 +544,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_configuration_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_configuration_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -602,9 +590,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_contest_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_contest_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -711,9 +697,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_convertible_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_convertible_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -850,9 +834,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_core_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_core_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -970,9 +952,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_cutoff_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_cutoff_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		similarities_active = director.similarities_active
@@ -1045,9 +1025,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_directions_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_directions_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
@@ -1145,9 +1123,7 @@ class PyQtGraphMethods:
 
 	# --------------------------------------------------------------**--------
 
-	def request_evaluations_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_evaluations_plot_for_tabs_using_pyqtgraph(self) -> None:
 		# consider renaming
 
 		director = self._director
@@ -1201,9 +1177,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_first_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_first_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1317,9 +1291,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_grouped_data_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_grouped_data_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1395,9 +1367,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_corr_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_heatmap_corr_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1437,9 +1407,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_dist_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_heatmap_dist_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1479,9 +1447,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_rank_diff_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_heatmap_rank_diff_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1529,9 +1495,8 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_ranked_dist_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_heatmap_ranked_dist_plot_for_tabs_using_pyqtgraph(self) \
+		-> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1579,9 +1544,8 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_ranked_simi_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_heatmap_ranked_simi_plot_for_tabs_using_pyqtgraph(self) \
+		-> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1627,9 +1591,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_heatmap_simi_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_heatmap_simi_plot_for_tabs_using_pyqtgraph(self) -> None:
 		# Consider renaming
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1678,9 +1640,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_individuals_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_individuals_plot_for_tabs_using_pyqtgraph(self) -> None:
 		title = "Request Individuals Plot for Plot and Gallery using PyQtGraph"
 		message = "Must be created"
 		raise UnderDevelopmentError(title, message)
@@ -1699,9 +1659,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_joint_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_joint_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 
@@ -1765,9 +1723,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_likely_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_likely_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1886,11 +1842,9 @@ class PyQtGraphMethods:
 
 		return
 
-	# ----------------------------------------------------------------**------
+	# ------------------------------------------------------------------------
 
-	def request_scores_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_scores_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -1967,9 +1921,8 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_stress_contribution_plot_for_plot_and_gallery_tabs_using_pyqtgraph(  # noqa: E501
-		self,
-	) -> None:
+	def request_stress_contribution_plot_for_tabs_using_pyqtgraph(self) \
+		-> None:
 		pyqtgraph_common = self._director.pyqtgraph_common
 		tab_plot_widget = (
 			self._plot_stress_contribution_by_point_using_pyqtgraph()
@@ -2127,9 +2080,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_scree_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_scree_plot_for_tabs_using_pyqtgraph(self) -> None:
 		title = "Request Scree Plot for Plot and Gallery using PyQtGraph"
 		message = "Must be created"
 		raise UnderDevelopmentError(title, message)
@@ -2138,9 +2089,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_second_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_second_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -2248,9 +2197,7 @@ class PyQtGraphMethods:
 
 	# ---------------------------------------------------------------------**--
 
-	def request_target_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_target_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -2328,9 +2275,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_uncertainty_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_uncertainty_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -2420,9 +2365,8 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_spatial_uncertainty_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_spatial_uncertainty_plot_for_tabs_using_pyqtgraph(self) \
+		-> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -2655,9 +2599,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_point_uncertainty_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_point_uncertainty_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
@@ -2793,9 +2735,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_vectors_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_vectors_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
@@ -2857,9 +2797,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_view_custom_plot_for_plot_and_gallery_tabs_using_pyqtgraph(
-		self,
-	) -> None:
+	def request_view_custom_plot_for_tabs_using_pyqtgraph(self) -> None:
 		title = "Request Custom Plot for Plot and Gallery using PyQtGraph"
 		message = "Must be created"
 		raise UnderDevelopmentError(title, message)
