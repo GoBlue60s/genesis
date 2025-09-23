@@ -2361,6 +2361,7 @@ class OpenScoresCommand:
 			]
 
 			self._director.scores_candidate = scores_candidate
+			self._director.scores_candidate.ndim = 2
 
 		except (
 			FileNotFoundError,

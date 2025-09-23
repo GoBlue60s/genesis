@@ -59,7 +59,10 @@ class MatplotlibCommon:
 		director = self._director
 		hor_dim = director.common.hor_dim
 		vert_dim = director.common.vert_dim
-		dim_names = director.configuration_active.dim_names
+		if self._director.common.have_active_configuration():
+			dim_names = director.configuration_active.dim_names
+		else:
+			dim_names = director.scores_active.dim_names
 
 		ax.set_xlabel(dim_names[hor_dim])
 		ax.set_ylabel(dim_names[vert_dim])

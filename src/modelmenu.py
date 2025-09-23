@@ -579,7 +579,7 @@ class FactorAnalysisCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		director = self._director
 		common = self.common
 
@@ -613,27 +613,68 @@ class FactorAnalysisCommand:
 		nreferent = self._director.evaluations_active.nreferent
 		evaluations = self._director.evaluations_active.evaluations
 		item_names = self._director.evaluations_active.item_names
-		configuration_active = self._director.configuration_active
-		scores_active = self._director.scores_active
-		evaluations_active = self._director.evaluations_active
 
-		score_1_name = "Factor 1"
-		score_2_name = "Factor 2"
-		dim_names = []
-		dim_labels = []
+		fa = self._perform_factor_analysis(ndim, evaluations)
 
+		(dim_names, _dim_labels, range_dims, range_items,
+			range_points) = self._generate_dimension_data(ndim, nreferent)
+
+		(loadings, point_coords, eigen, eigen_common, commonalities,
+			factor_variance, uniquenesses, scores, score_1,
+			score_2) = self._extract_factor_results(
+			fa, dim_names, item_names, evaluations
+		)
+
+		self._setup_configuration_attributes(
+			range_dims, point_coords, dim_names, eigen, eigen_common,
+			commonalities, factor_variance, uniquenesses, range_items,
+			range_points, fa, loadings
+		)
+
+		self._setup_scores_attributes(scores, score_1, score_2)
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _perform_factor_analysis(
+		self, ndim: int, evaluations: pd.DataFrame
+	) -> FactorAnalyzer:
+		"""Perform the factor analysis using FactorAnalyzer."""
 		fa = FactorAnalyzer(
 			n_factors=ndim, rotation="varimax", is_corr_matrix=False
 		)
-		# print(f"DEBUG -- after FactorAnalyzer {fa=}")
 		fa.fit(evaluations)
-		# print(f"DEBUG -- just  done fa.fit {fa.fit=}")
+		return fa
+
+	# ------------------------------------------------------------------------
+
+	def _generate_dimension_data(
+		self, ndim: int, nreferent: int
+	) -> tuple[list[str], list[str], range, range, range]:
+		"""Generate dimension names, labels, and ranges."""
+		dim_names = []
+		dim_labels = []
 		range_dims = range(ndim)
+
 		for each_dim in range_dims:
 			dim_names.append("Factor " + str(each_dim + 1))
 			dim_labels.append("FA" + str(each_dim + 1))
+
 		range_items = range(nreferent)
 		range_points = range(nreferent)
+
+		return dim_names, dim_labels, range_dims, range_items, range_points
+
+	# ------------------------------------------------------------------------
+
+	def _extract_factor_results(
+		self, fa: FactorAnalyzer, dim_names: list[str], item_names: list[str],
+		evaluations: pd.DataFrame
+	) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame,
+		pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame,
+		pd.DataFrame, pd.DataFrame]:
+		"""Extract all results from the factor analysis."""
 		the_loadings = fa.loadings_
 		loadings = pd.DataFrame(
 			the_loadings, columns=dim_names, index=item_names
@@ -641,30 +682,51 @@ class FactorAnalysisCommand:
 		point_coords = pd.DataFrame(
 			loadings, columns=dim_names, index=item_names
 		)
-		#
-		# Get the eigenvector and the eigenvalues
-		ev, v = fa.get_eigenvalues()
 
+		ev, v = fa.get_eigenvalues()
 		eigen = pd.DataFrame(data=ev, columns=["Eigenvalue"])
 		eigen_common = pd.DataFrame(data=v, columns=["Eigenvalue"])
+
 		get_commonalities = fa.get_communalities()
 		commonalities = pd.DataFrame(
 			data=get_commonalities, columns=["Commonality"], index=item_names
 		)
+
 		factor_variance = pd.DataFrame(
 			fa.get_factor_variance(),
 			columns=dim_names,
 			index=["Variance", "Proportional", "Cumulative"],
 		)
+
 		uniquenesses = pd.DataFrame(
 			fa.get_uniquenesses(), columns=["Uniqueness"], index=item_names
 		)
+
 		scores = pd.DataFrame(fa.transform(evaluations), columns=dim_names)
 		scores.reset_index(inplace=True)
 		scores.rename(columns={"index": "Resp no"}, inplace=True)
 
+		score_1_name = "Factor 1"
+		score_2_name = "Factor 2"
 		score_1 = scores[score_1_name]
 		score_2 = scores[score_2_name]
+
+		return (loadings, point_coords, eigen, eigen_common, commonalities,
+			factor_variance, uniquenesses, scores, score_1, score_2)
+
+	# ------------------------------------------------------------------------
+
+	def _setup_configuration_attributes(
+		self, range_dims: range, point_coords: pd.DataFrame,
+		dim_names: list[str], eigen: pd.DataFrame,
+		eigen_common: pd.DataFrame, commonalities: pd.DataFrame,
+		factor_variance: pd.DataFrame, uniquenesses: pd.DataFrame,
+		range_items: range, range_points: range, fa: FactorAnalyzer,
+		loadings: pd.DataFrame
+	) -> None:
+		"""Set up all configuration_active attributes."""
+		configuration_active = self._director.configuration_active
+		evaluations_active = self._director.evaluations_active
 
 		configuration_active.range_dims = range_dims
 		configuration_active.point_coords = point_coords
@@ -678,7 +740,6 @@ class FactorAnalysisCommand:
 		configuration_active.range_points = range_points
 		configuration_active.fa = fa
 		configuration_active.loadings = loadings
-		# potentially move summarize scores to separate function
 
 		configuration_active.npoint = evaluations_active.nreferent
 		configuration_active.nreferent = evaluations_active.nreferent
@@ -686,6 +747,21 @@ class FactorAnalysisCommand:
 		configuration_active.point_labels = evaluations_active.item_labels
 		configuration_active.range_points = evaluations_active.range_items
 		configuration_active.inter_point_distances()
+
+	# ------------------------------------------------------------------------
+
+	def _setup_scores_attributes(
+		self, scores: pd.DataFrame, score_1: pd.DataFrame,
+		score_2: pd.DataFrame
+	) -> None:
+		"""Set up all scores_active attributes."""
+		scores_active = self._director.scores_active
+		configuration_active = self._director.configuration_active
+		evaluations_active = self._director.evaluations_active
+
+		score_1_name = "Factor 1"
+		score_2_name = "Factor 2"
+
 		scores_active.scores = scores
 		scores_active.score_1 = score_1
 		scores_active.score_2 = score_2
@@ -698,8 +774,6 @@ class FactorAnalysisCommand:
 		scores_active.score_2_name = score_2_name
 		scores_active.hor_axis_name = score_1_name
 		scores_active.vert_axis_name = score_2_name
-
-		return
 
 	# ------------------------------------------------------------------------
 
@@ -799,56 +873,80 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.evaluations_active.range_items = range(
 			self._director.evaluations_active.nitem
 		)
-
+		self._get_ncomponents_title = "Factor Analysis"
+		self._get_ncomponents_label = "Number of factors to extract:"
+		self._get_ncomponents_default = 2
+		self._get_ncomponents_min_allowed = 1
+		self._transformer_method = "randomized"
+		self._transformer_rotation = "varimax"
+		self._factor_name_stem = "Factor "
+		self._factor_label_stem = "FA"
+		self._factor_1_name = "Factor 1"
+		self._factor_2_name = "Factor 2"
+		self._factor_1_label = "FA1"
+		self._factor_2_label = "FA2"
+		self._factoranalysis0_name = "factoranalysis0"
+		self._factoranalysis1_name = "factoranalysis1"
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		from sklearn.decomposition import FactorAnalysis
-		from sklearn.preprocessing import StandardScaler
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+		n_components = self._get_components_from_user()
+		self._perform_factor_analysis_m_l_and_setup(n_components)
+		self._director.common.create_plot_for_plot_and_gallery_tabs("scree")
+		self._display()
+		self._director.title_for_table_widget = \
+			"Factor analysis (Machine Learning)"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Plot")
+		self._director.record_command_as_successfully_completed()
+		return
 
-		#
-		# Perform factor analysis - move to separate function
-		#
-		item_names = self._director.evaluations_active.item_names
-		evaluations = self._director.evaluations_active.evaluations
+	# ------------------------------------------------------------------------
+
+	def _get_components_from_user(self) -> int:
+		"""Get number of components to extract from user."""
 		nreferent = self._director.evaluations_active.nreferent
-		
-		dim_names = []
-		dim_labels = []
+		return self.command.get_components_to_extract_from_user(
+			title=self._get_ncomponents_title,
+			label=self._get_ncomponents_label,
+			min_allowed=self._get_ncomponents_min_allowed,
+			max_allowed=nreferent - 1,
+			an_integer=True,
+			default=self._get_ncomponents_default,
+		)
+
+	# ------------------------------------------------------------------------
+
+	def _perform_factor_analysis_m_l_and_setup(self, n_components: int) -> None:
+		"""Perform factor analysis and set up all configuration and scores."""
+		from sklearn.decomposition import FactorAnalysis
+		from sklearn.preprocessing import StandardScaler
+
+		evaluations = self._director.evaluations_active.evaluations
+		item_names = self._director.evaluations_active.item_names
+		nreferent = self._director.evaluations_active.nreferent
 
 		X = evaluations  # noqa: N806
 		scaler = StandardScaler()
 		scaler.fit(X)
-		StandardScaler()
 		scaler.transform(X)
-		#
-		# Get number of components from user
-		n_components = self.command.get_components_to_extract_from_user(
-			title="Factor Analysis",
-			label="Number of factors to extract:",
-			min_allowed=1,
-			max_allowed=len(item_names) - 1,
-			an_integer=True,
-			default=2,
-		)
 
 		transformer = FactorAnalysis(
 			n_components=n_components,
-			svd_method="randomized",
+			svd_method=self._transformer_method,
 			copy=True,
-			rotation="varimax",
+			rotation=self._transformer_rotation,
 			random_state=0,
 		)
 		X_transformed = transformer.fit_transform(X)  # noqa: N806
-		pd.set_option("display.max_columns", None)
-		pd.set_option("display.precision", 2)
-		pd.set_option("display.max_colwidth", 300)
+
+		self._setup_pandas_display_options()
+
 		components = pd.DataFrame(
 			transformer.components_,
 			index=transformer.get_feature_names_out(),
@@ -871,68 +969,118 @@ class FactorAnalysisMachineLearningCommand:
 		transpose = components.transpose()
 		trans = pd.DataFrame(transpose)
 
+		self._setup_dimension_and_item_data(trans)
+		self._setup_configuration_from_factor_analysis_m_l(
+			trans, x_new, covar
+		)
+		self._setup_scores_from_factor_analysis_m_l()
+		self._store_sklearn_results_for_display(
+			transformer, X, item_names, nreferent
+		)
+		self._print_factor_analysis_m_l_results(
+			scaler, X, transformer, X_transformed, x_trans, covar, trans,
+			nreferent
+		)
+
+	# ------------------------------------------------------------------------
+
+	def _setup_pandas_display_options(self) -> None:
+		"""Set pandas display options for better output formatting."""
+		pd.set_option("display.max_columns", None)
+		pd.set_option("display.precision", 2)
+		pd.set_option("display.max_colwidth", 300)
+
+	# ------------------------------------------------------------------------
+
+	def _setup_dimension_and_item_data(self, trans: pd.DataFrame) -> None:
+		"""Set up dimension and item data from factor analysis results."""
 		ndim = len(trans.columns)
 		nitem = len(trans.index)
 		range_dims = range(ndim)
 		range_items = range(nitem)
-		for each_dim in range_dims:
-			dim_names.append("Factor " + str(each_dim))
-			dim_labels.append("FA" + str(each_dim))
 
-		score_1_name = "Factor 1"
-		score_2_name = "Factor 2"
+		dim_names = []
+		dim_labels = []
+		for each_dim in range_dims:
+			dim_names.append(self._factor_name_stem + str(each_dim))
+			dim_labels.append(self._factor_label_stem + str(each_dim))
 
 		for each_point in range_items:
-			# print(f"DEBUG -- {each_point=}")
 			self._director.evaluations_active.item_labels.append(
 				self._director.evaluations_active.item_names[each_point][0:4]
 			)
 
-		self._director.common.show_bisector = False
-		self._director.common.show_connector = False
-		self._director.configuration_active.distances.clear()
-		self._director.configuration_active.point_coords = pd.DataFrame(trans)
-		self._director.configuration_active.point_coords.columns = [
-			"Factor 1",
-			"Factor 2",
-		]
-		self._director.configuration_active.dim_names = [
-			"Factor 1",
-			"Factor 2",
-		]
-		self._director.configuration_active.dim_labels = ["FA1", "FA2"]
+		self._director.configuration_active.ndim = ndim
+		self._director.configuration_active.range_dims = range_dims
+		self._director.evaluations_active.nitem = nitem
+		self._director.evaluations_active.range_items = range_items
+
+		# Store for later use
+		self._dim_names = dim_names
+		self._dim_labels = dim_labels
+
+	# ------------------------------------------------------------------------
+
+	def _setup_configuration_from_factor_analysis_m_l(
+		self, trans: pd.DataFrame, x_new: pd.DataFrame, covar: pd.DataFrame
+	) -> None:
+		"""Set up configuration from factor analysis results."""
+		from sklearn.preprocessing import StandardScaler
+
+		director = self._director
+		common = director.common
+		configuration_active = director.configuration_active
+		evaluations_active = director.evaluations_active
+		matplotlib_plotter = director.matplotlib_plotter
+
+		common.show_bisector = False
+		common.show_connector = False
+		configuration_active.distances.clear()
+
 		scaler2 = StandardScaler()
 		scaler2.fit(trans)
-		StandardScaler()
 		new_trans = scaler2.transform(trans)
-		self._director.configuration_active.point_coords = pd.DataFrame(
+		configuration_active.point_coords = pd.DataFrame(
 			new_trans
 		)
-		#
-		self._director.evaluations_active.nitem = (
-			self._director.evaluations_active.nreferent
-		)
-		self._director.configuration_active.inter_point_distances()
 
-		self._director.common.set_axis_extremes_based_on_coordinates(
-			self._director.configuration_active.point_coords
+		configuration_active.point_coords.columns = [
+			self._factor_1_name,
+			self._factor_2_name,
+		]
+		configuration_active.dim_names = [
+			self._factor_1_name,
+			self._factor_2_name,
+		]
+		
+		configuration_active.dim_labels = [
+			self._factor_1_label,
+			self._factor_2_label,
+		]
+
+		configuration_active.inter_point_distances()
+		common.set_axis_extremes_based_on_coordinates(
+			configuration_active.point_coords
 		)
 
-		self._director.configuration_active.range_points = (
-			self._director.evaluations_active.range_items
-		)
-		self._director.configuration_active.point_names = (
-			self._director.evaluations_active.item_names
-		)
-		self._director.configuration_active.point_labels = (
-			self._director.evaluations_active.item_labels
-		)
-		self._director.configuration_active.scores = x_new
-
-		self._director.configuration_active.scores.reset_index(inplace=True)
-		self._director.configuration_active.scores.rename(
+		configuration_active.range_points = evaluations_active.range_items
+		configuration_active.point_names = evaluations_active.item_names
+		configuration_active.point_labels = evaluations_active.item_labels
+		configuration_active.scores = x_new
+		configuration_active.scores.reset_index(inplace=True)
+		configuration_active.scores.rename(
 			columns={"index": "Resp no"}, inplace=True
 		)
+		configuration_active.covar = covar
+
+		if configuration_active.ndim > 1:
+			matplotlib_plotter.\
+				request_configuration_plot_for_plot_and_gallery_tabs_using_matplotlib()
+
+	# ------------------------------------------------------------------------
+
+	def _setup_scores_from_factor_analysis_m_l(self) -> None:
+		"""Set up scores from factor analysis results."""
 		self._director.scores_active.scores = (
 			self._director.configuration_active.scores
 		)
@@ -951,137 +1099,119 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.scores_active.dim_names = (
 			self._director.configuration_active.dim_names
 		)
-
 		self._director.scores_active.dim_labels = (
 			self._director.configuration_active.dim_labels
 		)
+
 		self._director.scores_active.score_1 = (
-			self._director.scores_active.scores["factoranalysis0"]
+			self._director.scores_active.scores[self._factoranalysis0_name]
 		)
 		self._director.scores_active.score_2 = (
-			self._director.scores_active.scores["factoranalysis1"]
+			self._director.scores_active.scores[self._factoranalysis1_name]
 		)
 		self._director.scores_active.scores = (
 			self._director.scores_active.scores.rename(
 				columns={
-					"factoranalysis0": "Factor 1",
-					"factoranalysis1": "Factor 2",
+					self._factoranalysis0_name: self._factor_1_name,
+					self._factoranalysis1_name: self._factor_2_name,
 				}
 			)
 		)
-		self._director.scores_active.score_1_name = score_1_name
-		self._director.scores_active.score_2_name = score_2_name
+
+		self._director.scores_active.score_1_name = self._factor_1_name
+		self._director.scores_active.score_2_name = self._factor_2_name
 		self._director.scores_active.summarize_scores()
 
 		self._director.common.set_axis_extremes_based_on_coordinates(
 			self._director.scores_active.scores.iloc[:, 1:]
 		)
 
-		if self._director.configuration_active.ndim > 1:
-			fig = self._director.configuration_active.\
-				plot_a_configuration_using_matplotlib()
-			self._director.plot_to_gui(fig)
+		self._director.configuration_active.score_1_name = self._factor_1_name
+		self._director.configuration_active.score_2_name = self._factor_2_name
+		self._director.scores_active.hor_axis_name = self._factor_1_name
+		self._director.scores_active.vert_axis_name = self._factor_2_name
+		self._director.scores_active.ndim = self._director.configuration_active.ndim
 
-		# Store sklearn results in format expected by table widget
-		self._director.configuration_active.x_new = x_new
+	# ------------------------------------------------------------------------
+
+	def _store_sklearn_results_for_display(
+		self, transformer: object, X: pd.DataFrame, # noqa: N803
+		item_names: list[str], nreferent: int
+	) -> None:
+		"""Store sklearn results in format expected by table widget."""
+		ndim = self._director.configuration_active.ndim
+		range_dims = range(ndim)
+
+		self._director.configuration_active.x_new = pd.DataFrame(
+			transformer.transform(X),
+			columns=transformer.get_feature_names_out(),
+		)
 		self._director.configuration_active.ndim = ndim
 		self._director.configuration_active.range_dims = range_dims
-		
-		# Create DataFrames for sklearn results to match classic FA format
-		item_names = self._director.evaluations_active.item_names
-		
-		# Calculate proper eigenvalues from correlation matrix for
-		#  scree diagram
+
 		correlation_matrix = np.corrcoef(X.T)
 		eigenvalues, _ = np.linalg.eigh(correlation_matrix)
-		eigenvalues = np.sort(eigenvalues)[::-1]  # Sort in descending order
-		
-		# Store proper eigenvalues
+		eigenvalues = np.sort(eigenvalues)[::-1]
+
 		self._director.configuration_active.eigen = pd.DataFrame(
 			eigenvalues[:nreferent], columns=["Eigenvalue"]
 		)
-		
-		# For common factor eigenvalues, use the extracted
-		#  factors' explained variance
+
 		explained_variance = np.var(transformer.components_, axis=1)
 		self._director.configuration_active.eigen_common = pd.DataFrame(
 			explained_variance, columns=["Eigenvalue"]
 		)
-		
-		# Calculate pseudo-communalities from loadings
-		#  (sum of squared loadings per item)
-		# Transpose to get items x factors
+
 		loadings_matrix = transformer.components_.T
 		pseudo_communalities = np.sum(loadings_matrix**2, axis=1)
 		self._director.configuration_active.commonalities = pd.DataFrame(
 			pseudo_communalities, columns=["Commonality"], index=item_names
 		)
-		
-		# Calculate pseudo-uniquenesses (1 - communalities)
+
 		pseudo_uniquenesses = 1 - pseudo_communalities
 		self._director.configuration_active.uniquenesses = pd.DataFrame(
 			pseudo_uniquenesses, columns=["Uniqueness"], index=item_names
 		)
-		
-		# Store factor loadings (transpose components to get items x factors)
+
 		self._director.configuration_active.loadings = pd.DataFrame(
 			loadings_matrix,
 			columns=[f"Factor {i+1}" for i in range(transformer.n_components)],
 			index=item_names
 		)
-		
-		# Store transformer attributes for table display
+
 		self._director.configuration_active.\
 			transformer_mean = transformer.mean_
 		self._director.configuration_active.\
 			transformer_noise_variance = transformer.noise_variance_
 
-		# Call helper function to print all debug and output information
-		self._print_Factor_Analysis_M_L(
-			scaler,
-			X,
-			transformer,
-			X_transformed,
-			x_trans,
-			covar,
-			trans,
-			ndim,
-			nitem,
-			range_dims,
-			item_names,
-			range_items,
-			scaler2,
-			new_trans,
-			eigenvalues,
-			nreferent
-		)
-
-		# Create scree diagram with proper eigenvalues
-		self._director.common.create_plot_for_plot_and_gallery_tabs("scree")
-
-		self._display()
-
 		self._director.configuration_active.nreferent = nreferent
-		self._director.title_for_table_widget = \
-			"Factor analysis (Machine Learning)"
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
-		self._director.record_command_as_successfully_completed()
+		self._director.configuration_active.dim_names = self._dim_names
+		self._director.configuration_active.dim_labels = self._dim_labels
 
-		self._director.configuration_active.dim_names = dim_names
-		self._director.configuration_active.dim_labels = dim_labels
-		self._director.configuration_active.covar = covar
+	# ------------------------------------------------------------------------
 
-		self._director.evaluations_active.nitem = nitem
-		self._director.evaluations_active.range_items = range_items
-		self._director.configuration_active.score_1_name = score_1_name
-		self._director.configuration_active.score_2_name = score_2_name
+	def _print_factor_analysis_m_l_results(
+		self, scaler: object, X: pd.DataFrame, transformer: object, # noqa: N803
+		X_transformed: pd.DataFrame, x_trans: pd.DataFrame, # noqa: N803
+		covar: pd.DataFrame, trans: pd.DataFrame, nreferent: int
+	) -> None:
+		"""Print factor analysis results using existing helper method."""
+		from sklearn.preprocessing import StandardScaler
 
-		#
-		# Display configuration with vectors from origin to each point
-		#
+		scaler2_data = self._director.configuration_active.point_coords
+		new_trans = scaler2_data.to_numpy()
 
-		return
+		correlation_matrix = np.corrcoef(X.T)
+		eigenvalues, _ = np.linalg.eigh(correlation_matrix)
+		eigenvalues = np.sort(eigenvalues)[::-1]
+
+		# Create scaler2 for the debug printing function
+		scaler2 = StandardScaler()
+
+		self._print_factor_analysis_m_l(
+			scaler, X, transformer, X_transformed, x_trans, covar, trans,
+			scaler2, new_trans, eigenvalues, nreferent
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -1094,21 +1224,16 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _print_Factor_Analysis_M_L(
+	def _print_factor_analysis_m_l(
 		self,
 		scaler: StandardScaler,
-		X: np.ndarray,
+		X: np.ndarray, # noqa: N803
 		transformer: FactorAnalysis,
-		X_transformed: np.ndarray,
+		X_transformed: np.ndarray, # noqa: N803
 		x_trans: pd.DataFrame,
 		covar: pd.DataFrame,
 		trans: pd.DataFrame,
-		ndim: int,
-		nitem: int,
-		range_dims: range,
-		item_names: list[str],
-		range_items: range,
-		scaler2: "StandardScaler",
+		scaler2: StandardScaler,
 		new_trans: np.ndarray,
 		eigenvalues: np.ndarray,
 		nreferent: int
@@ -1116,6 +1241,7 @@ class FactorAnalysisMachineLearningCommand:
 		"""Print all Factor Analysis Machine Learning debug and
 		output information."""
 		from sklearn.preprocessing import StandardScaler
+
 		print("\n\nscaler: \n", scaler)
 		print("\nScaler.fit(X): \n", scaler.fit(X))
 		print("\nStandardScaler(): \n", StandardScaler())

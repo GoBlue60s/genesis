@@ -978,7 +978,7 @@ class ScoresFeature:
 			print("\t\t", cols[i + 1])
 			self.var_names = [] if self.var_names is None else self.var_names
 			self.var_names = self.var_names.append(pd.Index([cols[i + 1]]))
-		print(scores)
+		print(scores.head(10).to_string(index=False))
 
 		return
 

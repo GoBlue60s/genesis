@@ -1374,6 +1374,7 @@ class MatplotlibMethods:
 		scores_active = director.scores_active
 		score_1 = scores_active.score_1
 		score_2 = scores_active.score_2
+		score_color = scores_active.score_color
 		point_size = director.common.point_size
 		ndim = configuration_active.ndim
 
@@ -1388,7 +1389,7 @@ class MatplotlibMethods:
 		matplotlib_common.add_axes_labels_to_matplotlib_plot(ax)
 		matplotlib_common.set_ranges_for_matplotlib_plot(ax)
 
-		if matplotlib_common.have_reference_points():
+		if self._director.common.have_reference_points():
 			matplotlib_common.add_connector_to_matplotlib_plot(ax)
 			matplotlib_common.add_bisector_to_matplotlib_plot(ax)
 			if matplotlib_common.show_just_reference_points:
@@ -1398,7 +1399,7 @@ class MatplotlibMethods:
 		else:
 			matplotlib_common.add_configuration_to_matplotlib_plot(ax)
 
-		ax.scatter(score_1, score_2, c="green", s=point_size)
+		ax.scatter(score_1, score_2, c=score_color, s=point_size)
 
 		director.set_focus_on_tab("Plot")
 
@@ -1506,7 +1507,6 @@ class MatplotlibMethods:
 		GUI, and sets the focus to the 'Plot' tab. It also updates internal
 		attributes with the plotted score data.
 		"""
-
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -1536,26 +1536,26 @@ class MatplotlibMethods:
 	# -------------------------------------------------------------**---------
 
 	def plot_scores_using_matplotlib(self) -> plt.Figure:
+
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
 		scores_active = director.scores_active
-		hor_axis_name = scores_active.hor_axis_name
-		vert_axis_name = scores_active.vert_axis_name
-		scores = scores_active.scores
+		score_1 = scores_active.score_1
+		score_2 = scores_active.score_2
+		ndim = scores_active.ndim
 		score_color = scores_active.score_color
 		point_size = common.point_size
 
+		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
+
 		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title("Scores")
 		ax = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax)
-
-		ax.set_xlabel(hor_axis_name)
-		ax.set_ylabel(vert_axis_name)
-
+		matplotlib_common.add_axes_labels_to_matplotlib_plot(ax)
 		matplotlib_common.set_ranges_for_matplotlib_plot(ax)
 
-		score_1 = scores[hor_axis_name]
-		score_2 = scores[vert_axis_name]
 		ax.scatter(score_1, score_2, color=score_color, s=point_size)
 
 		self.score_1 = score_1
