@@ -312,57 +312,46 @@ class GeneralStatisticalTableWidget:
 			"Unknown general statistical table requested. "
 		)
 
-	def display_table(self, table_name: str) -> QTableWidget:
-		"""Create and return a general statistical table widget"""
-		result = None
-
-		match table_name:
-			case "alike":
-				source = self._director.similarities_active
-				data = source.alike_df
-				row_headers = []
-				column_headers = data.columns
-				row_height = 4
-				format_spec = ["s", "s", "8.4f"]
-				# String for item and paired with, 4 dec places for similarity
-
-			case "compare":
-				source = self._director.target_active
-				data = source.compare_df
-				row_headers = source.point_names
-				column_headers = [
+		# Dictionary-driven configuration for general statistical tables
+		self.statistics_config = {
+			"alike": {
+				"source_attr": "similarities_active",
+				"data_attr": "alike_df",
+				"row_headers": [],
+				"column_headers_attr": "data.columns",
+				"format_spec": ["s", "s", "8.4f"],
+			},
+			"compare": {
+				"source_attr": "target_active",
+				"data_attr": "compare_df",
+				"row_headers_attr": "source.point_names",
+				"column_headers": [
 					"Active\nX",
 					"Active\nY",
 					"Target\nX",
 					"Target\nY",
-				]
-				row_height = 4
-				# format_spec = "8.4f"  # Same format for all columns
-				format_spec = ["8.4f", "8.4f", "8.4f", "8.4f"]  # Same all cols
-
-			case "directions":
-				source = self._director.configuration_active
-				data = source.directions_df
-				row_headers = source.point_names
-				column_headers = [
+				],
+				"format_spec": ["8.4f", "8.4f", "8.4f", "8.4f"],
+			},
+			"directions": {
+				"source_attr": "configuration_active",
+				"data_attr": "directions_df",
+				"row_headers_attr": "source.point_names",
+				"column_headers": [
 					"Slope",
 					"Unit Circle\nX",
 					"Unit Circle\nY",
 					"Angle in\nDegrees",
 					"Angle in\nRadians",
 					"Quadrant",
-				]
-				row_height = 4
-				format_spec = ["16.2f", "8.2f", "8.2f", "8.2f", "8.2f", "s"]
-
-			case "evaluations":
-				source = self._director.evaluations_active
-				data = source.stats_eval_sorted
-				# peek("In StatisticalTableWidget.evaluations")
-				# peek(f"{source.stats_eval_sorted=}")
-				# row_headers = source.item_names
-				row_headers = source.names_eval_sorted
-				column_headers = [
+				],
+				"format_spec": ["16.2f", "8.2f", "8.2f", "8.2f", "8.2f", "s"],
+			},
+			"evaluations": {
+				"source_attr": "evaluations_active",
+				"data_attr": "stats_eval_sorted",
+				"row_headers_attr": "source.names_eval_sorted",
+				"column_headers": [
 					"Mean",
 					"Standard\nDeviation",
 					"Min",
@@ -370,18 +359,14 @@ class GeneralStatisticalTableWidget:
 					"Median",
 					"Third\nquartile",
 					"Max",
-				]
-				row_height = 4
-				format_spec = "8.2f"  # Same format for all columns
-				# format_spec = ["8.2f", "8.2f", "8.2f", "8.2f",
-				# 	"8.2f", "8.2f", "8.2f"]
-				# Same format for all columns
-
-			case "factor_analysis":
-				source = self._director.configuration_active
-				data = source.factor_analysis_df
-				row_headers = []
-				column_headers = [
+				],
+				"format_spec": "8.2f",
+			},
+			"factor_analysis": {
+				"source_attr": "configuration_active",
+				"data_attr": "factor_analysis_df",
+				"row_headers": [],
+				"column_headers": [
 					"Eigenvalues",
 					"Common Factor\nEigenvalues",
 					"Commonalities",
@@ -389,9 +374,8 @@ class GeneralStatisticalTableWidget:
 					"Item",
 					"Loadings\nFactor 1",
 					"Loadings\nFactor 2",
-				]
-				row_height = 4
-				format_spec = [
+				],
+				"format_spec": [
 					"8.4f",
 					"8.4f",
 					"8.4f",
@@ -399,13 +383,13 @@ class GeneralStatisticalTableWidget:
 					"s",
 					"8.4f",
 					"8.4f",
-				]
-
-			case "individuals":
-				source = self._director.individuals_active
-				data = source.stats_inds
-				row_headers = source.var_names[1:]
-				column_headers = [
+				],
+			},
+			"individuals": {
+				"source_attr": "individuals_active",
+				"data_attr": "stats_inds",
+				"row_headers_attr": "source.var_names[1:]",
+				"column_headers": [
 					"Mean",
 					"Standard\nDeviation",
 					"Min",
@@ -413,65 +397,54 @@ class GeneralStatisticalTableWidget:
 					"First\nquartile",
 					"Median",
 					"Third\nquartile",
-				]
-				row_height = 4
-				format_spec = "8.2f"  # Same format for all columns
-
-			case "paired":
-				source = self._director.current_command
-				data = source._paired_df
-				row_headers = []  # No row headers needed
-				value_type = self._director.similarities_active.value_type
-				# Set conditional column headers based on value_type
-				if value_type == "similarities":
-					column_headers = ["Name", "Similarity", "Distance"]
-				else:
-					column_headers = ["Name", "Dis/similarity", "Distance"]
-				row_height = 4
-				format_spec = ["s", ".4f", ".4f"]
-				# Str for name, 4 dec for numbers
-
-			case "sample_design":
-				source = self._director.uncertainty_active
-				data = source.sample_design_analysis_df
-				row_headers = []
-				column_headers = [
+				],
+				"format_spec": "8.2f",
+			},
+			"paired": {
+				"source_attr": "current_command",
+				"data_attr": "_paired_df",
+				"row_headers": [],
+				"column_headers_dynamic": True,  # Special handling needed
+				"format_spec": ["s", ".4f", ".4f"],
+			},
+			"sample_design": {
+				"source_attr": "uncertainty_active",
+				"data_attr": "sample_design_analysis_df",
+				"row_headers": [],
+				"column_headers": [
 					"Repetition",
 					"Selected \n N",
 					"Percent",
 					"Not selected \n N",
 					"Percent",
-				]
-				row_height = 4
-				format_spec = ["d", "d", ".1f", "d", ".1f"]
-
-			case "sample_repetitions":
-				source = self._director.uncertainty_active
-				data = source.sample_design_analysis_df
-				row_headers = []
-				column_headers = [
+				],
+				"format_spec": ["d", "d", ".1f", "d", ".1f"],
+			},
+			"sample_repetitions": {
+				"source_attr": "uncertainty_active",
+				"data_attr": "sample_design_analysis_df",
+				"row_headers": [],
+				"column_headers": [
 					"Repetition",
 					"Selected \n N",
 					"Percent",
 					"Not selected \n N",
 					"Percent",
-				]
-				row_height = 4
-				format_spec = ["d", "d", ".1f", "d", ".1f"]
-
-			case "sample_solutions":
-				source = self._director.uncertainty_active
-				data = source.solutions_stress_df
-				row_headers = []
-				column_headers = ["Solution", "Stress"]
-				row_height = 4
-				format_spec = ["d", "8.4f"]
-
-			case "scores":
-				source = self._director.scores_active
-				data = source.stats_scores
-				row_headers = source.dim_names
-				column_headers = [
+				],
+				"format_spec": ["d", "d", ".1f", "d", ".1f"],
+			},
+			"sample_solutions": {
+				"source_attr": "uncertainty_active",
+				"data_attr": "solutions_stress_df",
+				"row_headers": [],
+				"column_headers": ["Solution", "Stress"],
+				"format_spec": ["d", "8.4f"],
+			},
+			"scores": {
+				"source_attr": "scores_active",
+				"data_attr": "stats_scores",
+				"row_headers_attr": "source.dim_names",
+				"column_headers": [
 					"Mean",
 					"Standard\nDeviation",
 					"Min",
@@ -479,59 +452,110 @@ class GeneralStatisticalTableWidget:
 					"First\nquartile",
 					"Median",
 					"Third\nquartile",
-				]
-				row_height = 4
-				format_spec = "8.2f"  # Same format for all columns
+				],
+				"format_spec": "8.2f",
+			},
+			"scree": {
+				"source_attr": "configuration_active",
+				"data_attr": "min_stress",
+				"row_headers": [],
+				"column_headers": ["Dimensionality", "Best Stress"],
+				"row_height": 8,  # Special case
+				"format_spec": ["4.0f", "8.2f"],
+			},
+			"stress_contribution": {
+				"source_attr": "similarities_active",
+				"data_attr": "stress_contribution_df",
+				"row_headers": [],
+				"column_headers": ["Item", "Stress Contribution"],
+				"format_spec": ["d", "8.2f"],
+			},
+			"uncertainty": {
+				"source_attr": "uncertainty_active",
+				"data_attr": "solutions_stress_df",
+				"row_headers": [],
+				"column_headers": ["Solution", "Stress"],
+				"format_spec": ["d", "8.4f"],
+			},
+			"spatial_uncertainty": {
+				"source_attr": "uncertainty_active",
+				"data_attr": "solutions_stress_df",
+				"row_headers": [],
+				"column_headers": ["Solution", "Stress"],
+				"format_spec": ["d", "8.4f"],
+			},
+			"cluster_results": {
+				"source_attr": None,  # Special case: uses director.cluster_results
+				"data_attr": None,
+				"row_headers": [],
+				"column_headers_attr": "list(data.columns)",
+				"format_spec_dynamic": True,  # Special handling needed
+			},
+		}
 
-			case "scree":
-				source = self._director.configuration_active
-				data = source.min_stress
-				row_headers = []
-				column_headers = ["Dimensionality", "Best Stress"]
-				row_height = 8
-				format_spec = ["4.0f", "8.2f"]
+	def display_table(self, table_name: str) -> QTableWidget:
+		"""Create and return a general statistical table widget"""
 
-			case "stress_contribution":
-				source = self._director.similarities_active
-				data = source.stress_contribution_df
-				row_headers = []
-				column_headers = ["Item", "Stress Contribution"]
-				row_height = 4
-				format_spec = ["d", "8.2f"]
+		# Check if table_name exists in configuration
+		if table_name not in self.statistics_config:
+			raise SpacesError(
+				self.unknown_statistical_table_error_title,
+				self.unknown_statistical_table_error_message,
+			)
 
-			case "uncertainty":
-				source = self._director.uncertainty_active
-				data = source.solutions_stress_df
-				row_headers = []
-				column_headers = ["Solution", "Stress"]
-				row_height = 4
-				format_spec = ["d", "8.4f"]
+		config = self.statistics_config[table_name]
 
-			case "spatial_uncertainty":
-				source = self._director.uncertainty_active
-				data = source.solutions_stress_df
-				row_headers = []
-				column_headers = ["Solution", "Stress"]
-				row_height = 4
-				format_spec = ["d", "8.4f"]
+		# Handle special cases first
+		if table_name == "cluster_results":
+			data = self._director.cluster_results
+			row_headers = []
+			column_headers = list(data.columns)
+			row_height = 4
+			# Format spec: Cluster (str), Color (str), Percent (str), then coordinates (float)
+			format_spec = ["s", "s", "s"] + ["8.3f"] * (len(data.columns) - 3)
+		elif table_name == "paired":
+			# Special handling for paired table
+			source = getattr(self._director, config["source_attr"])
+			data = getattr(source, config["data_attr"])
+			row_headers = config["row_headers"]
+			value_type = self._director.similarities_active.value_type
+			if value_type == "similarities":
+				column_headers = ["Name", "Similarity", "Distance"]
+			else:
+				column_headers = ["Name", "Dis/similarity", "Distance"]
+			row_height = 4
+			format_spec = config["format_spec"]
+		else:
+			# Standard configuration-driven handling
+			source = getattr(self._director, config["source_attr"])
+			data = getattr(source, config["data_attr"])
 
-			case "cluster_results":
-				data = self._director.cluster_results
-				row_headers = []
-				# Use the actual column names from the data
-				column_headers = list(data.columns)
-				row_height = 4
-				# Format spec should match the actual number of columns
-				# Cluster (int->str), Color (str), Percent (str),
-				# then coordinates (float)
-				format_spec = ["s", "s", "s"] + ["8.3f"] \
-					* (len(data.columns) - 3)
+			# Handle row headers
+			if "row_headers_attr" in config:
+				# Dynamic row headers (e.g., "source.point_names")
+				attr_path = config["row_headers_attr"].split(".")
+				row_headers = source
+				for attr in attr_path[1:]:  # Skip "source"
+					if attr.endswith("]"):  # Handle array indexing like "var_names[1:]"
+						base_attr = attr.split("[")[0]
+						index_expr = attr.split("[")[1].rstrip("]")
+						row_headers = getattr(row_headers, base_attr)
+						if index_expr == "1:":
+							row_headers = row_headers[1:]
+					else:
+						row_headers = getattr(row_headers, attr)
+			else:
+				row_headers = config.get("row_headers", [])
 
-			case _:
-				raise SpacesError(
-					self.unknown_statistical_table_error_title,
-					self.unknown_statistical_table_error_message,
-				)
+			# Handle column headers
+			if "column_headers_attr" in config:
+				if config["column_headers_attr"] == "data.columns":
+					column_headers = data.columns
+			else:
+				column_headers = config["column_headers"]
+
+			row_height = config.get("row_height", 4)  # Default to 4
+			format_spec = config["format_spec"]
 
 		result = self._build_statistical_table(
 			data,
@@ -540,10 +564,6 @@ class GeneralStatisticalTableWidget:
 			row_height,
 			format_spec,
 		)
-
-		# peek("\nAt the end of StatisticalTableWidget.display_table",
-		# 	f"\ndata: \n{data}"
-		# 	)
 
 		return result
 
@@ -641,122 +661,61 @@ class RivalryTableWidget:
 			"Unknown rivalry table requested. "
 		)
 
-	def display_table(self, table_name: str) -> QTableWidget:
-		"""Create and return a rivalry table widget"""
-		result = None
-		noscores = False
-
-		match table_name:
-			case "base":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.base_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
+		# Dictionary-driven configuration for rivalry tables
+		self.rivalry_config = {
+			"base": {
+				"data_attr": "base_pcts_df",
+				"column_headers": [
 					"Base\nSupporters of:",
 					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "battleground":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.battleground_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = ["Region", "Percent of\nPopulation"]
-				row_height = 4
-				format_spec = "8.2f"
-
-			case "convertible":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.conv_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = ["Convertible to:", "Percent of\nPopulation"]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "core":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.core_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
+				],
+				"format_spec": "8.1f",
+			},
+			"battleground": {
+				"data_attr": "battleground_pcts_df",
+				"column_headers": ["Region", "Percent of\nPopulation"],
+				"format_spec": "8.2f",
+			},
+			"convertible": {
+				"data_attr": "conv_pcts_df",
+				"column_headers": ["Convertible to:", "Percent of\nPopulation"],
+				"format_spec": "8.1f",
+			},
+			"core": {
+				"data_attr": "core_pcts_df",
+				"column_headers": [
 					"Core\nSupporters of:",
 					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "first":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.first_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
+				],
+				"format_spec": "8.1f",
+			},
+			"first": {
+				"data_attr": "first_pcts_df",
+				"column_headers": [
 					"Party Oriented\nSupporters of:",
 					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "likely":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.likely_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
+				],
+				"format_spec": "8.1f",
+			},
+			"likely": {
+				"data_attr": "likely_pcts_df",
+				"column_headers": [
 					"Likely\nSupporters of:",
 					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "second":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.second_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
+				],
+				"format_spec": "8.1f",
+			},
+			"second": {
+				"data_attr": "second_pcts_df",
+				"column_headers": [
 					"Social Oriented\nSupporters of:",
 					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "segments":
-				source = self._director.rivalry
-				data = source.segments_pcts_df
-				row_headers = [
+				],
+				"format_spec": "8.1f",
+			},
+			"segments": {
+				"data_attr": "segments_pcts_df",
+				"row_headers": [
 					"Likely Supporters:",
 					"",
 					"Base supporters",
@@ -774,16 +733,47 @@ class RivalryTableWidget:
 					"Convertible",
 					"",
 					"",
-				]
-				column_headers = ["Segment", "Percent of\nPopulation"]
-				row_height = 4
-				format_spec = "8.1f"
+				],
+				"column_headers": ["Segment", "Percent of\nPopulation"],
+				"format_spec": "8.1f",
+				"requires_scores": False,  # segments doesn't check scores
+			},
+		}
 
-			case _:
-				raise SpacesError(
-					self.unknown_rivalry_table_error_title,
-					self.unknown_rivalry_table_error_message,
-				)
+	def display_table(self, table_name: str) -> QTableWidget:
+		"""Create and return a rivalry table widget"""
+
+		# Check if table_name exists in configuration
+		if table_name not in self.rivalry_config:
+			raise SpacesError(
+				self.unknown_rivalry_table_error_title,
+				self.unknown_rivalry_table_error_message,
+			)
+
+		config = self.rivalry_config[table_name]
+		source = self._director.rivalry
+
+		# Handle score dependency (all except segments require scores)
+		requires_scores = config.get("requires_scores", True)
+		noscores = False
+
+		if requires_scores:
+			if self._director.common.have_scores():
+				data = getattr(source, config["data_attr"])
+				noscores = False
+			else:
+				data = None
+				noscores = True
+		else:
+			# segments case - doesn't check scores
+			data = getattr(source, config["data_attr"])
+			noscores = False
+
+		# Get configuration values
+		row_headers = config.get("row_headers", [])  # Default to empty
+		column_headers = config["column_headers"]
+		row_height = 4  # All rivalry tables use height 4
+		format_spec = config["format_spec"]
 
 		result = self._build_rivalry_table(
 			data,
