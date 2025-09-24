@@ -48,7 +48,8 @@ from table_builder import (
 	BuildOutputForGUI,
 	BasicTableWidget,
 	SquareTableWidget,
-	StatisticalTableWidget,
+	GeneralStatisticalTableWidget,
+	RivalryTableWidget,
 )
 from common import Spaces
 from matplotlib_plots import MatplotlibMethods
@@ -70,7 +71,8 @@ class Status(QMainWindow):
 		self.dependency_checker = DependencyChecking(self)
 		self.tables = BasicTableWidget(self)
 		self.squares = SquareTableWidget(self)
-		self.statistics = StatisticalTableWidget(self)
+		self.statistics = GeneralStatisticalTableWidget(self)
+		self.rivalry_tables = RivalryTableWidget(self)
 
 		#
 		# Establish initialization groups
@@ -2950,12 +2952,12 @@ class BuildWidgetDict:
 			"Base": [
 				BaseCommand,
 				"shared",
-				lambda: parent.statistics.display_table("base"),
+				lambda: parent.rivalry_tables.display_table("base"),
 			],
 			"Battleground": [
 				BattlegroundCommand,
 				"shared",
-				lambda: parent.statistics.display_table("battleground"),
+				lambda: parent.rivalry_tables.display_table("battleground"),
 			],
 			"Center": [
 				CenterCommand,
@@ -2977,12 +2979,12 @@ class BuildWidgetDict:
 			"Convertible": [
 				ConvertibleCommand,
 				"shared",
-				lambda: parent.statistics.display_table("convertible"),
+				lambda: parent.rivalry_tables.display_table("convertible"),
 			],
 			"Core supporters": [
 				CoreSupportersCommand,
 				"shared",
-				lambda: parent.statistics.display_table("core"),
+				lambda: parent.rivalry_tables.display_table("core"),
 			],
 			"Correlations": [
 				CorrelationsCommand,
@@ -3023,7 +3025,7 @@ class BuildWidgetDict:
 			"First dimension": [
 				FirstDimensionCommand,
 				"shared",
-				lambda: parent.statistics.display_table("first"),
+				lambda: parent.rivalry_tables.display_table("first"),
 			],
 			"Grouped data": [
 				GroupedDataCommand,
@@ -3046,7 +3048,7 @@ class BuildWidgetDict:
 			"Likely supporters": [
 				LikelySupportersCommand,
 				"shared",
-				lambda: parent.statistics.display_table("likely"),
+				lambda: parent.rivalry_tables.display_table("likely"),
 			],
 			"Line of sight": [
 				LineOfSightCommand,
@@ -3248,12 +3250,12 @@ class BuildWidgetDict:
 			"Second dimension": [
 				SecondDimensionCommand,
 				"shared",
-				lambda: parent.statistics.display_table("second"),
+				lambda: parent.rivalry_tables.display_table("second"),
 			],
 			"Segments": [
 				SegmentsCommand,
 				"shared",
-				lambda: parent.statistics.display_table("segments"),
+				lambda: parent.rivalry_tables.display_table("segments"),
 			],
 			"Settings - plot settings": [SettingsPlotCommand, "unique", None],
 			"Settings - plane": [SettingsPlaneCommand, "unique", None],

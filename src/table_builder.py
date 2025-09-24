@@ -302,19 +302,20 @@ class SquareTableWidget:
 # --------------------------------------------------------------------------
 
 
-class StatisticalTableWidget:
+class GeneralStatisticalTableWidget:
+	"""Handles score-independent statistical tables"""
+
 	def __init__(self, director: Status) -> None:
 		self._director = director
-		self.unknown_statistical_table_error_title = "Statistical Table Widget"
+		self.unknown_statistical_table_error_title = "General Statistical Table Widget"
 		self.unknown_statistical_table_error_message = (
-			"Unknown statistical table requested. "
+			"Unknown general statistical table requested. "
 		)
 
 	def display_table(self, table_name: str) -> QTableWidget:
-		"""Create and return a statistical table widget"""
+		"""Create and return a general statistical table widget"""
 		result = None
 
-		noscores = False
 		match table_name:
 			case "alike":
 				source = self._director.similarities_active
@@ -324,35 +325,6 @@ class StatisticalTableWidget:
 				row_height = 4
 				format_spec = ["s", "s", "8.4f"]
 				# String for item and paired with, 4 dec places for similarity
-
-			case "base":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.base_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
-					"Base\nSupporters of:",
-					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "battleground":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.battleground_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = ["Region", "Percent of\nPopulation"]
-				row_height = 4
-				format_spec = "8.2f"
 
 			case "compare":
 				source = self._director.target_active
@@ -367,35 +339,6 @@ class StatisticalTableWidget:
 				row_height = 4
 				# format_spec = "8.4f"  # Same format for all columns
 				format_spec = ["8.4f", "8.4f", "8.4f", "8.4f"]  # Same all cols
-
-			case "convertible":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.conv_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = ["Convertible to:", "Percent of\nPopulation"]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "core":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.core_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
-					"Core\nSupporters of:",
-					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
 
 			case "directions":
 				source = self._director.configuration_active
@@ -458,22 +401,6 @@ class StatisticalTableWidget:
 					"8.4f",
 				]
 
-			case "first":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.first_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
-					"Party Oriented\nSupporters of:",
-					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
 			case "individuals":
 				source = self._director.individuals_active
 				data = source.stats_inds
@@ -489,22 +416,6 @@ class StatisticalTableWidget:
 				]
 				row_height = 4
 				format_spec = "8.2f"  # Same format for all columns
-
-			case "likely":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.likely_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
-					"Likely\nSupporters of:",
-					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
 
 			case "paired":
 				source = self._director.current_command
@@ -580,48 +491,6 @@ class StatisticalTableWidget:
 				row_height = 8
 				format_spec = ["4.0f", "8.2f"]
 
-			case "second":
-				source = self._director.rivalry
-				if self._director.common.have_scores():
-					data = source.second_pcts_df
-					noscores = False
-				else:
-					data = None
-					noscores = True
-				row_headers = []
-				column_headers = [
-					"Social Oriented\nSupporters of:",
-					"Percent of\nPopulation",
-				]
-				row_height = 4
-				format_spec = "8.1f"
-
-			case "segments":
-				source = self._director.rivalry
-				data = source.segments_pcts_df
-				row_headers = [
-					"Likely Supporters:",
-					"",
-					"Base supporters",
-					"",
-					"",
-					"Core Supporters",
-					"",
-					"",
-					"Party oriented",
-					"",
-					"Social oriented",
-					"",
-					"Battleground",
-					"",
-					"Convertible",
-					"",
-					"",
-				]
-				column_headers = ["Segment", "Percent of\nPopulation"]
-				row_height = 4
-				format_spec = "8.1f"
-
 			case "stress_contribution":
 				source = self._director.similarities_active
 				data = source.stress_contribution_df
@@ -670,7 +539,6 @@ class StatisticalTableWidget:
 			column_headers,
 			row_height,
 			format_spec,
-			noscores,
 		)
 
 		# peek("\nAt the end of StatisticalTableWidget.display_table",
@@ -688,7 +556,6 @@ class StatisticalTableWidget:
 		column_headers: list[str],
 		row_height: int,
 		format_spec: str | list[str],
-		noscores: bool = False,
 	) -> QTableWidget:
 		"""Build a statistical table with the given data and formatting
 
@@ -698,8 +565,256 @@ class StatisticalTableWidget:
 			If str, the same format is used for all columns
 			If list, each element is the format for a specific column
 		"""
-		# peek("At top of StatisticalTableWidget._build_statistical_table")
-		# peek(format_spec)
+		# Create the table widget
+		table_widget = QTableWidget(data.shape[0], data.shape[1])
+
+		# Check if format_spec is a list or a single string
+		use_column_specific_formats = isinstance(format_spec, list)
+
+		# Fill table with data
+		for row in range(data.shape[0]):
+			for col in range(data.shape[1]):
+				try:
+					value = data.iloc[row, col]
+
+					# Get the appropriate format for this column
+					if use_column_specific_formats and col < len(format_spec):
+						column_format = format_spec[col]
+					else:
+						column_format = format_spec
+
+					# Format the value based on format type
+					if column_format == "d":
+						if isinstance(value, (int, float)):
+							formatted_value = str(int(value))
+						else:
+							formatted_value = str(value)
+					elif column_format == "s":
+						formatted_value = str(value)
+					elif isinstance(value, (int, float)):
+						# Format numeric values
+						formatted_value = f"{value:{column_format}}"
+					else:
+						formatted_value = str(value)
+
+					item = QTableWidgetItem(formatted_value)
+
+					# Set alignment based on column format
+					if column_format == "s":
+						item.setTextAlignment(
+							QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+						)
+					else:
+						item.setTextAlignment(
+							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						)
+
+					table_widget.setItem(row, col, item)
+
+				except (ValueError, TypeError) as e:
+					# Handle formatting errors for cell values
+					print(f"Error formatting cell ({row}, {col}): {e!s}")
+					print(f"Value: {value}, Column format: {column_format},"
+						f"\n\tFormat spec: {format_spec}")
+					table_widget.setItem(row, col, QTableWidgetItem("Error"))
+
+		# Set headers and visual properties
+		self._director.set_column_and_row_headers(
+			table_widget, column_headers, row_headers
+		)
+		self._director.resize_and_set_table_size(table_widget, row_height)
+		self._director.output_widget_type = "Table"
+
+		return table_widget
+
+
+# --------------------------------------------------------------------------
+
+
+class RivalryTableWidget:
+	"""Handles score-dependent rivalry segment tables"""
+
+	def __init__(self, director: Status) -> None:
+		self._director = director
+		self.unknown_rivalry_table_error_title = "Rivalry Table Widget"
+		self.unknown_rivalry_table_error_message = (
+			"Unknown rivalry table requested. "
+		)
+
+	def display_table(self, table_name: str) -> QTableWidget:
+		"""Create and return a rivalry table widget"""
+		result = None
+		noscores = False
+
+		match table_name:
+			case "base":
+				source = self._director.rivalry
+				if self._director.common.have_scores():
+					data = source.base_pcts_df
+					noscores = False
+				else:
+					data = None
+					noscores = True
+				row_headers = []
+				column_headers = [
+					"Base\nSupporters of:",
+					"Percent of\nPopulation",
+				]
+				row_height = 4
+				format_spec = "8.1f"
+
+			case "battleground":
+				source = self._director.rivalry
+				if self._director.common.have_scores():
+					data = source.battleground_pcts_df
+					noscores = False
+				else:
+					data = None
+					noscores = True
+				row_headers = []
+				column_headers = ["Region", "Percent of\nPopulation"]
+				row_height = 4
+				format_spec = "8.2f"
+
+			case "convertible":
+				source = self._director.rivalry
+				if self._director.common.have_scores():
+					data = source.conv_pcts_df
+					noscores = False
+				else:
+					data = None
+					noscores = True
+				row_headers = []
+				column_headers = ["Convertible to:", "Percent of\nPopulation"]
+				row_height = 4
+				format_spec = "8.1f"
+
+			case "core":
+				source = self._director.rivalry
+				if self._director.common.have_scores():
+					data = source.core_pcts_df
+					noscores = False
+				else:
+					data = None
+					noscores = True
+				row_headers = []
+				column_headers = [
+					"Core\nSupporters of:",
+					"Percent of\nPopulation",
+				]
+				row_height = 4
+				format_spec = "8.1f"
+
+			case "first":
+				source = self._director.rivalry
+				if self._director.common.have_scores():
+					data = source.first_pcts_df
+					noscores = False
+				else:
+					data = None
+					noscores = True
+				row_headers = []
+				column_headers = [
+					"Party Oriented\nSupporters of:",
+					"Percent of\nPopulation",
+				]
+				row_height = 4
+				format_spec = "8.1f"
+
+			case "likely":
+				source = self._director.rivalry
+				if self._director.common.have_scores():
+					data = source.likely_pcts_df
+					noscores = False
+				else:
+					data = None
+					noscores = True
+				row_headers = []
+				column_headers = [
+					"Likely\nSupporters of:",
+					"Percent of\nPopulation",
+				]
+				row_height = 4
+				format_spec = "8.1f"
+
+			case "second":
+				source = self._director.rivalry
+				if self._director.common.have_scores():
+					data = source.second_pcts_df
+					noscores = False
+				else:
+					data = None
+					noscores = True
+				row_headers = []
+				column_headers = [
+					"Social Oriented\nSupporters of:",
+					"Percent of\nPopulation",
+				]
+				row_height = 4
+				format_spec = "8.1f"
+
+			case "segments":
+				source = self._director.rivalry
+				data = source.segments_pcts_df
+				row_headers = [
+					"Likely Supporters:",
+					"",
+					"Base supporters",
+					"",
+					"",
+					"Core Supporters",
+					"",
+					"",
+					"Party oriented",
+					"",
+					"Social oriented",
+					"",
+					"Battleground",
+					"",
+					"Convertible",
+					"",
+					"",
+				]
+				column_headers = ["Segment", "Percent of\nPopulation"]
+				row_height = 4
+				format_spec = "8.1f"
+
+			case _:
+				raise SpacesError(
+					self.unknown_rivalry_table_error_title,
+					self.unknown_rivalry_table_error_message,
+				)
+
+		result = self._build_rivalry_table(
+			data,
+			row_headers,
+			column_headers,
+			row_height,
+			format_spec,
+			noscores,
+		)
+
+		return result
+
+	# -----------------------------------------------------------------------
+
+	def _build_rivalry_table(
+		self,
+		data: pd.DataFrame,
+		row_headers: list[str],
+		column_headers: list[str],
+		row_height: int,
+		format_spec: str | list[str],
+		noscores: bool = False,
+	) -> QTableWidget:
+		"""Build a rivalry table with the given data and formatting
+
+		Parameters:
+		-----------
+		format_spec : str or list
+			If str, the same format is used for all columns
+			If list, each element is the format for a specific column
+		"""
 
 		if noscores:
 			table_widget = QTableWidget(1, 1)
