@@ -8,7 +8,7 @@ class Command:
 			self._do_work()
 		except Exception as e:
 			# Handle the exception here (log it, clean up, etc.)
-			logging.error(f"Error in Command: {e}")
+			logging.exception(f"Error in Command: {e}")
 			# Exception is handled, so control returns to the caller without propagating the exception
 
 	def _do_work(self):

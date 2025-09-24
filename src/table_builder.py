@@ -164,7 +164,7 @@ class BasicTableWidget:
 		except AttributeError as e:
 			print(
 				f"Cannot display basic table: Required data not available.\n"
-				f"Error: {str(e)}"
+				f"Error: {e!s}"
 			)
 			return QTableWidget()
 		else:
@@ -653,8 +653,10 @@ class StatisticalTableWidget:
 				column_headers = list(data.columns)
 				row_height = 4
 				# Format spec should match the actual number of columns
-				# Cluster (int->str), Color (str), Percent (str), then coordinates (float)
-				format_spec = ["s", "s", "s"] + ["8.3f"] * (len(data.columns) - 3)
+				# Cluster (int->str), Color (str), Percent (str),
+				# then coordinates (float)
+				format_spec = ["s", "s", "s"] + ["8.3f"] \
+					* (len(data.columns) - 3)
 
 			case _:
 				raise SpacesError(
@@ -687,7 +689,7 @@ class StatisticalTableWidget:
 		row_height: int,
 		format_spec: str | list[str],
 		noscores: bool = False,
-	) -> QTableWidget:  # noqa: FBT001, FBT002
+	) -> QTableWidget:
 		"""Build a statistical table with the given data and formatting
 
 		Parameters:
@@ -764,7 +766,8 @@ class StatisticalTableWidget:
 				except (ValueError, TypeError) as e:
 					# Handle formatting errors for cell values
 					print(f"Error formatting cell ({row}, {col}): {e!s}")
-					print(f"Value: {value}, Column format: {column_format}, Format spec: {format_spec}")
+					print(f"Value: {value}, Column format: {column_format},"
+						f"\n\tFormat spec: {format_spec}")
 					table_widget.setItem(row, col, QTableWidgetItem("Error"))
 
 		# Set headers and visual properties

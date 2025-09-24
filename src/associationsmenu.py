@@ -6,7 +6,6 @@ from __future__ import annotations
 # Third-party imports
 import numpy as np
 import pandas as pd
-import peek
 
 from PySide6.QtWidgets import QDialog, QTableWidget
 from sklearn import manifold

@@ -1977,7 +1977,8 @@ class PyQtGraphMethods:
 # ------------------------------------------------------------------------
 
 	def _extract_dyad_data_for_point(
-		self, point_label: str, ranks_df: pd.DataFrame, range_similarities: range
+		self, point_label: str, ranks_df: pd.DataFrame,
+		range_similarities: range
 	) -> tuple[list[int], list[int], list[str], list[int]]:
 		x_others = []
 		y_others = []
@@ -2317,7 +2318,9 @@ class PyQtGraphMethods:
 			self._add_point_scatter_and_label(
 				plot, each_point, x_coords, y_coords, x_mean, y_mean
 			)
-			self._add_ellipse_visualization(plot, x_coords, y_coords)
+			self._add_ellipse_mode_pyqtgraph(
+				plot, x_coords, y_coords, x_mean, y_mean
+			)
 
 		director.set_focus_on_tab("Plot")
 
@@ -2391,6 +2394,7 @@ class PyQtGraphMethods:
 	) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
 		uncertainty_active = director.uncertainty_active
 		range_points = uncertainty_active.range_points
 		npoint = uncertainty_active.npoints
@@ -2414,15 +2418,22 @@ class PyQtGraphMethods:
 			self._add_point_scatter_and_label(
 				plot, each_point, x_coords, y_coords, x_mean, y_mean
 			)
-			self._add_uncertainty_visualization(
-				plot,
-				plot_to_show,
-				each_point,
-				x_coords,
-				y_coords,
-				x_mean,
-				y_mean,
-			)
+
+			match plot_to_show:
+				case "ellipses":
+					pyqtgraph_common.add_ellipse_mode_pyqtgraph(
+						plot, x_coords, y_coords, x_mean, y_mean
+					)
+				case "boxes":
+					pyqtgraph_common.add_box_mode_pyqtgraph(plot, each_point)
+				case "lines":
+					pyqtgraph_common.add_lines_mode_pyqtgraph(
+						plot, each_point, x_mean, y_mean
+					)
+				case "circles":
+					pyqtgraph_common.add_circles_mode_pyqtgraph(
+						plot, each_point, x_mean, y_mean
+					)
 
 		director.set_focus_on_tab("Plot")
 
@@ -2495,107 +2506,6 @@ class PyQtGraphMethods:
 		)
 		plot.addItem(scatter)
 
-# ------------------------------------------------------------------------
-
-	def _add_ellipse_visualization(
-		self, plot: pg.PlotItem, x_coords: np.ndarray, y_coords: np.ndarray
-	) -> None:
-		"""Add ellipse visualization to the plot."""
-		director = self._director
-		pyqtgraph_common = director.pyqtgraph_common
-
-		ellipse = pyqtgraph_common.confidence_ellipse_using_pyqtgraph(
-			x_coords, y_coords, n_std=2.0
-		)
-		plot.addItem(ellipse)
-
-# ------------------------------------------------------------------------
-
-	def _add_box_visualization(
-		self, plot: pg.PlotItem, each_point: int
-	) -> None:
-		"""Add box visualization to the plot."""
-		director = self._director
-		common = director.common
-
-		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
-		box_x = [x_max, x_min, x_min, x_max, x_max]
-		box_y = [y_max, y_max, y_min, y_min, y_max]
-		box_line = pg.PlotCurveItem(x=box_x, y=box_y, pen="r")
-		plot.addItem(box_line)
-
-# ------------------------------------------------------------------------
-
-	def _add_lines_visualization(
-		self,
-		plot: pg.PlotItem,
-		each_point: int,
-		x_mean: float,
-		y_mean: float,
-	) -> None:
-		"""Add cross lines visualization to the plot."""
-		director = self._director
-		common = director.common
-
-		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
-		line_up = pg.PlotCurveItem(
-			x=[x_mean, x_mean], y=[y_mean, y_max], pen="r"
-		)
-		line_down = pg.PlotCurveItem(
-			x=[x_mean, x_mean], y=[y_mean, y_min], pen="r"
-		)
-		line_right = pg.PlotCurveItem(
-			x=[x_mean, x_max], y=[y_mean, y_mean], pen="r"
-		)
-		line_left = pg.PlotCurveItem(
-			x=[x_mean, x_min], y=[y_mean, y_mean], pen="r"
-		)
-		plot.addItem(line_up)
-		plot.addItem(line_down)
-		plot.addItem(line_right)
-		plot.addItem(line_left)
-
-# ------------------------------------------------------------------------
-
-	def _add_circle_visualization(
-		self,
-		plot: pg.PlotItem,
-		each_point: int,
-		x_mean: float,
-		y_mean: float,
-	) -> None:
-		"""Add circle visualization to the plot."""
-		director = self._director
-		common = director.common
-
-		radius = common.largest_uncertainty(each_point)
-		circle = pg.QtWidgets.QGraphicsEllipseItem(
-			x_mean - radius, y_mean - radius, 2 * radius, 2 * radius
-		)
-		circle.setPen(pg.mkPen("r"))
-		plot.addItem(circle)
-
-# ------------------------------------------------------------------------
-
-	def _add_uncertainty_visualization(
-		self,
-		plot: pg.PlotItem,
-		plot_to_show: str,
-		each_point: int,
-		x_coords: np.ndarray,
-		y_coords: np.ndarray,
-		x_mean: float,
-		y_mean: float,
-	) -> None:
-		"""Add the appropriate uncertainty visualization based on plot mode."""
-		if plot_to_show == "ellipses":
-			self._add_ellipse_visualization(plot, x_coords, y_coords)
-		elif plot_to_show == "boxes":
-			self._add_box_visualization(plot, each_point)
-		elif plot_to_show == "lines":
-			self._add_lines_visualization(plot, each_point, x_mean, y_mean)
-		elif plot_to_show == "circles":
-			self._add_circle_visualization(plot, each_point, x_mean, y_mean)
 
 	# ------------------------------------------------------------------------
 
@@ -2630,7 +2540,6 @@ class PyQtGraphMethods:
 		vert_dim = common.vert_dim
 		dim_names = uncertainty_active.dim_names
 		point_labels = uncertainty_active.point_labels
-		point_size = common.point_size
 		range_points = uncertainty_active.range_points
 		npoint = uncertainty_active.npoints
 		ndim = uncertainty_active.ndim
@@ -2639,14 +2548,10 @@ class PyQtGraphMethods:
 			director.set_focus_on_tab("Output")
 			return None
 
-		# Get the visualization mode from the ViewPointUncertainty command
 		plot_to_show = getattr(director, "plot_to_show", "ellipses")
-
-		# Get selected points from the command instance
 		selected_point_indices = getattr(
 			director, "selected_point_indices", range_points
 		)
-
 		solutions = uncertainty_active.solutions
 
 		title = "Uncertainty"
@@ -2658,14 +2563,12 @@ class PyQtGraphMethods:
 		plot.setLabel("bottom", dim_names[hor_dim])
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
-		# Show labels for ALL points
 		for each_point in range_points:
 			x_mean, y_mean = common.solutions_means(each_point)
 			label_text = pg.TextItem(text=point_labels[each_point], color="k")
 			label_text.setPos(x_mean, y_mean)
 			plot.addItem(label_text)
 
-		# Show uncertainty visualization only for SELECTED points
 		for each_point in selected_point_indices:
 			point_coordinates_for_repetition = solutions.iloc[
 				each_point::npoint
@@ -2674,64 +2577,31 @@ class PyQtGraphMethods:
 			y_coords = point_coordinates_for_repetition.iloc[:, 1].to_numpy()
 			x_mean, y_mean = common.solutions_means(each_point)
 
-			# Plot scatter points
 			scatter = pg.ScatterPlotItem(
-				x_coords,
-				y_coords,
-				size=0.5,
-				pen=pg.mkPen("r"),
-				brush=pg.mkBrush("r"),
+				x_coords, y_coords, size=0.5,
+				pen=pg.mkPen("r"), brush=pg.mkBrush("r")
 			)
 			plot.addItem(scatter)
 
-			if plot_to_show == "ellipses":
-				# Ellipse mode - need to implement ellipse for pyqtgraph
-				# For now, use circle as approximation
-				radius = np.sqrt(np.var(x_coords) + np.var(y_coords))
-				circle = pg.CircleROI(
-					[x_mean - radius, y_mean - radius],
-					[2 * radius, 2 * radius],
-					movable=False,
-				)
-				circle.setPen(pg.mkPen("r"))
-				plot.addItem(circle)
-			elif plot_to_show == "boxes":
-				# Box mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				box_x = [x_max, x_min, x_min, x_max, x_max]
-				box_y = [y_max, y_max, y_min, y_min, y_max]
-				box_line = pg.PlotDataItem(box_x, box_y, pen=pg.mkPen("r"))
-				plot.addItem(box_line)
-			elif plot_to_show == "lines":
-				# Lines mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				# Draw cross lines from center to extremes
-				v_line = pg.PlotDataItem(
-					[x_mean, x_mean], [y_min, y_max], pen=pg.mkPen("r")
-				)
-				h_line = pg.PlotDataItem(
-					[x_min, x_max], [y_mean, y_mean], pen=pg.mkPen("r")
-				)
-				plot.addItem(v_line)
-				plot.addItem(h_line)
-			elif plot_to_show == "circles":
-				# Circle mode using largest_uncertainty as radius
-				radius = common.largest_uncertainty(each_point)
-				circle = pg.CircleROI(
-					[x_mean - radius, y_mean - radius],
-					[2 * radius, 2 * radius],
-					movable=False,
-				)
-				circle.setPen(pg.mkPen("r"))
-				plot.addItem(circle)
+			match plot_to_show:
+				case "ellipses":
+					pyqtgraph_common.add_ellipse_mode_pyqtgraph(
+						plot, x_coords, y_coords, x_mean, y_mean
+					)
+				case "boxes":
+					pyqtgraph_common.add_box_mode_pyqtgraph(plot, each_point)
+				case "lines":
+					pyqtgraph_common.add_lines_mode_pyqtgraph(
+						plot, each_point, x_mean, y_mean
+					)
+				case "circles":
+					pyqtgraph_common.add_circles_mode_pyqtgraph(
+						plot, each_point, x_mean, y_mean
+					)
 
 		director.set_focus_on_tab("Plot")
-
 		return graphics_layout_widget
+
 
 	# ------------------------------------------------------------------------
 

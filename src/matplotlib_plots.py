@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import numpy as np
-import peek
 
 from matplotlib import pyplot as plt
 
@@ -1571,7 +1570,8 @@ class MatplotlibMethods:
 		scores = scores_active.scores
 		point_size = common.point_size
 
-		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title("Clusters")
+		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
+			"Clusters")
 		ax = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax)
 
 		ax.set_xlabel(hor_axis_name)
@@ -2022,48 +2022,21 @@ class MatplotlibMethods:
 			ax.text(x_mean, y_mean, point_labels[each_point])
 			ax.scatter(x_coords, y_coords, color="r", s=0.5)
 
-			if plot_to_show == "ellipses":
-				# Default ellipse mode - same as regular uncertainty
-				ax.patches.Ellipse = (
-					matplotlib_common.confidence_ellipse_using_matplotlib(
-						x_coords,
-						y_coords,
-						ax,
-						n_std=2.0,
-						facecolor="none",
-						edgecolor="r",
+			match plot_to_show:
+				case "ellipses":
+					matplotlib_common.add_ellipse_mode_matplotlib(
+						ax, x_coords, y_coords
 					)
-				)
-			elif plot_to_show == "boxes":
-				# Box mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				# Create box connecting corner points
-				box_x = [x_max, x_min, x_min, x_max, x_max]
-				box_y = [y_max, y_max, y_min, y_min, y_max]
-				ax.plot(box_x, box_y, color="r", linewidth=1)
-			elif plot_to_show == "lines":
-				# Lines mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				# Draw cross lines from center to extremes
-				ax.plot([x_mean, x_mean], [y_mean, y_max], color="r")
-				ax.plot([x_mean, x_mean], [y_mean, y_min], color="r")
-				ax.plot([x_mean, x_max], [y_mean, y_mean], color="r")
-				ax.plot([x_mean, x_min], [y_mean, y_mean], color="r")
-			elif plot_to_show == "circles":
-				# Circle mode using largest_uncertainty as radius
-				radius = common.largest_uncertainty(each_point)
-				circle = plt.Circle(
-					(x_mean, y_mean),
-					radius,
-					fill=False,
-					edgecolor="r",
-					linewidth=1,
-				)
-				ax.add_patch(circle)
+				case "boxes":
+					matplotlib_common.add_box_mode_matplotlib(ax, each_point)
+				case "lines":
+					matplotlib_common.add_lines_mode_matplotlib(
+						ax, each_point, x_mean, y_mean
+					)
+				case "circles":
+					matplotlib_common.add_circles_mode_matplotlib(
+						ax, each_point, x_mean, y_mean
+					)
 
 		director.set_focus_on_tab("Plot")
 
@@ -2105,14 +2078,10 @@ class MatplotlibMethods:
 			director.set_focus_on_tab("Output")
 			return None
 
-		# Get the visualization mode from the ViewPointUncertainty command
 		plot_to_show = getattr(director, "plot_to_show", "ellipses")
-
-		# Get selected points from the command instance
 		selected_point_indices = getattr(
 			director, "selected_point_indices", range_points
 		)
-
 		solutions = uncertainty_active.solutions
 
 		title = "Uncertainty"
@@ -2122,12 +2091,10 @@ class MatplotlibMethods:
 		ax.set_ylabel(dim_names[vert_dim])
 		matplotlib_common.set_ranges_for_matplotlib_plot(ax)
 
-		# Show labels for ALL points
 		for each_point in range_points:
 			x_mean, y_mean = common.solutions_means(each_point)
 			ax.text(x_mean, y_mean, point_labels[each_point])
 
-		# Show uncertainty visualization only for SELECTED points
 		for each_point in selected_point_indices:
 			point_coordinates_for_repetition = solutions.iloc[
 				each_point::npoint
@@ -2137,52 +2104,25 @@ class MatplotlibMethods:
 			x_mean, y_mean = common.solutions_means(each_point)
 			ax.scatter(x_coords, y_coords, color="r", s=0.5)
 
-			if plot_to_show == "ellipses":
-				# Default ellipse mode - same as regular uncertainty
-				ax.patches.Ellipse = (
-					matplotlib_common.confidence_ellipse_using_matplotlib(
-						x_coords,
-						y_coords,
-						ax,
-						n_std=2.0,
-						facecolor="none",
-						edgecolor="r",
+			match plot_to_show:
+				case "ellipses":
+					matplotlib_common.add_ellipse_mode_matplotlib(
+						ax, x_coords, y_coords
 					)
-				)
-			elif plot_to_show == "boxes":
-				# Box mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				# Create box connecting corner points
-				box_x = [x_max, x_min, x_min, x_max, x_max]
-				box_y = [y_max, y_max, y_min, y_min, y_max]
-				ax.plot(box_x, box_y, color="r", linewidth=1)
-			elif plot_to_show == "lines":
-				# Lines mode using point_solutions_extrema
-				x_max, x_min, y_max, y_min = common.point_solutions_extrema(
-					each_point
-				)
-				# Draw cross lines from center to extremes
-				ax.plot([x_mean, x_mean], [y_mean, y_max], color="r")
-				ax.plot([x_mean, x_mean], [y_mean, y_min], color="r")
-				ax.plot([x_mean, x_max], [y_mean, y_mean], color="r")
-				ax.plot([x_mean, x_min], [y_mean, y_mean], color="r")
-			elif plot_to_show == "circles":
-				# Circle mode using largest_uncertainty as radius
-				radius = common.largest_uncertainty(each_point)
-				circle = plt.Circle(
-					(x_mean, y_mean),
-					radius,
-					fill=False,
-					edgecolor="r",
-					linewidth=1,
-				)
-				ax.add_patch(circle)
+				case "boxes":
+					matplotlib_common.add_box_mode_matplotlib(ax, each_point)
+				case "lines":
+					matplotlib_common.add_lines_mode_matplotlib(
+						ax, each_point, x_mean, y_mean
+					)
+				case "circles":
+					matplotlib_common.add_circles_mode_matplotlib(
+						ax, each_point, x_mean, y_mean
+					)
 
 		director.set_focus_on_tab("Plot")
-
 		return fig
+
 
 	# ------------------------------------------------------------------------
 

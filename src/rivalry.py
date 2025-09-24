@@ -1455,7 +1455,7 @@ class Rivalry:
 
 	def set_line_attributes_based_on_location_of_rivals(
 		self, director: Status, common: Spaces
-	) -> None:  # noqa: ARG002
+	) -> None:
 		"""
 		This function establishes the attributes of the connector,
 		the bisector,
@@ -1546,7 +1546,7 @@ class Rivalry:
 
 	def set_region_attributes_based_on_location_of_rivals(
 		self, director: Status, common: Spaces
-	) -> None:  # noqa: ARG002
+	) -> None:
 		point_coords = director.configuration_active.point_coords
 		rival_a = self.rival_a
 		rival_b = self.rival_b
@@ -3130,7 +3130,7 @@ class Rivalry:
 		self,
 		director: Status,  # noqa: ARG002
 		common: Spaces,
-	) -> None:  # noqa: ARG002
+	) -> None:
 		score_1_name = self._director.scores_active.score_1_name
 		score_2_name = self._director.scores_active.score_2_name
 		segment_names = self.segment_names

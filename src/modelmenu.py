@@ -4,13 +4,10 @@ from typing import TYPE_CHECKING
 
 from factor_analyzer import FactorAnalyzer
 import numpy as np
-from matplotlib import cm
 import pandas as pd
-import peek
 
 from PySide6 import QtCore
 from PySide6.QtWidgets import QDialog, QTableWidget, QTableWidgetItem
-from PySide6.QtGui import QColor
 from scipy.spatial import procrustes
 from tabulate import tabulate
 

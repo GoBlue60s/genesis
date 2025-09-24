@@ -536,3 +536,53 @@ class MatplotlibCommon:
 		ellipse_patch = ax.add_patch(ellipse)
 
 		return ellipse_patch
+
+	# ------------------------------------------------------------------------
+
+	def add_ellipse_mode_matplotlib(
+		self, ax: plt.Axes, x_coords: np.ndarray, y_coords: np.ndarray
+	) -> None:
+		"""Add ellipse mode visualization to uncertainty plots."""
+		ax.patches.Ellipse = (
+			self.confidence_ellipse_using_matplotlib(
+				x_coords, y_coords, ax, n_std=2.0,
+				facecolor="none", edgecolor="r"
+			)
+		)
+
+	def add_box_mode_matplotlib(self, ax: plt.Axes, each_point: int) -> None:
+		"""Add box mode visualization to uncertainty plots."""
+		director = self._director
+		common = director.common
+
+		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
+		box_x = [x_max, x_min, x_min, x_max, x_max]
+		box_y = [y_max, y_max, y_min, y_min, y_max]
+		ax.plot(box_x, box_y, color="r", linewidth=1)
+
+	def add_lines_mode_matplotlib(
+		self, ax: plt.Axes, each_point: int, x_mean: float, y_mean: float
+	) -> None:
+		"""Add lines mode visualization to uncertainty plots."""
+		director = self._director
+		common = director.common
+
+		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
+		ax.plot([x_mean, x_mean], [y_mean, y_max], color="r")
+		ax.plot([x_mean, x_mean], [y_mean, y_min], color="r")
+		ax.plot([x_mean, x_max], [y_mean, y_mean], color="r")
+		ax.plot([x_mean, x_min], [y_mean, y_mean], color="r")
+
+	def add_circles_mode_matplotlib(
+		self, ax: plt.Axes, each_point: int, x_mean: float, y_mean: float
+	) -> None:
+		"""Add circles mode visualization to uncertainty plots."""
+		director = self._director
+		common = director.common
+
+		radius = common.largest_uncertainty(each_point)
+		circle = plt.Circle(
+			(x_mean, y_mean), radius, fill=False,
+			edgecolor="r", linewidth=1
+		)
+		ax.add_patch(circle)

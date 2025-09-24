@@ -725,3 +725,65 @@ class PyQtGraphCommon:
 		ellipse.setTransform(transform)
 
 		return ellipse
+
+	# ------------------------------------------------------------------------
+
+	def add_ellipse_mode_pyqtgraph(
+		self, plot: pg.PlotItem, x_coords: np.ndarray, y_coords: np.ndarray,
+		x_mean: float, y_mean: float
+	) -> None:
+		"""Add ellipse mode visualization to uncertainty plots."""
+		radius = np.sqrt(np.var(x_coords) + np.var(y_coords))
+		circle = pg.CircleROI(
+			[x_mean - radius, y_mean - radius],
+			[2 * radius, 2 * radius],
+			movable=False,
+		)
+		circle.setPen(pg.mkPen("r"))
+		plot.addItem(circle)
+
+	def add_box_mode_pyqtgraph(
+		self, plot: pg.PlotItem, each_point: int
+	) -> None:
+		"""Add box mode visualization to uncertainty plots."""
+		director = self._director
+		common = director.common
+
+		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
+		box_x = [x_max, x_min, x_min, x_max, x_max]
+		box_y = [y_max, y_max, y_min, y_min, y_max]
+		box_line = pg.PlotDataItem(box_x, box_y, pen=pg.mkPen("r"))
+		plot.addItem(box_line)
+
+	def add_lines_mode_pyqtgraph(
+		self, plot: pg.PlotItem, each_point: int, x_mean: float, y_mean: float
+	) -> None:
+		"""Add lines mode visualization to uncertainty plots."""
+		director = self._director
+		common = director.common
+
+		x_max, x_min, y_max, y_min = common.point_solutions_extrema(each_point)
+		v_line = pg.PlotDataItem(
+			[x_mean, x_mean], [y_min, y_max], pen=pg.mkPen("r")
+		)
+		h_line = pg.PlotDataItem(
+			[x_min, x_max], [y_mean, y_mean], pen=pg.mkPen("r")
+		)
+		plot.addItem(v_line)
+		plot.addItem(h_line)
+
+	def add_circles_mode_pyqtgraph(
+		self, plot: pg.PlotItem, each_point: int, x_mean: float, y_mean: float
+	) -> None:
+		"""Add circles mode visualization to uncertainty plots."""
+		director = self._director
+		common = director.common
+
+		radius = common.largest_uncertainty(each_point)
+		circle = pg.CircleROI(
+			[x_mean - radius, y_mean - radius],
+			[2 * radius, 2 * radius],
+			movable=False,
+		)
+		circle.setPen(pg.mkPen("r"))
+		plot.addItem(circle)

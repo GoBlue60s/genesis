@@ -752,7 +752,7 @@ class DependencyChecking:
 
 	def resolve_conflict_w_existing_data(
 		self, existing: str, new: str, no_common_information: bool
-	) -> bool:  # noqa: FBT001
+	) -> bool:
 		# peek("At top of resolve_conflict_w_existing_data")
 		# peek(f"self._director.command: {self._director.command}")
 		# peek(f"self.command: {self.command}")

@@ -462,7 +462,7 @@ class CreateCommand:
 
 	def _establish_shape_for_new_configuration(
 		self, title: str, items: list[str], integers: bool
-	) -> None:  # noqa: FBT001
+	) -> None:
 		# default_values: list[int]) -> None:
 
 		director = self._director
@@ -3037,7 +3037,7 @@ class SaveSampleRepetitionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
 		peek(

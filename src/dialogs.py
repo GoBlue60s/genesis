@@ -356,7 +356,7 @@ class MoveDialog(QDialog):
 
 	def _updateSelectedOption(  # noqa: N802
 		self, checked: bool
-	) -> None:  # noqa: FBT001
+	) -> None:
 		if checked:
 			sender = self.sender()
 			self.selected_option = self.options.index(sender.text())
