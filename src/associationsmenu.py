@@ -24,7 +24,7 @@ from exceptions import (
 	SpacesError,
 	# UnderDevelopmentError,
 )
-from table_builder import StatisticalTableWidget
+from table_builder import GeneralStatisticalTableWidget
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -602,7 +602,7 @@ class PairedCommand:
 		"""Create a table widget showing relationships between the focal
 		point and all other points."""
 
-		table_widget = StatisticalTableWidget(self._director)
+		table_widget = GeneralStatisticalTableWidget(self._director)
 		gui_output_as_widget = table_widget.display_table("paired")
 
 		self._director.output_widget_type = "Table"

@@ -137,22 +137,10 @@ class BasicTableWidget:
 			# Create the table widget
 			table_widget = QTableWidget(data.shape[0], data.shape[1])
 
-			# Fill table with data
-			for row in range(data.shape[0]):
-				for col in range(data.shape[1]):
-					value = data.iloc[row, col]
-
-					# Format the value
-					if format_str == "d":
-						formatted_value = f"{int(value)}"
-					else:
-						formatted_value = f"{value:{format_str}}"
-
-					item = QTableWidgetItem(formatted_value)
-					item.setTextAlignment(
-						QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
-					)
-					table_widget.setItem(row, col, item)
+			# Use the shared function to fill and format the table data
+			self._director.common.fill_table_with_formatted_data(
+				table_widget, data, format_str
+			)
 
 			# Set headers and visual properties
 			self._director.set_column_and_row_headers(
@@ -178,70 +166,79 @@ class SquareTableWidget:
 	def __init__(self, director: Status) -> None:
 		self._director = director
 
+		# Dictionary-driven configuration for square tables
+		self.square_tables_config = {
+			"correlations": {
+				"source_attr": "correlations_active",
+				"data_attr": "correlations_as_dataframe",
+				"item_names_attr": "item_names",
+				"row_height": 4,
+				"format_str": "8.2f",
+				"diagonal": "1.00",
+			},
+			"similarities": {
+				"source_attr": "similarities_active",
+				"data_attr": "similarities_as_dataframe",
+				"item_names_attr": "item_names",
+				"row_height": 4,
+				"format_str": "8.2f",
+				"diagonal": "---",
+			},
+			"distances": {
+				"source_attr": "configuration_active",
+				"data_attr": "distances_as_dataframe",
+				"item_names_attr": "item_names",
+				"row_height": 4,
+				"format_str": "8.2f",
+				"diagonal": "    0.00",
+			},
+			"ranked_distances": {
+				"source_attr": "configuration_active",
+				"data_attr": "ranked_distances_as_dataframe",
+				"item_names_attr": "item_names",
+				"row_height": 4,
+				"format_str": "8.1f",
+				"diagonal": "0.0",
+			},
+			"ranked_similarities": {
+				"source_attr": "similarities_active",
+				"data_attr": "ranked_similarities_as_dataframe",
+				"item_names_attr": "item_names",
+				"row_height": 4,
+				"format_str": "8.1f",
+				"diagonal": "0.0",
+			},
+			"ranked_differences": {
+				"source_attr": "similarities_active",
+				"data_attr": "differences_of_ranks_as_dataframe",
+				"item_names_attr": "item_names",
+				"row_height": 4,
+				"format_str": "8.1f",
+				"diagonal": "0.0",
+			},
+			"shepard": {
+				"source_attr": "similarities_active",
+				"data_attr": "shepard_diagram_table_as_dataframe",
+				"item_names_attr": "item_names",
+				"row_height": 4,
+				"format_str": "8.1f",
+				"diagonal": "-",
+			},
+		}
+
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a square table widget"""
-		result = None
+		if table_name not in self.square_tables_config:
+			print(f"Unknown square table: {table_name}")
+			return QTableWidget()
 
-		match table_name:
-			case "correlations":
-				source = self._director.correlations_active
-				data = source.correlations_as_dataframe
-				item_names = source.item_names
-				row_height = 4
-				format_str = "8.2f"
-				diagonal = "1.00"
-
-			case "similarities":
-				source = self._director.similarities_active
-				data = source.similarities_as_dataframe
-				item_names = source.item_names
-				row_height = 4
-				format_str = "8.2f"
-				diagonal = "---"  # Changed from "1.00" to "---"
-
-			case "distances":
-				source = self._director.configuration_active
-				data = source.distances_as_dataframe
-				item_names = source.item_names
-				row_height = 4
-				format_str = "8.2f"
-				diagonal = "0.00"
-
-			case "ranked_distances":
-				source = self._director.configuration_active
-				data = source.ranked_distances_as_dataframe
-				item_names = source.item_names
-				row_height = 4
-				format_str = "8.1f"  # Changed from "8.2f" to "8.1f"
-				diagonal = "0.0"  # Changed from "-" to "0.0"
-
-			case "ranked_similarities":
-				source = self._director.similarities_active
-				data = source.ranked_similarities_as_dataframe
-				item_names = source.item_names
-				row_height = 4
-				format_str = "8.1f"  # Changed from "8.2f" to "8.1f"
-				diagonal = "0.0"  # Changed from "-" to "0.0"
-
-			case "ranked_differences":
-				source = self._director.similarities_active
-				data = source.differences_of_ranks_as_dataframe
-				item_names = source.item_names
-				row_height = 4
-				format_str = "8.1f"  # Changed from "8.2f" to "8.1f"
-				diagonal = "0.0"  # Changed from "0" to "0.0"
-
-			case "shepard":
-				source = self._director.similarities_active
-				data = source.shepard_diagram_table_as_dataframe
-				item_names = source.item_names
-				row_height = 4
-				format_str = "8.1f"  # Changed from "8.2f" to "8.1f"
-				diagonal = "-"  # Changed from "-" to "0.0"
-
-			case _:
-				print(f"Unknown square table: {table_name}")
-				result = QTableWidget()
+		config = self.square_tables_config[table_name]
+		source = getattr(self._director, config["source_attr"])
+		data = getattr(source, config["data_attr"])
+		item_names = getattr(source, config["item_names_attr"])
+		row_height = config["row_height"]
+		format_str = config["format_str"]
+		diagonal = config["diagonal"]
 
 		result = self._build_square_table(
 			data, item_names, item_names, row_height, format_str, diagonal
@@ -265,7 +262,7 @@ class SquareTableWidget:
 			# Create the table widget
 			table_widget = QTableWidget(data.shape[0], data.shape[1])
 
-			# Fill table with data
+			# Fill table with data, handling diagonal elements specially
 			for row in range(data.shape[0]):
 				for col in range(data.shape[1]):
 					value = data.iloc[row, col]
@@ -307,7 +304,9 @@ class GeneralStatisticalTableWidget:
 
 	def __init__(self, director: Status) -> None:
 		self._director = director
-		self.unknown_statistical_table_error_title = "General Statistical Table Widget"
+		self.unknown_statistical_table_error_title = (
+			"General Statistical Table Widget"
+		)
 		self.unknown_statistical_table_error_message = (
 			"Unknown general statistical table requested. "
 		)
@@ -485,7 +484,7 @@ class GeneralStatisticalTableWidget:
 				"format_spec": ["d", "8.4f"],
 			},
 			"cluster_results": {
-				"source_attr": None,  # Special case: uses director.cluster_results
+				"source_attr": None,  # Special: uses director.cluster_results
 				"data_attr": None,
 				"row_headers": [],
 				"column_headers_attr": "list(data.columns)",
@@ -511,7 +510,7 @@ class GeneralStatisticalTableWidget:
 			row_headers = []
 			column_headers = list(data.columns)
 			row_height = 4
-			# Format spec: Cluster (str), Color (str), Percent (str), then coordinates (float)
+			# Format: Cluster (str), Color (str), Percent (str), coords (float)
 			format_spec = ["s", "s", "s"] + ["8.3f"] * (len(data.columns) - 3)
 		elif table_name == "paired":
 			# Special handling for paired table
@@ -519,10 +518,11 @@ class GeneralStatisticalTableWidget:
 			data = getattr(source, config["data_attr"])
 			row_headers = config["row_headers"]
 			value_type = self._director.similarities_active.value_type
-			if value_type == "similarities":
-				column_headers = ["Name", "Similarity", "Distance"]
-			else:
-				column_headers = ["Name", "Dis/similarity", "Distance"]
+			column_headers = (
+				["Name", "Similarity", "Distance"]
+				if value_type == "similarities"
+				else ["Name", "Dis/similarity", "Distance"]
+			)
 			row_height = 4
 			format_spec = config["format_spec"]
 		else:
@@ -530,13 +530,14 @@ class GeneralStatisticalTableWidget:
 			source = getattr(self._director, config["source_attr"])
 			data = getattr(source, config["data_attr"])
 
-			# Handle row headers
-			if "row_headers_attr" in config:
+			# Handle row headers - config structure guarantees these exist
+			row_headers_attr = config.get("row_headers_attr")
+			if row_headers_attr:
 				# Dynamic row headers (e.g., "source.point_names")
-				attr_path = config["row_headers_attr"].split(".")
+				attr_path = row_headers_attr.split(".")
 				row_headers = source
 				for attr in attr_path[1:]:  # Skip "source"
-					if attr.endswith("]"):  # Handle array indexing like "var_names[1:]"
+					if attr.endswith("]"):  # Handle like "var_names[1:]"
 						base_attr = attr.split("[")[0]
 						index_expr = attr.split("[")[1].rstrip("]")
 						row_headers = getattr(row_headers, base_attr)
@@ -545,16 +546,16 @@ class GeneralStatisticalTableWidget:
 					else:
 						row_headers = getattr(row_headers, attr)
 			else:
-				row_headers = config.get("row_headers", [])
+				row_headers = config["row_headers"]
 
-			# Handle column headers
-			if "column_headers_attr" in config:
-				if config["column_headers_attr"] == "data.columns":
-					column_headers = data.columns
+			# Handle column headers - config structure guarantees these exist
+			column_headers_attr = config.get("column_headers_attr")
+			if column_headers_attr == "data.columns":
+				column_headers = data.columns
 			else:
 				column_headers = config["column_headers"]
 
-			row_height = config.get("row_height", 4)  # Default to 4
+			row_height = config.get("row_height", 4)
 			format_spec = config["format_spec"]
 
 		result = self._build_statistical_table(
@@ -588,55 +589,10 @@ class GeneralStatisticalTableWidget:
 		# Create the table widget
 		table_widget = QTableWidget(data.shape[0], data.shape[1])
 
-		# Check if format_spec is a list or a single string
-		use_column_specific_formats = isinstance(format_spec, list)
-
-		# Fill table with data
-		for row in range(data.shape[0]):
-			for col in range(data.shape[1]):
-				try:
-					value = data.iloc[row, col]
-
-					# Get the appropriate format for this column
-					if use_column_specific_formats and col < len(format_spec):
-						column_format = format_spec[col]
-					else:
-						column_format = format_spec
-
-					# Format the value based on format type
-					if column_format == "d":
-						if isinstance(value, (int, float)):
-							formatted_value = str(int(value))
-						else:
-							formatted_value = str(value)
-					elif column_format == "s":
-						formatted_value = str(value)
-					elif isinstance(value, (int, float)):
-						# Format numeric values
-						formatted_value = f"{value:{column_format}}"
-					else:
-						formatted_value = str(value)
-
-					item = QTableWidgetItem(formatted_value)
-
-					# Set alignment based on column format
-					if column_format == "s":
-						item.setTextAlignment(
-							QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-						)
-					else:
-						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
-						)
-
-					table_widget.setItem(row, col, item)
-
-				except (ValueError, TypeError) as e:
-					# Handle formatting errors for cell values
-					print(f"Error formatting cell ({row}, {col}): {e!s}")
-					print(f"Value: {value}, Column format: {column_format},"
-						f"\n\tFormat spec: {format_spec}")
-					table_widget.setItem(row, col, QTableWidgetItem("Error"))
+		# Use the shared function to fill and format the table data
+		self._director.common.fill_table_with_formatted_data(
+			table_widget, data, format_spec
+		)
 
 		# Set headers and visual properties
 		self._director.set_column_and_row_headers(
@@ -678,7 +634,9 @@ class RivalryTableWidget:
 			},
 			"convertible": {
 				"data_attr": "conv_pcts_df",
-				"column_headers": ["Convertible to:", "Percent of\nPopulation"],
+				"column_headers": [
+					"Convertible to:", "Percent of\nPopulation"
+				],
 				"format_spec": "8.1f",
 			},
 			"core": {
@@ -825,55 +783,10 @@ class RivalryTableWidget:
 		# Create the table widget
 		table_widget = QTableWidget(data.shape[0], data.shape[1])
 
-		# Check if format_spec is a list or a single string
-		use_column_specific_formats = isinstance(format_spec, list)
-
-		# Fill table with data
-		for row in range(data.shape[0]):
-			for col in range(data.shape[1]):
-				try:
-					value = data.iloc[row, col]
-
-					# Get the appropriate format for this column
-					if use_column_specific_formats and col < len(format_spec):
-						column_format = format_spec[col]
-					else:
-						column_format = format_spec
-
-					# Format the value based on format type
-					if column_format == "d":
-						if isinstance(value, (int, float)):
-							formatted_value = str(int(value))
-						else:
-							formatted_value = str(value)
-					elif column_format == "s":
-						formatted_value = str(value)
-					elif isinstance(value, (int, float)):
-						# Format numeric values
-						formatted_value = f"{value:{column_format}}"
-					else:
-						formatted_value = str(value)
-
-					item = QTableWidgetItem(formatted_value)
-
-					# Set alignment based on column format
-					if column_format == "s":
-						item.setTextAlignment(
-							QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-						)
-					else:
-						item.setTextAlignment(
-							QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
-						)
-
-					table_widget.setItem(row, col, item)
-
-				except (ValueError, TypeError) as e:
-					# Handle formatting errors for cell values
-					print(f"Error formatting cell ({row}, {col}): {e!s}")
-					print(f"Value: {value}, Column format: {column_format},"
-						f"\n\tFormat spec: {format_spec}")
-					table_widget.setItem(row, col, QTableWidgetItem("Error"))
+		# Use the shared function to fill and format the table data
+		self._director.common.fill_table_with_formatted_data(
+			table_widget, data, format_spec
+		)
 
 		# Set headers and visual properties
 		self._director.set_column_and_row_headers(

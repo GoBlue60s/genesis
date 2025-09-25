@@ -78,7 +78,7 @@ class PyQtGraphMethods:
 
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -137,7 +137,7 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -483,7 +483,7 @@ class PyQtGraphMethods:
 
 		ndim = target.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -569,7 +569,7 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -624,7 +624,7 @@ class PyQtGraphMethods:
 		connector = rivalry.connector
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -733,7 +733,7 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -865,7 +865,7 @@ class PyQtGraphMethods:
 		pyqtgraph_plotter = director.pyqtgraph_plotter
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1056,7 +1056,7 @@ class PyQtGraphMethods:
 
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1214,7 +1214,7 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1321,7 +1321,7 @@ class PyQtGraphMethods:
 		dim_names = grouped_data_active.dim_names
 
 		ndim = grouped_data_active.ndim
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1685,7 +1685,7 @@ class PyQtGraphMethods:
 		score_color = scores_active.score_color
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1760,7 +1760,7 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -2234,7 +2234,7 @@ class PyQtGraphMethods:
 		point_size = director.common.point_size
 		ndim = target_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -2631,7 +2631,7 @@ class PyQtGraphMethods:
 		range_points = self.range_points
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 

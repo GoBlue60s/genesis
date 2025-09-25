@@ -26,7 +26,7 @@ from dialogs import ChoseOptionDialog, SetValueDialog
 from exceptions import MissingInformationError, SpacesError
 from features import EvaluationsFeature, SimilaritiesFeature, TargetFeature
 
-from table_builder import StatisticalTableWidget
+from table_builder import GeneralStatisticalTableWidget
 
 # --------------------------------------------------------------------------
 
@@ -129,7 +129,9 @@ class ClusterCommand:
 		# Check if the selected data source is available
 		if selected_source == "distances":
 			self.common.needs_distances("cluster")
-			data_for_clustering = self._director.distances_active.distances
+			data_for_clustering = (
+				self._director.configuration_active.distances_as_dataframe
+			)
 		elif selected_source == "evaluations":
 			self.common.needs_evaluations("cluster")
 			data_for_clustering = \
@@ -324,7 +326,7 @@ class ClusterCommand:
 	def _display(self) -> QTableWidget:
 		"""Create and return the cluster results table widget for display"""
 		# Use statistical table widget like other commands
-		table_widget = StatisticalTableWidget(self._director)
+		table_widget = GeneralStatisticalTableWidget(self._director)
 
 		# Create cluster results DataFrame for display
 		cluster_centers = self._director.scores_active.cluster_centers
@@ -2168,7 +2170,7 @@ class UncertaintyCommand:
 	# ------------------------------------------------------------------------
 
 	def _display(self) -> QTableWidget:
-		table_widget = StatisticalTableWidget(self._director)
+		table_widget = GeneralStatisticalTableWidget(self._director)
 		gui_output_as_widget = table_widget.display_table("uncertainty")
 
 		self._director.output_widget_type = "Table"

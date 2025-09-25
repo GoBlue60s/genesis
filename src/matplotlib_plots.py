@@ -73,7 +73,7 @@ class MatplotlibMethods:
 
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -125,7 +125,7 @@ class MatplotlibMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -224,7 +224,7 @@ class MatplotlibMethods:
 		east_cross_x = rivalry.east._cross_x
 		east_cross_y = rivalry.east._cross_y
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -318,7 +318,7 @@ class MatplotlibMethods:
 
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -377,7 +377,7 @@ class MatplotlibMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -427,7 +427,7 @@ class MatplotlibMethods:
 		rival_b = rivalry.rival_b
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -502,7 +502,7 @@ class MatplotlibMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -597,7 +597,7 @@ class MatplotlibMethods:
 		matplotlib_plotter = director.matplotlib_plotter
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -884,7 +884,7 @@ class MatplotlibMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -976,7 +976,7 @@ class MatplotlibMethods:
 		y_coords = []
 		ndim = grouped_data_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1337,7 +1337,7 @@ class MatplotlibMethods:
 		point_size = director.common.point_size
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1351,7 +1351,7 @@ class MatplotlibMethods:
 		if self._director.common.have_reference_points():
 			matplotlib_common.add_connector_to_matplotlib_plot(ax)
 			matplotlib_common.add_bisector_to_matplotlib_plot(ax)
-			if matplotlib_common.show_just_reference_points:
+			if self._director.common.show_just_reference_points:
 				matplotlib_common.add_reference_points_to_matplotlib_plot(ax)
 			else:
 				matplotlib_common.add_configuration_to_matplotlib_plot(ax)
@@ -1394,7 +1394,7 @@ class MatplotlibMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1502,7 +1502,7 @@ class MatplotlibMethods:
 		score_color = scores_active.score_color
 		point_size = common.point_size
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1778,7 +1778,7 @@ class MatplotlibMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -1864,7 +1864,7 @@ class MatplotlibMethods:
 		point_size = common.point_size
 		ndim = target_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -2148,12 +2148,14 @@ class MatplotlibMethods:
 		configuration_active = director.configuration_active
 		hor_dim = common.hor_dim
 		vert_dim = common.vert_dim
+		vector_head_width = common.vector_head_width
+		vector_width = common.vector_width
 		point_coords = configuration_active.point_coords
 		point_labels = configuration_active.point_labels
-		offset = matplotlib_common.plot_ranges.offset
+		offset = common.plot_ranges.offset
 		ndim = director.configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 
@@ -2181,8 +2183,8 @@ class MatplotlibMethods:
 				point_coords.iloc[each_point, hor_dim],
 				point_coords.iloc[each_point, vert_dim],
 				color="black",
-				head_width=self._director.matplotlib_common.vector_head_width,
-				width=self._director.matplotlib_common.vector_width,
+				head_width=vector_head_width,
+				width=vector_width,
 			)
 
 		director.set_focus_on_tab("Plot")
@@ -2226,7 +2228,7 @@ class MatplotlibMethods:
 
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
 			return None
 

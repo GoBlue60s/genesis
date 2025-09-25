@@ -11,11 +11,13 @@ import numpy as np
 import pandas as pd
 import peek  # noqa: F401
 
+from pyqtgraph.Qt import QtCore
 from PySide6.QtWidgets import (
 	QDialog,
 	QInputDialog,
 	QMessageBox,
 	QTableWidget,
+	QTableWidgetItem,
 )
 from scipy.stats import spearmanr
 from sklearn import manifold
@@ -1919,6 +1921,100 @@ class Spaces:
 				f"{{ background-color: {self._director.row_header_color} }}"
 			)
 		return
+
+	# ------------------------------------------------------------------------
+
+	@staticmethod
+	def fill_table_with_formatted_data(
+		table_widget: QTableWidget,
+		data: pd.DataFrame,
+		format_spec: str | list[str],
+	) -> None:
+		"""Fill a table widget with formatted data from a DataFrame"""
+		use_column_specific_formats = isinstance(format_spec, list)
+
+		for row in range(data.shape[0]):
+			for col in range(data.shape[1]):
+				Spaces._fill_single_cell(
+					table_widget, data, row, col, format_spec,
+					use_column_specific_formats
+				)
+
+	@staticmethod
+	def _fill_single_cell(
+		table_widget: QTableWidget,
+		data: pd.DataFrame,
+		row: int,
+		col: int,
+		format_spec: str | list[str],
+		use_column_specific_formats: bool,
+	) -> None:
+		"""Fill a single cell with formatted data"""
+		try:
+			value = data.iloc[row, col]
+			column_format = Spaces._get_column_format(
+				format_spec, col, use_column_specific_formats
+			)
+			formatted_value = Spaces._format_cell_value(value, column_format)
+			item = QTableWidgetItem(formatted_value)
+			Spaces._set_cell_alignment(item, column_format)
+			table_widget.setItem(row, col, item)
+		except (ValueError, TypeError) as e:
+			Spaces._handle_cell_format_error(
+				table_widget, row, col, e, value, column_format, format_spec
+			)
+
+	@staticmethod
+	def _get_column_format(
+		format_spec: str | list[str],
+		col: int,
+		use_column_specific_formats: bool,
+	) -> str:
+		"""Get the format string for a specific column"""
+		if use_column_specific_formats and col < len(format_spec):
+			return format_spec[col]
+		return format_spec
+
+	@staticmethod
+	def _format_cell_value(value, column_format: str) -> str:
+		"""Format a single cell value according to the column format"""
+		if column_format == "d":
+			if isinstance(value, (int, float)):
+				return str(int(value))
+			return str(value)
+		elif column_format == "s":
+			return str(value)
+		elif isinstance(value, (int, float)):
+			return f"{value:{column_format}}"
+		else:
+			return str(value)
+
+	@staticmethod
+	def _set_cell_alignment(
+		item: QTableWidgetItem, column_format: str
+	) -> None:
+		"""Set the alignment for a table widget item based on format"""
+		if column_format == "s":
+			alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+		else:
+			alignment = QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+		item.setTextAlignment(alignment)
+
+	@staticmethod
+	def _handle_cell_format_error(
+		table_widget: QTableWidget,
+		row: int,
+		col: int,
+		error: Exception,
+		value,
+		column_format: str,
+		format_spec: str | list[str],
+	) -> None:
+		"""Handle errors that occur when formatting cell values"""
+		print(f"Error formatting cell ({row}, {col}): {error!s}")
+		print(f"Value: {value}, Column format: {column_format},"
+			f"\n\tFormat spec: {format_spec}")
+		table_widget.setItem(row, col, QTableWidgetItem("Error"))
 
 	# ------------------------------------------------------------------------
 

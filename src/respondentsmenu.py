@@ -11,7 +11,7 @@ from director import Status
 from exceptions import SpacesError
 
 from supporters import ASupporterGrouping
-from table_builder import StatisticalTableWidget
+from table_builder import GeneralStatisticalTableWidget
 
 # ---------------------------------------------------------------------------
 
@@ -606,7 +606,7 @@ class SampleDesignerCommand:
 	# ------------------------------------------------------------------------
 
 	def _display(self) -> QTableWidget:
-		table_widget = StatisticalTableWidget(self._director)
+		table_widget = GeneralStatisticalTableWidget(self._director)
 		gui_output_as_widget = table_widget.display_table("sample_design")
 
 		self._director.output_widget_type = "Table"
