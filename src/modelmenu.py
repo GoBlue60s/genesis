@@ -713,7 +713,7 @@ class FactorAnalysisCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _setup_configuration_attributes(
+	def _setup_configuration_attributes( # noqa: PLR0913
 		self, range_dims: range, point_coords: pd.DataFrame,
 		dim_names: list[str], eigen: pd.DataFrame,
 		eigen_common: pd.DataFrame, commonalities: pd.DataFrame,
@@ -919,7 +919,8 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _perform_factor_analysis_m_l_and_setup(self, n_components: int) -> None:
+	def _perform_factor_analysis_m_l_and_setup(self, n_components: int) \
+		-> None:
 		"""Perform factor analysis and set up all configuration and scores."""
 		from sklearn.decomposition import FactorAnalysis
 		from sklearn.preprocessing import StandardScaler
@@ -1127,7 +1128,8 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.configuration_active.score_2_name = self._factor_2_name
 		self._director.scores_active.hor_axis_name = self._factor_1_name
 		self._director.scores_active.vert_axis_name = self._factor_2_name
-		self._director.scores_active.ndim = self._director.configuration_active.ndim
+		self._director.scores_active.ndim = \
+			self._director.configuration_active.ndim
 
 	# ------------------------------------------------------------------------
 
@@ -1221,7 +1223,7 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _print_factor_analysis_m_l(
+	def _print_factor_analysis_m_l( # noqa: PLR0913
 		self,
 		scaler: StandardScaler,
 		X: np.ndarray, # noqa: N803

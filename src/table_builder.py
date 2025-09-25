@@ -739,7 +739,7 @@ class RivalryTableWidget:
 			column_headers,
 			row_height,
 			format_spec,
-			noscores,
+			noscores=noscores,
 		)
 
 		return result
@@ -753,6 +753,7 @@ class RivalryTableWidget:
 		column_headers: list[str],
 		row_height: int,
 		format_spec: str | list[str],
+		*,
 		noscores: bool = False,
 	) -> QTableWidget:
 		"""Build a rivalry table with the given data and formatting

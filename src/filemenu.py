@@ -28,16 +28,19 @@ from exceptions import (
 	SelectionError,
 	SpacesError,
 )
-from features import ConfigurationFeature
+
 from geometry import Point
 from experimental import Item, ItemFrame
-from common import Spaces
-from director import Status
+
+
 
 from typing import TYPE_CHECKING, TextIO
 
 if TYPE_CHECKING:
+	from director import Status
+	from common import Spaces
 	from modelmenu import UncertaintyAnalysis
+	from features import ConfigurationFeature
 from constants import (
 	# MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 	ITEM_LABEL_FIRST_COLUMN,
@@ -418,7 +421,7 @@ class CreateCommand:
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		self._establish_shape_for_new_configuration(
-			self._shape_title, self._shape_items, self._shape_integers
+			self._shape_title, self._shape_items, integers=self._shape_integers
 		)
 		# 	self._shape_default_values)
 		director.configuration_candidate.range_dims = range(
@@ -461,7 +464,7 @@ class CreateCommand:
 	# ------------------------------------------------------------------------
 
 	def _establish_shape_for_new_configuration(
-		self, title: str, items: list[str], integers: bool
+		self, title: str, items: list[str], *, integers: bool
 	) -> None:
 		# default_values: list[int]) -> None:
 

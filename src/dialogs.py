@@ -355,7 +355,7 @@ class MoveDialog(QDialog):
 	# ------------------------------------------------------------------------
 
 	def _updateSelectedOption(  # noqa: N802
-		self, checked: bool
+		self, checked: bool  # noqa: FBT001
 	) -> None:
 		if checked:
 			sender = self.sender()
@@ -543,7 +543,7 @@ class SetNamesDialog(QDialog):
 
 
 class SetValueDialog(QDialog):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		title: str,
 		label: str,

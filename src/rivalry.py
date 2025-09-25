@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 
 class Bisector(LineInPlot):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		director: Status,
 		point_on_line: Point,
@@ -59,7 +59,7 @@ class Bisector(LineInPlot):
 
 
 class East(LineInPlot):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		director: Status,
 		point_on_line: Point,
@@ -3165,7 +3165,7 @@ class Rivalry:
 
 
 class Connector(LineInPlot):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		director: Status,
 		point_on_line: Point,
@@ -3200,7 +3200,7 @@ class Connector(LineInPlot):
 
 
 class First(LineInPlot):
-	def __init__(  # noqa: PLR0913
+	def __init__(  # noqa: PLR
 		self,
 		director: Status,
 		point_on_line: Point,
@@ -3218,7 +3218,7 @@ class First(LineInPlot):
 
 
 class Second(LineInPlot):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		director: Status,
 		point_on_line: Point,
@@ -3270,7 +3270,7 @@ class SegmentPercentages(NamedTuple):
 
 
 class West(LineInPlot):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		director: Status,
 		point_on_line: Point,

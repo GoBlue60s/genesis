@@ -1937,7 +1937,7 @@ class Spaces:
 			for col in range(data.shape[1]):
 				Spaces._fill_single_cell(
 					table_widget, data, row, col, format_spec,
-					use_column_specific_formats
+					use_column_specific_formats=use_column_specific_formats
 				)
 
 	@staticmethod
@@ -1947,13 +1947,15 @@ class Spaces:
 		row: int,
 		col: int,
 		format_spec: str | list[str],
+		*,
 		use_column_specific_formats: bool,
 	) -> None:
 		"""Fill a single cell with formatted data"""
 		try:
 			value = data.iloc[row, col]
 			column_format = Spaces._get_column_format(
-				format_spec, col, use_column_specific_formats
+				format_spec, col,
+				use_column_specific_formats=use_column_specific_formats
 			)
 			formatted_value = Spaces._format_cell_value(value, column_format)
 			item = QTableWidgetItem(formatted_value)
@@ -1968,6 +1970,7 @@ class Spaces:
 	def _get_column_format(
 		format_spec: str | list[str],
 		col: int,
+		*,
 		use_column_specific_formats: bool,
 	) -> str:
 		"""Get the format string for a specific column"""
@@ -1976,18 +1979,18 @@ class Spaces:
 		return format_spec
 
 	@staticmethod
-	def _format_cell_value(value, column_format: str) -> str:
+	def _format_cell_value(value: str | float, column_format: str) \
+		-> str:
 		"""Format a single cell value according to the column format"""
 		if column_format == "d":
 			if isinstance(value, (int, float)):
 				return str(int(value))
 			return str(value)
-		elif column_format == "s":
+		if column_format == "s":
 			return str(value)
-		elif isinstance(value, (int, float)):
+		if isinstance(value, (int, float)):
 			return f"{value:{column_format}}"
-		else:
-			return str(value)
+		return str(value)
 
 	@staticmethod
 	def _set_cell_alignment(
@@ -2006,7 +2009,7 @@ class Spaces:
 		row: int,
 		col: int,
 		error: Exception,
-		value,
+		value: object,
 		column_format: str,
 		format_spec: str | list[str],
 	) -> None:

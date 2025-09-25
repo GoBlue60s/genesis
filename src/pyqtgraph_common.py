@@ -210,7 +210,7 @@ class PyQtGraphCommon:
 
 	# -----------------------------------------------------------------------
 
-	def create_heatmap_using_pyqtgraph(  # noqa: PLR0913
+	def create_heatmap_using_pyqtgraph(
 		self,
 		title: str,
 		data: np.ndarray | list[list[float]],

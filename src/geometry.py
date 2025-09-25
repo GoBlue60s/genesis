@@ -25,7 +25,7 @@ from constants import (
 
 
 class Region:
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		name: str = "",
 		fill: str = "None",
@@ -50,7 +50,7 @@ class Region:
 
 
 class Circle(Region):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		center: Point | None = None,
 		radius: float | None = None,
@@ -88,7 +88,7 @@ class Corners(NamedTuple):
 
 
 class LineInPlot:
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		director: Status,
 		point_on_line: Point,
@@ -718,7 +718,7 @@ class Point:
 
 
 class Polygon(Region):
-	def __init__(  # noqa: PLR0913
+	def __init__(
 		self,
 		outline: np.array | None = None,
 		vertices: CoordinateLists | None = None,
