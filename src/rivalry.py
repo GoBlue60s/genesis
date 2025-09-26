@@ -12,7 +12,11 @@ import peek  # noqa: F401
 # Typing imports
 from typing import NamedTuple
 
-from constants import MINIMAL_DIFFERENCE_FROM_ZERO
+from constants import (
+	BATTLEGROUND_ASSIGNMENT,
+	MINIMAL_DIFFERENCE_FROM_ZERO,
+	SETTLED_ASSIGNMENT,
+)
 
 from geometry import (
 	Circle,
@@ -921,68 +925,126 @@ class Rivalry:
 			)
 			self.battleground_settled_people_points = PeoplePoints([], [])
 
-		rivalry = self._director.rivalry
-		in_group = self._director.common.in_group
 		for each_indiv in range(nscored):
-			west_at_x_coord = (
-				segments.loc[each_indiv, score_2_name] - west._intercept
-			) / west._slope
-			east_at_x_coord = (
-				segments.loc[each_indiv, score_2_name] - east._intercept
-			) / east._slope
-			if bisector._direction == "Flat":
-				if (
-					east._intercept
-					< segments.loc[each_indiv, score_2_name]
-					< west._intercept
-				):
-					segments.loc[each_indiv, "Battle_ground"] = 1
-				else:
-					segments.loc[each_indiv, "Battle_ground"] = 2
-			elif bisector._direction == "Vertical":
-				if (
-					east._start.x
-					> segments.loc[each_indiv, score_1_name]
-					> west._start.x
-				):
-					segments.loc[each_indiv, "Battle_ground"] = 1
-				else:
-					segments.loc[each_indiv, "Battle_ground"] = 2
-			elif bisector._direction == "Upward slope":
-				if (
-					east_at_x_coord
-					> segments.loc[each_indiv, score_1_name]
-					> west_at_x_coord
-				):
-					segments.loc[each_indiv, "Battle_ground"] = 1
-				else:
-					segments.loc[each_indiv, "Battle_ground"] = 2
-			elif bisector._direction == "Downward slope":
-				if (
-					east_at_x_coord
-					> segments.loc[each_indiv, score_1_name]
-					> west_at_x_coord
-				):  # switched side twice
-					segments.loc[each_indiv, "Battle_ground"] = 1
-				else:
-					segments.loc[each_indiv, "Battle_ground"] = 2
+			battleground_assignment = self._assign_individual_to_battleground(
+				segments, each_indiv, score_1_name, score_2_name,
+				bisector, west, east
+			)
+			segments.loc[each_indiv, "Battle_ground"] = battleground_assignment
 
-		rivalry.battleground_segment._points.x = in_group(
-			segments, nscored, score_1_name, "Battle_ground", {1}
-		)
-		rivalry.battleground_segment._points.y = in_group(
-			segments, nscored, score_2_name, "Battle_ground", {1}
-		)
-		rivalry.battleground_settled._points.x = in_group(
-			segments, nscored, score_1_name, "Battle_ground", {2}
-		)
-		rivalry.battleground_settled._points.y = in_group(
-			segments, nscored, score_2_name, "Battle_ground", {2}
+		self._update_battleground_points(
+			segments, nscored, score_1_name, score_2_name
 		)
 
 		battleground_segment_names = ["Battleground", "Settled"]
-
 		return segments, battleground_segment_names
+
+	def _assign_individual_to_battleground(
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		score_2_name: str,
+		bisector: Bisector,
+		west: West,
+		east: East,
+	) -> int:
+		west_at_x_coord = (
+			segments.loc[each_indiv, score_2_name] - west._intercept
+		) / west._slope
+		east_at_x_coord = (
+			segments.loc[each_indiv, score_2_name] - east._intercept
+		) / east._slope
+
+		if bisector._direction == "Flat":
+			return self._assign_flat_direction(
+				segments, each_indiv, score_2_name, east, west
+			)
+		if bisector._direction == "Vertical":
+			return self._assign_vertical_direction(
+				segments, each_indiv, score_1_name, east, west
+			)
+		if bisector._direction in ("Upward slope", "Downward slope"):
+			return self._assign_slope_direction(
+				segments, each_indiv, score_1_name,
+				east_at_x_coord, west_at_x_coord
+			)
+		return SETTLED_ASSIGNMENT
+
+	def _assign_flat_direction(
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_2_name: str,
+		east: East,
+		west: West,
+	) -> int:
+		if (
+			east._intercept
+			< segments.loc[each_indiv, score_2_name]
+			< west._intercept
+		):
+			return BATTLEGROUND_ASSIGNMENT
+		return SETTLED_ASSIGNMENT
+
+	def _assign_vertical_direction(
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		east: East,
+		west: West,
+	) -> int:
+		if (
+			east._start.x
+			> segments.loc[each_indiv, score_1_name]
+			> west._start.x
+		):
+			return BATTLEGROUND_ASSIGNMENT
+		return SETTLED_ASSIGNMENT
+
+	def _assign_slope_direction(
+		self,
+		segments: pd.DataFrame,
+		each_indiv: int,
+		score_1_name: str,
+		east_at_x_coord: float,
+		west_at_x_coord: float,
+	) -> int:
+		if (
+			east_at_x_coord
+			> segments.loc[each_indiv, score_1_name]
+			> west_at_x_coord
+		):
+			return BATTLEGROUND_ASSIGNMENT
+		return SETTLED_ASSIGNMENT
+
+	def _update_battleground_points(
+		self,
+		segments: pd.DataFrame,
+		nscored: int,
+		score_1_name: str,
+		score_2_name: str,
+	) -> None:
+		rivalry = self._director.rivalry
+		in_group = self._director.common.in_group
+
+		rivalry.battleground_segment._points.x = in_group(
+			segments, nscored, score_1_name, "Battle_ground",
+			{BATTLEGROUND_ASSIGNMENT}
+		)
+		rivalry.battleground_segment._points.y = in_group(
+			segments, nscored, score_2_name, "Battle_ground",
+			{BATTLEGROUND_ASSIGNMENT}
+		)
+		rivalry.battleground_settled._points.x = in_group(
+			segments, nscored, score_1_name, "Battle_ground",
+			{SETTLED_ASSIGNMENT}
+		)
+		rivalry.battleground_settled._points.y = in_group(
+			segments, nscored, score_2_name, "Battle_ground",
+			{SETTLED_ASSIGNMENT}
+		)
 
 	# ------------------------------------------------------------------------
 
