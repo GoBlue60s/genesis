@@ -1367,33 +1367,19 @@ class FactorAnalysisMachineLearningCommand:
 			table_widget.setItem(row, 0, item)
 			
 			# Column 1: Mean (we'll need to store this from transformer)
-			if hasattr(
-				self._director.configuration_active, 'transformer_mean'):
-				mean_val = self._director.configuration_active.\
-					transformer_mean[row]
-				item = QTableWidgetItem(f"{mean_val:6.4f}")
-			else:
-				item = QTableWidgetItem("N/A")
+			mean_val = self._director.configuration_active.\
+				transformer_mean[row]
+			item = QTableWidgetItem(f"{mean_val:6.4f}")
 			item.setTextAlignment(
 				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
 			table_widget.setItem(row, 1, item)
 			
 			# Column 2: Noise Variance (scalar value, same for all rows)
-			if hasattr(self._director.configuration_active,
-				'transformer_noise_variance'):
-				noise_val = self._director.configuration_active.\
-					transformer_noise_variance
-				# Handle case where noise_val might be a numpy array
-				if hasattr(noise_val, 'item'):
-					if noise_val.size == 1:
-						# Extract scalar from single-element array
-						noise_val = noise_val.item()
-					else:
-						# If multiple elements, take mean as representative
-						noise_val = float(noise_val.mean())
-				item = QTableWidgetItem(f"{noise_val:6.4f}")
-			else:
-				item = QTableWidgetItem("N/A")
+			noise_val = self._director.configuration_active.\
+				transformer_noise_variance
+			# Take mean of noise variances across features for display
+			noise_val = float(noise_val.mean())
+			item = QTableWidgetItem(f"{noise_val:6.4f}")
 			item.setTextAlignment(
 				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
 			table_widget.setItem(row, 2, item)

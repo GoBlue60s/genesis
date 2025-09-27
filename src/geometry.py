@@ -112,7 +112,9 @@ class LineInPlot:
 		direction, intercept = self._get_line_direction_and_intercept(
 			slope, point_on_line
 		)
-		potential_extremes = self._get_extremes(slope, intercept, direction)
+		potential_extremes = self._get_extremes(
+			slope, intercept, direction, point_on_line
+		)
 		intersects = self._sides_line_goes_through(
 			direction, potential_extremes
 		)
@@ -145,9 +147,15 @@ class LineInPlot:
 	# ------------------------------------------------------------------------
 
 	def _get_extremes(
-		self, slope: float, intercept: float, direction: str
+		self,
+		slope: float,
+		intercept: float,
+		direction: str,
+		point_on_line: Point
 	) -> TheoreticalExtremes:
-		theoretical_extremes = self._theoretical_extremes(slope, intercept)
+		theoretical_extremes = self._theoretical_extremes(
+			slope, intercept, point_on_line
+		)
 
 		potential_extremes = self._adjust_extremes_when_flat(
 			direction, theoretical_extremes
@@ -240,16 +248,14 @@ class LineInPlot:
 	# ------------------------------------------------------------------------
 
 	def _theoretical_extremes(
-		self, slope: float, intercept: float
+		self, slope: float, intercept: float, point_on_line: Point
 	) -> TheoreticalExtremes:
 		(hor_max, hor_min, vert_max, vert_min) = (
 			self._director.common.use_plot_ranges()
 		)
 
 		if slope == float("inf") or slope == float("-inf"):
-			x_value = (
-				self.point_on_line.x if hasattr(self, "point_on_line") else 0.0
-			)
+			x_value = point_on_line.x
 			return TheoreticalExtremes(
 				float("NaN"), float("NaN"), x_value, x_value
 			)
