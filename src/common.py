@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import peek  # noqa: F401
 
+
 from pyqtgraph.Qt import QtCore
 from PySide6.QtWidgets import (
 	QDialog,
@@ -43,7 +44,7 @@ from exceptions import (
 )
 
 from geometry import PlotExtremes
-
+from dialogs import SetValueDialog
 from typing import TextIO, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -815,9 +816,7 @@ class Spaces:
 
 	def have_clusters(self) -> bool:
 		return (
-			hasattr(self._director.scores_active, 'cluster_labels')
-			and hasattr(self._director.scores_active, 'cluster_centers')
-			and self._director.scores_active.cluster_labels is not None
+			self._director.scores_active.cluster_labels is not None
 			and self._director.scores_active.cluster_centers is not None
 		)
 
@@ -2212,7 +2211,7 @@ class Spaces:
 		default: int,
 	) -> int:
 		"""Get number of components to extract from user via dialog."""
-		from dialogs import SetValueDialog
+
 
 		(
 			zero_components_error_title,

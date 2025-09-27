@@ -6,14 +6,22 @@ from factor_analyzer import FactorAnalyzer
 import numpy as np
 import pandas as pd
 
+
 from PySide6 import QtCore
 from PySide6.QtWidgets import QDialog, QTableWidget, QTableWidgetItem
 from scipy.spatial import procrustes
+
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+from sklearn.decomposition import FactorAnalysis
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+
 from tabulate import tabulate
 
 if TYPE_CHECKING:
-	from sklearn.decomposition import PCA, FactorAnalysis
-	from sklearn.preprocessing import StandardScaler
+	# from sklearn.decomposition import PCA, FactorAnalysis
+	# from sklearn.preprocessing import StandardScaler
 	from director import Status
 	from common import Spaces
 
@@ -83,7 +91,7 @@ class ClusterCommand:
 		)
 		# peek(f"{n_clusters=}")
 		# Perform k-means clustering on the selected data
-		from sklearn.cluster import KMeans
+
 		kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
 		cluster_labels = kmeans.fit_predict(self.data_for_clustering)
 		cluster_centers = kmeans.cluster_centers_
@@ -94,6 +102,24 @@ class ClusterCommand:
 		self._director.scores_active.cluster_labels = cluster_labels
 		self._director.scores_active.cluster_centers = cluster_centers
 		self._director.scores_active.n_clusters = n_clusters
+
+		# Store original data for plotting when clustering scores
+		if name_source == "scores":
+			self._director.scores_active.original_clustered_data = \
+				self.data_for_clustering.copy()
+
+		# Set up scores DataFrame for plotting (using cluster centers)
+		if cluster_centers.shape[1] >= 2:
+			scores_df = pd.DataFrame(cluster_centers[:, :2],
+									columns=["Dimension 1", "Dimension 2"])
+			cluster_names = [f"Cluster {i+1}" for i in range(n_clusters)]
+			scores_df.insert(0, "Item", cluster_names)
+
+			self._director.scores_active.scores = scores_df
+			self._director.scores_active.hor_axis_name = "Dimension 1"
+			self._director.scores_active.vert_axis_name = "Dimension 2"
+			dim_names = ["Dimension 1", "Dimension 2"]
+			self._director.scores_active.dim_names = dim_names
 
 		# Print cluster results table
 		self._print_cluster_results(cluster_centers, n_clusters)
@@ -156,8 +182,7 @@ class ClusterCommand:
 	def _find_optimal_clusters(self, data: pd.DataFrame) -> int:
 		"""Find optimal number of clusters using elbow method and
 		silhouette analysis"""
-		from sklearn.cluster import KMeans
-		from sklearn.metrics import silhouette_score
+
 
 
 		# Test cluster counts from 2 to min(15, n_samples-1) for
@@ -922,8 +947,7 @@ class FactorAnalysisMachineLearningCommand:
 	def _perform_factor_analysis_m_l_and_setup(self, n_components: int) \
 		-> None:
 		"""Perform factor analysis and set up all configuration and scores."""
-		from sklearn.decomposition import FactorAnalysis
-		from sklearn.preprocessing import StandardScaler
+
 
 		evaluations = self._director.evaluations_active.evaluations
 		item_names = self._director.evaluations_active.item_names
@@ -1023,7 +1047,7 @@ class FactorAnalysisMachineLearningCommand:
 		self, trans: pd.DataFrame, x_new: pd.DataFrame, covar: pd.DataFrame
 	) -> None:
 		"""Set up configuration from factor analysis results."""
-		from sklearn.preprocessing import StandardScaler
+
 
 		director = self._director
 		common = director.common
@@ -1195,7 +1219,6 @@ class FactorAnalysisMachineLearningCommand:
 		covar: pd.DataFrame, trans: pd.DataFrame, nreferent: int
 	) -> None:
 		"""Print factor analysis results using existing helper method."""
-		from sklearn.preprocessing import StandardScaler
 
 		scaler2_data = self._director.configuration_active.point_coords
 		new_trans = scaler2_data.to_numpy()
@@ -1239,7 +1262,6 @@ class FactorAnalysisMachineLearningCommand:
 	) -> None:
 		"""Print all Factor Analysis Machine Learning debug and
 		output information."""
-		from sklearn.preprocessing import StandardScaler
 
 		print("\n\nscaler: \n", scaler)
 		print("\nScaler.fit(X): \n", scaler.fit(X))
@@ -1616,7 +1638,7 @@ class PrincipalComponentsCommand:
 	# ------------------------------------------------------------------------
 
 	def _perform_principal_component_analysis(self) -> tuple:
-		from sklearn.decomposition import PCA
+
 
 		item_names = self._director.evaluations_active.item_names
 

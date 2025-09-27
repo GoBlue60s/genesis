@@ -346,7 +346,15 @@ class PyQtGraphMethods:
 		score_1_name = dim_names[0]
 		score_2_name = dim_names[1]
 
-		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:])
+		# Set axis ranges based on appropriate data
+		if scores_active.original_clustered_data is not None:
+			# Use original data for range calculation when clustering scores
+			original_data = scores_active.original_clustered_data
+			common.set_axis_extremes_based_on_coordinates(
+				original_data.iloc[:, :2])
+		else:
+			# Use cluster centers for range calculation
+			common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
 
 		tab_plot_widget = self.plot_clusters_using_pyqtgraph()
 		tab_gallery_widget = self.plot_clusters_using_pyqtgraph()
@@ -370,10 +378,7 @@ class PyQtGraphMethods:
 		scores_active = director.scores_active
 		hor_axis_name = scores_active.hor_axis_name
 		vert_axis_name = scores_active.vert_axis_name
-		hor_dim = scores_active._hor_dim
-		vert_dim = scores_active._vert_dim
 		scores = scores_active.scores
-		nscored = scores_active.nscored_individ
 		point_size = common.point_size
 
 		graphics_layout_widget, plot = (
@@ -383,41 +388,63 @@ class PyQtGraphMethods:
 		plot.setLabel("left", hor_axis_name, color="k", size=15)
 		plot.setLabel("bottom", vert_axis_name, color="k", size=15)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
-		x_coords = [
-			scores.iloc[each_point, hor_dim + 1]
-			for each_point in range(nscored)
-		]
-		y_coords = [
-			scores.iloc[each_point, vert_dim + 1]
-			for each_point in range(nscored)
-		]
+
+		# Get the cluster labels
+		cluster_labels = scores_active.cluster_labels
 
 		# Color points by cluster assignment
-		cluster_labels = scores_active.cluster_labels
 		colors = [
 			'r', 'b', 'g', 'orange', 'purple',
 			'brown', 'pink', 'gray', 'olive', 'cyan'
 		]
 
-		# Group points by cluster and plot each cluster with its color
-		for cluster_id in set(cluster_labels):
-			cluster_color = colors[cluster_id % len(colors)]
-			# Get indices for this cluster
-			cluster_indices = [
-				i for i, label in enumerate(cluster_labels)
-				if label == cluster_id
-			]
-			# Get coordinates for this cluster
-			cluster_x = [x_coords[i] for i in cluster_indices]
-			cluster_y = [y_coords[i] for i in cluster_indices]
+		# Check if we have original clustered data (from scores clustering)
+		if scores_active.original_clustered_data is not None:
+			# Plot original people points with cluster colors
+			original_data = scores_active.original_clustered_data
+			# Use first two dimensions for plotting
+			x_coords = original_data.iloc[:, 0].tolist()
+			y_coords = original_data.iloc[:, 1].tolist()
+			n_total_points = len(x_coords)
 
+			# Create color array for original data points
+			point_colors = [
+				colors[cluster_labels[i] % len(colors)]
+				for i in range(n_total_points)
+			]
+
+			# Plot all points with their cluster colors
 			plot.scatterPlot(
-				cluster_x,
-				cluster_y,
-				pen=cluster_color,
+				x_coords,
+				y_coords,
+				pen=None,
 				symbol="o",
 				symbolSize=point_size,
-				symbolBrush=cluster_color,
+				symbolBrush=[pg.mkBrush(color) for color in point_colors],
+			)
+		else:
+			# Original behavior for distance/similarity clustering
+			# Get coordinate data for ALL points
+			score_1 = scores[hor_axis_name]
+			score_2 = scores[vert_axis_name]
+			x_coords = score_1.tolist()
+			y_coords = score_2.tolist()
+			n_total_points = len(x_coords)
+
+			# Create color array for ALL points
+			point_colors = [
+				colors[cluster_labels[i] % len(colors)]
+				for i in range(n_total_points)
+			]
+
+			# Plot all points with their cluster colors
+			plot.scatterPlot(
+				x_coords,
+				y_coords,
+				pen=None,
+				symbol="o",
+				symbolSize=point_size,
+				symbolBrush=[pg.mkBrush(color) for color in point_colors],
 			)
 
 		# Add cluster centroids as plus signs with different colors

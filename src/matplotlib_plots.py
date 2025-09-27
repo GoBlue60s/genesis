@@ -1546,7 +1546,15 @@ class MatplotlibMethods:
 		score_1_name = dim_names[0]
 		score_2_name = dim_names[1]
 
-		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
+		# Set axis ranges based on appropriate data
+		if scores_active.original_clustered_data is not None:
+			# Use original data for range calculation when clustering scores
+			original_data = scores_active.original_clustered_data
+			common.set_axis_extremes_based_on_coordinates(
+				original_data.iloc[:, :2])
+		else:
+			# Use cluster centers for range calculation
+			common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
 
 		fig = self.plot_clusters_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
@@ -1579,20 +1587,46 @@ class MatplotlibMethods:
 
 		matplotlib_common.set_ranges_for_matplotlib_plot(ax)
 
-		score_1 = scores[hor_axis_name]
-		score_2 = scores[vert_axis_name]
+		# Get the cluster labels
+		cluster_labels = scores_active.cluster_labels
 
 		# Color points by cluster assignment
-		cluster_labels = scores_active.cluster_labels
 		colors = [
 			'red', 'blue', 'green', 'orange', 'purple',
 			'brown', 'pink', 'gray', 'olive', 'cyan'
 		]
-		# Create color array for each point based on its cluster
-		point_colors = [
-			colors[label % len(colors)] for label in cluster_labels
-		]
-		ax.scatter(score_1, score_2, c=point_colors, s=point_size)
+
+		# Check if we have original clustered data (from scores clustering)
+		if scores_active.original_clustered_data is not None:
+			# Plot original people points with cluster colors
+			original_data = scores_active.original_clustered_data
+			# Use first two dimensions for plotting
+			score_1 = original_data.iloc[:, 0]
+			score_2 = original_data.iloc[:, 1]
+			n_total_points = len(score_1)
+
+			# Create color array for original data points
+			point_colors = [
+				colors[cluster_labels[i] % len(colors)]
+				for i in range(n_total_points)
+			]
+
+			ax.scatter(score_1, score_2, c=point_colors, s=point_size,
+					  alpha=0.7, label='Data Points')
+		else:
+			# Original behavior for distance/similarity clustering
+			# Get coordinate data for ALL points
+			score_1 = scores[hor_axis_name]
+			score_2 = scores[vert_axis_name]
+			n_total_points = len(score_1)
+
+			# Create color array for ALL points (all should be clustered)
+			point_colors = [
+				colors[cluster_labels[i] % len(colors)]
+				for i in range(n_total_points)
+			]
+
+			ax.scatter(score_1, score_2, c=point_colors, s=point_size)
 
 		# Add cluster centroids as plus signs with different colors
 		if common.have_clusters():
