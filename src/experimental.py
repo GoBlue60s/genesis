@@ -250,7 +250,7 @@ class ItemFrame:
 		coords = []
 		for idx in self._index:
 			item = self._data.get(idx)
-			if item and hasattr(item, "location"):
+			if item:
 				# Try to get the coordinate, default to None if not found
 				try:
 					coord_value = item.location[dim_name]
@@ -390,7 +390,7 @@ class ItemFrame:
 
 		for idx in self._index:
 			item = self._data.get(idx)
-			if item and hasattr(item, "location"):
+			if item:
 				row_parts = [f"{item.name:<{name_width}}"]
 
 				for dim in self._dim_names:
@@ -445,13 +445,10 @@ class ItemFrame:
 		rows = [header]
 		for idx in self._index:
 			item = self._data.get(idx)
-			if item and hasattr(item, "location"):
+			if item:
 				row = f"{item.name:<{name_width}} {item.label:<{label_width}}"
 				for dim in self._dim_names:
-					if (
-						hasattr(item.location, "_coords")
-						and dim in item.location._coords
-					):
+					if dim in item.location._coords:
 						value = item.location._coords[dim]
 						if value is None:
 							row += f" {'N/A':>{coord_width}}"
