@@ -1854,40 +1854,36 @@ class OpenSampleDesignCommand:
 
 	# ------------------------------------------------------------------------
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		try:
-			self._director.record_command_as_selected_and_in_process()
-			self._director.optionally_explain_what_command_does()
-			self._director.dependency_checker.detect_dependency_problems()
-			file = (
-				self._director.get_file_name_and_handle_nonexistent_file_names(
-					self._open_sample_design_caption,
-					self._open_sample_design_filter,
-				)
+		self._director.record_command_as_selected_and_in_process()
+		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
+		file = (
+			self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._open_sample_design_caption,
+				self._open_sample_design_filter,
 			)
-			self._read_sample_design_from_file(file)
-			freqs_file = (
-				self._director.get_file_name_and_handle_nonexistent_file_names(
-					self._open_sample_design_frequencies_caption,
-					self._open_sample_design_frequencies_filter,
-				)
+		)
+		self._read_sample_design_from_file(file)
+		freqs_file = (
+			self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._open_sample_design_frequencies_caption,
+				self._open_sample_design_frequencies_filter,
 			)
-			self._read_sample_design_frequencies_from_file(freqs_file)
-			self.common.create_sample_design_analysis_table()
-			self._director.title_for_table_widget = (
-				f"Sample design file has "
-				f"{self._director.uncertainty_active.nrepetitions} "
-				"repetitions for "
-				f"{self._director.uncertainty_active.universe_size} "
-				f"evaluators."
-			)
-			self._director.create_widgets_for_output_and_log_tabs()
-			self._director.set_focus_on_tab("Output")
-			self._director.record_command_as_successfully_completed()
-		finally:
-			# Ensure window is restored and activated
-			# Use a timer to defer window activation slightly
-			# This gives Qt event loop time to process events
-			QTimer.singleShot(100, lambda: self._restore_window())
+		)
+		self._read_sample_design_frequencies_from_file(freqs_file)
+		self.common.create_sample_design_analysis_table()
+		self._director.title_for_table_widget = (
+			f"Sample design file has "
+			f"{self._director.uncertainty_active.nrepetitions} "
+			"repetitions for "
+			f"{self._director.uncertainty_active.universe_size} "
+			f"evaluators."
+		)
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		# Fix Qt window focus issue after consecutive file dialogs
+		QTimer.singleShot(100, lambda: self._restore_window())
 
 		return
 

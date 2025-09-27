@@ -397,15 +397,7 @@ class LineOfSightCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# Ensure similarities_candidate is properly set
-		# 	self._director.similarities_candidate =
-		# self.los(self._director.evaluations_active)
-		#
-		#
-		# self._director.similarities_active =
-		# self._director.similarities_candidate
-		# if not hasattr(self._director, 'similarities_candidate') or
-		# self._director.similarities_candidate is None:
+
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
