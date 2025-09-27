@@ -1608,7 +1608,7 @@ class PrincipalComponentsCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		print(
-			f"DEBUG -- at bottom of PrincipalComponentsCommand"
+			# f"DEBUG -- at bottom of PrincipalComponentsCommand"
 			f" {self._director.configuration_active.point_coords=}"
 		)
 		return

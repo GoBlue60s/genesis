@@ -473,7 +473,7 @@ class PyQtGraphCommon:
 					point_coords.iloc[rival_a.index, vert_dim],
 					point_coords.iloc[rival_b.index, vert_dim],
 				],
-				pen="b",
+				pen="black",
 			)
 		return
 
@@ -605,7 +605,7 @@ class PyQtGraphCommon:
 			x.append(point_coords.iloc[rival_b.index, hor_dim])
 			y.append(point_coords.iloc[rival_b.index, vert_dim])
 			points = pg.ScatterPlotItem(
-				x=x, y=y, pen="b", symbol="o", size=point_size
+				x=x, y=y, brush="blue", pen="blue", symbol="o", size=point_size
 			)
 			plot.addItem(points)
 			rival_a_label = pg.TextItem(

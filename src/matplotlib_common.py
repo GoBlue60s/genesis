@@ -322,7 +322,10 @@ class MatplotlibCommon:
 		rival_a = rivalry.rival_a
 		rival_b = rivalry.rival_b
 
-		if self._director.common.show_connector:
+		if (
+			self._director.common.show_connector
+			and self._director.common.have_reference_points()
+		):
 			ax.plot(
 				[
 					point_coords.iloc[rival_a.index, hor_dim],

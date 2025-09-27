@@ -1734,7 +1734,7 @@ class PyQtGraphMethods:
 
 		# likely_groups_to_show = configuration_active.\
 		# 	_populate_likely_groups_to_show
-		likely_groups_to_show = director.current_command._likely_groups_to_show
+		likely_groups_to_show = director.current_command.likely_groups_to_show
 
 		tab_plot_widget = self._plot_likely_using_pyqtgraph(
 			likely_groups_to_show

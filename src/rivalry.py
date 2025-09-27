@@ -1942,212 +1942,32 @@ class Rivalry:
 		likely_left = self.likely_left
 		likely_right = self.likely_right
 
-		match bisector._case:
-			case "0a":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[hor_min, vert_max],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[hor_min, vert_min],
-					]
-				)
-			#
-			# Bisector Case 0b Bisector is vertical - from top to bottom
-			#
-			case "0b":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[hor_max, vert_max],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_min, vert_min],
-						[hor_min, vert_max],
-					]
-				)
-			#
-			# Bisector Case Ia Positive slope from Left side to Right side
-			# and min_y > vert_min
-			#
-			case "Ia":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[hor_min, vert_min],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[hor_min, vert_max],
-					]
-				)
-			#
-			# Bisector Case IIa Positive slope from Left side to Top
-			# and max_y == vert_max
-			#
-			case "IIa":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[hor_max, vert_min],
-						[hor_min, vert_min],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_min, vert_max],
-					]
-				)
-			#
-			# Bisector Case IIIa Positive slope from Bottom to Right side
-			#
-			case "IIIa":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[hor_max, vert_min],
-						[hor_min, vert_min],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[hor_min, vert_max],
-						[hor_min, vert_min],
-					]
-				)
-			#
-			# Bisector Case IVa Positive slope from Bottom to Top
-			# and min_x < hor_min
-			#
-			case "IVa":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[hor_max, vert_min],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_min, vert_max],
-						[hor_min, vert_min],
-					]
-				)
-			#
-			# Bisector Case Ib Negative slope from Left side to Right side
-			#
-			case "Ib":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-						[hor_min, vert_max],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[hor_min, vert_min],
-					]
-				)
-			#
-			# Bisector Case IIb Negative slope from Left side to Bottom
-			# and min_y == vert_min
-			#
-			case "IIb":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[hor_max, vert_max],
-						[hor_min, vert_max],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_min, vert_min],
-					]
-				)
-			#
-			# Bisector Case IIIb Negative slope from Top to Right side
-			# and min_x < hor_min ?????????
-			#
-			case "IIIb":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_max],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[hor_min, vert_min],
-						[hor_min, vert_max],
-					]
-				)
-			#
-			# Bisector Case IVb Negative slope from Bottom to Top
-			# and max_y > vert_max  ????????????????????????
-			#
-			case "IVb":
-				likely_right.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_max, vert_min],
-						[hor_max, vert_max],
-					]
-				)
-				likely_left.outline = np.array(
-					[
-						[bisector._start.x, bisector._start.y],
-						[bisector._end.x, bisector._end.y],
-						[hor_min, vert_min],
-						[hor_min, vert_max],
-					]
-				)
+		# Group cases by bisector direction for better readability and reduced
+		# complexity
+		if bisector._direction == "Flat":
+			# Cases 0a - flat bisector
+			self._likely_set_case_0a_vertices(
+				likely_left, likely_right, bisector,
+				hor_max, hor_min, vert_max, vert_min
+			)
+		elif bisector._direction == "Vertical":
+			# Cases 0b - vertical bisector
+			self._likely_set_case_0b_vertices(
+				likely_left, likely_right, bisector,
+				hor_max, hor_min, vert_max, vert_min
+			)
+		elif bisector._direction == "Upward slope":
+			# Positive slope cases: Ia, IIa, IIIa, IVa
+			self._likely_handle_upward_slope_cases(
+				likely_left, likely_right, bisector,
+				hor_max, hor_min, vert_max, vert_min
+			)
+		elif bisector._direction == "Downward slope":
+			# Negative slope cases: Ib, IIb, IIIb, IVb
+			self._likely_handle_downward_slope_cases(
+				likely_left, likely_right, bisector,
+				hor_max, hor_min, vert_max, vert_min
+			)
 
 		# Taking transpose
 		#
@@ -2157,6 +1977,286 @@ class Rivalry:
 		self.likely_right._x, self.likely_right._y = likely_right.outline.T
 
 		return
+
+	# Helper functions for _determine_vertices_of_likely_regions
+
+	def _likely_set_case_0a_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[hor_min, vert_max],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[hor_min, vert_min],
+			]
+		)
+
+	def _likely_set_case_0b_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[hor_max, vert_max],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_min, vert_min],
+				[hor_min, vert_max],
+			]
+		)
+
+	def _likely_set_case_ia_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[hor_min, vert_min],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[hor_min, vert_max],
+			]
+		)
+
+	def _likely_set_case_iia_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[hor_max, vert_min],
+				[hor_min, vert_min],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_min, vert_max],
+			]
+		)
+
+	def _likely_set_case_iiia_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[hor_max, vert_min],
+				[hor_min, vert_min],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[hor_min, vert_max],
+				[hor_min, vert_min],
+			]
+		)
+
+	def _likely_set_case_iva_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[hor_max, vert_min],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_min, vert_max],
+				[hor_min, vert_min],
+			]
+		)
+
+	def _likely_set_case_ib_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[hor_min, vert_max],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[hor_min, vert_min],
+			]
+		)
+
+	def _likely_set_case_iib_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[hor_max, vert_max],
+				[hor_min, vert_max],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_min, vert_min],
+			]
+		)
+
+	def _likely_set_case_iiib_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[hor_min, vert_min],
+				[hor_min, vert_max],
+			]
+		)
+
+	def _likely_set_case_ivb_vertices(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		likely_right.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[hor_max, vert_max],
+			]
+		)
+		likely_left.outline = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_min, vert_min],
+				[hor_min, vert_max],
+			]
+		)
+
+	def _likely_handle_upward_slope_cases(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		# Positive slope cases: Ia, IIa, IIIa, IVa
+		match bisector._case:
+			case "Ia":
+				self._likely_set_case_ia_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
+			case "IIa":
+				self._likely_set_case_iia_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
+			case "IIIa":
+				self._likely_set_case_iiia_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
+			case "IVa":
+				self._likely_set_case_iva_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
+
+	def _likely_handle_downward_slope_cases(
+		self, likely_left: Polygon, likely_right: Polygon,
+		bisector: LineInPlot, hor_max: float, hor_min: float,
+		vert_max: float, vert_min: float
+	) -> None:
+		# Negative slope cases: Ib, IIb, IIIb, IVb
+		match bisector._case:
+			case "Ib":
+				self._likely_set_case_ib_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
+			case "IIb":
+				self._likely_set_case_iib_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
+			case "IIIb":
+				self._likely_set_case_iiib_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
+			case "IVb":
+				self._likely_set_case_ivb_vertices(
+					likely_left, likely_right, bisector,
+					hor_max, hor_min, vert_max, vert_min
+				)
 
 	# -----------------------------------------------------------------------
 
