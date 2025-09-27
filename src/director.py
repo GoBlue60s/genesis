@@ -338,28 +338,6 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
-	def disable_mouse_events(
-		self, graphics_layout_widget: pg.GraphicsLayoutWidget
-	) -> None:
-		# Loop over each row
-		if hasattr(graphics_layout_widget, "ci"):
-			for row in range(graphics_layout_widget.ci.layout.rowCount()):
-				# Loop over each column
-				for col in range(
-					graphics_layout_widget.ci.layout.columnCount()
-				):
-					# Get the item in the cell
-					item = graphics_layout_widget.ci.layout.itemAt(row, col)
-					# Check if item is a PlotItem
-					if isinstance(item, pg.graphicsItems.PlotItem.PlotItem):
-						# Disable mouse events for this PlotItem
-						item.vb.setMouseEnabled(x=False, y=False)
-		else:
-			print(
-				"At bottom of disable_mouse_events, "
-				"graphics_layout_widget does not have attribute 'ci'"
-			)
-
 	# ------------------------------------------------------------------------
 
 	def plot_to_gui(self, fig: plt.Figure) -> None:

@@ -640,7 +640,7 @@ class PyQtGraphCommon:
 		# Add the plot to the Plot tab (replace the current plot)
 		self._director.tab_plot_scroll_area.setWidget(plot_widget)
 		# Disable mouse events on the plot in tab_gallery
-		self._director.disable_mouse_events(gallery_widget)
+		self.disable_mouse_events(gallery_widget)
 		# Add the plot to the Gallery tab (append to existing plots)
 		widget = QWidget()
 		widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -787,3 +787,21 @@ class PyQtGraphCommon:
 		)
 		circle.setPen(pg.mkPen("r"))
 		plot.addItem(circle)
+
+	# ------------------------------------------------------------------------
+
+	def disable_mouse_events(
+		self, graphics_layout_widget: pg.GraphicsLayoutWidget
+	) -> None:
+		# Loop over each row
+		for row in range(graphics_layout_widget.ci.layout.rowCount()):
+			# Loop over each column
+			for col in range(
+				graphics_layout_widget.ci.layout.columnCount()
+			):
+				# Get the item in the cell
+				item = graphics_layout_widget.ci.layout.itemAt(row, col)
+				# Check if item is a PlotItem
+				if isinstance(item, pg.graphicsItems.PlotItem.PlotItem):
+					# Disable mouse events for this PlotItem
+					item.vb.setMouseEnabled(x=False, y=False)
