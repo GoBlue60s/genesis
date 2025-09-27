@@ -1578,15 +1578,9 @@ class Status(QMainWindow):
 				self.current_command.execute(
 					common, traffic_dict[next_command][1]
 				)
-		except (SpacesError, Exception) as e:
-			# Check if it's a SpacesError-like exception with title and message
-			if hasattr(e, "title") and hasattr(e, "message"):
-				# print(f"Caught SpacesError-like: {e.title}, {e.message}")
-				self.unable_to_complete_command_set_status_as_failed()
-				self.common.error(e.title, e.message)
-			else:
-				# Re-raise if it's not a SpacesError
-				raise
+		except SpacesError as e:
+			self.unable_to_complete_command_set_status_as_failed()
+			self.common.error(e.title, e.message)
 
 	# ------------------------------------------------------------------------
 
