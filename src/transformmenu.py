@@ -209,12 +209,12 @@ class InvertCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		selected_items, dims_indexes = self._select_dimensions_to_invert(
+		_, dims_indexes = self._select_dimensions_to_invert(
 			self._dimensions_to_invert_title, self._dimensions
 		)
 		self._invert(dims_indexes)
@@ -224,7 +224,7 @@ class InvertCommand:
 		self._director.configuration_active.print_active_function()
 		if self._director.common.have_reference_points():
 			rivalry.use_reference_points_to_define_segments(
-				self._director, common
+				self._director
 			)
 			if (
 				self._director.common.have_scores()
@@ -366,7 +366,7 @@ class MoveCommand:
 		)
 		if common.have_reference_points():
 			rivalry.use_reference_points_to_define_segments(
-				self._director, common
+				self._director
 			)
 		self._director.configuration_active.inter_point_distances()
 		self._director.configuration_active.print_active_function()

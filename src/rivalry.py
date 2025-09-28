@@ -1426,11 +1426,11 @@ class Rivalry:
 			return
 
 		self.set_line_attributes_based_on_location_of_rivals(
-			self._director, common
+			self._director
 		)
 
 		self.set_region_attributes_based_on_location_of_rivals(
-			self._director, common
+			self._director
 		)
 
 		return
@@ -1516,7 +1516,7 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def set_line_attributes_based_on_location_of_rivals(
-		self, director: Status, common: Spaces
+		self, director: Status
 	) -> None:
 		"""
 		This function establishes the attributes of the connector,
@@ -1579,7 +1579,7 @@ class Rivalry:
 			rival_a, rival_b, point_coords, battleground_percent
 		)
 
-		(slope, bisector_slope) = self._establish_slope_and_cross_points(
+		(_, _) = self._establish_slope_and_cross_points(
 			rival_a, rival_b, battleground_percent, point_coords
 		)
 
@@ -1607,7 +1607,7 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def set_region_attributes_based_on_location_of_rivals(
-		self, director: Status, common: Spaces
+		self, director: Status
 	) -> None:
 		point_coords = director.configuration_active.point_coords
 		rival_a = self.rival_a
@@ -3290,8 +3290,7 @@ class Rivalry:
 
 	def use_reference_points_to_define_segments(
 		self,
-		director: Status,  # noqa: ARG002
-		common: Spaces,
+		director: Status  # noqa: ARG002
 	) -> None:
 		score_1_name = self._director.scores_active.score_1_name
 		score_2_name = self._director.scores_active.score_2_name

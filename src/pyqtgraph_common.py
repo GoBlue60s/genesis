@@ -116,7 +116,6 @@ class PyQtGraphCommon:
 		self, plot: pg.PlotItem, data: np.ndarray, shading: str
 	) -> pg.ImageItem:
 		im = pg.ImageItem()
-		peek(f"{shading=}")
 
 		# Map matplotlib colormap names to pyqtgraph colormaps
 		colormap_mapping = {
@@ -138,22 +137,21 @@ class PyQtGraphCommon:
 		}
 
 		# Use the mapped colormap or try matplotlib directly
-		peek(f"{shading=}")
-		if shading not in colormap_mapping and not shading.endswith("_r"):
-			cmap = pg.colormap.getFromMatplotlib(shading)
-			im.setColorMap(cmap)
+		if shading not in colormap_mapping:
+			colormap = pg.colormap.getFromMatplotlib(shading)
 			reverse_colormap = False
 		else:
 			pg_colormap_name = colormap_mapping.get(shading, shading)
 
 		# Check if we need to reverse the colormap
 			reverse_colormap = pg_colormap_name.endswith("_r")
-			peek(f"{reverse_colormap=}")
+
 		if reverse_colormap:
 			pg_colormap_name = pg_colormap_name[:-2]  # Remove '_r' suffix
 			colormap = pg.colormap.get(pg_colormap_name, skipCache=True)
 			colormap.reverse()  # Modifies colormap in-place
-			im.setColorMap(colormap)
+		
+		im.setColorMap(colormap)
 
 		# Set image data first before setting rectangle
 		# Flip data vertically before setting image

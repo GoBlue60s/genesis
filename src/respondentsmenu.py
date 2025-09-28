@@ -370,7 +370,7 @@ class ReferencePointsCommand:
 
 		rivalry.create_or_revise_rivalry_attributes(self._director, common)
 
-		rivalry.use_reference_points_to_define_segments(self._director, common)
+		rivalry.use_reference_points_to_define_segments(self._director)
 
 		if (
 			self._director.common.have_scores()
