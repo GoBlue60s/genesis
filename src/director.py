@@ -7,7 +7,7 @@ from pathlib import Path
 # from dataclasses import dataclass
 
 import pandas as pd
-import pyqtgraph as pg
+# import pyqtgraph as pg
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (

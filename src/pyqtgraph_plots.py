@@ -1462,7 +1462,7 @@ class PyQtGraphMethods:
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
 			title,
 			distances_as_lower_triangle,
-			"binary",
+			"gist_yarg",    # "binary",
 			point_names,
 			point_labels,
 			"Items",
@@ -1559,7 +1559,7 @@ class PyQtGraphMethods:
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
 			title,
 			ranked_distances_as_lower_triangle,
-			"binary",
+			"gist_yarg",  # "binary",
 			item_names,
 			item_labels,
 			"Items",
@@ -1606,7 +1606,7 @@ class PyQtGraphMethods:
 		layout_widget = pyqtgraph_common.create_heatmap_using_pyqtgraph(
 			"Ranked Similarities",
 			ranked_similarities_as_lower_triangle,
-			"binary",
+			"gist_yarg",  # "binary",
 			item_names,
 			item_labels,
 			"Items",

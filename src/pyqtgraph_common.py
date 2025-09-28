@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import numpy as np
 import pyqtgraph as pg
+import peek # noqa: F401
 
 from typing import TYPE_CHECKING
 
@@ -115,6 +116,7 @@ class PyQtGraphCommon:
 		self, plot: pg.PlotItem, data: np.ndarray, shading: str
 	) -> pg.ImageItem:
 		im = pg.ImageItem()
+		peek(f"{shading=}")
 
 		# Map matplotlib colormap names to pyqtgraph colormaps
 		colormap_mapping = {
@@ -136,28 +138,22 @@ class PyQtGraphCommon:
 		}
 
 		# Use the mapped colormap or try matplotlib directly
-		pg_colormap_name = colormap_mapping.get(shading, shading)
+		peek(f"{shading=}")
+		if shading not in colormap_mapping and not shading.endswith("_r"):
+			cmap = pg.colormap.getFromMatplotlib(shading)
+			im.setColorMap(cmap)
+			reverse_colormap = False
+		else:
+			pg_colormap_name = colormap_mapping.get(shading, shading)
 
 		# Check if we need to reverse the colormap
-		reverse_colormap = pg_colormap_name.endswith("_r")
+			reverse_colormap = pg_colormap_name.endswith("_r")
+			peek(f"{reverse_colormap=}")
 		if reverse_colormap:
 			pg_colormap_name = pg_colormap_name[:-2]  # Remove '_r' suffix
-
-		try:
-			# Try to get pyqtgraph native colormap first
-			colormap = pg.colormap.get(pg_colormap_name)
-			if reverse_colormap:
-				colormap = colormap.reverse()
+			colormap = pg.colormap.get(pg_colormap_name, skipCache=True)
+			colormap.reverse()  # Modifies colormap in-place
 			im.setColorMap(colormap)
-		except Exception:
-			try:
-				# If native colormap fails, try matplotlib colormap
-				colormap = pg.colormap.getFromMatplotlib(shading)
-				im.setColorMap(colormap)
-			except Exception:
-				# Final fallback to default colormap
-				colormap = pg.colormap.get("viridis")
-				im.setColorMap(colormap)
 
 		# Set image data first before setting rectangle
 		# Flip data vertically before setting image
@@ -176,7 +172,6 @@ class PyQtGraphCommon:
 
 	def add_colorbar_to_pyqtgraph_heatmap(
 		self,
-		graphics_layout: pg.GraphicsLayoutWidget,
 		plot: pg.PlotItem,
 		im: pg.ImageItem,
 	) -> None:
@@ -224,7 +219,7 @@ class PyQtGraphCommon:
 
 		graphics_layout, plot = self.begin_pyqtgraph_heatmap_with_title(title)
 		im = self.add_heatmap_to_pyqtgraph_heatmap(plot, data_to_plot, shading)
-		self.add_colorbar_to_pyqtgraph_heatmap(graphics_layout, plot, im)
+		self.add_colorbar_to_pyqtgraph_heatmap(plot, im)
 		# Use original names to match the unflipped data
 		self.add_tick_marks_names_and_labels_to_pyqtgraph_heatmap(
 			plot, names, labels
