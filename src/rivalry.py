@@ -2480,8 +2480,8 @@ class Rivalry:
 			left_includes_upper_right,
 		)
 
-		self.convertible_to_left.outline = self.convertible_to_left.outline
-		self.convertible_to_right.outline = self.convertible_to_right.outline
+		# convertible_to_left.outline and convertible_to_right.outline
+		# assigned above
 		#
 		# # Taking transpose
 		# x, y = data.T
@@ -2624,6 +2624,62 @@ class Rivalry:
 			self._director.common.use_plot_ranges()
 		)
 
+		(
+			convertible_to_left_vertices_as_pairs,
+			convertible_to_right_vertices_as_pairs,
+		) = self._convertible_default_vertices()
+		#
+		# Bisector Case 0a Bisector slope is zero from Left side to Right side
+		# Bisector Case 0b Connector slope is zero - from top to bottom
+		# Bisector Case Ia Positive slope from Left side to Right side
+		# bisector test is redundant, case includes slope, but improves
+		# efficiency
+		#
+		(
+			convertible_to_left_vertices_as_pairs,
+			convertible_to_right_vertices_as_pairs,
+		) = self._handle_convertible_slope_cases(
+			bisector,
+			west,
+			east,
+			convertible_to_left_vertices_as_pairs,
+			convertible_to_right_vertices_as_pairs,
+			right_includes_upper_right,
+			left_includes_lower_left,
+			left_includes_upper_right,
+			right_includes_lower_left,
+			right_includes_lower_right,
+			left_includes_upper_left,
+			right_includes_upper_left,
+			left_includes_lower_right,
+			hor_max,
+			hor_min,
+			vert_max,
+			vert_min,
+		)
+
+		return (
+			convertible_to_left_vertices_as_pairs,
+			convertible_to_right_vertices_as_pairs,
+		)
+
+	def _convertible_default_vertices(self) -> tuple[np.array, np.array]:
+		"""
+		Create default convertible vertices for left and right regions.
+
+		The default case establishes the basic rectangular regions defined by
+		the bisector and east/west lines before any case-specific
+		modifications.
+
+		Returns:
+			tuple: (convertible_to_left_vertices_as_pairs,
+					convertible_to_right_vertices_as_pairs)
+		"""
+		rivalry = self._director.rivalry
+		bisector = rivalry.bisector
+		west = rivalry.west
+		east = rivalry.east
+
 		convertible_to_left_vertices_as_pairs = np.array(
 			[
 				[bisector._start.x, bisector._start.y],
@@ -2640,219 +2696,213 @@ class Rivalry:
 				[west._start.x, west._start.y],
 			]
 		)
-		#
-		# Bisector Case 0a Bisector slope is zero from Left side to Right side
-		# Bisector Case 0b Connector slope is zero - from top to bottom
-		# Bisector Case Ia Positive slope from Left side to Right side
-		# bisector test is redundant, case includes slope, but improves
-		# efficiency
-		#
-		if bisector._direction == "Upward slope":
-			if bisector._case == "Ia":
-				#
-				# if west.case == "Ia":					# test with FP
-				# defaults should cover this
-				if west._case == "IIa":  # test with TG
-					convertible_to_right_vertices_as_pairs = (
-						right_includes_upper_right
-					)
-				#
-				# if east.case == "Ia":
-				# defaults should cover this				test with BG
-				if east._case == "IIIa":  # test with TC/FP
-					convertible_to_left_vertices_as_pairs = (
-						left_includes_lower_left
-					)
-			#
-			# Bisector Case IIa Positive slope from Left side to Top
-			# and max_y == vert_max
-			#
-			elif bisector._case == "IIa":
-				# if west.case == "IIa":
-				# defaults should cover this					test with TG
-				if east._case == "Ia":  # test with  BK
-					convertible_to_left_vertices_as_pairs = (
-						left_includes_upper_right
-					)
-				# elif east.case == "IIa":                test with BF
-				# defaults should cover this
-				elif east._case == "IIIa":  # test with    TS
-					convertible_to_left_vertices_as_pairs = np.array(
-						[
-							[bisector._start.x, bisector._start.y],
-							[bisector._end.x, bisector._end.y],
-							[hor_max, vert_max],
-							[east._end.x, east._end.y],
-							[east._start.x, east._start.y],
-							[hor_min, vert_min],
-						]
-					)
-
-				elif east._case == "IVa":  # test with BL
-					convertible_to_left_vertices_as_pairs = (
-						left_includes_lower_left
-					)
-			#
-			# Bisector Case IIIa Positive slope from Bottom to Right side
-			#
-			elif bisector._case == "IIIa":
-				if west._case == "Ia":  # test with GP
-					convertible_to_right_vertices_as_pairs = (
-						right_includes_lower_left
-					)
-				elif west._case == "IIa":  # test with BC
-					convertible_to_right_vertices_as_pairs = np.array(
-						[
-							[bisector._start.x, bisector._start.y],
-							[bisector._end.x, bisector._end.y],
-							[hor_max, vert_max],
-							[west._end.x, west._end.y],
-							[west._start.x, west._start.y],
-							[hor_min, vert_min],
-						]
-					)
-
-				elif west._case == "IVa":  # test with CF
-					convertible_to_right_vertices_as_pairs = np.array(
-						[
-							[bisector._start.x, bisector._start.y],
-							[bisector._end.x, bisector._end.y],
-							[hor_max, vert_max],
-							[west._end.x, west._end.y],
-							[west._start.x, west._start.y],
-						]
-					)
-
-			# elif west.case == "IIIa":					test with EH
-			# 	defaults should cover this as well as all cases match
-			# if east.case == "IIIa":						test with EH
-			# defaults should cover this as well as all cases match
-			#
-			# Bisector Case IVa Positive slope from Bottom to Top
-			#
-			elif bisector._case == "IVa":
-				if west._case == "IIa":  # test with TN
-					convertible_to_right_vertices_as_pairs = (
-						right_includes_lower_left
-					)
-				#
-				# elif west.case == "IVa":				test with ??????????
-				# defaults should cover this
-				#
-				if east._case == "IIIa":  # test with EJ
-					convertible_to_left_vertices_as_pairs = (
-						left_includes_upper_right
-					)
-
-		# elif east.case == "IVa":					test with BD
-		# defaults should cover this as well as all cases match
-		#
-		# Bisector Case Ib Negative slope from Left side to Right side
-		#
-		elif bisector._direction == "Downward slope":
-			if bisector._case == "Ib":
-				# if west.case == "Ib":					test with AC
-				# defaults should cover this
-				#
-				if west._case == "IIb":  # test with EP
-					convertible_to_right_vertices_as_pairs = (
-						right_includes_lower_right
-					)
-				#
-				# if east.case == "Ib":					test with CE
-				# defaults should cover this as well as all cases match
-				#
-				if east._case == "IIIb":  # test with AC
-					convertible_to_left_vertices_as_pairs = (
-						left_includes_upper_left
-					)
-			#
-			# Bisector Case IIb Negative slope from Left side to Bottom
-			# and min_y == vert_min
-			#
-			elif bisector._case == "IIb":
-				if west._case == "IIb":  # test with HI
-					# defaults should cover this
-					if east._case == "Ib":  # test with IY
-						convertible_to_left_vertices_as_pairs = (
-							left_includes_lower_right
-						)
-					# elif east.case == "IIb":					test with IK
-					# defaults should cover this as well as all cases match
-					elif east._case == "IIIb":  # test with PX
-						convertible_to_left_vertices_as_pairs = np.array(
-							[
-								[bisector._start.x, bisector._start.y],
-								[bisector._end.x, bisector._end.y],
-								[hor_max, vert_min],
-								[east._end.x, east._end.y],
-								[east._start.x, east._start.y],
-								[hor_min, vert_max],
-							]
-						)
-
-					elif east._case == "IVb":  # test with IW
-						convertible_to_left_vertices_as_pairs = (
-							left_includes_upper_left
-						)
-			#
-			# Bisector Case IIIb Negative slope from Top to right side
-			#
-			#
-			elif bisector._case == "IIIb":
-				if east._case == "IIIb":
-					# noop = 13
-					pass
-				#
-				if west._case == "Ib":  # test with AS
-					convertible_to_right_vertices_as_pairs = (
-						right_includes_upper_left
-					)
-				#
-				elif west._case == "IIb":  # test with ?
-					convertible_to_right_vertices_as_pairs = np.array(
-						[
-							[bisector._start.x, bisector._start.y],
-							[bisector._end.x, bisector._end.y],
-							[hor_max, vert_min],
-							[west._end.x, west._end.y],
-							[west._start.x, west._start.y],
-							[hor_min, vert_max],
-						]
-					)
-				#
-				# elif west.case == "IIIb":				test with AQ
-				# defaults should cover this as well as all cases match
-				elif west._case == "IVb":  # test with AK
-					convertible_to_right_vertices_as_pairs = (
-						right_includes_lower_right
-					)
-			#
-			# Bisector Case IVb Negative slope from Bottom to Top
-			# and max_y > vert_max  ????????????????????????
-			#
-			elif bisector._case == "IVb":
-				if west._case == "IIb":  # test with GH
-					convertible_to_right_vertices_as_pairs = (
-						right_includes_upper_left
-					)
-					if east.case == "IIIb":  # test with GM
-						convertible_to_left_vertices_as_pairs = (
-							left_includes_lower_right
-						)
-				# if east.case == "IVb": 				# test with GY
-				# defaults should cover this
-				elif west._case == "IVb":  # Test with 	DG
-					if east._case == "IIIb":
-						convertible_to_left_vertices_as_pairs = (
-							left_includes_lower_right
-						)
-			# elif east.case == "IVb":
-			# defaults should cover this as well as all cases match
 
 		return (
 			convertible_to_left_vertices_as_pairs,
 			convertible_to_right_vertices_as_pairs,
+		)
+
+	def _handle_convertible_slope_cases(
+		self,
+		bisector: Bisector,
+		west: West,
+		east: East,
+		convertible_to_left_vertices_as_pairs: np.array,
+		convertible_to_right_vertices_as_pairs: np.array,
+		right_includes_upper_right: np.array,
+		left_includes_lower_left: np.array,
+		left_includes_upper_right: np.array,
+		right_includes_lower_left: np.array,
+		right_includes_lower_right: np.array,
+		left_includes_upper_left: np.array,
+		right_includes_upper_left: np.array,
+		left_includes_lower_right: np.array,
+		hor_max: float,
+		hor_min: float,
+		vert_max: float,
+		vert_min: float,
+	) -> tuple[np.array, np.array]:
+		"""Handle convertible region vertices for all slope cases."""
+		case_handlers = {
+			# Active upward slope cases
+			"Ia_IIa_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				right_includes_upper_right
+			),  # test with TG
+			"Ia__IIIa": lambda: (
+				left_includes_lower_left,
+				convertible_to_right_vertices_as_pairs
+			),  # test with TC/FP
+			"IIa__Ia": lambda: (
+				left_includes_upper_right,
+				convertible_to_right_vertices_as_pairs
+			),  # test with BK
+			"IIa__IIIa": lambda: (
+				np.array([
+					[bisector._start.x, bisector._start.y],
+					[bisector._end.x, bisector._end.y],
+					[hor_max, vert_max],
+					[east._end.x, east._end.y],
+					[east._start.x, east._start.y],
+					[hor_min, vert_min]
+				]),
+				convertible_to_right_vertices_as_pairs
+			),  # test with TS
+			"IIa__IVa": lambda: (
+				left_includes_lower_left,
+				convertible_to_right_vertices_as_pairs
+			),  # test with BL
+			"IIIa_Ia_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				right_includes_lower_left
+			),  # test with GP
+			"IIIa_IIa_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				np.array([
+					[bisector._start.x, bisector._start.y],
+					[bisector._end.x, bisector._end.y],
+					[hor_max, vert_max],
+					[west._end.x, west._end.y],
+					[west._start.x, west._start.y],
+					[hor_min, vert_min]
+				])
+			),  # test with BC
+			"IIIa_IVa_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				np.array([
+					[bisector._start.x, bisector._start.y],
+					[bisector._end.x, bisector._end.y],
+					[hor_max, vert_max],
+					[west._end.x, west._end.y],
+					[west._start.x, west._start.y]
+				])
+			),  # test with CF
+			"IVa_IIa_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				right_includes_lower_left
+			),  # test with TN
+			"IVa__IIIa": lambda: (
+				left_includes_upper_right,
+				convertible_to_right_vertices_as_pairs
+			),  # test with EJ
+			# Active downward slope cases
+			"Ib_IIb_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				right_includes_lower_right
+			),  # test with EP
+			"Ib__IIIb": lambda: (
+				left_includes_upper_left,
+				convertible_to_right_vertices_as_pairs
+			),  # test with AC
+			"IIb_IIb_Ib": lambda: (
+				left_includes_lower_right,
+				convertible_to_right_vertices_as_pairs
+			),  # test with IY
+			"IIb_IIb_IIIb": lambda: (
+				self._convertible_case_iib_east_iiib_vertices(
+					bisector, east, hor_max, hor_min, vert_max, vert_min
+				),
+				convertible_to_right_vertices_as_pairs
+			),  # test with PX
+			"IIb_IIb_IVb": lambda: (
+				left_includes_upper_left,
+				convertible_to_right_vertices_as_pairs
+			),  # test with IW
+			"IIIb_Ib_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				right_includes_upper_left
+			),  # test with AS
+			"IIIb_IIb_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				self._convertible_case_iiib_west_iib_vertices(
+					bisector, west, hor_max, hor_min, vert_max, vert_min
+				)
+			),  # test with ?
+			"IIIb_IVb_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				right_includes_lower_right
+			),  # test with AK
+			"IVb_IIb_": lambda: (
+				convertible_to_left_vertices_as_pairs,
+				right_includes_upper_left
+			),  # test with GH
+			"IVb_IIb_IIIb": lambda: (
+				left_includes_lower_right,
+				right_includes_upper_left
+			),  # test with GM
+			"IVb_IVb_IIIb": lambda: (
+				left_includes_lower_right,
+				convertible_to_right_vertices_as_pairs
+			),  # test with DG
+		}
+
+		# Add all default cases explicitly
+		def default_result() -> tuple[np.array, np.array]:
+			return (
+				convertible_to_left_vertices_as_pairs,
+				convertible_to_right_vertices_as_pairs
+			)
+		bisector_cases = [
+			"Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa", "IVb"
+		]
+		west_cases = [
+			"", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa", "IVb"
+		]
+		east_cases = [
+			"", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa", "IVb"
+		]
+
+		for b_case in bisector_cases:
+			for w_case in west_cases:
+				for e_case in east_cases:
+					key = f"{b_case}_{w_case}_{e_case}"
+					if key not in case_handlers:
+						case_handlers[key] = default_result
+
+		case_key = f"{bisector._case}_{west._case}_{east._case}"
+		return case_handlers[case_key]()
+
+
+	def _convertible_case_iib_east_iiib_vertices(
+		self,
+		bisector: Bisector,
+		east: East,
+		hor_max: float,
+		hor_min: float,
+		vert_max: float,
+		vert_min: float,
+	) -> np.array:
+		"""Generate vertices for case IIb with east case IIIb."""
+		return np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+				[hor_min, vert_max],
+			]
+		)
+
+	def _convertible_case_iiib_west_iib_vertices(
+		self,
+		bisector: Bisector,
+		west: West,
+		hor_max: float,
+		hor_min: float,
+		vert_max: float,
+		vert_min: float,
+	) -> np.array:
+		"""Generate vertices for case IIIb with west case IIb."""
+		return np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+				[hor_min, vert_max],
+			]
 		)
 
 	# ------------------------------------------------------------------------
@@ -3361,7 +3411,7 @@ class Connector(LineInPlot):
 
 
 class First(LineInPlot):
-	def __init__(  # noqa: PLR
+	def __init__(
 		self,
 		director: Status,
 		point_on_line: Point,
