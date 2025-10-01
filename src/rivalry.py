@@ -7,7 +7,7 @@ import random
 # Third party imports
 import numpy as np
 import pandas as pd
-import peek  # noqa: F401
+import peek
 
 # Typing imports
 from typing import NamedTuple
@@ -2456,28 +2456,36 @@ class Rivalry:
 		self, bisector: object, west: West, east: East
 	) -> None:
 		(
-			right_includes_upper_right,
-			right_includes_lower_right,
-			right_includes_upper_left,
-			right_includes_lower_left,
-			left_includes_lower_left,
-			left_includes_upper_left,
-			left_includes_lower_right,
-			left_includes_upper_right,
+			right_includes_upper_right_as_pairs,
+			right_includes_lower_right_as_pairs,
+			right_includes_upper_left_as_pairs,
+			right_includes_lower_left_as_pairs,
+			left_includes_lower_left_as_pairs,
+			left_includes_upper_left_as_pairs,
+			left_includes_lower_right_as_pairs,
+			left_includes_upper_right_as_pairs,
+			left_includes_lower_right_and_upper_left_as_pairs,
+			left_includes_upper_right_and_lower_left_as_pairs,
+			right_includes_upper_left_and_lower_right_as_pairs,
+			right_includes_upper_right_and_lower_left_as_pairs
 		) = self._define_convertible_regions(bisector, west, east)
 
 		(
 			self.convertible_to_left.outline,
 			self.convertible_to_right.outline,
 		) = self._define_convertible_vertices(
-			right_includes_upper_right,
-			right_includes_lower_right,
-			right_includes_upper_left,
-			right_includes_lower_left,
-			left_includes_lower_left,
-			left_includes_upper_left,
-			left_includes_lower_right,
-			left_includes_upper_right,
+			right_includes_upper_right_as_pairs,
+			right_includes_lower_right_as_pairs,
+			right_includes_upper_left_as_pairs,
+			right_includes_lower_left_as_pairs,
+			left_includes_lower_left_as_pairs,
+			left_includes_upper_left_as_pairs,
+			left_includes_lower_right_as_pairs,
+			left_includes_upper_right_as_pairs,
+			left_includes_lower_right_and_upper_left_as_pairs,
+			left_includes_upper_right_and_lower_left_as_pairs,
+			right_includes_upper_left_and_lower_right_as_pairs,
+			right_includes_upper_right_and_lower_left_as_pairs
 		)
 
 		# convertible_to_left.outline and convertible_to_right.outline
@@ -2545,9 +2553,10 @@ class Rivalry:
 			[
 				[bisector._start.x, bisector._start.y],
 				[bisector._end.x, bisector._end.y],
-				[hor_min, vert_min],
+				# [hor_min, vert_min],
 				[east._end.x, east._end.y],
 				[east._start.x, east._start.y],
+				[hor_min, vert_min],
 			]
 		)
 		left_includes_upper_left_as_pairs = np.array(
@@ -2577,6 +2586,46 @@ class Rivalry:
 				[east._start.x, east._start.y],
 			]
 		)
+		left_includes_lower_right_and_upper_left_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+				[hor_min, vert_max],
+			]
+		)
+		left_includes_upper_right_and_lower_left_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[east._end.x, east._end.y],
+				[east._start.x, east._start.y],
+				[hor_min, vert_min],
+			]
+		)
+		right_includes_upper_left_and_lower_right_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_max],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+				[hor_min, vert_min],
+			]
+		)
+		right_includes_upper_right_and_lower_left_as_pairs = np.array(
+			[
+				[bisector._start.x, bisector._start.y],
+				[bisector._end.x, bisector._end.y],
+				[hor_max, vert_min],
+				[west._end.x, west._end.y],
+				[west._start.x, west._start.y],
+				[hor_min, vert_max],
+			]
+		)
 		#
 		# Bisector Case 0a Bisector slope is zero from Left side to Right side
 		# Bisector Case 0b Connector slope is zero - from top to bottom
@@ -2597,20 +2646,29 @@ class Rivalry:
 			left_includes_upper_left_as_pairs,
 			left_includes_lower_right_as_pairs,
 			left_includes_upper_right_as_pairs,
+			left_includes_lower_right_and_upper_left_as_pairs,
+			left_includes_upper_right_and_lower_left_as_pairs,
+			right_includes_upper_left_and_lower_right_as_pairs,
+			right_includes_upper_right_and_lower_left_as_pairs
 		)
 
 	# -----------------------------------------------------------------------
 
 	def _define_convertible_vertices(
 		self,
-		right_includes_upper_right: np.array,
-		right_includes_lower_right: np.array,
-		right_includes_upper_left: np.array,
-		right_includes_lower_left: np.array,
-		left_includes_lower_left: np.array,
-		left_includes_upper_left: np.array,
-		left_includes_lower_right: np.array,
-		left_includes_upper_right: np.array,
+		right_includes_upper_right_as_pairs: np.array,
+		right_includes_lower_right_as_pairs: np.array,
+		right_includes_upper_left_as_pairs: np.array,
+		right_includes_lower_left_as_pairs: np.array,
+		left_includes_lower_left_as_pairs: np.array,
+		left_includes_upper_left_as_pairs: np.array,
+		left_includes_lower_right_as_pairs: np.array,
+		left_includes_upper_right_as_pairs: np.array,
+		left_includes_lower_right_and_upper_left_as_pairs: np.array,
+		left_includes_upper_right_and_lower_left_as_pairs: np.array,
+		right_includes_upper_left_and_lower_right_as_pairs: np.array,
+		right_includes_upper_right_and_lower_left_as_pairs: np.array
+		
 	) -> tuple:
 		#
 		# Establish default areas
@@ -2620,9 +2678,9 @@ class Rivalry:
 		west = rivalry.west
 		east = rivalry.east
 
-		(hor_max, hor_min, vert_max, vert_min) = (
-			self._director.common.use_plot_ranges()
-		)
+		# (hor_max, hor_min, vert_max, vert_min) = (
+		# 	self._director.common.use_plot_ranges()
+		# )
 
 		(
 			convertible_to_left_vertices_as_pairs,
@@ -2644,18 +2702,18 @@ class Rivalry:
 			east,
 			convertible_to_left_vertices_as_pairs,
 			convertible_to_right_vertices_as_pairs,
-			right_includes_upper_right,
-			left_includes_lower_left,
-			left_includes_upper_right,
-			right_includes_lower_left,
-			right_includes_lower_right,
-			left_includes_upper_left,
-			right_includes_upper_left,
-			left_includes_lower_right,
-			hor_max,
-			hor_min,
-			vert_max,
-			vert_min,
+			right_includes_upper_right_as_pairs,
+			left_includes_lower_left_as_pairs,
+			left_includes_upper_right_as_pairs,
+			right_includes_lower_left_as_pairs,
+			right_includes_lower_right_as_pairs,
+			left_includes_upper_left_as_pairs,
+			right_includes_upper_left_as_pairs,
+			left_includes_lower_right_as_pairs,
+			left_includes_lower_right_and_upper_left_as_pairs,
+			left_includes_upper_right_and_lower_left_as_pairs,
+			right_includes_upper_left_and_lower_right_as_pairs,
+			right_includes_upper_right_and_lower_left_as_pairs
 		)
 
 		return (
@@ -2709,131 +2767,87 @@ class Rivalry:
 		east: East,
 		convertible_to_left_vertices_as_pairs: np.array,
 		convertible_to_right_vertices_as_pairs: np.array,
-		right_includes_upper_right: np.array,
-		left_includes_lower_left: np.array,
-		left_includes_upper_right: np.array,
-		right_includes_lower_left: np.array,
-		right_includes_lower_right: np.array,
-		left_includes_upper_left: np.array,
-		right_includes_upper_left: np.array,
-		left_includes_lower_right: np.array,
-		hor_max: float,
-		hor_min: float,
-		vert_max: float,
-		vert_min: float,
+		right_includes_upper_right_as_pairs: np.array,
+		left_includes_lower_left_as_pairs: np.array,
+		left_includes_upper_right_as_pairs: np.array,
+		right_includes_lower_left_as_pairs: np.array,
+		right_includes_lower_right_as_pairs: np.array,
+		left_includes_upper_left_as_pairs: np.array,
+		right_includes_upper_left_as_pairs: np.array,
+		left_includes_lower_right_as_pairs: np.array,
+		left_includes_lower_right_and_upper_left_as_pairs: np.array,
+		left_includes_upper_right_and_lower_left_as_pairs: np.array,
+		right_includes_upper_left_and_lower_right_as_pairs: np.array,
+		right_includes_upper_right_and_lower_left_as_pairs: np.array
 	) -> tuple[np.array, np.array]:
 		"""Handle convertible region vertices for all slope cases."""
 		case_handlers = {
 			# Active upward slope cases
-			"Ia_IIa_": lambda: (
+			"Ia_IIa_Ia": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				right_includes_upper_right
-			),  # test with TG
-			"Ia__IIIa": lambda: (
-				left_includes_lower_left,
+				right_includes_upper_right_as_pairs
+			),  # test with ------EV, TC
+			"IIa_IIa_Ia": lambda: (
+				left_includes_upper_right_as_pairs,
 				convertible_to_right_vertices_as_pairs
-			),  # test with TC/FP
-			"IIa__Ia": lambda: (
-				left_includes_upper_right,
+			),  # test with ------BK
+			"IIa_IIa_IVa": lambda: (
+				left_includes_lower_left_as_pairs,
 				convertible_to_right_vertices_as_pairs
-			),  # test with BK
-			"IIa__IIIa": lambda: (
-				np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[east._end.x, east._end.y],
-					[east._start.x, east._start.y],
-					[hor_min, vert_min]
-				]),
-				convertible_to_right_vertices_as_pairs
-			),  # test with TS
-			"IIa__IVa": lambda: (
-				left_includes_lower_left,
-				convertible_to_right_vertices_as_pairs
-			),  # test with BL
-			"IIIa_Ia_": lambda: (
+			),  # test with -----TS,BL
+			"IIIa_Ia_IIIa": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				right_includes_lower_left
+				right_includes_lower_left_as_pairs
 			),  # test with GP
-			"IIIa_IIa_": lambda: (
+			"IIIa_IIa_IIIa": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[west._end.x, west._end.y],
-					[west._start.x, west._start.y],
-					[hor_min, vert_min]
-				])
+				right_includes_upper_left_and_lower_right_as_pairs
 			),  # test with BC
-			"IIIa_IVa_": lambda: (
+			"IIIa_IVa_IIIa": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				np.array([
-					[bisector._start.x, bisector._start.y],
-					[bisector._end.x, bisector._end.y],
-					[hor_max, vert_max],
-					[west._end.x, west._end.y],
-					[west._start.x, west._start.y]
-				])
-			),  # test with CF
-			"IVa_IIa_": lambda: (
+				right_includes_upper_right_as_pairs
+			),  # test with -----CG
+			"IVa_IIa_IVa": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				right_includes_lower_left
-			),  # test with TN
-			"IVa__IIIa": lambda: (
-				left_includes_upper_right,
+				right_includes_lower_left_as_pairs
+			),  # test with -----TN
+			"IVa_IVa_IIIa": lambda: (
+				left_includes_upper_right_as_pairs,
 				convertible_to_right_vertices_as_pairs
-			),  # test with EJ
+			),  # test with ----BR
 			# Active downward slope cases
-			"Ib_IIb_": lambda: (
+			"Ib_Ib_IIIb": lambda: (
+				left_includes_upper_left_as_pairs,
+				convertible_to_right_vertices_as_pairs,
+			),  # test with ----AO
+			"Ib_IIb_Ib": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				right_includes_lower_right
+				right_includes_lower_right_as_pairs
 			),  # test with EP
-			"Ib__IIIb": lambda: (
-				left_includes_upper_left,
-				convertible_to_right_vertices_as_pairs
-			),  # test with AC
 			"IIb_IIb_Ib": lambda: (
-				left_includes_lower_right,
+				left_includes_lower_right_as_pairs,
 				convertible_to_right_vertices_as_pairs
-			),  # test with IY
+			),  # test with IY, HI
 			"IIb_IIb_IIIb": lambda: (
-				self._convertible_case_iib_east_iiib_vertices(
-					bisector, east, hor_max, hor_min, vert_max, vert_min
-				),
+				left_includes_lower_right_and_upper_left_as_pairs,
 				convertible_to_right_vertices_as_pairs
-			),  # test with PX
-			"IIb_IIb_IVb": lambda: (
-				left_includes_upper_left,
-				convertible_to_right_vertices_as_pairs
-			),  # test with IW
-			"IIIb_Ib_": lambda: (
+			),  # test with ?????????
+			"IIIb_IIb_IIIb": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				right_includes_upper_left
-			),  # test with AS
-			"IIIb_IIb_": lambda: (
+				right_includes_upper_right_and_lower_left_as_pairs
+			),  # test with  AI
+			"IIIb_IVb_IIIb": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				self._convertible_case_iiib_west_iib_vertices(
-					bisector, west, hor_max, hor_min, vert_max, vert_min
-				)
-			),  # test with ?
-			"IIIb_IVb_": lambda: (
+				right_includes_lower_right_as_pairs
+			),  # test with -----AG
+			"IVb_IIb_IVb": lambda: (
 				convertible_to_left_vertices_as_pairs,
-				right_includes_lower_right
-			),  # test with AK
-			"IVb_IIb_": lambda: (
-				convertible_to_left_vertices_as_pairs,
-				right_includes_upper_left
-			),  # test with GH
-			"IVb_IIb_IIIb": lambda: (
-				left_includes_lower_right,
-				right_includes_upper_left
-			),  # test with GM
+				right_includes_upper_left_as_pairs
+			),  # test with -----EI
 			"IVb_IVb_IIIb": lambda: (
-				left_includes_lower_right,
+				left_includes_lower_right_as_pairs,
 				convertible_to_right_vertices_as_pairs
-			),  # test with DG
+			),  # test with ----AF
 		}
 
 		# Add all default cases explicitly
@@ -2860,50 +2874,11 @@ class Rivalry:
 						case_handlers[key] = default_result
 
 		case_key = f"{bisector._case}_{west._case}_{east._case}"
-		return case_handlers[case_key]()
+		peek(case_key)
+		result = case_handlers[case_key]()
+		peek(result)
+		return result
 
-
-	def _convertible_case_iib_east_iiib_vertices(
-		self,
-		bisector: Bisector,
-		east: East,
-		hor_max: float,
-		hor_min: float,
-		vert_max: float,
-		vert_min: float,
-	) -> np.array:
-		"""Generate vertices for case IIb with east case IIIb."""
-		return np.array(
-			[
-				[bisector._start.x, bisector._start.y],
-				[bisector._end.x, bisector._end.y],
-				[hor_max, vert_min],
-				[east._end.x, east._end.y],
-				[east._start.x, east._start.y],
-				[hor_min, vert_max],
-			]
-		)
-
-	def _convertible_case_iiib_west_iib_vertices(
-		self,
-		bisector: Bisector,
-		west: West,
-		hor_max: float,
-		hor_min: float,
-		vert_max: float,
-		vert_min: float,
-	) -> np.array:
-		"""Generate vertices for case IIIb with west case IIb."""
-		return np.array(
-			[
-				[bisector._start.x, bisector._start.y],
-				[bisector._end.x, bisector._end.y],
-				[hor_max, vert_min],
-				[west._end.x, west._end.y],
-				[west._start.x, west._start.y],
-				[hor_min, vert_max],
-			]
-		)
 
 	# ------------------------------------------------------------------------
 

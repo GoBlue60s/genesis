@@ -340,18 +340,18 @@ class ReferencePointsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		peek("At top of ReferencePointsCommand.execute()")
+
 		rivalry = self._director.rivalry
 		point_names = self._director.configuration_active.point_names
 		point_labels = self._director.configuration_active.point_labels
 		rival_a = rivalry.rival_a
 		rival_b = rivalry.rival_b
-		peek(
-			"After setting up rivalry and point names in "
-			"ReferencePointsCommand"
-		)
-		peek(rival_a)
-		peek(rival_b)
+		# peek(
+		# 	"After setting up rivalry and point names in "
+		# 	"ReferencePointsCommand"
+		# )
+		# peek(rival_a)
+		# peek(rival_b)
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -385,6 +385,12 @@ class ReferencePointsCommand:
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
+		peek(rival_a.label, rival_b.label,
+			self._director.rivalry.bisector._case,
+			self._director.rivalry.west._case,
+			self._director.rivalry.east._case
+		)
+
 		self._director.record_command_as_successfully_completed()
 		return
 
