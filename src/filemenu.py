@@ -285,7 +285,7 @@ class CorrelationsCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
-		self._director.command = "Open correlations"
+		self._director.command = "Correlations"
 		self._director.correlations_candidate.nreferent = 0
 		self._director.correlations_candidate.item_names.clear()
 		self._director.correlations_candidate.item_labels.clear()
@@ -312,7 +312,7 @@ class CorrelationsCommand:
 		self._director.width = 8
 		self._director.decimals = 2
 		# file = ""
-		self._file_caption = "Open correlations"
+		self._file_caption = "Correlations"
 		self._file_filter = "*.txt"
 		return
 

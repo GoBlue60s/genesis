@@ -3,11 +3,13 @@ from __future__ import annotations
 # Standard library imports
 import os
 from pathlib import Path
+from itertools import islice
 
 # from dataclasses import dataclass
 
 import pandas as pd
 # import pyqtgraph as pg
+import peek
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (
@@ -140,8 +142,10 @@ class Status(QMainWindow):
 		self.setWindowTitle("Spaces")
 		self.create_menu_bar()
 		self.create_status_bar()
+		self.create_explanations()
 		self.create_tool_bar()
 		self.create_tabs()
+		self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
 
@@ -248,6 +252,34 @@ class Status(QMainWindow):
 			font-weight: bold;
 			}
 		""")
+# ------------------------------------------------------------------------
+
+	def check_consistency_of_dictionaries_and_arrays(self) -> None:
+
+		print("\nChecking consistency of dictionaries and arrays \n")
+		element = 103
+		
+		print("Ordering of elements:")
+		print(" traffic_dict: follows the order of the menu items")
+		print(" widget_dict: alphabetical order of keys")
+		print(" commands: alphabetical order of commands")
+		print(" explain_dict: alphabetical order of keys \n")
+
+		print("Lengths of dictionaries and arrays:")
+		print(" traffic_dict: ", len(self.traffic_dict))
+		print(" widget_dict: ", len(self.widget_dict))
+		print(" commands: ", len(self.commands))
+		print(" explain_dict: ", len(self.explain_dict), "\n")
+		
+		print("Element being checked:", element)
+		key = next(iter(islice(self.traffic_dict.keys(), element, None)), None)
+		print(" traffic_dict key:", key, "\n")
+		print("Consistency of element ", element)
+		print(" command element:", self.commands[element])
+		key = next(iter(islice(self.widget_dict.keys(), element, None)), None)
+		print(" widget_dict key:", key)
+		key = next(iter(islice(self.explain_dict.keys(), element, None)), None)
+		print(" explain_dict key:", key)
 
 	# ------------------------------------------------------------------------
 
@@ -1471,6 +1503,7 @@ class Status(QMainWindow):
 			"New grouped data",
 			"Open sample design",
 			"Open sample repetitions",
+			"Open sample solutions",
 			"Open scores",
 			"Paired",
 			"Principal Components",
@@ -1478,6 +1511,7 @@ class Status(QMainWindow):
 			"Print correlations",
 			"Print evaluations",
 			"Print grouped data",
+			"Print individuals",
 			"Print sample design",
 			"Print sample repetitions",
 			"Print scores",
@@ -1497,6 +1531,7 @@ class Status(QMainWindow):
 			"Save individuals",
 			"Save sample design",
 			"Save sample repetitions",
+			"Save sample solutions",
 			"Save scores",
 			"Save similarities",
 			"Save target",
@@ -1508,9 +1543,8 @@ class Status(QMainWindow):
 			"Settings - layout options",
 			"Settings - plane",
 			"Settings - plot settings",
-			"Settings - presentation layer Matplotlib",
-			"Settings - presentation layer PyQtGraph",
-			"Settings - segment",
+			"Settings - presentation layer",
+			"Settings - segment sizing",
 			"Settings - vector sizing",
 			"Shepard",
 			"Similarities",
@@ -1530,15 +1564,17 @@ class Status(QMainWindow):
 			"View distances",
 			"View evaluations",
 			"View grouped data",
+			"View individuals",
 			"View point uncertainty",
 			"View sample design",
 			"View sample repetitions",
+			"View sample solutions",
 			"View scores",
 			"View similarities",
 			"View spatial uncertainty",
 			"View target",
 		)
-		# peek(len(self.commands))
+
 
 	# ------------------------------------------------------------------------
 
@@ -1750,8 +1786,8 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
-	def optionally_explain_what_command_does(self) -> str:
-		explain_dict = {
+	def create_explanations(self) -> None:
+		self.explain_dict = {
 			"About": "About provides information about the program.",
 			"Alike": "Alike can be used to place lines between points "
 			"with high similarity.\n"
@@ -1807,7 +1843,7 @@ class Status(QMainWindow):
 			"Core supporters": "Core supporters identifies regions "
 			"immediately around the reference points.\n"
 			"Individuals in these areas prefer these candidates the most.",
-			"Open correlations": "Correlations reads in a correlation matrix "
+			"Correlations": "Correlations reads in a correlation matrix "
 			"from a file.\n"
 			"The file must be in the a format similar to to the OSIRIS "
 			"format.\n"
@@ -1837,6 +1873,7 @@ class Status(QMainWindow):
 			"Evaluations": "Evaluations reads in a file containing \n"
 			"individual evaluations corresponding to the points in \n"
 			"the active configuration.",
+			"Exit": "Exit exits the program.",
 			"Factor analysis": "Factor creates a factor analysis of the "
 			"current correlations.\n"
 			"The output is a factor matrix with as many points as in "
@@ -1926,7 +1963,6 @@ class Status(QMainWindow):
 			"Paired": "Paired is used to obtain information about pairs of "
 			"points.\n"
 			"The user will be asked to select pairs of points.",
-			"Plane": "Plane is used to define the plane to be displayed",
 			"Principal components": "Principal components is used to obtain "
 			"the axes having the highest explanatory power to \n"
 			"describe the correlations.\n",
@@ -1938,6 +1974,8 @@ class Status(QMainWindow):
 			"active evaluations.",
 			"Print grouped data": "Print grouped data is used to print the "
 			"active grouped data.",
+			"Print individuals": "Print individuals is used to print the "
+			"active individuals.",
 			"Print sample design": "Print sample design is used to print "
 			"the active sample design.",
 			"Print sample repetitions": "Print sample repetitions is used "
@@ -2029,11 +2067,11 @@ class Status(QMainWindow):
 			"of the number of \n"
 			"individuals in each segment. Segments are not mutually "
 			"exclusive.",
-			"Settings - plot settings": "Settings - plot settings is used to "
-			"set whether to include a \n"
-			"connector beween reference points, a bisector, the "
-			"reference points by \n"
-			"themselves or with all points",
+			"Settings - display sizing": \
+				"Settings - display sizing is used to "
+			"set various parameters that affect the display.",
+			"Settings - layout options": "Settings - layout options is "
+			"used to set a few parameters to be used in reports.",
 			"Settings - plane": "Settings - plane is used to define the plane "
 			"to be displayed.\n"
 			"It requires that the active configuration has been "
@@ -2043,6 +2081,15 @@ class Status(QMainWindow):
 			"If there are more than two dimensions the user is also"
 			"asked which dimension \n"
 			"to use on the vertical axis.",
+			"Settings - plot settings": "Settings - plot settings is used to "
+			"set whether to include a \n"
+			"connector beween reference points, a bisector, the "
+			"reference points by \n"
+			"themselves or with all points",
+			"Settings - presentation layer": "Settings - "
+			"presentation layer "
+			"is used to select Matplotlib or pyqtgraph\n"
+			"as the presentation layer.",
 			"Settings - segment sizing": \
 				"Settings - segment sizing is used to "
 			"set the size of the segments.\n"
@@ -2050,21 +2097,9 @@ class Status(QMainWindow):
 			"use to set the size of \n"
 			"the battleground and convertible segments as well as the core"
 			"supporter segments.",
-			"Settings - display sizing": \
-				"Settings - display sizing is used to "
-			"set various parameters that affect the display.",
 			"Settings - vector sizing": "Settings - vector sizing is used to "
 			"set the length of the \n"
 			"vectors and the size of their heads.",
-			"Settings - presentation layer": "Settings - "
-			"presentation layer "
-			"is used to select Matplotlib or pyqtgraph\n"
-			"as the presentation layer.",
-			"Settings - presentation layer pyqtgraph": "Settings - "
-			"presentation layer pyqtgraph \n"
-			"is used to select pyqtgraph as the presentation layer.",
-			"Settings - layout options": "Settings - layout options is "
-			"used to set a few parameters to be used in reports.",
 			"Shepard": "Shepard is used to create a Shepard diagram.\n"
 			"The user is asked which axis to use for similarities.\n"
 			"The other axis will be used for distances.\n"
@@ -2101,6 +2136,8 @@ class Status(QMainWindow):
 			"Terse": "Terse sets the verbosity level to terse.\n"
 			"At this level, explanations of what each command does will "
 			"not be provided.",
+			"Tester": "Tester is used to test various features of the "
+			"program.",
 			"Uncertainty": "Uncertainty uses the sample repetitions to create"
 			"a plot \n"
 			"showing uncertainty in the location of points.\n",
@@ -2142,7 +2179,13 @@ class Status(QMainWindow):
 			"solution.",
 			"View target": "View target is used to view the active target.",
 		}
-		msg = explain_dict[self.command]
+
+
+
+	# ------------------------------------------------------------------------
+
+	def optionally_explain_what_command_does(self) -> str:
+		msg = self.explain_dict[self.command]
 
 		return msg
 
@@ -2778,7 +2821,6 @@ class BuildTrafficDict:
 			"verbose": (VerboseCommand, None),
 			"tester": (TesterCommand, None),
 		}
-		# peek(len(self.traffic_dict))
 
 
 # --------------------------------------------------------------------------
@@ -2808,7 +2850,7 @@ class BuildWidgetDict:
 			CreateCommand,
 			DeactivateCommand,
 			EvaluationsCommand,
-			# ExitCommand,
+			ExitCommand,
 			GroupedDataCommand,
 			IndividualsCommand,
 			NewGroupedDataCommand,
@@ -2963,6 +3005,7 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.squares.display_table("correlations"),
 			],
+			
 			"Create": [
 				CreateCommand,
 				"shared",
@@ -2984,6 +3027,7 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.statistics.display_table("evaluations"),
 			],
+			"Exit": [ExitCommand, "unique", None],
 			"Factor analysis": [
 				FactorAnalysisCommand,
 				"shared",
@@ -3042,16 +3086,6 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.tables.display_table("grouped_data"),
 			],
-			"Open correlations": [
-				CorrelationsCommand,
-				"shared",
-				lambda: parent.squares.display_table("correlations"),
-			],
-			"Open scores": [
-				OpenScoresCommand,
-				"shared",
-				lambda: parent.statistics.display_table("scores"),
-			],
 			"Open sample design": [
 				OpenSampleDesignCommand,
 				"shared",
@@ -3066,6 +3100,11 @@ class BuildWidgetDict:
 				OpenSampleSolutionsCommand,
 				"unique",
 				None,
+			],
+			"Open scores": [
+				OpenScoresCommand,
+				"shared",
+				lambda: parent.statistics.display_table("scores"),
 			],
 			"Paired": [PairedCommand, "unique", None],
 			"Principal components": [
@@ -3108,20 +3147,25 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.statistics.display_table("sample_repetitions"),
 			],
-			"Print similarities": [
-				PrintSimilaritiesCommand,
-				"shared",
-				lambda: parent.squares.display_table("similarities"),
-			],
 			"Print scores": [
 				PrintScoresCommand,
 				"shared",
 				lambda: parent.statistics.display_table("scores"),
 			],
+			"Print similarities": [
+				PrintSimilaritiesCommand,
+				"shared",
+				lambda: parent.squares.display_table("similarities"),
+			],
 			"Print target": [
 				PrintTargetCommand,
 				"shared",
 				lambda: parent.tables.display_table("target"),
+			],
+			"Ranks differences": [
+				RanksDifferencesCommand,
+				"shared",
+				lambda: parent.squares.display_table("ranked_differences"),
 			],
 			"Ranks distances": [
 				RanksDistancesCommand,
@@ -3132,11 +3176,6 @@ class BuildWidgetDict:
 				RanksSimilaritiesCommand,
 				"shared",
 				lambda: parent.squares.display_table("ranked_similarities"),
-			],
-			"Ranks differences": [
-				RanksDifferencesCommand,
-				"shared",
-				lambda: parent.squares.display_table("ranked_differences"),
 			],
 			"Redo": [RedoCommand, "shared", parent.display_coming_soon],
 			"Reference points": [
@@ -3169,30 +3208,15 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.tables.display_table("configuration"),
 			],
-			"Save target": [
-				SaveTargetCommand,
-				"shared",
-				lambda: parent.tables.display_table("target"),
-			],
 			"Save correlations": [
 				SaveCorrelationsCommand,
 				"shared",
 				lambda: parent.squares.display_table("correlations"),
 			],
-			"Save similarities": [
-				SaveSimilaritiesCommand,
-				"shared",
-				lambda: parent.squares.display_table("similarities"),
-			],
 			"Save individuals": [
 				SaveIndividualsCommand,
 				"shared",
 				lambda: parent.statistics.display_table("individuals"),
-			],
-			"Save scores": [
-				SaveScoresCommand,
-				"shared",
-				lambda: parent.statistics.display_table("scores"),
 			],
 			"Save sample design": [
 				SaveSampleDesignCommand,
@@ -3208,6 +3232,21 @@ class BuildWidgetDict:
 				SaveSampleSolutionsCommand,
 				"shared",
 				None,
+			],
+			"Save scores": [
+				SaveScoresCommand,
+				"shared",
+				lambda: parent.statistics.display_table("scores"),
+			],
+			"Save similarities": [
+				SaveSimilaritiesCommand,
+				"shared",
+				lambda: parent.squares.display_table("similarities"),
+			],
+			"Save target": [
+				SaveTargetCommand,
+				"shared",
+				lambda: parent.tables.display_table("target"),
 			],
 			"Score individuals": [
 				ScoreIndividualsCommand,
@@ -3229,30 +3268,30 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.rivalry_tables.display_table("segments"),
 			],
-			"Settings - plot settings": [SettingsPlotCommand, "unique", None],
-			"Settings - plane": [SettingsPlaneCommand, "unique", None],
-			"Settings - segment sizing": [
-				SettingsSegmentCommand,
-				"unique",
-				None,
-			],
 			"Settings - display sizing": [
 				SettingsDisplayCommand,
 				"unique",
 				None,
 			],
-			"Settings - vector sizing": [
-				SettingsVectorSizeCommand,
+			"Settings - layout options": [
+				SettingsLayoutCommand,
 				"unique",
 				None,
 			],
+			"Settings - plane": [SettingsPlaneCommand, "unique", None],
+			"Settings - plot settings": [SettingsPlotCommand, "unique", None],
 			"Settings - presentation layer": [
 				SettingsPresentationLayerCommand,
 				"shared",
 				parent.display_a_line,
 			],
-			"Settings - layout options": [
-				SettingsLayoutCommand,
+			"Settings - segment sizing": [
+				SettingsSegmentCommand,
+				"unique",
+				None,
+			],
+			"Settings - vector sizing": [
+				SettingsVectorSizeCommand,
 				"unique",
 				None,
 			],
@@ -3278,6 +3317,7 @@ class BuildWidgetDict:
 				lambda: parent.tables.display_table("target"),
 			],
 			"Terse": [TerseCommand, "shared", parent.display_a_line],
+			"Tester": [HelpCommand, "unique", None],
 			"Uncertainty": [
 				UncertaintyCommand,
 				"shared",
@@ -3326,10 +3366,10 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.statistics.display_table("individuals"),
 			],
-			"View scores": [
-				ViewScoresCommand,
+			"View point uncertainty": [
+				ViewPointUncertaintyCommand,
 				"shared",
-				lambda: parent.statistics.display_table("scores"),
+				lambda: parent.statistics.display_table("uncertainty"),
 			],
 			"View sample design": [
 				ViewSampleDesignCommand,
@@ -3346,15 +3386,15 @@ class BuildWidgetDict:
 				"shared",
 				lambda: parent.statistics.display_table("sample_solutions"),
 			],
+			"View scores": [
+				ViewScoresCommand,
+				"shared",
+				lambda: parent.statistics.display_table("scores"),
+			],
 			"View similarities": [
 				ViewSimilaritiesCommand,
 				"shared",
 				lambda: parent.squares.display_table("similarities"),
-			],
-			"View point uncertainty": [
-				ViewPointUncertaintyCommand,
-				"shared",
-				lambda: parent.statistics.display_table("uncertainty"),
 			],
 			"View spatial uncertainty": [
 				ViewSpatialUncertaintyCommand,
@@ -3367,7 +3407,7 @@ class BuildWidgetDict:
 				lambda: parent.tables.display_table("target"),
 			],
 		}
-		# peek(len(self.widget_dict))
+
 
 
 # --------------------------------------------------------------------------

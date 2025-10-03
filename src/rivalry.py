@@ -7,7 +7,7 @@ import random
 # Third party imports
 import numpy as np
 import pandas as pd
-import peek
+import peek # noqa: F401
 
 # Typing imports
 from typing import NamedTuple
@@ -2721,6 +2721,8 @@ class Rivalry:
 			convertible_to_right_vertices_as_pairs,
 		)
 
+# -----------------------------------------------------------------------
+
 	def _convertible_default_vertices(self) -> tuple[np.array, np.array]:
 		"""
 		Create default convertible vertices for left and right regions.
@@ -2759,6 +2761,7 @@ class Rivalry:
 			convertible_to_left_vertices_as_pairs,
 			convertible_to_right_vertices_as_pairs,
 		)
+# -----------------------------------------------------------------------
 
 	def _handle_convertible_slope_cases(
 		self,
@@ -2780,8 +2783,11 @@ class Rivalry:
 		right_includes_upper_left_and_lower_right_as_pairs: np.array,
 		right_includes_upper_right_and_lower_left_as_pairs: np.array
 	) -> tuple[np.array, np.array]:
-		"""Handle convertible region vertices for all slope cases."""
-		case_handlers = {
+		"""Establish convertible region vertices for all slope cases."""
+
+		# Establish keys for case combinations with their respective
+		# vertices pairs
+		case_combination = {
 			# Active upward slope cases
 			"Ia_IIa_Ia": lambda: (
 				convertible_to_left_vertices_as_pairs,
@@ -2866,17 +2872,17 @@ class Rivalry:
 			"", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa", "IVb"
 		]
 
-		for b_case in bisector_cases:
-			for w_case in west_cases:
-				for e_case in east_cases:
-					key = f"{b_case}_{w_case}_{e_case}"
-					if key not in case_handlers:
-						case_handlers[key] = default_result
+		for bisector_case in bisector_cases:
+			for west_case in west_cases:
+				for east_case in east_cases:
+					key = f"{bisector_case}_{west_case}_{east_case}"
+					if key not in case_combination:
+						case_combination[key] = default_result
 
 		case_key = f"{bisector._case}_{west._case}_{east._case}"
-		peek(case_key)
-		result = case_handlers[case_key]()
-		peek(result)
+		# peek(case_key)
+		result = case_combination[case_key]()
+		# peek(result)
 		return result
 
 
