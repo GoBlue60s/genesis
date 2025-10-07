@@ -253,7 +253,8 @@ class AlikeCommand:
 		# cut_point = self._director.cut_point
 
 		cutoff_dialog = SetValueDialog(
-			title, label, min_allowed, max_allowed, an_integer, default
+			title, label, min_allowed,
+			max_allowed, an_integer, default
 		)
 		result = cutoff_dialog.exec()
 		if result == QDialog.Accepted:

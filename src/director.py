@@ -1803,21 +1803,20 @@ class Status(QMainWindow):
 		#
 		# Create previous for undo
 		#
-		tbd_commands = ("Cluster", "Reference points", "Scree",
-			"Settings - display sizing", "Settings - layout options",
-			"Settings - plane", "Settings - plot settings",
-			"Settings - presentation layer", "Settings - segment sizing",
-			"Settings - vector sizing", "Terse", "Tester","Verbose")
 		active_commands = (
-			"Center", "Compare", "Configuration", "Correlations", "Create",
-			"Deactivate", "Evaluations", "Factor analysis",
+			"Center", "Cluster", "Compare", "Configuration", "Correlations",
+			"Create", "Deactivate", "Evaluations", "Factor analysis",
 			"Factor analysis machine learning", "Grouped", "Individuals",
 			"Invert", "Line of sight", "MDS", "Move", "New grouped data",
 			"Open sample design", "Open sample repetitions",
 			"Open sample solutions", "Open scores", "Principal components",
-			"Redo", "Rescale", "Rotate", "Sample designer",
-			"Sample repetitions", "Score individuals", "Similarities",
-			"Target", "Uncertainty", "Undo", "Varimax")
+			"Redo",  "Reference points", "Rescale", "Rotate",
+			"Sample designer", "Sample repetitions", "Score individuals",
+			"Settings - display sizing", "Settings - layout options",
+			"Settings - plane", "Settings - plot settings",
+			"Settings - presentation layer", "Settings - segment sizing",
+			"Settings - vector sizing", "Similarities",
+			"Target", "Tester", "Uncertainty", "Undo", "Varimax")
 		passive_commands = (
 			"About", "Alike", "Base", "Battleground", "Contest",
 			"Convertible", "Core supporters", "Deactivate", "Directions",
@@ -1831,9 +1830,9 @@ class Status(QMainWindow):
 			"Ranks", "Sample designer", "Save configuration",
 			"Save correlations", "Save individuals", "Save sample design",
 			"Save sample repetitions", "Save sample solutions",
-			"Save scores", "Save similarities","Save target",
+			"Save scores", "Save similarities","Save target", "Scree",
 			"Second dimension", "Segments","Shepard",
-			"Status", "Stress contribution", "Vectors",
+			"Status", "Stress contribution", "Terse", "Vectors", "Verbose",
 			"View configuration", "View correlations", "View custom",
 			"View distances", "View evaluations", "View grouped data",
 			"View individuals", "View point uncertainty", "View sample design",

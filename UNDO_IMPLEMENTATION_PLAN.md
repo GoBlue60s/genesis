@@ -10,6 +10,36 @@ Spaces originally had a working undo feature before the GUI frontend was added. 
 
 This approach no longer works with the PySide6 GUI because Qt objects cannot be effectively deep copied.
 
+## Command Classification
+
+Commands are classified into two immutable types based on whether they modify application state:
+
+**Active Commands:** Modify application state and require state snapshots for undo
+- Data transformations (Center, Rotate, Rescale, Invert)
+- Model operations (MDS, Factor analysis, Principal components, Varimax)
+- Data loading/creation (Configuration, Create, Open*, Similarities)
+- Analysis operations (Correlations, Evaluations, Grouped, Individuals)
+- Sampling operations (Sample designer, Sample repetitions)
+- Settings commands (Settings - display sizing, Settings - layout options, Settings - plane, Settings - plot settings, Settings - presentation layer, Settings - segment sizing, Settings - vector sizing)
+
+**Passive Commands:** Query or display existing state without modification
+- Reports/queries (Directions, Distances, History, Print*)
+- View operations (About, Help, Alike, Paired, Joint)
+- Output displays (Base, Battleground, Contest, Convertible, Core supporters)
+- Verbosity toggles (Terse, Verbose)
+- Display-only analysis (Scree)
+
+**Pending Classification:**
+- Cluster: If assigns points to groups → **Active**, if displays only → **Passive**
+- Reference points: Modifies point designation → likely **Active**
+- Tester: Experimental/debugging command → likely **Passive**
+
+**Implementation:**
+- Command type is an **immutable property**, not runtime state
+- Store as module-level constants in `constants.py` or `director.py`
+- Use `frozenset` or dictionary for O(1) lookup
+- Never rebuild these structures per-command (wasteful)
+
 ## Solution Strategy
 
 Implement undo using the **Command Pattern** with **selective state snapshots** instead of deep copying entire objects.
@@ -42,11 +72,15 @@ Create general undo infrastructure:
    class CommandState:
        """Lightweight state snapshot with scriptability support"""
        def __init__(self):
+           self.command_name = ""         # Command identifier
+           self.command_type = ""         # "active" or "passive" (immutable property)
+           self.command_params = {}       # Parameters for script generation
+           self.state_snapshot = None     # Only populated for active commands
+           # State snapshot components (for active commands):
            self.data_snapshot = None      # DataFrame.copy()
            self.config_snapshot = {}      # Dict of settings
            self.plot_params = {}          # Plot configuration
-           self.command_name = ""         # For display/debugging
-           self.command_params = {}       # Parameters for script generation
+           self.model_state = {}          # Model parameters/results
    ```
 
 2. **Undo Stack Management**
@@ -69,6 +103,30 @@ Create general undo infrastructure:
 5. **Undo Command Implementation**
    - Update existing Undo command to work with new framework
    - Add GUI integration (menu item, toolbar button, Ctrl+Z)
+
+6. **Command Metadata Dictionary** (optional enhancement)
+   ```python
+   # Single source of truth for command classification
+   COMMAND_METADATA = {
+       "Rotate": {
+           "type": "active",
+           "state_capture": ["data", "plot"]
+       },
+       "Center": {
+           "type": "active",
+           "state_capture": ["data", "plot"]
+       },
+       "Scree": {
+           "type": "passive"
+       },
+       "Settings - plane": {
+           "type": "active",
+           "state_capture": ["config"]
+       }
+       # ... all commands
+   }
+   ```
+   This provides both classification and hints about what state to capture.
 
 ### Phase 2: Implement Command-Specific Undo (Incremental)
 
@@ -106,16 +164,30 @@ Add undo support one command at a time:
 
 Most commands will use one or more of these standard patterns.
 
-## Commands That Don't Need Undo
+## Active vs Passive Command Handling
 
-**Operations that use current state only** don't modify state and don't need undo:
+**All commands go on the command stack** for complete session recording, but are handled differently:
 
-- **View operations**: Zoom, pan, change tab focus
-- **Display toggles**: Show/hide labels, change colors/themes
-- **Queries**: Display statistics, show help, export data
-- **Reports**: Generate tables, print output
+**Active Commands:**
+- Capture full state snapshot before execution
+- State restoration on undo
+- Heavier memory footprint (state data)
 
-These show or rearrange existing data without changing underlying data or model state.
+**Passive Commands:**
+- Record command name and parameters only
+- No state snapshot needed
+- Replay by re-execution with saved params (idempotent)
+- Minimal memory footprint
+
+**Rationale for recording both:**
+1. **Complete session history** for script generation/replay
+2. **User transparency** - full command sequence visible
+3. **Debugging** - complete audit trail
+4. **Minimal cost** - passive commands store name + params only
+
+**Undo behavior:**
+- Active: Restore state snapshot
+- Passive: Skip (or optionally re-execute if needed for consistency)
 
 ## Implementation Steps
 
@@ -124,6 +196,8 @@ These show or rearrange existing data without changing underlying data or model 
 - Identify `*_last` instances and their purpose
 - Review existing Undo command implementation
 - Determine what can be preserved vs. needs refactoring
+- Define command classification constants (active/passive lists or dict)
+- Move to module level or constants.py to avoid per-command reconstruction
 
 ### Step 2: Design State Capture System
 - Create `CommandState` class
@@ -247,35 +321,32 @@ This is **superior to the feature/instance approach** because:
 - **`SaveSessionCommand`** - Exports command history with parameters
 
 **File Format Considerations:**
-- **Human-readable format** (JSON or YAML) for easy editing/debugging
-- **Include metadata**: timestamp, Spaces version, data files used
-- **Command structure**: name, parameters, execution order
+- **Plain text line-based format** for easy editing and readability
+- **Include metadata**: timestamp, Spaces version (as comments)
+- **Command structure**: One command per line, parameters space-separated
+- **Self-contained**: Scripts specify complete workflow including data loading
 - **Validation**: Check script compatibility before execution
 
 **Example Script Format:**
-```json
-{
-  "metadata": {
-    "created": "2025-10-05T14:30:00",
-    "spaces_version": "1.0",
-    "data_file": "Elections/2020_election.csv"
-  },
-  "commands": [
-    {
-      "name": "Configuration",
-      "params": {"file": "config.txt"}
-    },
-    {
-      "name": "Rotate",
-      "params": {"degrees": 45}
-    },
-    {
-      "name": "Center",
-      "params": {}
-    }
-  ]
-}
 ```
+# Spaces Session Script
+# Created: 2025-10-05 14:30:00
+# Spaces Version: 1.0
+
+Open Elections/2020_election.csv
+Configuration Elections/2020_config.txt
+Rotate degrees=45
+Center
+MDS dimensions=2
+Scree
+```
+
+**Parser Design:**
+- Split each line on whitespace
+- First token = command name
+- Remaining tokens = parameters (key=value pairs or positional)
+- Lines starting with `#` are comments (metadata or user notes)
+- Blank lines ignored
 
 **User Experience:**
 - **Save Session**: Captures all commands since file opened (or session start)

@@ -649,7 +649,8 @@ class ConfigurationFeature:
 
 		print("\n\tDistances between points in the active configuration\n")
 		common.print_lower_triangle(
-			decimals, point_labels, point_names, npoint, distances, width
+			decimals, point_labels, point_names,
+			npoint, distances, width
 		)
 		return
 
@@ -676,7 +677,8 @@ class ConfigurationFeature:
 			with Path(file_name).open("w") as file_handle:
 				file_handle.write(file_type + "\n")
 				file_handle.write(
-					" " + str(source.ndim) + " " + str(source.npoint) + "\n"
+					" " + str(source.ndim) + \
+					" " + str(source.npoint) + "\n"
 				)
 				lines = [
 					f"{source.dim_labels[each_dim]};"
@@ -685,7 +687,8 @@ class ConfigurationFeature:
 				]
 				file_handle.write("".join(lines))
 				lines = [
-					f"{source.point_labels[each_point]};{source.point_names[each_point]}\n"
+					f"{source.point_labels[each_point]};"
+					f"{source.point_names[each_point]}\n"
 					for each_point in source.range_points
 				]
 				file_handle.write("".join(lines))
@@ -705,7 +708,7 @@ class ConfigurationFeature:
 
 		except SpacesError as exc:
 			# except SituationToBeNamedLaterError:
-			peek("Do we get past Qt")
+			# peek("Do we get past Qt")
 			raise SpacesError(
 				self.conf_file_exists_error_title,
 				self.conf_file_exists_error_message,
