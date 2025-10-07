@@ -9,7 +9,7 @@ from itertools import islice
 
 import pandas as pd
 # import pyqtgraph as pg
-import peek
+import peek # noqa: F401
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (
@@ -145,7 +145,7 @@ class Status(QMainWindow):
 		self.create_explanations()
 		self.create_tool_bar()
 		self.create_tabs()
-		self.check_consistency_of_dictionaries_and_arrays()
+		# self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
 
@@ -256,23 +256,35 @@ class Status(QMainWindow):
 
 	def check_consistency_of_dictionaries_and_arrays(self) -> None:
 
+		lowered_commands = []
 		print("\nChecking consistency of dictionaries and arrays \n")
 		element = 103
 		
 		print("Ordering of elements:")
 		print(" traffic_dict: follows the order of the menu items")
-		print(" widget_dict: alphabetical order of keys")
 		print(" commands: alphabetical order of commands")
+		print(" widget_dict: alphabetical order of keys")
 		print(" explain_dict: alphabetical order of keys \n")
 
 		print("Lengths of dictionaries and arrays:")
 		print(" traffic_dict: ", len(self.traffic_dict))
-		print(" widget_dict: ", len(self.widget_dict))
 		print(" commands: ", len(self.commands))
+		print(" widget_dict: ", len(self.widget_dict))
 		print(" explain_dict: ", len(self.explain_dict), "\n")
 		
-		print("Element being checked:", element)
-		key = next(iter(islice(self.traffic_dict.keys(), element, None)), None)
+		print("Checking that all commands are the same as traffic_dict keys")
+		print(" after translating self.commands entries to lowercase and"
+			" replacing spaces with _ ")
+		print(" Exceptions are: \n")
+		for each_command in self.commands:
+			lowered_commands.append( # noqa: PERF401
+				each_command.lower().replace(" ", "_"))
+		for menu_item in range(len(self.traffic_dict)):
+			key = next(iter(islice(self.traffic_dict.keys(),
+				menu_item, None)), None)
+			if key not in lowered_commands:
+				print(" traffic_dict key not in commands: ", key)
+				
 		print(" traffic_dict key:", key, "\n")
 		print("Consistency of element ", element)
 		print(" command element:", self.commands[element])
@@ -281,6 +293,26 @@ class Status(QMainWindow):
 		key = next(iter(islice(self.explain_dict.keys(), element, None)), None)
 		print(" explain_dict key:", key)
 
+		for element in range(len(self.commands)):
+			if next(
+				iter(islice(self.widget_dict.keys(), element, None)), None) \
+				!= next(iter(islice(self.explain_dict.keys(),
+						element, None)), None):
+				print("Inconsistency found at element ", element)
+				print("Command is: ", self.commands[element])
+				print(" widget_dict key is: ", next(
+					iter(islice(self.widget_dict.keys(), element, None)),
+					None))
+				print(" explain_dict key is: ", next(
+					iter(islice(self.explain_dict.keys(), element, None)),
+					None))
+				break
+
+		if element == len(self.commands) - 1:
+			print("\nNo inconsistencies found -  YEAH!!!!")
+		else:
+			pass
+				
 	# ------------------------------------------------------------------------
 
 	def widget_control(self, next_output: str) -> object:
@@ -1487,8 +1519,8 @@ class Status(QMainWindow):
 			"Distances",
 			"Evaluations",
 			"Exit",
-			"Factor classic",
-			"Factor machine learning",
+			"Factor analysis",
+			"Factor analysis machine learning",
 			"First dimension",
 			"Grouped",
 			"Help",
@@ -1771,18 +1803,42 @@ class Status(QMainWindow):
 		#
 		# Create previous for undo
 		#
-		# passive_commands = (
-		# 	"About", "Base", "Battleground", "Bisector", "Contest",
-		# 	"Convertible", "Core supporters", "Deactivate",
-		# 	"Distances", "Exit", "Help", "History", "Joint",
-		#  "Likely supporters",
-		# 	"Paired", "Ranks", "Sample designer", "Save configuration",
-		# 	"Save individuals", "Save scores", "Save target", "Shepard",
-		#  "Status",
-		# 	"Stress contribution", "Terse", "Undo", "Verbose",
-		# 	"View configuration", "View custom", "View grouped data",
-		# 	"View correlations", "View distances", "View similarities",
-		# 	"View target")
+		tbd_commands = ("Cluster", "Reference points", "Scree",
+			"Settings - display sizing", "Settings - layout options",
+			"Settings - plane", "Settings - plot settings",
+			"Settings - presentation layer", "Settings - segment sizing",
+			"Settings - vector sizing", "Terse", "Tester","Verbose")
+		active_commands = (
+			"Center", "Compare", "Configuration", "Correlations", "Create",
+			"Deactivate", "Evaluations", "Factor analysis",
+			"Factor analysis machine learning", "Grouped", "Individuals",
+			"Invert", "Line of sight", "MDS", "Move", "New grouped data",
+			"Open sample design", "Open sample repetitions",
+			"Open sample solutions", "Open scores", "Principal components",
+			"Redo", "Rescale", "Rotate", "Sample designer",
+			"Sample repetitions", "Score individuals", "Similarities",
+			"Target", "Uncertainty", "Undo", "Varimax")
+		passive_commands = (
+			"About", "Alike", "Base", "Battleground", "Contest",
+			"Convertible", "Core supporters", "Deactivate", "Directions",
+			"Distances", "Exit", "First dimension","Help", "History", "Joint",
+			"Likely supporters",
+			"Paired", "Print configuration", "Print correlations",
+			"Print evaluations", "Print grouped data", "Print individuals",
+			"Print sample design", "Print sample repetitions", "Print scores",
+			"Print similarities", "Print target", "Ranks differences",
+			"Ranks distances", "Ranks similarities",
+			"Ranks", "Sample designer", "Save configuration",
+			"Save correlations", "Save individuals", "Save sample design",
+			"Save sample repetitions", "Save sample solutions",
+			"Save scores", "Save similarities","Save target",
+			"Second dimension", "Segments","Shepard",
+			"Status", "Stress contribution", "Vectors",
+			"View configuration", "View correlations", "View custom",
+			"View distances", "View evaluations", "View grouped data",
+			"View individuals", "View point uncertainty", "View sample design",
+			"View sample repetitions", "View scores", "View similarities",
+			"View spatial uncertainty", "View target")
 
 	# ------------------------------------------------------------------------
 

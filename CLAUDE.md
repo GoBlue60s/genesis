@@ -14,10 +14,6 @@ This is a Python GUI application called "Spaces" for multidimensional scaling (M
 # Run ruff linter (configured in pyproject.toml)
 ruff check .
 
-# Format code with ruff
-ruff format .
-```
-
 ### Running the Application
 
 ```bash
@@ -87,6 +83,8 @@ normally derived from the range instead of i, or idx
 ### Code Structure
 
 - Functions should be 20-30 lines maximum
+- For readability functions and classes should be separated by a line
+"# ------------"
 - Use type hints (imported from `__future__ import annotations`)
 - Include docstrings for classes and functions
 - Use specific exception handling with meaningful error messages
