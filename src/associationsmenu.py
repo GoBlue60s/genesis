@@ -257,7 +257,7 @@ class AlikeCommand:
 			max_allowed, an_integer, default
 		)
 		result = cutoff_dialog.exec()
-		if result == QDialog.Accepted:
+		if result == QDialog.Accepted: # ty: ignore[unresolved-attribute]
 			cut_point = cutoff_dialog.getValue()
 		else:
 			raise SelectionError(
@@ -757,7 +757,7 @@ class ScreeCommand:
 			scree_title, scree_options_title, scree_options
 		)
 		result = dialog.exec()
-		if result == QDialog.Accepted:
+		if result == QDialog.Accepted: # ty: ignore[unresolved-attribute]
 			selected_option = dialog.selected_option  # + 1
 			match selected_option:
 				case 0:

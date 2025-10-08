@@ -723,6 +723,7 @@ class CorrelationsFeature:
 		self._director = director
 		self.file_handle: str = ""
 		self.nreferent: int = 0
+		self.npoints: int = 0
 		self.nitem: int = 0  # replaces self.nitem_corr
 		self.range_items: range = range(0)
 		# replaces self.range_correlations & self.range_items_corr
@@ -1048,6 +1049,7 @@ class SimilaritiesFeature:
 		self.range_items: range = range(0)
 		# replaces self.range_similarities & self.range_items_sims
 		self.nreferent: int = 0
+		self.npoints: int = 0
 		self.range_similarities: range = range(0)
 
 		self.item_names: list[str] = []  # replaces self.item_names_sims

@@ -4,7 +4,7 @@ from __future__ import annotations
 import sys
 
 # from dataclasses import dataclass
-# from peek_python import peek
+from peek import peek
 from PySide6.QtGui import QFont
 from PySide6.QtCore import QFile, QIODevice
 from PySide6.QtUiTools import QUiLoader
@@ -68,7 +68,7 @@ class MyApplication:
 			f"and {len(self.director.commands)} commands "
 			f"available."
 		)
-		# peek("Peek seems to be working")
+		peek("Peek seems to be working") # ty: ignore[call-non-callable]
 		self.start_event_loop()
 		self.print_debug_logs()
 		sys.exit()
@@ -89,7 +89,8 @@ class MyApplication:
 
 	def load_welcome_dialog(self, ui_filename: str) -> None:
 		ui_file = QFile(ui_filename)
-		if not ui_file.open(QIODevice.ReadOnly):
+		if not ui_file.open(
+			QIODevice.ReadOnly): # ty: ignore[unresolved-attribute]
 			self.exit_with_error(
 				f"Cannot open {ui_filename}: {ui_file.errorString()}"
 			)
@@ -99,15 +100,15 @@ class MyApplication:
 		if not welcome_dialog:
 			self.exit_with_error(loader.errorString())
 		welcome_dialog.show()
-		welcome_dialog.exec()
+		welcome_dialog.exec() # ty: ignore[unresolved-attribute]
 
 	def start_event_loop(self) -> None:
 		return self.spaces_app.exec()
 
 	def print_debug_logs(self) -> None:
-		print(f"{self.director.commands_used=}")
-		print(f"{self.director.command_exit_code=}")
-		print(f"{self.director.undo_stack_source=}\n")
+		peek(f"{self.director.commands_used=}") # ty: ignore[call-non-callable]
+		peek(f"{self.director.command_exit_code=}") # ty: ignore[call-non-callable]
+		peek(f"{self.director.undo_stack_source=}\n") # ty: ignore[call-non-callable]
 
 	@staticmethod
 	def exit_with_error(error_message: str) -> None:

@@ -212,7 +212,8 @@ class Status(QMainWindow):
 		#
 		self.tab_widget = QTabWidget(self)
 		self.setCentralWidget(self.tab_widget)
-		self.tab_widget.setTabPosition(QTabWidget.South)
+		self.tab_widget.setTabPosition(
+			QTabWidget.South) # ty: ignore[unresolved-attribute]
 		#
 		self.text_to_tab = QTextEdit()
 		#
@@ -1482,11 +1483,13 @@ class Status(QMainWindow):
 		self.center_statusbar: QLabel = QLabel(self.center_statusbar_message)
 		self.right_statusbar: QLabel = QLabel(self.right_statusbar_message)
 		left_spacer = QWidget()
-		left_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+		left_spacer.setSizePolicy(
+			QSizePolicy.Expanding, # ty: ignore[unresolved-attribute]
+			QSizePolicy.Expanding) # ty: ignore[unresolved-attribute]
 		right_spacer = QWidget()
 		right_spacer.setSizePolicy(
-			QSizePolicy.Expanding, QSizePolicy.Expanding
-		)
+			QSizePolicy.Expanding, # ty: ignore[unresolved-attribute]
+			QSizePolicy.Expanding) # ty: ignore[unresolved-attribute]
 		self.spaces_statusbar.addWidget(self.left_statusbar)
 		self.spaces_statusbar.addWidget(left_spacer)
 		self.spaces_statusbar.addWidget(self.center_statusbar)
@@ -2434,7 +2437,9 @@ class Status(QMainWindow):
 		table_to_output = BuildOutputForGUI(self)
 		_tab_output_layout.addWidget(table_to_output)
 		table_to_log = BuildOutputForGUI(self)
-		spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Fixed)
+		spacer = QSpacerItem(20, 40,
+			QSizePolicy.Minimum, # ty: ignore[unresolved-attribute]
+			QSizePolicy.Fixed) # ty: ignore[unresolved-attribute]
 		# Adjust size as needed
 		_tab_log_layout.addItem(spacer)
 		_tab_log_layout.addWidget(table_to_log)
@@ -3481,7 +3486,7 @@ class SplashWindow(QWidget):
 		# Set the background image
 		palette = QPalette()
 		palette.setBrush(
-			QPalette.Window,
+			QPalette.Window, # ty: ignore[unresolved-attribute]
 			QBrush(
 				QPixmap(
 					"c:/PythonProjects/genesis/resources/Constellation.jpg"

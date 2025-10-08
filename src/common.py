@@ -65,7 +65,7 @@ class Spaces:
 	def __init__(self, parent: Status, director: Status) -> None:
 		self.parent = parent
 		self._director = director
-		self._plot_type_dict = None  # ???????????????? is this needed
+
 		self.plot_ranges = PlotExtremes()
 		self.presentation_layer: str = "Matplotlib"
 
@@ -105,7 +105,6 @@ class Spaces:
 		self.shepard_axis: str = ""
 		self.point_to_plot_index: int = 0
 
-		self.plot_dict: dict = {}  # ?????????? is this needed
 		return
 
 	# ------------------------------------------------------------------------
@@ -234,7 +233,7 @@ class Spaces:
 		if items:
 			dialog.setTextValue(items[0])
 
-		if dialog.exec() == QDialog.Accepted:
+		if dialog.exec() == QDialog.Accepted: # ty: ignore[unresolved-attribute]
 			selected_item = dialog.textValue()
 			if selected_item in items:
 				index_selected_item = items.index(selected_item)
@@ -1004,10 +1003,10 @@ class Spaces:
 		line_of_sight.similarities_as_square = []
 		line_of_sight.similarities_as_dataframe = pd.DataFrame()
 		line_of_sight.sorted_similarities = {}
-		line_of_sight.a_item_label = []
-		line_of_sight.b_item_label = []
-		line_of_sight.a_item_name = []
-		line_of_sight.b_item_name = []
+		line_of_sight.a_item_label = ""
+		line_of_sight.b_item_label = ""
+		line_of_sight.a_item_name = ""
+		line_of_sight.b_item_name = ""
 
 		# Set up dimensions and item data
 		df_orig = evaluations.evaluations
@@ -1730,7 +1729,7 @@ class Spaces:
 
 		destination.nreferent = nreferent
 		destination.nitem = destination.nreferent
-		destination.npoint = destination.nreferent
+		destination.npoints = destination.nreferent
 		destination.item_labels = item_labels
 		destination.item_names = item_names
 		# peek("At bottom of read_lower_triangular_matrix",

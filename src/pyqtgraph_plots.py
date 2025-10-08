@@ -1058,7 +1058,7 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		pyqtgraph_common.set_axis_extremes_based_on_coordinates(point_coords)
+		director.common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self._plot_directions_using_pyqtgraph()
 		tab_gallery_widget = self._plot_directions_using_pyqtgraph()
 
@@ -1076,6 +1076,7 @@ class PyQtGraphMethods:
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		point_labels = configuration_active.point_labels
 		range_points = configuration_active.range_points
 
 		hor_dim = common.hor_dim
@@ -1127,7 +1128,7 @@ class PyQtGraphMethods:
 			)
 			plot.addItem(arrow)
 			a_label = pg.TextItem(
-				text=self.point_labels[each_point],
+				text=point_labels[each_point],
 				color="k",
 				anchor=(0.5, 1),
 				border="w",
@@ -2638,7 +2639,7 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
 
-		pyqtgraph_common.set_axis_extremes_based_on_coordinates(point_coords)
+		director.common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self._plot_vectors_using_pyqtgraph()
 		tab_gallery_widget = self._plot_vectors_using_pyqtgraph()
 
@@ -2654,8 +2655,8 @@ class PyQtGraphMethods:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
-		point_coords = self.point_coords
-		range_points = self.range_points
+		point_coords = configuration_active.point_coords
+		range_points = configuration_active.range_points
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:

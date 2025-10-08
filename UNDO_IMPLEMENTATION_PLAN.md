@@ -29,15 +29,10 @@ Commands are classified into two immutable types based on whether they modify ap
 - Verbosity toggles (Terse, Verbose)
 - Display-only analysis (Scree)
 
-**Pending Classification:**
-- Cluster: If assigns points to groups → **Active**, if displays only → **Passive**
-- Reference points: Modifies point designation → likely **Active**
-- Tester: Experimental/debugging command → likely **Passive**
-
 **Implementation:**
 - Command type is an **immutable property**, not runtime state
-- Store as module-level constants in `constants.py` or `director.py`
-- Use `frozenset` or dictionary for O(1) lookup
+- Store in `command_dict` within `dictionaries.py` module
+- Use `MappingProxyType` for immutability and O(1) lookup
 - Never rebuild these structures per-command (wasteful)
 
 ## Solution Strategy
@@ -104,29 +99,12 @@ Create general undo infrastructure:
    - Update existing Undo command to work with new framework
    - Add GUI integration (menu item, toolbar button, Ctrl+Z)
 
-6. **Command Metadata Dictionary** (optional enhancement)
-   ```python
-   # Single source of truth for command classification
-   COMMAND_METADATA = {
-       "Rotate": {
-           "type": "active",
-           "state_capture": ["data", "plot"]
-       },
-       "Center": {
-           "type": "active",
-           "state_capture": ["data", "plot"]
-       },
-       "Scree": {
-           "type": "passive"
-       },
-       "Settings - plane": {
-           "type": "active",
-           "state_capture": ["config"]
-       }
-       # ... all commands
-   }
-   ```
-   This provides both classification and hints about what state to capture.
+6. **Command Dictionary Integration**
+   - Leverage `command_dict` from `dictionaries.py` for command classification
+   - Use metadata to determine state capture requirements per command
+   - Access via: `from dictionaries import command_dict`
+   - Example lookup: `command_dict["Rotate"]["type"]` → `"active"`
+   - Example state capture: `command_dict["Rotate"]["state_capture"]` → `["data", "plot"]`
 
 ### Phase 2: Implement Command-Specific Undo (Incremental)
 
@@ -191,35 +169,120 @@ Most commands will use one or more of these standard patterns.
 
 ## Implementation Steps
 
-### Step 1: Examine Existing Infrastructure
+### Step 0: Repository Backup and Preparation
+- Clone existing Spaces repository as `Spaces_Before_Undo` for rollback safety
+- Continue all development work in the original `Spaces` repository
+- This provides a clean comparison point without relying on git branches
+
+### Step 1: Centralize Dictionaries (Codebase Compatibility Refactor)
+
+**Purpose:** Modernize dictionary management to establish immutable metadata foundation before implementing undo.
+
+**Create `dictionaries.py` module:**
+- Create new `src/dictionaries.py` file
+- Use `MappingProxyType` to enforce immutability
+- Syntax: `command_dict = MappingProxyType({"key": "value", ...})` (no intermediate mutable copy)
+
+**Migrate and rename existing dictionaries:**
+
+From `director.py`:
+- `explain_dict` (from `Status.create_explanations`) → `explain_dict`
+- `tab_dict` (from `Status.set_focus_on_tab`) → `tab_dict`
+- `widget_dict` (from `BuildWidgetDict.__init__`) → `widget_dict`
+- `traffic_dict` (from `BuildTrafficDict.__init__`) → `menu_item_dict` (rename)
+- `button_dict` (from `Status.create_tool_bar`) → `button_dict`
+- Unnamed dictionaries from `create_*_menu` functions → named and centralized
+
+From `dependencies.py`:
+- `new_feature_dict` (from `DependencyChecking.detect_consistency...`) → `new_feature_dict`
+- `existing_feature_dict` (from `DependencyChecking.detect_consistency...`) → `existing_feature_dict`
+
+From `table_builder.py`:
+- `display_tables_dict` (from `BasicTableWidget.__init__`) → `basic_table_dict` (rename)
+- `square_tables_config` (from `SquareTableWidget.__init__`) → `square_table_dict` (rename)
+- `statistics_config` (from `GeneralStatisticalTableWidget.__init__`) → `statistical_table_dict` (rename)
+- `rivalry_config` (from `RivalryTableWidget.__init__`) → `rivalry_table_dict` (rename)
+
+**Update references:**
+- Add `from dictionaries import ...` to all affected files
+- Replace all local dictionary references with module imports
+- Ensure alphabetical ordering and consistency across dictionaries
+
+**Test and commit:**
+- Run application and verify all functionality works
+- Test all menus, table displays, and command execution
+- Run consistency checker to validate dictionary integrity
+- Commit: "Refactor: Centralize dictionaries in dictionaries.py with immutability enforcement"
+
+**Benefits:**
+- Clean separation of immutable metadata from mutable state
+- Establishes patterns that align with undo architecture
+- Significantly improves codebase organization before adding undo complexity
+- Makes debugging undo issues easier (clear distinction between config and state)
+
+### Step 2: Examine Existing Infrastructure
 - Review current `undo_stack`, `undo_stack_source`, `commands` arrays
 - Identify `*_last` instances and their purpose
 - Review existing Undo command implementation
 - Determine what can be preserved vs. needs refactoring
-- Define command classification constants (active/passive lists or dict)
-- Move to module level or constants.py to avoid per-command reconstruction
 
-### Step 2: Design State Capture System
+### Step 3: Create Command Dictionary
+
+**Add to `dictionaries.py`:**
+- Define `command_dict` (using `MappingProxyType`) with command classification and metadata
+- **Must contain ALL ~150 commands in alphabetical order**
+- Commands not yet fully implemented will have minimal/placeholder entries
+- Structure:
+  ```python
+  command_dict = MappingProxyType({
+      "About": {
+          "type": "passive"
+      },
+      "Alike": {
+          "type": "passive"
+      },
+      # ... all commands in alphabetical order ...
+      "Center": {
+          "type": "active",
+          "state_capture": ["data", "plot"]
+      },
+      # ... all commands ...
+      "Rotate": {
+          "type": "active",
+          "state_capture": ["data", "plot"]  # First to implement fully
+      },
+      # ... all commands ...
+      "Scree": {
+          "type": "passive"
+      },
+      # ... remaining commands alphabetically
+  })
+  ```
+- Provides single source of truth for command classification
+- Indicates what state to capture for each active command
+- Alphabetical ordering ensures easy lookup and maintenance
+
+### Step 4: Design State Capture System
 - Create `CommandState` class
 - Implement core state capture methods in `director.py`
 - Design stack management (push/pop/clear)
 - Plan GUI refresh mechanism after restore
 
-### Step 3: Prototype with Rotate Command
+### Step 5: Prototype with Rotate Command
 - Examine Rotate command implementation
 - Identify exactly what state changes
-- Add state capture before rotation
+- Add state capture before rotation using `command_dict` metadata
 - Implement restore logic
 - Test undo/redo cycle
 - Refine approach based on results
 
-### Step 4: Expand Incrementally
+### Step 6: Expand Incrementally
 - Choose next command to implement
 - Apply learned patterns
 - Build library of reusable capture/restore methods
 - Document any special cases
 
-### Step 5: GUI Integration
+### Step 7: GUI Integration
 - Update Undo menu item
 - Add toolbar button
 - Implement keyboard shortcut (Ctrl+Z)
@@ -398,4 +461,11 @@ This staged approach allows us to:
 
 ## Next Session Prompt
 
-"Please review UNDO_IMPLEMENTATION_PLAN.md and let's implement the undo feature starting with the Rotate command as discussed."
+**For Step 0 (Repository Backup):**
+"Let's begin implementing the undo feature by creating a backup clone of the Spaces repository as Spaces_Before_Undo."
+
+**For Step 1 (Dictionary Centralization):**
+"Let's implement Step 1 of the undo plan: Create dictionaries.py and migrate all dictionaries to use MappingProxyType for immutability."
+
+**For Step 2+ (Undo Implementation):**
+"Let's continue with the undo implementation starting at Step 2: examining the existing infrastructure and beginning work on the CommandState class."
