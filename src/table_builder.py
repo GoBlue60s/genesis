@@ -16,6 +16,12 @@ if TYPE_CHECKING:
 	from director import Status
 	import pandas as pd
 
+from dictionaries import (
+	basic_table_dict,
+	square_table_dict,
+	statistical_table_dict,
+	rivalry_table_dict,
+)
 from exceptions import SpacesError
 # ----------------------------------------------------------------------------
 
@@ -56,32 +62,7 @@ class BasicTableWidget:
 		self._director = director
 
 		# Dictionary for standard (non-square) tables
-		self.display_tables_dict = {
-			"configuration": {
-				"source": "configuration_active",
-				"data": "point_coords",
-				"row_headers": "point_names",
-				"column_headers": "dim_names",
-				"row_height": 4,
-				"format": "8.2f",
-			},
-			"grouped_data": {
-				"source": "grouped_data_active",
-				"data": "group_coords",
-				"row_headers": "group_names",
-				"column_headers": "dim_names",
-				"row_height": 4,
-				"format": "8.2f",
-			},
-			"target": {
-				"source": "target_active",
-				"data": "point_coords",
-				"row_headers": "point_names",
-				"column_headers": "dim_names",
-				"row_height": 4,
-				"format": "8.2f",
-			},
-		}
+		self.display_tables_dict = dict(basic_table_dict)
 
 	# ------------------------------------------------------------------------
 
@@ -167,64 +148,7 @@ class SquareTableWidget:
 		self._director = director
 
 		# Dictionary-driven configuration for square tables
-		self.square_tables_config = {
-			"correlations": {
-				"source_attr": "correlations_active",
-				"data_attr": "correlations_as_dataframe",
-				"item_names_attr": "item_names",
-				"row_height": 4,
-				"format_str": "8.2f",
-				"diagonal": "1.00",
-			},
-			"similarities": {
-				"source_attr": "similarities_active",
-				"data_attr": "similarities_as_dataframe",
-				"item_names_attr": "item_names",
-				"row_height": 4,
-				"format_str": "8.2f",
-				"diagonal": "---",
-			},
-			"distances": {
-				"source_attr": "configuration_active",
-				"data_attr": "distances_as_dataframe",
-				"item_names_attr": "item_names",
-				"row_height": 4,
-				"format_str": "8.2f",
-				"diagonal": "    0.00",
-			},
-			"ranked_distances": {
-				"source_attr": "configuration_active",
-				"data_attr": "ranked_distances_as_dataframe",
-				"item_names_attr": "item_names",
-				"row_height": 4,
-				"format_str": "8.1f",
-				"diagonal": "0.0",
-			},
-			"ranked_similarities": {
-				"source_attr": "similarities_active",
-				"data_attr": "ranked_similarities_as_dataframe",
-				"item_names_attr": "item_names",
-				"row_height": 4,
-				"format_str": "8.1f",
-				"diagonal": "0.0",
-			},
-			"ranked_differences": {
-				"source_attr": "similarities_active",
-				"data_attr": "differences_of_ranks_as_dataframe",
-				"item_names_attr": "item_names",
-				"row_height": 4,
-				"format_str": "8.1f",
-				"diagonal": "0.0",
-			},
-			"shepard": {
-				"source_attr": "similarities_active",
-				"data_attr": "shepard_diagram_table_as_dataframe",
-				"item_names_attr": "item_names",
-				"row_height": 4,
-				"format_str": "8.1f",
-				"diagonal": "-",
-			},
-		}
+		self.square_tables_config = dict(square_table_dict)
 
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a square table widget"""
@@ -312,185 +236,7 @@ class GeneralStatisticalTableWidget:
 		)
 
 		# Dictionary-driven configuration for general statistical tables
-		self.statistics_config = {
-			"alike": {
-				"source_attr": "similarities_active",
-				"data_attr": "alike_df",
-				"row_headers": [],
-				"column_headers_attr": "data.columns",
-				"format_spec": ["s", "s", "8.4f"],
-			},
-			"compare": {
-				"source_attr": "target_active",
-				"data_attr": "compare_df",
-				"row_headers_attr": "source.point_names",
-				"column_headers": [
-					"Active\nX",
-					"Active\nY",
-					"Target\nX",
-					"Target\nY",
-				],
-				"format_spec": ["8.4f", "8.4f", "8.4f", "8.4f"],
-			},
-			"directions": {
-				"source_attr": "configuration_active",
-				"data_attr": "directions_df",
-				"row_headers_attr": "source.point_names",
-				"column_headers": [
-					"Slope",
-					"Unit Circle\nX",
-					"Unit Circle\nY",
-					"Angle in\nDegrees",
-					"Angle in\nRadians",
-					"Quadrant",
-				],
-				"format_spec": ["16.2f", "8.2f", "8.2f", "8.2f", "8.2f", "s"],
-			},
-			"evaluations": {
-				"source_attr": "evaluations_active",
-				"data_attr": "stats_eval_sorted",
-				"row_headers_attr": "source.names_eval_sorted",
-				"column_headers": [
-					"Mean",
-					"Standard\nDeviation",
-					"Min",
-					"First\nquartile",
-					"Median",
-					"Third\nquartile",
-					"Max",
-				],
-				"format_spec": "8.2f",
-			},
-			"factor_analysis": {
-				"source_attr": "configuration_active",
-				"data_attr": "factor_analysis_df",
-				"row_headers": [],
-				"column_headers": [
-					"Eigenvalues",
-					"Common Factor\nEigenvalues",
-					"Commonalities",
-					"Uniquenesses",
-					"Item",
-					"Loadings\nFactor 1",
-					"Loadings\nFactor 2",
-				],
-				"format_spec": [
-					"8.4f",
-					"8.4f",
-					"8.4f",
-					"8.4f",
-					"s",
-					"8.4f",
-					"8.4f",
-				],
-			},
-			"individuals": {
-				"source_attr": "individuals_active",
-				"data_attr": "stats_inds",
-				"row_headers_attr": "source.var_names[1:]",
-				"column_headers": [
-					"Mean",
-					"Standard\nDeviation",
-					"Min",
-					"Max",
-					"First\nquartile",
-					"Median",
-					"Third\nquartile",
-				],
-				"format_spec": "8.2f",
-			},
-			"paired": {
-				"source_attr": "current_command",
-				"data_attr": "_paired_df",
-				"row_headers": [],
-				"column_headers_dynamic": True,  # Special handling needed
-				"format_spec": ["s", ".4f", ".4f"],
-			},
-			"sample_design": {
-				"source_attr": "uncertainty_active",
-				"data_attr": "sample_design_analysis_df",
-				"row_headers": [],
-				"column_headers": [
-					"Repetition",
-					"Selected \n N",
-					"Percent",
-					"Not selected \n N",
-					"Percent",
-				],
-				"format_spec": ["d", "d", ".1f", "d", ".1f"],
-			},
-			"sample_repetitions": {
-				"source_attr": "uncertainty_active",
-				"data_attr": "sample_design_analysis_df",
-				"row_headers": [],
-				"column_headers": [
-					"Repetition",
-					"Selected \n N",
-					"Percent",
-					"Not selected \n N",
-					"Percent",
-				],
-				"format_spec": ["d", "d", ".1f", "d", ".1f"],
-			},
-			"sample_solutions": {
-				"source_attr": "uncertainty_active",
-				"data_attr": "solutions_stress_df",
-				"row_headers": [],
-				"column_headers": ["Solution", "Stress"],
-				"format_spec": ["d", "8.4f"],
-			},
-			"scores": {
-				"source_attr": "scores_active",
-				"data_attr": "stats_scores",
-				"row_headers_attr": "source.dim_names",
-				"column_headers": [
-					"Mean",
-					"Standard\nDeviation",
-					"Min",
-					"Max",
-					"First\nquartile",
-					"Median",
-					"Third\nquartile",
-				],
-				"format_spec": "8.2f",
-			},
-			"scree": {
-				"source_attr": "configuration_active",
-				"data_attr": "min_stress",
-				"row_headers": [],
-				"column_headers": ["Dimensionality", "Best Stress"],
-				"row_height": 8,  # Special case
-				"format_spec": ["4.0f", "8.2f"],
-			},
-			"stress_contribution": {
-				"source_attr": "similarities_active",
-				"data_attr": "stress_contribution_df",
-				"row_headers": [],
-				"column_headers": ["Item", "Stress Contribution"],
-				"format_spec": ["d", "8.2f"],
-			},
-			"uncertainty": {
-				"source_attr": "uncertainty_active",
-				"data_attr": "solutions_stress_df",
-				"row_headers": [],
-				"column_headers": ["Solution", "Stress"],
-				"format_spec": ["d", "8.4f"],
-			},
-			"spatial_uncertainty": {
-				"source_attr": "uncertainty_active",
-				"data_attr": "solutions_stress_df",
-				"row_headers": [],
-				"column_headers": ["Solution", "Stress"],
-				"format_spec": ["d", "8.4f"],
-			},
-			"cluster_results": {
-				"source_attr": None,  # Special: uses director.cluster_results
-				"data_attr": None,
-				"row_headers": [],
-				"column_headers_attr": "list(data.columns)",
-				"format_spec_dynamic": True,  # Special handling needed
-			},
-		}
+		self.statistics_config = dict(statistical_table_dict)
 
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a general statistical table widget"""
@@ -618,85 +364,7 @@ class RivalryTableWidget:
 		)
 
 		# Dictionary-driven configuration for rivalry tables
-		self.rivalry_config = {
-			"base": {
-				"data_attr": "base_pcts_df",
-				"column_headers": [
-					"Base\nSupporters of:",
-					"Percent of\nPopulation",
-				],
-				"format_spec": "8.1f",
-			},
-			"battleground": {
-				"data_attr": "battleground_pcts_df",
-				"column_headers": ["Region", "Percent of\nPopulation"],
-				"format_spec": "8.2f",
-			},
-			"convertible": {
-				"data_attr": "conv_pcts_df",
-				"column_headers": [
-					"Convertible to:", "Percent of\nPopulation"
-				],
-				"format_spec": "8.1f",
-			},
-			"core": {
-				"data_attr": "core_pcts_df",
-				"column_headers": [
-					"Core\nSupporters of:",
-					"Percent of\nPopulation",
-				],
-				"format_spec": "8.1f",
-			},
-			"first": {
-				"data_attr": "first_pcts_df",
-				"column_headers": [
-					"Party Oriented\nSupporters of:",
-					"Percent of\nPopulation",
-				],
-				"format_spec": "8.1f",
-			},
-			"likely": {
-				"data_attr": "likely_pcts_df",
-				"column_headers": [
-					"Likely\nSupporters of:",
-					"Percent of\nPopulation",
-				],
-				"format_spec": "8.1f",
-			},
-			"second": {
-				"data_attr": "second_pcts_df",
-				"column_headers": [
-					"Social Oriented\nSupporters of:",
-					"Percent of\nPopulation",
-				],
-				"format_spec": "8.1f",
-			},
-			"segments": {
-				"data_attr": "segments_pcts_df",
-				"row_headers": [
-					"Likely Supporters:",
-					"",
-					"Base supporters",
-					"",
-					"",
-					"Core Supporters",
-					"",
-					"",
-					"Party oriented",
-					"",
-					"Social oriented",
-					"",
-					"Battleground",
-					"",
-					"Convertible",
-					"",
-					"",
-				],
-				"column_headers": ["Segment", "Percent of\nPopulation"],
-				"format_spec": "8.1f",
-				"requires_scores": False,  # segments doesn't check scores
-			},
-		}
+		self.rivalry_config = dict(rivalry_table_dict)
 
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a rivalry table widget"""
