@@ -1,7 +1,13 @@
+from __future__ import annotations
+
 import peek  # noqa: F401
+from typing import TYPE_CHECKING
+
 from exceptions import SpacesError
 from common import Spaces
-from director import Status
+
+if TYPE_CHECKING:
+	from director import Status
 
 
 # ------------------------------------------------------------------------

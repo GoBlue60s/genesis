@@ -34,8 +34,6 @@ from dialogs import ChoseOptionDialog, SetValueDialog
 from exceptions import MissingInformationError, SpacesError
 from features import EvaluationsFeature, SimilaritiesFeature, TargetFeature
 
-from table_builder import GeneralStatisticalTableWidget
-
 # --------------------------------------------------------------------------
 
 
@@ -350,9 +348,6 @@ class ClusterCommand:
 
 	def _display(self) -> QTableWidget:
 		"""Create and return the cluster results table widget for display"""
-		# Use statistical table widget like other commands
-		table_widget = GeneralStatisticalTableWidget(self._director)
-
 		# Create cluster results DataFrame for display
 		cluster_centers = self._director.scores_active.cluster_centers
 		n_clusters = self._director.scores_active.n_clusters
@@ -405,7 +400,9 @@ class ClusterCommand:
 		# Store the cluster data for the statistical table widget
 		self._director.cluster_results = cluster_df
 
-		gui_output_as_widget = table_widget.display_table("cluster_results")
+		gui_output_as_widget = self._director.statistics.display_table(
+			"cluster_results"
+		)
 
 		self._director.output_widget_type = "Table"
 		return gui_output_as_widget
@@ -2180,8 +2177,9 @@ class UncertaintyCommand:
 	# ------------------------------------------------------------------------
 
 	def _display(self) -> QTableWidget:
-		table_widget = GeneralStatisticalTableWidget(self._director)
-		gui_output_as_widget = table_widget.display_table("uncertainty")
+		gui_output_as_widget = self._director.statistics.display_table(
+			"uncertainty"
+		)
 
 		self._director.output_widget_type = "Table"
 		return gui_output_as_widget

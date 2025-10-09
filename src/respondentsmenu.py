@@ -1,17 +1,21 @@
+from __future__ import annotations
+
 import random
 import pandas as pd
 import peek
+from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import QDialog, QTableWidget
 
 from common import Spaces
 
 from dialogs import ModifyValuesDialog, PairofPointsDialog
-from director import Status
 from exceptions import SpacesError
 
 from supporters import ASupporterGrouping
-from table_builder import GeneralStatisticalTableWidget
+
+if TYPE_CHECKING:
+	from director import Status
 
 # ---------------------------------------------------------------------------
 
@@ -612,8 +616,9 @@ class SampleDesignerCommand:
 	# ------------------------------------------------------------------------
 
 	def _display(self) -> QTableWidget:
-		table_widget = GeneralStatisticalTableWidget(self._director)
-		gui_output_as_widget = table_widget.display_table("sample_design")
+		gui_output_as_widget = self._director.statistics.display_table(
+			"sample_design"
+		)
 
 		self._director.output_widget_type = "Table"
 		return gui_output_as_widget

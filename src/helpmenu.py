@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 import math
 import peek  # noqa: F401
+from typing import TYPE_CHECKING
 
 from pyqtgraph import QtCore
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 from exceptions import SpacesError
 from common import Spaces
-from director import Status
 from constants import (
 	MAXIMUM_NUMBER_OF_ROWS_IN_ACKNOWLEDGEMENTS_TABLE,
 	N_ROWS_IN_STATUS_TABLE,
 )
+
+if TYPE_CHECKING:
+	from director import Status
 # ----------------------------------------------------------------------------
 
 

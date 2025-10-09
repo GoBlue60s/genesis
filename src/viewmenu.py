@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 # import numpy as np
 import pandas as pd
 import peek
+from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import (
 	QDialog,
@@ -12,9 +15,11 @@ from PySide6.QtWidgets import (
 # Local application imports
 
 from common import Spaces
-from director import Status
 from exceptions import SpacesError
 from dialogs import ModifyItemsDialog
+
+if TYPE_CHECKING:
+	from director import Status
 
 # ------------------------------------------------------------------------
 

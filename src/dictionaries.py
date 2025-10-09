@@ -866,7 +866,7 @@ menu_item_dict = MappingProxyType({
 #       reference parent instance
 # ----------------------------------------------------------------------------
 
-def create_widget_dict(parent: Status) -> dict[str, list]:
+def create_widget_dict(parent: Status) -> MappingProxyType:
 	"""Create widget dictionary with lambda functions for table display.
 
 	This dictionary maps command names to their widget configuration,
@@ -877,9 +877,10 @@ def create_widget_dict(parent: Status) -> dict[str, list]:
 		parent: The Status instance (director) providing access to tables
 
 	Returns:
-		Dictionary mapping command names to [CommandClass, type, callable]
+		Immutable dictionary mapping command names to
+		[CommandClass, type, callable]
 	"""
-	return {
+	return MappingProxyType({
 		"About": [AboutCommand, "unique", None],
 		"Alike": [
 			AlikeCommand,
@@ -1329,7 +1330,7 @@ def create_widget_dict(parent: Status) -> dict[str, list]:
 			"shared",
 			lambda: parent.tables.display_table("target"),
 		],
-	}
+	})
 
 
 # ----------------------------------------------------------------------------

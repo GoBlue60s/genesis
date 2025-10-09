@@ -1,15 +1,21 @@
+from __future__ import annotations
+
 import math
 import numpy as np
 from numpy.linalg import svd
 from numpy import asarray
 import peek  # noqa: F401
 import pandas as pd
+from typing import TYPE_CHECKING
+
 from PySide6.QtWidgets import QDialog
 from dialogs import MoveDialog, SelectItemsDialog, SetValueDialog
 from exceptions import MissingInformationError, SelectionError, SpacesError
 from common import Spaces
-from director import Status
 from scipy.spatial import procrustes
+
+if TYPE_CHECKING:
+	from director import Status
 
 # ------------------------------------------------------------------------
 
