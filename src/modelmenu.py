@@ -105,19 +105,14 @@ class ClusterCommand:
 		if name_source == "scores":
 			self._director.scores_active.original_clustered_data = \
 				self.data_for_clustering.copy()
+		else:
+			# For non-score clustering, store the data for plotting
+			self._director.scores_active.original_clustered_data = \
+				self.data_for_clustering.copy()
 
-		# Set up scores DataFrame for plotting (using cluster centers)
-		if cluster_centers.shape[1] >= 2:
-			scores_df = pd.DataFrame(cluster_centers[:, :2],
-									columns=["Dimension 1", "Dimension 2"])
-			cluster_names = [f"Cluster {i+1}" for i in range(n_clusters)]
-			scores_df.insert(0, "Item", cluster_names)
-
-			self._director.scores_active.scores = scores_df
-			self._director.scores_active.hor_axis_name = "Dimension 1"
-			self._director.scores_active.vert_axis_name = "Dimension 2"
-			dim_names = ["Dimension 1", "Dimension 2"]
-			self._director.scores_active.dim_names = dim_names
+		# Note: Cluster centers are NOT scores - they are centroids
+		# Do not set scores_active.scores to cluster centers
+		# Clusters and individual scores are different concepts
 
 		# Print cluster results table
 		self._print_cluster_results(cluster_centers, n_clusters)
@@ -156,10 +151,22 @@ class ClusterCommand:
 			data_for_clustering = (
 				self._director.configuration_active.distances_as_dataframe
 			)
+			# Set axis names from configuration
+			dim_names = self._director.configuration_active.dim_names
+			self._director.scores_active.hor_axis_name = dim_names[0]
+			self._director.scores_active.vert_axis_name = dim_names[1]
 		elif selected_source == "evaluations":
 			self.common.needs_evaluations("cluster")
 			data_for_clustering = \
 				self._director.evaluations_active.evaluations
+			# Set axis names from configuration if available, else generic
+			if self._director.configuration_active.dim_names:
+				dim_names = self._director.configuration_active.dim_names
+				self._director.scores_active.hor_axis_name = dim_names[0]
+				self._director.scores_active.vert_axis_name = dim_names[1]
+			else:
+				self._director.scores_active.hor_axis_name = "Dimension 1"
+				self._director.scores_active.vert_axis_name = "Dimension 2"
 		elif selected_source == "scores":
 			self.common.needs_scores("cluster")
 			scores_df = self._director.scores_active.scores
@@ -167,11 +174,20 @@ class ClusterCommand:
 			# (unnamed columns or columns that are just row numbers)
 			data_for_clustering = scores_df.loc[
 				:, ~scores_df.columns.str.contains('^Unnamed')]
+			# Axis names already set by scores command - keep existing
 		elif selected_source == "similarities":
 			self.common.needs_similarities("cluster")
 			data_for_clustering = \
 				self._director.similarities_active.similarities
-			
+			# Set axis names from configuration if available, else generic
+			if self._director.configuration_active.dim_names:
+				dim_names = self._director.configuration_active.dim_names
+				self._director.scores_active.hor_axis_name = dim_names[0]
+				self._director.scores_active.vert_axis_name = dim_names[1]
+			else:
+				self._director.scores_active.hor_axis_name = "Dimension 1"
+				self._director.scores_active.vert_axis_name = "Dimension 2"
+
 		return selected_source, data_for_clustering
 	
 	# ------------------------------------------------------------------------
@@ -239,15 +255,13 @@ class ClusterCommand:
 		point_coords = self._director.configuration_active.point_coords
 		point_names = self._director.configuration_active.point_names
 
-		# Get reference point coordinates and names
-		rival_a_coords = np.array([
-			point_coords.iloc[rivalry.rival_a.index, 0],
-			point_coords.iloc[rivalry.rival_a.index, 1]
-		])
-		rival_b_coords = np.array([
-			point_coords.iloc[rivalry.rival_b.index, 0],
-			point_coords.iloc[rivalry.rival_b.index, 1]
-		])
+		# Get reference point coordinates (first 2 dimensions only)
+		rival_a_coords = point_coords.iloc[
+			rivalry.rival_a.index, :2
+		].to_numpy()
+		rival_b_coords = point_coords.iloc[
+			rivalry.rival_b.index, :2
+		].to_numpy()
 		rival_a_name = point_names[rivalry.rival_a.index]
 		rival_b_name = point_names[rivalry.rival_b.index]
 
@@ -266,6 +280,10 @@ class ClusterCommand:
 			cluster_point_coords = (
 				self.data_for_clustering[cluster_mask].to_numpy()
 			)
+
+			# Use only first 2 dimensions to match reference point coords
+			if cluster_point_coords.shape[1] > 2:
+				cluster_point_coords = cluster_point_coords[:, :2]
 
 			# Calculate distances to each reference point for
 			#  all points in cluster

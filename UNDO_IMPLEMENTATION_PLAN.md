@@ -174,45 +174,119 @@ Most commands will use one or more of these standard patterns.
 - Continue all development work in the original `Spaces` repository
 - This provides a clean comparison point without relying on git branches
 
-### Step 1: Centralize Dictionaries (Codebase Compatibility Refactor)
+### Step 1: Centralize Dictionaries (Codebase Compatibility Refactor) ⚠️ IN PROGRESS
+
+**Status:** Partially completed on 2025-10-08 - requires additional refactoring
 
 **Purpose:** Modernize dictionary management to establish immutable metadata foundation before implementing undo.
 
 **Create `dictionaries.py` module:**
-- Create new `src/dictionaries.py` file
-- Use `MappingProxyType` to enforce immutability
-- Syntax: `command_dict = MappingProxyType({"key": "value", ...})` (no intermediate mutable copy)
+- ✅ Created new `src/dictionaries.py` file
+- ✅ Used `MappingProxyType` to enforce immutability
+- ✅ Syntax: `command_dict = MappingProxyType({"key": "value", ...})` (no intermediate mutable copy)
 
 **Migrate and rename existing dictionaries:**
 
 From `director.py`:
-- `explain_dict` (from `Status.create_explanations`) → `explain_dict`
-- `tab_dict` (from `Status.set_focus_on_tab`) → `tab_dict`
-- `widget_dict` (from `BuildWidgetDict.__init__`) → `widget_dict`
-- `traffic_dict` (from `BuildTrafficDict.__init__`) → `menu_item_dict` (rename)
-- `button_dict` (from `Status.create_tool_bar`) → `button_dict`
-- Unnamed dictionaries from `create_*_menu` functions → named and centralized
+- ✅ `explain_dict` (from `Status.create_explanations`) → `explain_dict`
+- ✅ `tab_dict` (from `Status.set_focus_on_tab`) → `tab_dict`
+- ✅ `widget_dict` (from `BuildWidgetDict.__init__`) → `create_widget_dict(parent)` factory function
+  - **Note:** Required factory function approach because widget_dict contains lambdas that need parent instance reference
+- ✅ `traffic_dict` (from `BuildTrafficDict.__init__`) → `menu_item_dict` (rename)
+- ✅ `button_dict` (from `Status.create_tool_bar`) → `button_dict`
+- ✅ Unnamed dictionaries from `create_*_menu` functions → named and centralized
 
 From `dependencies.py`:
-- `new_feature_dict` (from `DependencyChecking.detect_consistency...`) → `new_feature_dict`
-- `existing_feature_dict` (from `DependencyChecking.detect_consistency...`) → `existing_feature_dict`
+- ✅ `new_feature_dict` (from `DependencyChecking.detect_consistency...`) → `new_feature_dict`
+- ✅ `existing_feature_dict` (from `DependencyChecking.detect_consistency...`) → `existing_feature_dict`
 
 From `table_builder.py`:
-- `display_tables_dict` (from `BasicTableWidget.__init__`) → `basic_table_dict` (rename)
-- `square_tables_config` (from `SquareTableWidget.__init__`) → `square_table_dict` (rename)
-- `statistics_config` (from `GeneralStatisticalTableWidget.__init__`) → `statistical_table_dict` (rename)
-- `rivalry_config` (from `RivalryTableWidget.__init__`) → `rivalry_table_dict` (rename)
+- ✅ `display_tables_dict` (from `BasicTableWidget.__init__`) → `basic_table_dict` (rename)
+- ✅ `square_tables_config` (from `SquareTableWidget.__init__`) → `square_table_dict` (rename)
+- ✅ `statistics_config` (from `GeneralStatisticalTableWidget.__init__`) → `statistical_table_dict` (rename)
+- ✅ `rivalry_config` (from `RivalryTableWidget.__init__`) → `rivalry_table_dict` (rename)
 
 **Update references:**
-- Add `from dictionaries import ...` to all affected files
-- Replace all local dictionary references with module imports
-- Ensure alphabetical ordering and consistency across dictionaries
+- ✅ Added `from dictionaries import ...` to all affected files
+- ✅ Replaced all local dictionary references with module imports
+- ✅ Updated all menu modules to call `create_widget_dict(parent)` instead of importing static dict
+- ✅ Ensured alphabetical ordering and consistency across dictionaries
 
 **Test and commit:**
-- Run application and verify all functionality works
-- Test all menus, table displays, and command execution
-- Run consistency checker to validate dictionary integrity
-- Commit: "Refactor: Centralize dictionaries in dictionaries.py with immutability enforcement"
+- ✅ Ran application and verified all functionality works
+- ✅ Tested all menus, table displays, and command execution
+- ✅ Ran consistency checker to validate dictionary integrity
+- ✅ Committed: "Refactor: Centralize dictionaries in dictionaries.py with immutability enforcement" (fc04ee2)
+- ✅ Committed: "Complete dictionary centralization to dictionaries.py" (46b170a)
+- ✅ Pushed to remote repository
+
+### Step 1.5: Complete Dictionary Refactoring Cleanup
+
+**Purpose:** Fix incomplete renames, type annotations, and establish consistent patterns from Step 1
+
+**Phase A: Type System (Foundation)**
+1. Create `FrozenDict` type alias in `dictionaries.py`
+   - Add near top of file: `FrozenDict = MappingProxyType`
+   - Export it for use throughout codebase
+2. Update all dictionary return types from `-> dict` to `-> FrozenDict`
+   - Functions like `create_edit_menu()`, `create_view_menu()`, etc. in `director.py`
+3. Search codebase for `-> dict` pattern and update where appropriate
+   - Focus on functions returning dictionaries created in Step 1
+
+**Phase B: Naming Consistency (menu_item_dict → request_dict)**
+4. Rename `menu_item_dict` → `request_dict` in `dictionaries.py`
+   - More accurate name: maps menu requests to command handlers
+5. Update all references to `menu_item_dict` → `request_dict` throughout codebase
+6. Eliminate `BuildTrafficDict` class entirely
+   - It only wraps an import, provides no additional functionality
+   - Replace with direct import of `request_dict` in `director.py`
+7. Delete line 1278 in `director.py`: `self.traffic_dict = self.build_traffic_dict.traffic_dict`
+   - Replace with direct usage of imported `request_dict`
+8. Rename all `traffic_dict` references → `request_dict`
+9. Rename `traffic_control()` function → `request_control()`
+10. Update all references to `traffic_control` → `request_control`
+11. Search entire codebase for "traffic" and verify all instances addressed
+    - Check comments, docstrings, variable names
+
+**Phase C: Table Builder Cleanup**
+12. Review line 65 in `table_builder.py` (similar pattern to traffic_dict)
+    - Evaluate if wrapper pattern should be eliminated
+    - Simplify to direct dictionary usage where possible
+13. Establish consistent naming pattern for table functions
+    - Classes: `BasicTableWidget`, `SquareTableWidget`, `StatisticalTableWidget`, `RivalryTableWidget`
+    - Dictionaries: `basic_table_dict`, `square_table_dict`, `statistical_table_dict`, `rivalry_table_dict`
+    - Methods: Follow consistent pattern across all four table types
+14. Apply consistent naming across all four table types
+
+**Phase D: Widget Dictionary Verification**
+15. Verify `widget_dict` factory function usage throughout codebase
+    - Ensure all callers properly use `create_widget_dict(parent)`
+    - Search for any incorrect direct imports of `widget_dict`
+16. Confirm `BuildWidgetDict` class is properly using factory function
+    - This class IS needed (unlike BuildTrafficDict) because widget_dict requires parent instance
+
+**Phase E: Final Verification**
+17. Search for any remaining old dictionary names throughout codebase
+18. Run `check_consistency_of_dictionaries_and_arrays()` in director.py
+19. Update comments and docstrings that reference old terminology
+20. Review all "Build*" classes to ensure they're all necessary
+21. Run linter: `ruff check .`
+
+**Phase F: Testing and Completion**
+22. Run application and verify all functionality works
+23. Test all menus, table displays, and command execution
+24. **User performs comprehensive testing**
+25. **Commit only after user approval**: "Complete Step 1 dictionary refactoring: fix types, rename traffic→request, cleanup"
+26. Mark Step 1 as fully complete
+
+**Design Decision: Lowercase vs UPPERCASE naming**
+- **Decision: Keep lowercase** (e.g., `request_dict`, not `REQUEST_DICT`)
+- **Rationale:**
+  - PEP 8: UPPERCASE is for compile-time constants (simple values)
+  - These dictionaries contain class/function references (mutable objects)
+  - `MappingProxyType` provides runtime immutability, not compile-time
+  - Standard practice: Even immutable complex structures use lowercase (e.g., `sys.path`)
+  - Better readability in code
 
 **Benefits:**
 - Clean separation of immutable metadata from mutable state
