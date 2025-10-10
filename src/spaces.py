@@ -62,7 +62,7 @@ class MyApplication:
 		self.welcome_splash.show()
 		print(
 			f"\nIn this version of Spaces there are "
-			f"{len(self.director.traffic_dict)} "
+			f"{len(self.director.request_dict)} "
 			f"menu items, "
 			f"{len(self.director.widget_dict)} widgets, "
 			f"and {len(self.director.commands)} commands "

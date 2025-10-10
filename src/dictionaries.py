@@ -6,7 +6,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from director import Status
 
-# Command class imports for menu_item_dict and widget_dict
+# Type alias for immutable dictionaries
+FrozenDict = MappingProxyType
+
+# Command class imports for request_dict and widget_dict
 from associationsmenu import (
 	AlikeCommand,
 	DistancesCommand,
@@ -670,12 +673,12 @@ button_dict = MappingProxyType({
 
 
 # ----------------------------------------------------------------------------
-# Dictionary: menu_item_dict (renamed from traffic_dict)
+# Dictionary: request_dict (renamed from menu_item_dict, originally traffic_dict)
 # Source: director.py lines 2703-2883
-# Purpose: Maps menu item IDs to command classes and parameters
+# Purpose: Maps menu item request IDs to command classes and parameters
 # ----------------------------------------------------------------------------
 
-menu_item_dict = MappingProxyType({
+request_dict = MappingProxyType({
 	"new_configuration": (CreateCommand, None),
 	"new_grouped_data": (NewGroupedDataCommand, None),
 	"open_configuration": (ConfigurationCommand, None),
@@ -866,7 +869,7 @@ menu_item_dict = MappingProxyType({
 #       reference parent instance
 # ----------------------------------------------------------------------------
 
-def create_widget_dict(parent: Status) -> MappingProxyType:
+def create_widget_dict(parent: Status) -> FrozenDict:
 	"""Create widget dictionary with lambda functions for table display.
 
 	This dictionary maps command names to their widget configuration,

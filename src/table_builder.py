@@ -61,17 +61,14 @@ class BasicTableWidget:
 	def __init__(self, director: Status) -> None:
 		self._director = director
 
-		# Dictionary for standard (non-square) tables
-		self.display_tables_dict = dict(basic_table_dict)
-
 	# ------------------------------------------------------------------------
 
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a basic table widget"""
 		result = None
 
-		if table_name in self.display_tables_dict:
-			table_config = self.display_tables_dict[table_name]
+		if table_name in basic_table_dict:
+			table_config = basic_table_dict[table_name]
 			source_name = table_config["source"]
 			source = getattr(self._director, source_name)
 
@@ -147,16 +144,13 @@ class SquareTableWidget:
 	def __init__(self, director: Status) -> None:
 		self._director = director
 
-		# Dictionary-driven configuration for square tables
-		self.square_tables_config = dict(square_table_dict)
-
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a square table widget"""
-		if table_name not in self.square_tables_config:
+		if table_name not in square_table_dict:
 			print(f"Unknown square table: {table_name}")
 			return QTableWidget()
 
-		config = self.square_tables_config[table_name]
+		config = square_table_dict[table_name]
 		source = getattr(self._director, config["source_attr"])
 		data = getattr(source, config["data_attr"])
 		item_names = getattr(source, config["item_names_attr"])
@@ -235,20 +229,17 @@ class GeneralStatisticalTableWidget:
 			"Unknown general statistical table requested. "
 		)
 
-		# Dictionary-driven configuration for general statistical tables
-		self.statistics_config = dict(statistical_table_dict)
-
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a general statistical table widget"""
 
 		# Check if table_name exists in configuration
-		if table_name not in self.statistics_config:
+		if table_name not in statistical_table_dict:
 			raise SpacesError(
 				self.unknown_statistical_table_error_title,
 				self.unknown_statistical_table_error_message,
 			)
 
-		config = self.statistics_config[table_name]
+		config = statistical_table_dict[table_name]
 
 		# Handle special cases first
 		if table_name == "cluster_results":
@@ -363,20 +354,17 @@ class RivalryTableWidget:
 			"Unknown rivalry table requested. "
 		)
 
-		# Dictionary-driven configuration for rivalry tables
-		self.rivalry_config = dict(rivalry_table_dict)
-
 	def display_table(self, table_name: str) -> QTableWidget:
 		"""Create and return a rivalry table widget"""
 
 		# Check if table_name exists in configuration
-		if table_name not in self.rivalry_config:
+		if table_name not in rivalry_table_dict:
 			raise SpacesError(
 				self.unknown_rivalry_table_error_title,
 				self.unknown_rivalry_table_error_message,
 			)
 
-		config = self.rivalry_config[table_name]
+		config = rivalry_table_dict[table_name]
 		source = self._director.rivalry
 
 		# Handle score dependency (all except segments require scores)

@@ -44,10 +44,11 @@ if TYPE_CHECKING:
 from constants import TEST_IF_ACTION_OR_SUBMENU_HAS_THREE_ITEMS
 from dependencies import DependencyChecking
 from dictionaries import (
+	FrozenDict,
 	explain_dict,
 	tab_dict,
 	button_dict,
-	menu_item_dict,
+	request_dict,
 	create_widget_dict,
 	file_menu_dict,
 	edit_menu_dict,
@@ -98,8 +99,6 @@ class Status(QMainWindow):
 		self.establish_spaces_structure: EstablishSpacesStructure = (
 			EstablishSpacesStructure(self)
 		)
-		self.build_traffic_dict: BuildTrafficDict = BuildTrafficDict(self)
-		self.build_widget_dict: BuildWidgetDict = BuildWidgetDict(self)
 
 		self.variables_used_for_command_handling()
 		self.directories_being_used_for_data()
@@ -126,7 +125,7 @@ class Status(QMainWindow):
 		self.deactivated_items = _structure.deactivated_items
 		self.deactivated_descriptions = _structure.deactivated_descriptions
 
-		self.traffic_dict = self.build_traffic_dict.traffic_dict
+		self.request_dict = request_dict
 
 	# ------------------------------------------------------------------------
 
@@ -142,10 +141,7 @@ class Status(QMainWindow):
 	# ------------------------------------------------------------------------
 
 	def variables_used_for_widget_building_etc(self) -> None:
-		_widget = self.build_widget_dict
-		# self.title_for_table_widget = _widget.title_for_table_widget
-		# self.output_widget_type = _widget.output_widget_type
-		self.widget_dict = _widget.widget_dict
+		self.widget_dict = create_widget_dict(self)
 		self.column_header_color: str = "#F08080"  #  light coral for lightred
 		self.row_header_color: str = "lightgreen"
 		self.cell_color: str = "lightyellow"
@@ -275,33 +271,33 @@ class Status(QMainWindow):
 		lowered_commands = []
 		print("\nChecking consistency of dictionaries and arrays \n")
 		element = 103
-		
+
 		print("Ordering of elements:")
-		print(" traffic_dict: follows the order of the menu items")
+		print(" request_dict: follows the order of the menu items")
 		print(" commands: alphabetical order of commands")
 		print(" widget_dict: alphabetical order of keys")
 		print(" explain_dict: alphabetical order of keys \n")
 
 		print("Lengths of dictionaries and arrays:")
-		print(" traffic_dict: ", len(self.traffic_dict))
+		print(" request_dict: ", len(self.request_dict))
 		print(" commands: ", len(self.commands))
 		print(" widget_dict: ", len(self.widget_dict))
 		print(" explain_dict: ", len(explain_dict), "\n")
-		
-		print("Checking that all commands are the same as traffic_dict keys")
+
+		print("Checking that all commands are the same as request_dict keys")
 		print(" after translating self.commands entries to lowercase and"
 			" replacing spaces with _ ")
 		print(" Exceptions are: \n")
 		for each_command in self.commands:
 			lowered_commands.append( # noqa: PERF401
 				each_command.lower().replace(" ", "_"))
-		for menu_item in range(len(self.traffic_dict)):
-			key = next(iter(islice(self.traffic_dict.keys(),
+		for menu_item in range(len(self.request_dict)):
+			key = next(iter(islice(self.request_dict.keys(),
 				menu_item, None)), None)
 			if key not in lowered_commands:
-				print(" traffic_dict key not in commands: ", key)
-				
-		print(" traffic_dict key:", key, "\n")
+				print(" request_dict key not in commands: ", key)
+
+		print(" request_dict key:", key, "\n")
 		print("Consistency of element ", element)
 		print(" command element:", self.commands[element])
 		key = next(iter(islice(self.widget_dict.keys(), element, None)), None)
@@ -425,55 +421,55 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
-	def create_file_menu(self) -> dict:
+	def create_file_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the File menu"""
 		return file_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_edit_menu(self) -> dict:
+	def create_edit_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the Edit menu"""
 		return edit_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_view_menu(self) -> dict:
+	def create_view_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the View menu"""
 		return view_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_transform_menu(self) -> dict:
+	def create_transform_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the Transform menu"""
 		return transform_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_associations_menu(self) -> dict:
+	def create_associations_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the Associations menu"""
 		return associations_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_model_menu(self) -> dict:
+	def create_model_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the Model menu"""
 		return model_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_respondents_menu(self) -> dict:
+	def create_respondents_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the Respondents menu"""
 		return respondents_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_help_menu(self) -> dict:
+	def create_help_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the Help menu"""
 		return help_menu_dict
 
 	# ------------------------------------------------------------------------
 
-	def create_tester_menu(self) -> dict:
+	def create_tester_menu(self) -> FrozenDict:
 		"""Create dictionary structure for the Tester menu"""
 		return tester_menu_dict
 
@@ -679,14 +675,14 @@ class Status(QMainWindow):
 			action.triggered.connect(self.create_lambda_with_toggle(command))
 
 	def create_lambda_with_toggle(self, next_command: str) -> Callable:
-		return lambda: self.traffic_control(next_command)
+		return lambda: self.request_control(next_command)
 
 	# -------------------------------------------------------------------------
 
 	def toggle_verbosity(self) -> None:
 		current_text = self.help_verbosity_action.text()
 
-		self.traffic_control(current_text.lower())
+		self.request_control(current_text.lower())
 
 		new_text = "Terse" if current_text == "Verbose" else "Verbose"
 		self.help_verbosity_action.blockSignals(True)  # noqa: FBT003
@@ -725,7 +721,7 @@ class Status(QMainWindow):
 		self.left_statusbar.setText("Awaiting your command!")
 
 		# -------------------------------------------------------------------
-		# In traffic_control items are in the menu order
+		# In request_control items are in the menu order
 		# BUT one entry can handle multiple menu items
 		#     thus there are fewer match cases than menu items
 
@@ -839,19 +835,19 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
-	def traffic_control(self, next_command: str) -> None:
-		traffic_dict = self.build_traffic_dict.traffic_dict
+	def request_control(self, next_command: str) -> None:
+		request_dict_local = self.request_dict
 		common = self.common
 
 		try:
-			command_class = traffic_dict[next_command][0]
-			if traffic_dict[next_command][1] is None:
+			command_class = request_dict_local[next_command][0]
+			if request_dict_local[next_command][1] is None:
 				self.current_command = command_class(self, common)
 				self.current_command.execute(common)
 			else:
 				self.current_command = command_class(self, common)
 				self.current_command.execute(
-					common, traffic_dict[next_command][1]
+					common, request_dict_local[next_command][1]
 				)
 		except SpacesError as e:
 			self.unable_to_complete_command_set_status_as_failed()
@@ -860,7 +856,7 @@ class Status(QMainWindow):
 	# ------------------------------------------------------------------------
 
 	def create_lambda(self, next_command: str) -> Callable:
-		return lambda: self.traffic_control(next_command)
+		return lambda: self.request_control(next_command)
 
 	# ------------------------------------------------------------------------
 
@@ -1265,30 +1261,6 @@ class EstablishSpacesStructure:
 		# self.dir = Path.cwd()
 		self.dir = Path.cwd().parent
 		self.filedir = self.dir / "genesis" / "data" / "Elections"
-
-
-# --------------------------------------------------------------------------
-
-
-class BuildTrafficDict:
-	def __init__(self, parent: Status) -> None:
-		"""Build the traffic dictionary for the Spaces application."""
-		self.parent = parent
-		self.common: Spaces = Spaces(parent, parent)
-		self.traffic_dict = menu_item_dict
-
-
-# --------------------------------------------------------------------------
-
-
-class BuildWidgetDict:
-	def __init__(self, parent: Status) -> None:
-		self.parent = parent
-		self.common: Spaces = Spaces(parent, parent)
-		self.title_for_table_widget: str = ""
-		self.output_widget_type: str = ""
-		self.widget_dict = create_widget_dict(parent)
-
 
 
 # --------------------------------------------------------------------------
