@@ -43,7 +43,7 @@ command_dict = MappingProxyType({
 	},
 	"Configuration": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["configuration"]
 	},
 	"Contest": {
 		"type": "passive"
@@ -132,15 +132,15 @@ command_dict = MappingProxyType({
 	},
 	"Open sample design": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["uncertainty"]
 	},
 	"Open sample repetitions": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["uncertainty"]
 	},
 	"Open sample solutions": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["uncertainty"]
 	},
 	"Open scores": {
 		"type": "active",

@@ -120,6 +120,10 @@ class ConfigurationCommand:
 		file_name = director.get_file_name_and_handle_nonexistent_file_names(
 			self._dialog_caption, self._dialog_filter
 		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Configuration", "active", {"file": file_name}
+		)
 		director.configuration_candidate = common.read_configuration_type_file(
 			file_name, "Configuration"
 		)
@@ -1870,6 +1874,10 @@ class OpenSampleDesignCommand:
 				self._open_sample_design_filter,
 			)
 		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Open sample design", "active", {"file": file}
+		)
 		self._read_sample_design_from_file(file)
 		freqs_file = (
 			self._director.get_file_name_and_handle_nonexistent_file_names(
@@ -2012,6 +2020,10 @@ class OpenSampleRepetitionsCommand:
 			self._open_sample_repetitions_caption,
 			self._open_sample_repetitions_filter,
 		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Open sample repetitions", "active", {"file": file}
+		)
 		self._read_sample_repetitions_from_file(file)
 		# self._director.common.create_plot_for_tabs(
 		# "sample_design")
@@ -2088,6 +2100,10 @@ class OpenSampleSolutionsCommand:
 		file = self._director.get_file_name_and_handle_nonexistent_file_names(
 			self._open_sample_solutions_caption,
 			self._open_sample_solutions_filter,
+		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Open sample solutions", "active", {"file": file}
 		)
 		# Use the new Solutions format reader
 		self.read_a_solutions_type_file(file)
