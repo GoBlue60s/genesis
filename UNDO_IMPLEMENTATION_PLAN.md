@@ -574,31 +574,28 @@ Created `capture_and_push_undo_state()` in `common.py:2241-2277` to consolidate 
 18. ✅ **Score individuals** (`respondentsmenu.py`) - State: scores
 
 **Additional Commands (Non-File Menu) - ALL COMPLETE:**
-19. ✅ **Correlations** - State: correlations
-20. ✅ **Create** - State: configuration
-21. ✅ **Deactivate** - State: varies by feature type
-22. ✅ **Evaluations** - State: evaluations
-23. ✅ **Grouped data** - State: grouped_data
-24. ✅ **Individuals** - State: individuals
-25. ✅ **Open correlations** - State: correlations
-26. ✅ **Open evaluations** - State: evaluations
-27. ✅ **Open grouped data** - State: grouped_data
-28. ✅ **Open individuals** - State: individuals
-29. ✅ **Open similarities** - State: similarities
-30. ✅ **Open target** - State: target
-31. ✅ **Settings - display sizing** - State: settings
-32. ✅ **Settings - layout options** - State: settings
-33. ✅ **Settings - plane** - State: settings
-34. ✅ **Settings - plot settings** - State: settings
-35. ✅ **Settings - presentation layer** - State: settings
-36. ✅ **Settings - segment sizing** - State: settings
-37. ✅ **Settings - vector sizing** - State: settings
+19. ✅ **Create** - State: configuration
+20. ✅ **Deactivate** - State: varies by feature type
+21. ✅ **Evaluations** - State: evaluations
+22. ✅ **Target** - State: target
+23. ✅ **Settings - display sizing** - State: settings
+24. ✅ **Settings - layout options** - State: settings
+25. ✅ **Settings - plane** - State: settings
+26. ✅ **Settings - plot settings** - State: settings
+27. ✅ **Settings - presentation layer** - State: settings
+28. ✅ **Settings - segment sizing** - State: settings
+29. ✅ **Settings - vector sizing** - State: settings
 
 **File Menu Commands - ALL COMPLETE:**
-38. ✅ **Configuration** (`filemenu.py:111`) - State: configuration
-39. ✅ **Open sample design** (`filemenu.py:1867`) - State: uncertainty
-40. ✅ **Open sample repetitions** (`filemenu.py:2015`) - State: uncertainty
-41. ✅ **Open sample solutions** (`filemenu.py:2096`) - State: uncertainty
+38. ✅ **Configuration** (`filemenu.py:124`) - State: configuration
+39. ✅ **Correlations** (`filemenu.py:336`) - State: correlations
+40. ✅ **Grouped data** (`filemenu.py:1228`) - State: grouped_data
+41. ✅ **Individuals** (`filemenu.py:1396`) - State: individuals
+42. ✅ **Open sample design** (`filemenu.py:1878`) - State: uncertainty
+43. ✅ **Open sample repetitions** (`filemenu.py:2024`) - State: uncertainty
+44. ✅ **Open sample solutions** (`filemenu.py:2105`) - State: uncertainty
+45. ✅ **Open scores** (`filemenu.py:2319`) - State: scores
+46. ✅ **Similarities** (`filemenu.py:4343`) - State: similarities
 
 **Implementation Pattern:**
 All commands now use the consolidated `capture_and_push_undo_state()` helper:
@@ -620,11 +617,23 @@ self.common.capture_and_push_undo_state("CommandName", "active", {params})
 - b4aac14: "Minimal changes to Cluster and Undo_Implementation_Plan"
 
 **Recent Changes (2025-10-12):**
+
+**First Commit (840040d):**
 - Added undo support for Configuration command (filemenu.py:124-126)
 - Added undo support for Open sample design command (filemenu.py:1877-1880)
 - Added undo support for Open sample repetitions command (filemenu.py:2023-2026)
 - Added undo support for Open sample solutions command (filemenu.py:2104-2107)
-- Updated command_dict with state_capture metadata for all 4 commands
+- Updated command_dict with state_capture metadata for these 4 commands
+
+**Second Commit (571cbdf):**
+- Added undo support for Correlations command (filemenu.py:335-338)
+- Added undo support for Individuals command (filemenu.py:1395-1398)
+- Added undo support for Grouped data command (filemenu.py:1227-1230)
+- Added undo support for Similarities command (filemenu.py:4342-4345)
+- Added undo support for Open scores command (filemenu.py:2318-2321)
+- Updated command_dict with state_capture metadata for these 5 commands
+
+**All 46 active commands now have full undo support (100% complete)**
 
 **Next Steps:**
 - Step 7: GUI Integration (keyboard shortcuts, toolbar buttons, menu enhancements)
