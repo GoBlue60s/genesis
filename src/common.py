@@ -2280,37 +2280,37 @@ class Spaces:
 			"settings",
 		}
 
-		for feature in command_dict[command_name]["state_capture"]:
-			if feature not in supported_features:
-				title = f"Unsupported feature in state_capture for {command_name}"
+		for item in command_dict[command_name]["state_capture"]:
+			if item not in supported_features:
+				title = f"Unsupported item in state_capture for {command_name}"
 				message = (
-					f"Feature '{feature}' is not supported by "
+					f"Item '{item}' is not supported by "
 					"capture_and_push_undo_state().\n"
-					f"Supported features: {', '.join(sorted(supported_features))}"
+					f"Supported items: {', '.join(sorted(supported_features))}"
 				)
 				raise SpacesError(title, message)
 
-			if feature == "configuration":
+			if item == "configuration":
 				cmd_state.capture_configuration_state(self._director)
-			elif feature == "target":
+			elif item == "target":
 				cmd_state.capture_target_state(self._director)
-			elif feature == "scores":
+			elif item == "scores":
 				cmd_state.capture_scores_state(self._director)
-			elif feature == "similarities":
+			elif item == "similarities":
 				cmd_state.capture_similarities_state(self._director)
-			elif feature == "uncertainty":
+			elif item == "uncertainty":
 				cmd_state.capture_uncertainty_state(self._director)
-			elif feature == "rivalry":
+			elif item == "rivalry":
 				cmd_state.capture_rivalry_state(self._director)
-			elif feature == "correlations":
+			elif item == "correlations":
 				cmd_state.capture_correlations_state(self._director)
-			elif feature == "evaluations":
+			elif item == "evaluations":
 				cmd_state.capture_evaluations_state(self._director)
-			elif feature == "individuals":
+			elif item == "individuals":
 				cmd_state.capture_individuals_state(self._director)
-			elif feature == "grouped_data":
+			elif item == "grouped_data":
 				cmd_state.capture_grouped_data_state(self._director)
-			elif feature == "settings":
+			elif item == "settings":
 				cmd_state.capture_settings_state(self._director)
 
 		self._director.push_undo_state(cmd_state)

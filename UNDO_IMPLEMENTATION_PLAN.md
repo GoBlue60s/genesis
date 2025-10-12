@@ -658,11 +658,95 @@ self.common.capture_and_push_undo_state("CommandName", "active", {params})
 **Zero TODO entries remain in the codebase**
 
 **Next Steps:**
+- Step 6.5: Enhance Undo command with restoration details table (IN PROGRESS)
 - Step 7: GUI Integration (keyboard shortcuts, toolbar buttons, menu enhancements)
 - Comprehensive testing across all 39 implemented commands
 - Document any edge cases or special behaviors discovered during testing
 - Consider implementing Redo support (Ctrl+Y)
 - Verify conditional commands (Cluster, Deactivate) work correctly with various user selections
+
+### Step 6.5: Enhance Undo Command with Restoration Details Table ⚠️ IN PROGRESS
+
+**Status:** In progress on 2025-10-12
+
+**Purpose:** Improve user feedback by showing what state was restored during undo operations.
+
+**Current Behavior:**
+- Undo command displays message: "Undone: [CommandName]"
+- User sees what was undone, but not what was restored
+- No visibility into which data items were affected
+
+**Enhancement Goals:**
+- Add table widget to Output tab showing all restored items
+- Display table only when undo succeeds
+- Show complete list of what was restored (not a summary)
+- Use clear user-facing terminology (avoid "feature")
+
+**Table Design:**
+
+| Item | Details |
+|------|---------|
+| Configuration | ndim=3, npoint=50 |
+| Distances | 50×50 matrix |
+| Associations | 15 variables |
+
+**Table Specifications:**
+- **Widget Type:** Basic table (not statistical table - this is presentational data)
+- **Columns:**
+  - **Item:** The data component that was restored (Configuration, Target, Distances, Correlations, Individuals, Similarities, Evaluations, Scores, Grouped data, Settings, Uncertainty, Rivalry)
+  - **Details:** Relevant information about what was restored (dimensions, counts, matrix sizes, etc.)
+- **Rows:** One row per item that was actually restored from the CommandState
+- **Display:** Only appears when undo succeeds (not on errors or empty stack)
+
+**Implementation Approach:**
+
+1. **Modify UndoCommand** (`editmenu.py:40-88`):
+   - After successful `restore_state()`, extract restoration details from CommandState
+   - Iterate through CommandState attributes to find which items are not None
+   - Build table data structure with item names and details
+
+2. **Extract Details from CommandState:**
+   - **Configuration:** ndim, npoint
+   - **Target:** ndim, npoint
+   - **Distances:** matrix dimensions (e.g., "50×50 matrix")
+   - **Correlations:** matrix dimensions
+   - **Individuals:** row count, column count
+   - **Similarities:** matrix dimensions, value_type if available
+   - **Evaluations:** dimensions
+   - **Scores:** dimensions
+   - **Grouped data:** ngroups, ndim
+   - **Settings:** Which settings were restored (could list setting names)
+   - **Uncertainty:** sample information if available
+   - **Rivalry:** rivalry information if available
+
+3. **Table Builder Integration:**
+   - Use `BasicTableWidget` from `table_builder.py`
+   - Place table on Output tab (existing pattern)
+   - Include header message above table: "Undo successful: [CommandName]"
+
+4. **Respect Verbosity Toggle:**
+   - Terse mode: Show simplified message only
+   - Verbose mode: Show message + detailed table
+
+**Files to Modify:**
+- `src/editmenu.py`: Update UndoCommand to generate and display table
+- Possibly `src/table_builder.py`: Verify basic table widget supports this use case
+
+**Testing Strategy:**
+1. Test with single-state commands (e.g., Rotate: configuration + scores)
+2. Test with multi-state commands (e.g., Factor analysis: configuration + scores + evaluations)
+3. Test with conditional commands (e.g., Cluster, Deactivate with various selections)
+4. Verify table only appears on successful undo
+5. Verify Details column shows meaningful information for each item type
+6. Test with both Terse and Verbose modes
+
+**Benefits:**
+- Complete transparency into what undo restored
+- Educational: users learn what state each command modifies
+- Debugging aid: users can verify undo behavior
+- Consistent with application's table-based output pattern
+
+**Next Step:** Step 7 - GUI Integration (keyboard shortcuts, toolbar, redo support)
 
 ### Step 7: GUI Integration
 - Update Undo menu item

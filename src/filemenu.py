@@ -833,24 +833,24 @@ class DeactivateCommand:
 		from datetime import datetime
 		cmd_state = CommandState("Deactivate", "active", params)
 		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		for feature in state_to_capture:
-			if feature == "configuration":
+		for item in state_to_capture:
+			if item == "configuration":
 				cmd_state.capture_configuration_state(self._director)
-			elif feature == "target":
+			elif item == "target":
 				cmd_state.capture_target_state(self._director)
-			elif feature == "grouped_data":
+			elif item == "grouped_data":
 				cmd_state.capture_grouped_data_state(self._director)
-			elif feature == "similarities":
+			elif item == "similarities":
 				cmd_state.capture_similarities_state(self._director)
-			elif feature == "rivalry":
+			elif item == "rivalry":
 				cmd_state.capture_rivalry_state(self._director)
-			elif feature == "correlations":
+			elif item == "correlations":
 				cmd_state.capture_correlations_state(self._director)
-			elif feature == "evaluations":
+			elif item == "evaluations":
 				cmd_state.capture_evaluations_state(self._director)
-			elif feature == "individuals":
+			elif item == "individuals":
 				cmd_state.capture_individuals_state(self._director)
-			elif feature == "scores":
+			elif item == "scores":
 				cmd_state.capture_scores_state(self._director)
 		self._director.push_undo_state(cmd_state)
 		self._deactivate_selected_items(items_to_deactivate)

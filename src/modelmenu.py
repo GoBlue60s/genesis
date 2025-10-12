@@ -113,14 +113,14 @@ class ClusterCommand:
 		cmd_state = CommandState("Cluster", "active", params)
 		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-		for feature in state_to_capture:
-			if feature == "configuration":
+		for item in state_to_capture:
+			if item == "configuration":
 				cmd_state.capture_configuration_state(self._director)
-			elif feature == "scores":
+			elif item == "scores":
 				cmd_state.capture_scores_state(self._director)
-			elif feature == "evaluations":
+			elif item == "evaluations":
 				cmd_state.capture_evaluations_state(self._director)
-			elif feature == "similarities":
+			elif item == "similarities":
 				cmd_state.capture_similarities_state(self._director)
 
 		self._director.push_undo_state(cmd_state)
