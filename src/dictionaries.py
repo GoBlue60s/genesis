@@ -60,7 +60,7 @@ command_dict = MappingProxyType({
 	},
 	"Create": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["configuration"]
 	},
 	"Deactivate": {
 		"type": "active",
@@ -128,7 +128,7 @@ command_dict = MappingProxyType({
 	},
 	"New grouped data": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["grouped_data"]
 	},
 	"Open sample design": {
 		"type": "active",

@@ -442,6 +442,13 @@ class CreateCommand:
 		self._create_labeling_for_points()
 		method = self._create_method_to_create_coordinates()
 		self._establish_coordinates(method)
+		# Capture state for undo before modifying
+		params = {
+			"ndim": director.configuration_candidate.ndim,
+			"npoint": director.configuration_candidate.npoint,
+			"method": method
+		}
+		self.common.capture_and_push_undo_state("Create", "active", params)
 		director.dependency_checker.detect_consistency_issues()
 		director.configuration_candidate.inter_point_distances()
 		director.configuration_active = director.configuration_candidate
@@ -1587,6 +1594,15 @@ class NewGroupedDataCommand:
 		self._create_labeling_for_dimensions()
 		self._create_labeling_for_groups()
 		self._establish_coordinates()
+		# Capture state for undo before modifying
+		params = {
+			"grouping_var": self._director.grouped_data_candidate.grouping_var,
+			"ndim": self._director.grouped_data_candidate.ndim,
+			"ngroups": self._director.grouped_data_candidate.ngroups
+		}
+		self.common.capture_and_push_undo_state(
+			"New grouped data", "active", params
+		)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.grouped_data_active = (
 			self._director.grouped_data_candidate
