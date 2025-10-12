@@ -805,6 +805,54 @@ class DeactivateCommand:
 		self._director.optionally_explain_what_command_does()
 		self._determine_whether_anything_can_be_deactivated()
 		items_to_deactivate = self._get_items_to_deactivate_from_user()
+		# Capture state for undo before deactivating
+		# State capture depends on which items user selected
+		state_to_capture = []
+		if "Active configuration" in items_to_deactivate:
+			state_to_capture.append("configuration")
+		if "Target" in items_to_deactivate:
+			state_to_capture.append("target")
+		if "Grouped data" in items_to_deactivate:
+			state_to_capture.append("grouped_data")
+		if "Similarities" in items_to_deactivate:
+			state_to_capture.append("similarities")
+		if "Reference points" in items_to_deactivate:
+			state_to_capture.append("rivalry")
+		if "Correlations" in items_to_deactivate:
+			state_to_capture.append("correlations")
+		if "Evaluations" in items_to_deactivate:
+			state_to_capture.append("evaluations")
+		if "Individual data" in items_to_deactivate:
+			state_to_capture.append("individuals")
+		if "Scores" in items_to_deactivate:
+			state_to_capture.append("scores")
+		# Build parameters dict
+		params = {"items": items_to_deactivate}
+		# Capture state using manual approach like Cluster does
+		from command_state import CommandState
+		from datetime import datetime
+		cmd_state = CommandState("Deactivate", "active", params)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		for feature in state_to_capture:
+			if feature == "configuration":
+				cmd_state.capture_configuration_state(self._director)
+			elif feature == "target":
+				cmd_state.capture_target_state(self._director)
+			elif feature == "grouped_data":
+				cmd_state.capture_grouped_data_state(self._director)
+			elif feature == "similarities":
+				cmd_state.capture_similarities_state(self._director)
+			elif feature == "rivalry":
+				cmd_state.capture_rivalry_state(self._director)
+			elif feature == "correlations":
+				cmd_state.capture_correlations_state(self._director)
+			elif feature == "evaluations":
+				cmd_state.capture_evaluations_state(self._director)
+			elif feature == "individuals":
+				cmd_state.capture_individuals_state(self._director)
+			elif feature == "scores":
+				cmd_state.capture_scores_state(self._director)
+		self._director.push_undo_state(cmd_state)
 		self._deactivate_selected_items(items_to_deactivate)
 		self._director.deactivated_items = items_to_deactivate
 		self._print_items_deactivated(items_to_deactivate)

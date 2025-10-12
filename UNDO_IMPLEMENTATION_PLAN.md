@@ -545,7 +545,7 @@ Created `capture_and_push_undo_state()` in `common.py:2241-2277` to consolidate 
 
 **Status:** Updated on 2025-10-12
 
-**Commands with Undo Support Implemented (46 total - ALL ACTIVE COMMANDS):**
+**Commands with Undo Support Implemented (48 total - ALL ACTIVE COMMANDS):**
 
 **Transform Menu (7 commands) - ALL COMPLETE:**
 1. ✅ **Center** (`transformmenu.py`) - State: configuration, scores

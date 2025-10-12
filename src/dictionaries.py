@@ -35,7 +35,7 @@ command_dict = MappingProxyType({
 	},
 	"Cluster": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["conditional"]  # Conditional: scores + (configuration|evaluations|similarities) based on user's data source
 	},
 	"Compare": {
 		"type": "active",
@@ -64,7 +64,7 @@ command_dict = MappingProxyType({
 	},
 	"Deactivate": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["conditional"]  # Conditional: captures state for each item user selects to deactivate
 	},
 	"Directions": {
 		"type": "passive"
@@ -200,7 +200,7 @@ command_dict = MappingProxyType({
 	},
 	"Redo": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": []  # N/A - Meta-command that manages redo stack
 	},
 	"Reference points": {
 		"type": "active",
@@ -312,7 +312,7 @@ command_dict = MappingProxyType({
 	},
 	"Tester": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": []  # N/A - Experimental/debug command
 	},
 	"Uncertainty": {
 		"type": "active",
@@ -320,7 +320,7 @@ command_dict = MappingProxyType({
 	},
 	"Undo": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": []  # N/A - Meta-command that manages undo stack
 	},
 	"Varimax": {
 		"type": "active",
