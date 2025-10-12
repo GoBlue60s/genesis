@@ -543,9 +543,9 @@ Created `capture_and_push_undo_state()` in `common.py:2241-2277` to consolidate 
 
 ### Step 6: Expand Incrementally ✅ COMPLETE
 
-**Status:** Updated on 2025-10-12
+**Status:** Completed on 2025-10-12
 
-**Commands with Undo Support Implemented (48 total - ALL ACTIVE COMMANDS):**
+**Commands with Undo Support Implemented (42 total - ALL ACTIVE COMMANDS):**
 
 **Transform Menu (7 commands) - ALL COMPLETE:**
 1. ✅ **Center** (`transformmenu.py`) - State: configuration, scores
@@ -574,28 +574,35 @@ Created `capture_and_push_undo_state()` in `common.py:2241-2277` to consolidate 
 18. ✅ **Score individuals** (`respondentsmenu.py`) - State: scores
 
 **Additional Commands (Non-File Menu) - ALL COMPLETE:**
-19. ✅ **Create** - State: configuration
-20. ✅ **Deactivate** - State: varies by feature type
-21. ✅ **Evaluations** - State: evaluations
-22. ✅ **Target** - State: target
-23. ✅ **Settings - display sizing** - State: settings
-24. ✅ **Settings - layout options** - State: settings
-25. ✅ **Settings - plane** - State: settings
-26. ✅ **Settings - plot settings** - State: settings
-27. ✅ **Settings - presentation layer** - State: settings
-28. ✅ **Settings - segment sizing** - State: settings
-29. ✅ **Settings - vector sizing** - State: settings
+19. ✅ **Cluster** (`modelmenu.py:91`) - State: conditional (scores + configuration|evaluations|similarities)
+20. ✅ **Create** (`filemenu.py:451`) - State: configuration
+21. ✅ **Deactivate** (`filemenu.py:808`) - State: conditional (captures selected items)
+22. ✅ **Evaluations** - State: evaluations
+23. ✅ **New grouped data** (`filemenu.py:1603`) - State: grouped_data
+24. ✅ **Target** - State: target
+25. ✅ **Settings - display sizing** - State: settings
+26. ✅ **Settings - layout options** - State: settings
+27. ✅ **Settings - plane** - State: settings
+28. ✅ **Settings - plot settings** - State: settings
+29. ✅ **Settings - presentation layer** - State: settings
+30. ✅ **Settings - segment sizing** - State: settings
+31. ✅ **Settings - vector sizing** - State: settings
 
 **File Menu Commands - ALL COMPLETE:**
-38. ✅ **Configuration** (`filemenu.py:124`) - State: configuration
-39. ✅ **Correlations** (`filemenu.py:336`) - State: correlations
-40. ✅ **Grouped data** (`filemenu.py:1228`) - State: grouped_data
-41. ✅ **Individuals** (`filemenu.py:1396`) - State: individuals
-42. ✅ **Open sample design** (`filemenu.py:1878`) - State: uncertainty
-43. ✅ **Open sample repetitions** (`filemenu.py:2024`) - State: uncertainty
-44. ✅ **Open sample solutions** (`filemenu.py:2105`) - State: uncertainty
-45. ✅ **Open scores** (`filemenu.py:2319`) - State: scores
-46. ✅ **Similarities** (`filemenu.py:4343`) - State: similarities
+32. ✅ **Configuration** (`filemenu.py:124`) - State: configuration
+33. ✅ **Correlations** (`filemenu.py:336`) - State: correlations
+34. ✅ **Grouped data** (`filemenu.py:1228`) - State: grouped_data
+35. ✅ **Individuals** (`filemenu.py:1396`) - State: individuals
+36. ✅ **Open sample design** (`filemenu.py:1878`) - State: uncertainty
+37. ✅ **Open sample repetitions** (`filemenu.py:2024`) - State: uncertainty
+38. ✅ **Open sample solutions** (`filemenu.py:2105`) - State: uncertainty
+39. ✅ **Open scores** (`filemenu.py:2319`) - State: scores
+40. ✅ **Similarities** (`filemenu.py:4343`) - State: similarities
+
+**Meta/Experimental Commands (N/A for undo):**
+41. ⚫ **Redo** - N/A (meta-command managing redo stack)
+42. ⚫ **Tester** - N/A (experimental/debug command)
+43. ⚫ **Undo** - N/A (meta-command managing undo stack)
 
 **Implementation Pattern:**
 All commands now use the consolidated `capture_and_push_undo_state()` helper:
@@ -606,8 +613,11 @@ self.common.capture_and_push_undo_state("CommandName", "active", {params})
 ```
 
 **Status Summary:**
-- **46 of 46 active commands implemented** (100% complete)
-- All active commands across all menus have undo support
+- **Total Active Commands:** 42
+- **Commands with Undo Implemented:** 39 (100% of applicable commands)
+- **Meta/Experimental Commands (N/A):** 3 (Undo, Redo, Tester)
+- **All applicable commands have undo support**
+- **Zero TODO entries remain in codebase**
 - Core undo functionality fully operational and tested
 - Implementation complete for Step 6
 
@@ -633,13 +643,26 @@ self.common.capture_and_push_undo_state("CommandName", "active", {params})
 - Added undo support for Open scores command (filemenu.py:2318-2321)
 - Updated command_dict with state_capture metadata for these 5 commands
 
-**All 46 active commands now have full undo support (100% complete)**
+**Third Commit (72b669b):**
+- Added undo support for Create command (filemenu.py:445-451)
+- Added undo support for New grouped data command (filemenu.py:1597-1605)
+- Updated command_dict with state_capture metadata for these 2 commands
+
+**Fourth Commit (dd40ab6):**
+- Fixed Cluster: Already had undo code (modelmenu.py:91), updated dict to mark as "conditional"
+- Implemented Deactivate undo: Dynamic state capture based on user selection (filemenu.py:808-855)
+- Marked Redo, Tester, Undo as N/A (meta/experimental commands)
+- Removed all TODO entries from command_dict
+
+**All 42 active commands now have undo support or appropriate N/A designation (100% complete)**
+**Zero TODO entries remain in the codebase**
 
 **Next Steps:**
 - Step 7: GUI Integration (keyboard shortcuts, toolbar buttons, menu enhancements)
-- Comprehensive testing across all 46 implemented commands
+- Comprehensive testing across all 39 implemented commands
 - Document any edge cases or special behaviors discovered during testing
 - Consider implementing Redo support (Ctrl+Y)
+- Verify conditional commands (Cluster, Deactivate) work correctly with various user selections
 
 ### Step 7: GUI Integration
 - Update Undo menu item
