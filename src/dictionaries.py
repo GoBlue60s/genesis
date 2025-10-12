@@ -56,7 +56,7 @@ command_dict = MappingProxyType({
 	},
 	"Correlations": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["correlations"]
 	},
 	"Create": {
 		"type": "active",
@@ -92,7 +92,7 @@ command_dict = MappingProxyType({
 	},
 	"Grouped data": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["grouped_data"]
 	},
 	"Help": {
 		"type": "passive"
@@ -102,7 +102,7 @@ command_dict = MappingProxyType({
 	},
 	"Individuals": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["individuals"]
 	},
 	"Invert": {
 		"type": "active",
@@ -144,7 +144,7 @@ command_dict = MappingProxyType({
 	},
 	"Open scores": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["scores"]
 	},
 	"Paired": {
 		"type": "passive"
@@ -295,7 +295,7 @@ command_dict = MappingProxyType({
 	},
 	"Similarities": {
 		"type": "active",
-		"state_capture": []  # TODO: Define what state to capture
+		"state_capture": ["similarities"]
 	},
 	"Status": {
 		"type": "passive"

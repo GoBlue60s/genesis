@@ -332,6 +332,10 @@ class CorrelationsCommand:
 		file = director.get_file_name_and_handle_nonexistent_file_names(
 			self._file_caption, self._file_filter
 		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Correlations", "active", {"file": file}
+		)
 		director.correlations_candidate = common.read_lower_triangular_matrix(
 			file, "correlations"
 		)
@@ -1220,6 +1224,10 @@ class GroupedDataCommand:
 				self._file_caption, self._file_filter
 			)
 		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Grouped data", "active", {"file": file}
+		)
 		self._read_grouped_data(file)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.grouped_data_active = (
@@ -1387,6 +1395,10 @@ class IndividualsCommand:
 		self._director.optionally_explain_what_command_does()
 		file = self._director.get_file_name_and_handle_nonexistent_file_names(
 			self._file_caption, self._file_filter
+		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Individuals", "active", {"file": file}
 		)
 		self._read_individuals_function(file)
 		self._director.dependency_checker.detect_consistency_issues()
@@ -2302,6 +2314,10 @@ class OpenScoresCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		file = self._director.get_file_name_and_handle_nonexistent_file_names(
 			self._open_scores_caption, self._open_scores_filter
+		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Open scores", "active", {"file": file}
 		)
 		self._read_scores_from_file(file)
 		self._director.dependency_checker.detect_consistency_issues()
@@ -4326,6 +4342,10 @@ class SimilaritiesCommand:
 
 		file = self._director.get_file_name_and_handle_nonexistent_file_names(
 			self._similarities_caption, self._similarities_filter
+		)
+		# Capture state for undo before modifying
+		self.common.capture_and_push_undo_state(
+			"Similarities", "active", {"file": file, "value_type": value_type}
 		)
 		if value_type == "similarities":
 			self._director.similarities_candidate = (
