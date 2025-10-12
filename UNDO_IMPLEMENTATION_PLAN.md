@@ -12,6 +12,10 @@ This approach no longer works with the PySide6 GUI because Qt objects cannot be 
 
 ## Command Classification
 
+**Important Distinction:**
+- **Commands**: 104 unique command implementations (what actually executes)
+- **Menu items**: 140 entries in `request_dict` (multiple menu items can invoke same command)
+
 Commands are classified into two immutable types based on whether they modify application state:
 
 **Active Commands:** Modify application state and require state snapshots for undo
@@ -294,19 +298,91 @@ From `table_builder.py`:
 - Significantly improves codebase organization before adding undo complexity
 - Makes debugging undo issues easier (clear distinction between config and state)
 
-### Step 2: Examine Existing Infrastructure
-- Review current `undo_stack`, `undo_stack_source`, `commands` arrays
-- Identify `*_last` instances and their purpose
-- Review existing Undo command implementation
-- Determine what can be preserved vs. needs refactoring
+### Step 2: Examine Existing Infrastructure ✅ COMPLETE
 
-### Step 3: Create Command Dictionary
+**Status:** Completed on 2025-10-09
 
-**Add to `dictionaries.py`:**
-- Define `command_dict` (using `MappingProxyType`) with command classification and metadata
-- **Must contain ALL ~150 commands in alphabetical order**
-- Commands not yet fully implemented will have minimal/placeholder entries
-- Structure:
+**Findings:**
+
+**1. Command Infrastructure (director.py)**
+- **Total commands: 104** (in alphabetical order in `self.commands` tuple)
+- **Active commands: 42** (modify application state, require undo support)
+- **Passive commands: 62** (query/display only, no state changes)
+- All commands uniquely classified with no overlap
+
+**2. Undo Stack Infrastructure (director.py:1255-1256, 123-124)**
+- **`undo_stack: list[int]`** - Initialized to `[0]`, currently stores integer IDs
+- **`undo_stack_source: list[str]`** - Initialized to `["Initialize"]`, stores command names
+- Both arrays managed in parallel throughout command lifecycle
+- Currently minimal - only tracks integer ID and source name
+- **Decision:** Preserve arrays but upgrade contents to store `CommandState` objects
+
+**3. Command Tracking (director.py:909-910, 728-833)**
+- **`commands_used: list[str]`** - Tracks all executed commands in session order
+- **`command_exit_code: list[int]`** - Parallel array (-1=in progress, 0=success, 1=failed)
+- **Decision:** Preserve this excellent session history mechanism for script generation
+
+**4. Feature Instances with `*_last` Pattern (director.py:181-209)**
+Eight feature types use candidate/original/active/last pattern:
+- `configuration_last`, `correlations_last`, `evaluations_last`, `grouped_data_last`
+- `individuals_last`, `similarities_last`, `target_last`, `scores_last`
+- **Purpose:** Placeholders for previous state in original undo design
+- **Decision:** New approach won't need separate `*_last` instances (state captured in undo stack)
+
+**5. Existing Undo Command (editmenu.py:40-87)**
+- Currently a stub displaying "under construction" message
+- `_return_to_previous_active()` method exists but incomplete:
+  - Only handles configuration restoration
+  - Uses `active` variable popped from undo_stack (unclear definition)
+  - Missing comprehensive state restoration
+- **Decision:** Complete rewrite needed for new architecture
+
+**6. Error Handling Pattern (director.py:435-458)**
+- `unable_to_complete_command_set_status_as_failed()` removes failed commands from undo stacks
+- Prevents failed commands from appearing in undo history
+- **Decision:** Preserve this pattern - it's correct behavior
+
+**What Can Be Preserved:**
+- ✅ `undo_stack` and `undo_stack_source` arrays (upgrade contents to CommandState)
+- ✅ `commands_used` tracking for session history
+- ✅ `active_commands`/`passive_commands` classification (42/62 split)
+- ✅ Error handling pattern for failed commands
+- ✅ Feature architecture (candidate/original/active pattern)
+
+**What Needs Refactoring:**
+- 🔧 `undo_stack` contents: change from `int` to `CommandState` objects
+- 🔧 Undo command: complete rewrite for all state types
+- 🔧 State capture mechanism: add systematic capture before command execution
+- 🔧 `active_commands`/`passive_commands`: move to `dictionaries.py` as `command_dict`
+- 🔧 `*_last` instances: can be deprecated once new undo system works
+
+**Issues Fixed:**
+- Removed duplicate entries "Deactivate" and "Sample designer" from `passive_commands`
+- Verified totals: 42 active + 62 passive = 104 total commands ✓
+
+**References:**
+- `undo_stack` initialization: director.py:1255-1256
+- Command classification: director.py:915-949
+- Feature instances: director.py:181-209
+- Undo command stub: editmenu.py:40-87
+- Error handling: director.py:435-458
+
+### Step 3: Create Command Dictionary ✅ COMPLETE
+
+**Status:** Completed on 2025-10-09
+
+**Implementation:**
+- ✅ Created `command_dict` in `dictionaries.py` using `MappingProxyType`
+- ✅ Contains all 106 commands in alphabetical order
+- ✅ All 42 active commands include `state_capture` field with empty list placeholder
+- ✅ All 64 passive commands have `type` field only
+- ✅ Added two future commands: "Print sample solutions" and "View sample solutions"
+- ✅ Updated `active_commands` and `passive_commands` tuples in director.py:915-950
+- ✅ Fixed "Grouped" → "Grouped data" naming inconsistency
+- ✅ Verified all commands match between director.py and command_dict
+- ✅ Tested imports work correctly
+
+**Structure implemented:**
   ```python
   command_dict = MappingProxyType({
       "About": {
@@ -315,46 +391,219 @@ From `table_builder.py`:
       "Alike": {
           "type": "passive"
       },
-      # ... all commands in alphabetical order ...
+      # ... all 64 passive commands ...
       "Center": {
           "type": "active",
-          "state_capture": ["data", "plot"]
+          "state_capture": []  # TODO: Define what state to capture
       },
-      # ... all commands ...
+      # ... all 42 active commands ...
       "Rotate": {
           "type": "active",
-          "state_capture": ["data", "plot"]  # First to implement fully
+          "state_capture": []  # TODO: Define what state to capture
       },
-      # ... all commands ...
-      "Scree": {
-          "type": "passive"
-      },
-      # ... remaining commands alphabetically
+      # ... etc ...
   })
   ```
-- Provides single source of truth for command classification
-- Indicates what state to capture for each active command
-- Alphabetical ordering ensures easy lookup and maintenance
 
-### Step 4: Design State Capture System
-- Create `CommandState` class
-- Implement core state capture methods in `director.py`
-- Design stack management (push/pop/clear)
-- Plan GUI refresh mechanism after restore
+**Verification Results:**
+- Total commands: 106 (42 active + 64 passive)
+- All active commands have `state_capture` field ✓
+- No passive commands have `state_capture` field ✓
+- All commands in alphabetical order ✓
+- Perfect match between director.py lists and command_dict ✓
 
-### Step 5: Prototype with Rotate Command
-- Examine Rotate command implementation
-- Identify exactly what state changes
-- Add state capture before rotation using `command_dict` metadata
-- Implement restore logic
-- Test undo/redo cycle
-- Refine approach based on results
+**Next Step:** Step 4 - Design State Capture System
 
-### Step 6: Expand Incrementally
-- Choose next command to implement
-- Apply learned patterns
-- Build library of reusable capture/restore methods
-- Document any special cases
+### Step 4: Design State Capture System ✅ COMPLETE
+
+**Status:** Completed on 2025-10-09, tested and validated on 2025-10-11
+
+**Implementation:**
+- ✅ Created `CommandState` class in `src/command_state.py`
+- ✅ Implemented state capture methods for all 8 feature types
+- ✅ Implemented state restore methods for all 8 feature types
+- ✅ Designed stack management helper methods (push/pop/peek/clear)
+- ✅ Designed GUI refresh mechanism using existing director methods
+- ✅ Created comprehensive design document: `STEP_4_STATE_CAPTURE_DESIGN.md`
+- ✅ Created helper function `capture_and_push_undo_state()` in `common.py:2241-2277`
+- ✅ Tested successfully with 18 commands across 4 menu systems
+
+**CommandState Class Features:**
+- Stores command metadata (name, type, parameters, timestamp)
+- Captures state for: configuration, correlations, similarities, evaluations, individuals, scores, grouped_data, target, settings, uncertainty, rivalry
+- Symmetric design: each `capture_*_state()` has matching `restore_*_state()`
+- Uses `.copy()` for all DataFrames and lists to ensure immutability
+- Provides `restore_all_state()` method for atomic restoration
+
+**Stack Management Design:**
+- Upgrade `undo_stack` from `list[int]` to `list[CommandState]`
+- Preserve `undo_stack_source` for backward compatibility
+- Methods: `push_undo_state()`, `pop_undo_state()`, `peek_undo_state()`, `clear_undo_stack()`
+- Integrates with existing error handling pattern
+
+**GUI Refresh Strategy:**
+- Reuse existing `create_widgets_for_output_and_log_tabs()`
+- Reuse existing `create_configuration_plot_for_tabs()`
+- Reuse existing `set_focus_on_tab()`
+- Plot recreation works automatically (data restored, plots regenerated)
+
+**Design Documentation:**
+- See `STEP_4_STATE_CAPTURE_DESIGN.md` for complete details
+- Includes capture/restore workflows
+- Documents integration points and testing strategy
+
+**User Testing Results:**
+- ✅ Successfully tested Rotate command undo
+- ✅ Successfully tested multiple transform commands
+- ✅ Successfully tested model commands including Cluster with conditional state capture
+- ✅ Design validated through real-world usage
+
+**Next Step:** Step 5 - Prototype with Rotate Command (completed and expanded to 18 commands)
+
+### Step 5: Prototype with Rotate Command ✅ COMPLETE
+
+**Status:** Completed on 2025-10-10
+
+**Implementation:**
+- ✅ Examined RotateCommand implementation in `transformmenu.py:596-698`
+- ✅ Identified state changes: `configuration_active.point_coords` and `scores_active.scores`
+- ✅ Updated `command_dict["Rotate"]["state_capture"]` to `["configuration", "scores"]`
+- ✅ Added stack management methods to `director.py`:
+  - `push_undo_state()`, `pop_undo_state()`, `peek_undo_state()`, `clear_undo_stack()`
+- ✅ Modified `EstablishSpacesStructure` to initialize `undo_stack` as `list[CommandState]`
+- ✅ Modified RotateCommand.execute() to capture state before rotation
+- ✅ Completely rewrote UndoCommand to use CommandState system
+- ✅ Added imports: `from command_state import CommandState` and `from dictionaries import command_dict`
+
+**Rotate Command Modifications (`transformmenu.py:620-647`):**
+```python
+# After getting rotation degree from user and before any modifications:
+cmd_state = CommandState("Rotate", "active", {"degrees": deg})
+cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+for feature in command_dict["Rotate"]["state_capture"]:
+    if feature == "configuration":
+        cmd_state.capture_configuration_state(self._director)
+    elif feature == "scores":
+        cmd_state.capture_scores_state(self._director)
+self._director.push_undo_state(cmd_state)
+```
+
+**UndoCommand Rewrite (`editmenu.py:40-88`):**
+- Removed "under construction" message
+- Implemented `_undo_last_command()` method
+- Calls `pop_undo_state()` to get most recent CommandState
+- Calls `restore_all_state()` to restore captured state
+- Triggers GUI refresh using existing director methods
+- Provides informative error if undo stack is empty
+
+**Stack Management Methods (`director.py:1215-1256`):**
+- `push_undo_state(cmd_state)`: Appends CommandState to stack and command name to source
+- `pop_undo_state()`: Removes and returns most recent CommandState (or None if empty)
+- `peek_undo_state()`: Returns most recent CommandState without removing (or None if empty)
+- `clear_undo_stack()`: Clears both undo_stack and undo_stack_source
+
+**Testing Approach:**
+The prototype is ready for user testing with the following workflow:
+1. Open a configuration file
+2. Execute Rotate command (enter non-zero degree value)
+3. Observe configuration is rotated
+4. Execute Undo command
+5. Verify configuration is restored to pre-rotation state
+6. Check that scores were also properly restored
+
+**Key Design Decisions:**
+- State capture occurs AFTER user input dialog but BEFORE any state modifications
+- Uses metadata from `command_dict` to determine which features to capture
+- Symmetric capture/restore pattern ensures all state is properly handled
+- GUI refresh reuses existing director methods (no new GUI code needed)
+- Error handling provides clear user feedback if undo stack is empty
+
+**Files Modified:**
+- `src/transformmenu.py`: Added imports, modified RotateCommand.execute()
+- `src/director.py`: Added CommandState import, changed undo_stack type, added 4 stack management methods
+- `src/editmenu.py`: Completely rewrote UndoCommand class
+- `src/dictionaries.py`: Updated Rotate entry with state_capture list
+
+**Optimization: Helper Function Created**
+Created `capture_and_push_undo_state()` in `common.py:2241-2277` to consolidate repetitive state capture pattern:
+- Takes command_name, command_type, and parameters
+- Creates CommandState automatically
+- Iterates through `command_dict[command_name]["state_capture"]` list
+- Calls appropriate `capture_*_state()` methods
+- Pushes to undo stack
+- Eliminates ~10 lines of boilerplate per command
+
+**Testing Results:**
+- ⏳ Awaiting user testing to validate prototype functionality
+- ⏳ Need to verify state capture works correctly
+- ⏳ Need to verify state restoration works correctly
+- ⏳ Need to verify GUI refresh works correctly
+
+**Next Step:** Step 6 - User Testing and Expansion Progress
+
+### Step 6: Expand Incrementally ✅ SUBSTANTIAL PROGRESS
+
+**Status:** Updated on 2025-10-11
+
+**Commands with Undo Support Implemented (18 total):**
+
+**Transform Menu (7 commands):**
+1. ✅ **Compare** (`transformmenu.py:53`) - State: configuration, target, scores
+2. ✅ **Center** (`transformmenu.py:180`) - State: configuration, scores
+3. ✅ **Invert** (`transformmenu.py:244`) - State: configuration, scores
+4. ✅ **Move** (`transformmenu.py:397`) - State: configuration, scores (Note: Move not in command_dict yet)
+5. ✅ **Rescale** (`transformmenu.py:518`) - State: configuration, scores
+6. ✅ **Rotate** (`transformmenu.py:681`) - State: configuration, scores
+7. ✅ **Varimax** (`transformmenu.py:795`) - State: configuration, scores
+
+**Associations Menu (1 command):**
+8. ✅ **Line of sight** (`associationsmenu.py:408`) - State: similarities
+
+**Model Menu (6 commands):**
+9. ✅ **Cluster** (`modelmenu.py:72`) - State: conditional (scores + one of: configuration/evaluations/similarities based on user's data source selection)
+10. ✅ **Factor analysis** (`modelmenu.py:656`) - State: configuration, scores, evaluations
+11. ✅ **Factor analysis machine learning** (`modelmenu.py:980`) - State: configuration, scores, evaluations
+12. ✅ **MDS** (`modelmenu.py:1072`) - State: configuration
+13. ✅ **Principal components** (`modelmenu.py:1686`) - State: configuration
+14. ✅ **Uncertainty** (`modelmenu.py:2044`) - State: uncertainty
+
+**Respondents Menu (4 commands):**
+15. ✅ **Reference points** (`respondentsmenu.py:321`) - State: rivalry
+16. ✅ **Sample designer** (`respondentsmenu.py:471`) - State: uncertainty
+17. ✅ **Sample repetitions** (`respondentsmenu.py:683`) - State: uncertainty
+18. ✅ **Score individuals** (`respondentsmenu.py:816`) - State: scores
+
+**Implementation Pattern:**
+All commands now use the consolidated `capture_and_push_undo_state()` helper:
+```python
+# Before modification
+self.common.capture_and_push_undo_state("CommandName", "active", {params})
+# Then modify state
+```
+
+**Remaining Active Commands (18 commands):**
+
+**Data/Model Commands (5):**
+- Configuration, Correlations, Create, Deactivate, Evaluations
+
+**Feature Data Commands (2):**
+- Grouped data, Individuals
+
+**Open Commands (9):**
+- Open configuration, Open correlations, Open evaluations
+- Open grouped data, Open individuals, Open similarities, Open target
+- Open sample design, Open sample repetitions, Open sample solutions
+
+**Settings Commands (7):**
+- Settings - display sizing, Settings - layout options, Settings - plane
+- Settings - plot settings, Settings - presentation layer
+- Settings - segment sizing, Settings - vector sizing
+
+**Next Steps:**
+- User testing of implemented commands
+- Fix any bugs discovered
+- Continue expanding to remaining active commands
+- Prioritize high-use commands (Configuration, MDS, Open*, Settings*)
 
 ### Step 7: GUI Integration
 - Update Undo menu item

@@ -115,10 +115,16 @@ class Rivalry:
 
 		self.core_radius: float = 0.0
 
+		# Line objects (initialized later when reference points are set)
+		self.connector: Connector | None = None
+		self.bisector: Bisector | None = None
+		self.east: East | None = None
+		self.west: West | None = None
+		self.first: First | None = None
+		self.second: Second | None = None
+
 		self.n_individ: int = 0
 		self.nscored_individ: int = 0
-		self.first: list[float] = 0.0
-		self.second: list[float] = 0.0
 		self.first_div: float = 0.0
 		self.second_div: float = 0.0
 		self.point_coords: pd.DataFrame = pd.DataFrame()

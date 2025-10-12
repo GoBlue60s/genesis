@@ -88,8 +88,8 @@ class ConfigurationCommand:
 		configuration_candidate.distances.clear()
 		configuration_candidate.seg = pd.DataFrame()
 		# rivalry = self._director.rivalry
-		# rivalry.rival_a.index = -1
-		# rivalry.rival_b.index = -1
+		# rivalry.rival_a.index = None
+		# rivalry.rival_b.index = None
 
 		common.show_bisector = False
 		self._dialog_caption: str = "Open configuration"
@@ -1054,6 +1054,13 @@ class EvaluationsCommand:
 		)
 		self._read_evaluations(file)
 		self._director.dependency_checker.detect_consistency_issues()
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file}
+		common.capture_and_push_undo_state(
+			"Evaluations", "active", params
+		)
+
 		self._director.evaluations_active = evaluations_candidate
 		self._director.evaluations_original = self._director.evaluations_active
 		self._director.evaluations_last = self._director.evaluations_active
@@ -3398,6 +3405,15 @@ class SettingsDisplayCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		# Capture state before modification
+		params = {
+			"axis_extra": self._director.common.axis_extra,
+			"displacement": self._director.common.displacement,
+			"point_size": self._director.common.point_size
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - display sizing", "active", params
+		)
 		self._get_display_sizings_from_user(
 			self._display_title,
 			self._display_items,
@@ -3534,6 +3550,15 @@ class SettingsLayoutCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		# Capture state before modification
+		params = {
+			"max_cols": self._director.common.max_cols,
+			"width": self._director.common.width,
+			"decimals": self._director.common.decimals
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - layout options", "active", params
+		)
 		self._get_layout_settings_from_user(
 			self._layout_title,
 			self._layout_items,
@@ -3647,6 +3672,16 @@ class SettingsPlaneCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+		# Capture state before modification
+		params = {
+			"hor_dim": self._director.common.hor_dim,
+			"vert_dim": self._director.common.vert_dim,
+			"hor_axis_name": self._director.configuration_active.hor_axis_name,
+			"vert_axis_name": self._director.configuration_active.vert_axis_name
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - plane", "active", params
+		)
 		self._get_plane_from_user(
 			self._hor_axis_title,
 			self._hor_axis_options_title,
@@ -3788,6 +3823,16 @@ class SettingsPlotCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		# Capture state before modification
+		params = {
+			"show_bisector": self._director.common.show_bisector,
+			"show_connector": self._director.common.show_connector,
+			"show_reference_points": self._director.common.show_reference_points,
+			"show_just_reference_points": self._director.common.show_just_reference_points
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - plot settings", "active", params
+		)
 		self._get_plot_settings_from_user(
 			self._plot_title, self._plot_items, self._plot_default_values
 		)
@@ -3919,6 +3964,14 @@ class SettingsPresentationLayerCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+		# Capture state before modification
+		params = {
+			"presentation_layer": self._director.common.presentation_layer,
+			"layer_to_use": layer_to_use
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - presentation layer", "active", params
+		)
 		self._director.common.presentation_layer = layer_to_use
 
 		self._director.title_for_table_widget = (
@@ -3961,6 +4014,14 @@ class SettingsSegmentCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		# Capture state before modification
+		params = {
+			"battleground_size": self._director.common.battleground_size,
+			"core_tolerance": self._director.common.core_tolerance
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - segment sizing", "active", params
+		)
 		self._get_segment_settings_from_user(
 			self._segment_title,
 			self._segment_items,
@@ -4081,6 +4142,14 @@ class SettingsVectorSizeCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		# Capture state before modification
+		params = {
+			"vector_head_width": self._director.common.vector_head_width,
+			"vector_width": self._director.common.vector_width
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - vector sizing", "active", params
+		)
 		self._get_vector_settings_from_user(
 			self._vector_title,
 			self._vector_items,
@@ -4334,6 +4403,13 @@ class TargetCommand:
 			)
 		)
 		self._director.dependency_checker.detect_consistency_issues()
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Target", "active", params
+		)
+
 		self._director.target_active = self._director.target_candidate
 		self._director.target_original = self._director.target_active
 		self._director.target_last = self._director.target_active

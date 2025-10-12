@@ -9,6 +9,377 @@ if TYPE_CHECKING:
 # Type alias for immutable dictionaries
 FrozenDict = MappingProxyType
 
+
+# ----------------------------------------------------------------------------
+# Dictionary: command_dict
+# Source: director.py lines 915-949 (active_commands and passive_commands)
+# Purpose: Command classification and undo metadata for all 104 commands
+# ----------------------------------------------------------------------------
+
+command_dict = MappingProxyType({
+	"About": {
+		"type": "passive"
+	},
+	"Alike": {
+		"type": "passive"
+	},
+	"Base": {
+		"type": "passive"
+	},
+	"Battleground": {
+		"type": "passive"
+	},
+	"Center": {
+		"type": "active",
+		"state_capture": ["configuration", "scores"]
+	},
+	"Cluster": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Compare": {
+		"type": "active",
+		"state_capture": ["configuration", "target", "scores"]
+	},
+	"Configuration": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Contest": {
+		"type": "passive"
+	},
+	"Convertible": {
+		"type": "passive"
+	},
+	"Core supporters": {
+		"type": "passive"
+	},
+	"Correlations": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Create": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Deactivate": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Directions": {
+		"type": "passive"
+	},
+	"Distances": {
+		"type": "passive"
+	},
+	"Evaluations": {
+		"type": "active",
+		"state_capture": ["evaluations", "correlations"]
+	},
+	"Exit": {
+		"type": "passive"
+	},
+	"Factor analysis": {
+		"type": "active",
+		"state_capture": ["configuration", "scores", "evaluations"]
+	},
+	"Factor analysis machine learning": {
+		"type": "active",
+		"state_capture": ["configuration", "scores", "evaluations"]
+	},
+	"First dimension": {
+		"type": "passive"
+	},
+	"Grouped data": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Help": {
+		"type": "passive"
+	},
+	"History": {
+		"type": "passive"
+	},
+	"Individuals": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Invert": {
+		"type": "active",
+		"state_capture": ["configuration", "scores"]
+	},
+	"Joint": {
+		"type": "passive"
+	},
+	"Likely supporters": {
+		"type": "passive"
+	},
+	"Line of sight": {
+		"type": "active",
+		"state_capture": ["similarities"]
+	},
+	"MDS": {
+		"type": "active",
+		"state_capture": ["configuration", "rivalry"]
+	},
+	"Move": {
+		"type": "active",
+		"state_capture": ["configuration", "scores"]
+	},
+	"New grouped data": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Open sample design": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Open sample repetitions": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Open sample solutions": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Open scores": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Paired": {
+		"type": "passive"
+	},
+	"Principal components": {
+		"type": "active",
+		"state_capture": ["configuration"]
+	},
+	"Print configuration": {
+		"type": "passive"
+	},
+	"Print correlations": {
+		"type": "passive"
+	},
+	"Print evaluations": {
+		"type": "passive"
+	},
+	"Print grouped data": {
+		"type": "passive"
+	},
+	"Print individuals": {
+		"type": "passive"
+	},
+	"Print sample design": {
+		"type": "passive"
+	},
+	"Print sample repetitions": {
+		"type": "passive"
+	},
+	"Print sample solutions": {
+		"type": "passive"
+	},
+	"Print scores": {
+		"type": "passive"
+	},
+	"Print similarities": {
+		"type": "passive"
+	},
+	"Print target": {
+		"type": "passive"
+	},
+	"Ranks": {
+		"type": "passive"
+	},
+	"Ranks differences": {
+		"type": "passive"
+	},
+	"Ranks distances": {
+		"type": "passive"
+	},
+	"Ranks similarities": {
+		"type": "passive"
+	},
+	"Redo": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Reference points": {
+		"type": "active",
+		"state_capture": ["rivalry"]
+	},
+	"Rescale": {
+		"type": "active",
+		"state_capture": ["configuration", "scores"]
+	},
+	"Rotate": {
+		"type": "active",
+		"state_capture": ["configuration", "scores"]
+	},
+	"Sample designer": {
+		"type": "active",
+		"state_capture": ["uncertainty"]
+	},
+	"Sample repetitions": {
+		"type": "active",
+		"state_capture": ["uncertainty"]
+	},
+	"Save configuration": {
+		"type": "passive"
+	},
+	"Save correlations": {
+		"type": "passive"
+	},
+	"Save individuals": {
+		"type": "passive"
+	},
+	"Save sample design": {
+		"type": "passive"
+	},
+	"Save sample repetitions": {
+		"type": "passive"
+	},
+	"Save sample solutions": {
+		"type": "passive"
+	},
+	"Save scores": {
+		"type": "passive"
+	},
+	"Save similarities": {
+		"type": "passive"
+	},
+	"Save target": {
+		"type": "passive"
+	},
+	"Score individuals": {
+		"type": "active",
+		"state_capture": ["scores", "rivalry"]
+	},
+	"Scree": {
+		"type": "passive"
+	},
+	"Second dimension": {
+		"type": "passive"
+	},
+	"Segments": {
+		"type": "passive"
+	},
+	"Settings - display sizing": {
+		"type": "active",
+		"state_capture": ["settings"]
+	},
+	"Settings - layout options": {
+		"type": "active",
+		"state_capture": ["settings"]
+	},
+	"Settings - plane": {
+		"type": "active",
+		"state_capture": ["settings"]
+	},
+	"Settings - plot settings": {
+		"type": "active",
+		"state_capture": ["settings"]
+	},
+	"Settings - presentation layer": {
+		"type": "active",
+		"state_capture": ["settings"]
+	},
+	"Settings - segment sizing": {
+		"type": "active",
+		"state_capture": ["settings"]
+	},
+	"Settings - vector sizing": {
+		"type": "active",
+		"state_capture": ["settings"]
+	},
+	"Shepard": {
+		"type": "passive"
+	},
+	"Similarities": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Status": {
+		"type": "passive"
+	},
+	"Stress contribution": {
+		"type": "passive"
+	},
+	"Target": {
+		"type": "active",
+		"state_capture": ["target"]
+	},
+	"Terse": {
+		"type": "passive"
+	},
+	"Tester": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Uncertainty": {
+		"type": "active",
+		"state_capture": ["uncertainty"]
+	},
+	"Undo": {
+		"type": "active",
+		"state_capture": []  # TODO: Define what state to capture
+	},
+	"Varimax": {
+		"type": "active",
+		"state_capture": ["configuration", "scores"]
+	},
+	"Vectors": {
+		"type": "passive"
+	},
+	"Verbose": {
+		"type": "passive"
+	},
+	"View configuration": {
+		"type": "passive"
+	},
+	"View correlations": {
+		"type": "passive"
+	},
+	"View custom": {
+		"type": "passive"
+	},
+	"View distances": {
+		"type": "passive"
+	},
+	"View evaluations": {
+		"type": "passive"
+	},
+	"View grouped data": {
+		"type": "passive"
+	},
+	"View individuals": {
+		"type": "passive"
+	},
+	"View point uncertainty": {
+		"type": "passive"
+	},
+	"View sample design": {
+		"type": "passive"
+	},
+	"View sample repetitions": {
+		"type": "passive"
+	},
+	"View sample solutions": {
+		"type": "passive"
+	},
+	"View scores": {
+		"type": "passive"
+	},
+	"View similarities": {
+		"type": "passive"
+	},
+	"View spatial uncertainty": {
+		"type": "passive"
+	},
+	"View target": {
+		"type": "passive"
+	},
+})
+
+
 # Command class imports for request_dict and widget_dict
 from associationsmenu import (
 	AlikeCommand,
@@ -1596,13 +1967,13 @@ edit_menu_dict = MappingProxyType({
 	"Undo": {
 		"icon": "spaces_undo_icon.jpg",
 		"command": "undo",
-		"enabled": False,
+		"enabled": True,
 		"tooltip": "Undo the last action",
 	},
 	"Redo": {
 		"icon": "spaces_redo_icon.jpg",
 		"command": "redo",
-		"enabled": False,
+		"enabled": True,
 		"tooltip": "Redo the last undone action",
 	},
 })

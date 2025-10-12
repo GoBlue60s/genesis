@@ -70,6 +70,7 @@ from table_builder import (
 	RivalryTableWidget,
 )
 from common import Spaces
+from command_state import CommandState
 from matplotlib_plots import MatplotlibMethods
 from pyqtgraph_plots import PyQtGraphMethods
 
@@ -915,7 +916,7 @@ class Status(QMainWindow):
 		active_commands = (
 			"Center", "Cluster", "Compare", "Configuration", "Correlations",
 			"Create", "Deactivate", "Evaluations", "Factor analysis",
-			"Factor analysis machine learning", "Grouped", "Individuals",
+			"Factor analysis machine learning", "Grouped data", "Individuals",
 			"Invert", "Line of sight", "MDS", "Move", "New grouped data",
 			"Open sample design", "Open sample repetitions",
 			"Open sample solutions", "Open scores", "Principal components",
@@ -928,15 +929,16 @@ class Status(QMainWindow):
 			"Target", "Tester", "Uncertainty", "Undo", "Varimax")
 		passive_commands = (
 			"About", "Alike", "Base", "Battleground", "Contest",
-			"Convertible", "Core supporters", "Deactivate", "Directions",
+			"Convertible", "Core supporters", "Directions",
 			"Distances", "Exit", "First dimension","Help", "History", "Joint",
 			"Likely supporters",
 			"Paired", "Print configuration", "Print correlations",
 			"Print evaluations", "Print grouped data", "Print individuals",
-			"Print sample design", "Print sample repetitions", "Print scores",
+			"Print sample design", "Print sample repetitions",
+			"Print sample solutions", "Print scores",
 			"Print similarities", "Print target", "Ranks differences",
 			"Ranks distances", "Ranks similarities",
-			"Ranks", "Sample designer", "Save configuration",
+			"Ranks", "Save configuration",
 			"Save correlations", "Save individuals", "Save sample design",
 			"Save sample repetitions", "Save sample solutions",
 			"Save scores", "Save similarities","Save target", "Scree",
@@ -945,8 +947,8 @@ class Status(QMainWindow):
 			"View configuration", "View correlations", "View custom",
 			"View distances", "View evaluations", "View grouped data",
 			"View individuals", "View point uncertainty", "View sample design",
-			"View sample repetitions", "View scores", "View similarities",
-			"View spatial uncertainty", "View target")
+			"View sample repetitions", "View sample solutions", "View scores",
+			"View similarities", "View spatial uncertainty", "View target")
 
 	# ------------------------------------------------------------------------
 
@@ -1173,9 +1175,11 @@ class Status(QMainWindow):
 		)
 		print(f"Unable to complete {command} command")
 		#
-		# eliminate last entry to undo stack
+		# eliminate last entry from undo stack ONLY if it belongs to this command
+		# (A command may fail before it pushes to the undo stack, in which case
+		# we shouldn't remove the previous command's state)
 		#
-		if len(undo_stack) != 1:
+		if len(undo_stack) > 0 and undo_stack_source[-1] == command:
 			del undo_stack[-1]
 			del undo_stack_source[-1]
 
@@ -1206,6 +1210,51 @@ class Status(QMainWindow):
 		self.command = command
 		self.command_exit_code = command_exit_code
 
+		return
+
+	# ------------------------------------------------------------------------
+
+	def push_undo_state(self, cmd_state: CommandState) -> None:
+		"""Push a CommandState onto the undo stack.
+
+		Args:
+			cmd_state: The CommandState to push onto the stack
+		"""
+		self.undo_stack.append(cmd_state)
+		self.undo_stack_source.append(cmd_state.command_name)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def pop_undo_state(self) -> CommandState | None:
+		"""Pop and return the most recent CommandState from the undo stack.
+
+		Returns:
+			The most recent CommandState, or None if stack is empty
+		"""
+		if not self.undo_stack:
+			return None
+		self.undo_stack_source.pop()
+		return self.undo_stack.pop()
+
+	# ------------------------------------------------------------------------
+
+	def peek_undo_state(self) -> CommandState | None:
+		"""Return the most recent CommandState without removing it.
+
+		Returns:
+			The most recent CommandState, or None if stack is empty
+		"""
+		if not self.undo_stack:
+			return None
+		return self.undo_stack[-1]
+
+	# ------------------------------------------------------------------------
+
+	def clear_undo_stack(self) -> None:
+		"""Clear all CommandStates from the undo stack."""
+		self.undo_stack.clear()
+		self.undo_stack_source.clear()
 		return
 
 	# ------------------------------------------------------------------------
@@ -1252,7 +1301,7 @@ class EstablishSpacesStructure:
 		self.commands_used: list[str] = ["Initialize"]
 		self.command_exit_code: list[int] = [0]
 		self.command: str = ""
-		self.undo_stack: list[int] = [0]
+		self.undo_stack: list[CommandState] = []
 		self.undo_stack_source: list[str] = ["Initialize"]
 		self.deactivated_items: list[str] = []
 		self.deactivated_descriptions: list[str] = []

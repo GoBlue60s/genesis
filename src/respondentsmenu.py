@@ -96,16 +96,13 @@ class BattlegroundCommand(ASupporterGrouping):
 	# ------------------------------------------------------------------------
 
 
-class ContestCommand(ASupporterGrouping):
+class ContestCommand:
 	"""contest command - identifies regions defined by reference points"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
 		self._director.command = "Contest"
-		self._hor_dim = director.common.hor_dim
-		self._vert_dim = director.common.vert_dim
-		self.ndim = self._director.configuration_active.ndim
 
 		return
 
@@ -361,14 +358,30 @@ class ReferencePointsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_configuration()
-		self._get_reference_points_from_user(
-			self._refs_title, self._refs_items
+
+		# Get user's desired reference points WITHOUT modifying state
+		new_rival_a_index, new_rival_b_index = (
+			self._get_reference_points_from_user(
+				self._refs_title, self._refs_items
+			)
 		)
 
-		rivalry.rival_a.name = point_names[rival_a.index]
-		rivalry.rival_b.name = point_names[rival_b.index]
-		rivalry.rival_a.label = point_labels[rival_a.index]
-		rivalry.rival_b.label = point_labels[rival_b.index]
+		# Capture OLD state BEFORE modifications, save NEW indices as params
+		params = {
+			"rival_a_index": new_rival_a_index,
+			"rival_b_index": new_rival_b_index
+		}
+		self.common.capture_and_push_undo_state(
+			"Reference points", "active", params
+		)
+
+		# NOW modify the rivalry state with the new reference points
+		rivalry.rival_a.index = new_rival_a_index
+		rivalry.rival_b.index = new_rival_b_index
+		rivalry.rival_a.name = point_names[new_rival_a_index]
+		rivalry.rival_b.name = point_names[new_rival_b_index]
+		rivalry.rival_a.label = point_labels[new_rival_a_index]
+		rivalry.rival_b.label = point_labels[new_rival_b_index]
 
 		self._print_reference_points()
 
@@ -410,9 +423,8 @@ class ReferencePointsCommand:
 
 	def _get_reference_points_from_user(
 		self, refs_title: str, refs_items: list[str]
-	) -> None:
+	) -> tuple[int, int]:
 		self._get_reference_points_from_user_initialize_variables()
-		rivalry = self._director.rivalry
 		range_points = self._director.configuration_active.range_points
 		point_names = self._director.configuration_active.point_names
 
@@ -438,10 +450,8 @@ class ReferencePointsCommand:
 
 		refs_a = refs_indexes[0]
 		refs_b = refs_indexes[1]
-		rivalry.rival_a.index = refs_a
-		rivalry.rival_b.index = refs_b
 
-		return
+		return refs_a, refs_b
 
 	# ------------------------------------------------------------------------
 
@@ -497,6 +507,18 @@ class SampleDesignerCommand:
 			self._designer_items,
 			self._designer_integers,
 			self._designer_default_values,
+		)
+
+		# Capture state for undo AFTER user input but BEFORE modifications
+		params = {
+			"universe_size": self._director.uncertainty_active.universe_size,
+			"probability_of_inclusion": (
+				self._director.uncertainty_active.probability_of_inclusion
+			),
+			"nrepetitions": self._director.uncertainty_active.nrepetitions
+		}
+		self.common.capture_and_push_undo_state(
+			"Sample designer", "active", params
 		)
 
 		self._create_sample_design()
@@ -680,6 +702,15 @@ class SampleRepetitionsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._check_that_sizes_match()
+
+		# Capture state for undo BEFORE modifications
+		params = {
+			"universe_size": self._director.uncertainty_active.universe_size
+		}
+		self.common.capture_and_push_undo_state(
+			"Sample repetitions", "active", params
+		)
+
 		self._create_sample_repetitions()
 		universe_size = self._director.uncertainty_active.universe_size
 		self._director.title_for_table_widget = (
@@ -798,6 +829,13 @@ class ScoreIndividualsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+
+		# Capture state for undo BEFORE modifications
+		params = {}
+		self.common.capture_and_push_undo_state(
+			"Score individuals", "active", params
+		)
+
 		self._calculate_scores()
 
 		self._director.scores_active.summarize_scores()
@@ -872,10 +910,14 @@ class ScoreIndividualsCommand:
 		self._director.scores_active.nscores = nscores
 		self._director.scores_active.nscored_individ = nscored
 		self._director.scores_active.range_nscored_individ = range_nscored
+		self._director.scores_active.dim_names = dim_names
 		self._director.scores_active.score_1_name = score_1_name
 		self._director.scores_active.score_2_name = score_2_name
 		self._director.scores_active.hor_axis_name = score_1_name
 		self._director.scores_active.vert_axis_name = score_2_name
+		self._director.scores_active.score_1 = scores[score_1_name]
+		self._director.scores_active.score_2 = scores[score_2_name]
+		self._director.scores_active.ndim = 2
 
 		return
 

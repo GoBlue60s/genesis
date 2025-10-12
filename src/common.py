@@ -2235,3 +2235,83 @@ class Spaces:
 			)
 
 		return ext_comp
+
+	# ------------------------------------------------------------------------
+
+	def capture_and_push_undo_state(
+		self,
+		command_name: str,
+		command_type: str,
+		parameters: dict
+	) -> None:
+		"""Capture state and push onto the undo stack.
+
+		This is a helper function that consolidates the repetitive pattern
+		of creating a CommandState, capturing various feature states based
+		on the command's state_capture configuration, and pushing it onto
+		the undo stack.
+
+		Args:
+			command_name: Name of the command (e.g., "Rotate", "Rescale")
+			command_type: Type of command ("active" or "passive")
+			parameters: Dict of command-specific parameters to store
+
+		Raises:
+			SpacesError: If a feature in state_capture is not supported
+		"""
+		from command_state import CommandState  # noqa: PLC0415
+		from dictionaries import command_dict  # noqa: PLC0415
+		from datetime import datetime  # noqa: PLC0415
+
+		cmd_state = CommandState(command_name, command_type, parameters)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+		supported_features = {
+			"configuration",
+			"target",
+			"scores",
+			"similarities",
+			"uncertainty",
+			"rivalry",
+			"correlations",
+			"evaluations",
+			"individuals",
+			"grouped_data",
+			"settings",
+		}
+
+		for feature in command_dict[command_name]["state_capture"]:
+			if feature not in supported_features:
+				title = f"Unsupported feature in state_capture for {command_name}"
+				message = (
+					f"Feature '{feature}' is not supported by "
+					"capture_and_push_undo_state().\n"
+					f"Supported features: {', '.join(sorted(supported_features))}"
+				)
+				raise SpacesError(title, message)
+
+			if feature == "configuration":
+				cmd_state.capture_configuration_state(self._director)
+			elif feature == "target":
+				cmd_state.capture_target_state(self._director)
+			elif feature == "scores":
+				cmd_state.capture_scores_state(self._director)
+			elif feature == "similarities":
+				cmd_state.capture_similarities_state(self._director)
+			elif feature == "uncertainty":
+				cmd_state.capture_uncertainty_state(self._director)
+			elif feature == "rivalry":
+				cmd_state.capture_rivalry_state(self._director)
+			elif feature == "correlations":
+				cmd_state.capture_correlations_state(self._director)
+			elif feature == "evaluations":
+				cmd_state.capture_evaluations_state(self._director)
+			elif feature == "individuals":
+				cmd_state.capture_individuals_state(self._director)
+			elif feature == "grouped_data":
+				cmd_state.capture_grouped_data_state(self._director)
+			elif feature == "settings":
+				cmd_state.capture_settings_state(self._director)
+
+		self._director.push_undo_state(cmd_state)
+		return

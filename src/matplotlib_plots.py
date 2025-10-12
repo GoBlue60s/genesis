@@ -1254,58 +1254,73 @@ class MatplotlibMethods:
 	# ------------------------------------------------------------------------
 
 	def request_individuals_plot_for_tabs_using_matplotlib(self) -> None:
-		title = (
-			"Request Individuals Plot for Plot and Gallery using Matplotlib"
-		)
-		message = "Must be created"
-		raise UnderDevelopmentError(title, message)
+		"""Create an individuals plot for plot and gallery tabs using matplotlib.
+
+		This method generates a scatter plot of individual scores, displays it
+		in the GUI, and sets the focus to the 'Plot' tab.
+		"""
+		director = self._director
+		common = director.common
+		matplotlib_common = director.matplotlib_common
+		scores_active = director.scores_active
+		hor_axis_name = scores_active.hor_axis_name
+		vert_axis_name = scores_active.vert_axis_name
+		scores = scores_active.scores
+		dim_names = scores_active.dim_names
+
+		score_1 = scores[hor_axis_name]
+		score_2 = scores[vert_axis_name]
+		score_1_name = dim_names[0]
+		score_2_name = dim_names[1]
+
+		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
+
+		fig = self.plot_individuals_using_matplotlib()
+		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+
+		self.score_1 = score_1
+		self.score_1_name = score_1_name
+		self.score_2 = score_2
+		self.score_2_name = score_2_name
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def plot_individuals_using_matplotlib(self) -> plt.Figure:
-		### This function is not yet used - it is based on scores,
-		#  could be based on eval
-		###
-		hor_axis_name = self.hor_axis_name
-		vert_axis_name = self.vert_axis_name
-		hor_min = self.hor_min
-		hor_max = self.hor_max
-		vert_min = self.vert_min
-		vert_max = self.vert_max
-		score_1 = self.score_1
-		score_2 = self.score_2
-		point_size = self._director.common.point_size
+		"""Plot individual scores using matplotlib.
 
-		# fig, ax = plt.subplots()
-		fig, ax = (
-			self._director.matplotlib_common.begin_matplotlib_plot_with_title(
-				None
-			)
+		Creates a scatter plot of individual score data with appropriate
+		axis labels and ranges.
+		"""
+		director = self._director
+		common = director.common
+		matplotlib_common = director.matplotlib_common
+		scores_active = director.scores_active
+		score_1 = scores_active.score_1
+		score_2 = scores_active.score_2
+		ndim = scores_active.ndim
+		score_color = scores_active.score_color
+		point_size = common.point_size
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
+
+		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
+			"Individuals"
 		)
-		ax = \
-		self._director.matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(
-			ax
-		)
-		#
-		# ax.set_aspect("equal")
-		ax.set_xlabel(hor_axis_name)
-		ax.set_ylabel(vert_axis_name)
-		ax.grid(True)  # noqa: FBT003
-		x_min = score_1.min().min()
-		if x_min >= 0:
-			hor_min = 0
-		y_min = score_2.min().min()
-		if y_min >= 0:
-			vert_min = 0
-		ax.axis([hor_min, hor_max, vert_min, vert_max])
-		#
-		# add points and labels to plot
-		#
-		ax.scatter(score_1, score_2, color="green", s=point_size)
-		#
-		# Ready to complete plot
+		ax = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax)
+		matplotlib_common.add_axes_labels_to_matplotlib_plot(ax)
+		matplotlib_common.set_ranges_for_matplotlib_plot(ax)
+
+		ax.scatter(score_1, score_2, color=score_color, s=point_size)
+
+		self.score_1 = score_1
+		self.score_2 = score_2
+
+		director.set_focus_on_tab("Plot")
+
 		return fig
 
 	# ------------------------------------------------------------------------

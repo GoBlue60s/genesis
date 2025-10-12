@@ -47,7 +47,15 @@ class CompareCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.dependency_checker.detect_limitations_violations()
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state("Compare", "active", {})
+		#
+		# Now perform the comparison/rotation
+		#
 		self._director.target_active.disparity = self._compare()
+		self._director.scores_active.scores = pd.DataFrame()
 		self._create_compare_table()
 		self._print_comparison()
 		self._director.common.create_plot_for_tabs("compare")
@@ -166,6 +174,13 @@ class CenterCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state("Center", "active", {})
+		#
+		# Now perform the center operation
+		#
 		self._center_by_subtracting_mean_from_coordinates()
 		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
@@ -220,9 +235,20 @@ class InvertCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		_, dims_indexes = self._select_dimensions_to_invert(
+		selected_items, dims_indexes = self._select_dimensions_to_invert(
 			self._dimensions_to_invert_title, self._dimensions
 		)
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state(
+			"Invert",
+			"active",
+			{"dimensions": selected_items}
+		)
+		#
+		# Now perform the invert
+		#
 		self._invert(dims_indexes)
 		rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
@@ -365,8 +391,19 @@ class MoveCommand:
 				self._move_title, self._move_value_title, self._move_options
 			)
 		)
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state(
+			"Move",
+			"active",
+			{"dimension": selected_option, "value": decimal_value}
+		)
+		#
+		# Now perform the move
+		#
 		self._move(selected_option, decimal_value)
-
+		self._director.scores_active.scores = pd.DataFrame()
 		rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)
@@ -475,7 +512,19 @@ class RescaleCommand:
 			self._rescale_by_an_integer,
 			self._rescale_by_default,
 		)
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state(
+			"Rescale",
+			"active",
+			{"dimensions": selected_items, "scale_factor": value}
+		)
+		#
+		# Now perform the rescale
+		#
 		self._rescale_selected_dimensions(selected_items, value)
+		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)
@@ -626,6 +675,17 @@ class RotateCommand:
 			self._rotate_an_integer,
 			self._rotate_default,
 		)
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state(
+			"Rotate",
+			"active",
+			{"degrees": deg}
+		)
+		#
+		# Now perform the rotation
+		#
 		radians = math.radians(float(deg))
 		self._rotate(radians)
 		self._director.scores_active.scores = pd.DataFrame()
@@ -729,6 +789,13 @@ class VarimaxCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		if len(item_names) == 0:
 			item_names = point_names
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state("Varimax", "active", {})
+		#
+		# Now perform the varimax rotation
+		#
 		print(
 			"DEBUG --in varimax command before rotation-- "
 			f"{point_coords=}"
@@ -736,7 +803,7 @@ class VarimaxCommand:
 			f"{nreferent=}"
 		)
 		self._perform_varimax_rotation()
-
+		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, common
 		)

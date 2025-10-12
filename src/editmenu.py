@@ -8,6 +8,7 @@ from common import Spaces
 
 if TYPE_CHECKING:
 	from director import Status
+	from command_state import CommandState
 
 
 # ------------------------------------------------------------------------
@@ -42,16 +43,12 @@ class UndoCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Undo"
-		self._director.title_for_table_widget = (
-			"Undo is under construction please stay tuned"
-		)
-		return
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._return_to_previous_active()
+		self._undo_last_command()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -59,29 +56,40 @@ class UndoCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _return_to_previous_active(self) -> None:
-		undo_stack = self._director.undo_stack
-		undo_stack_source = self._director.undo_stack_source
-		# active = self._director.active
+	def _undo_last_command(self) -> None:
+		"""Restore state from the most recent CommandState on the stack."""
+		cmd_state = self._director.pop_undo_state()
 
-		if self._director.common.have_previous_active():
-			print("\n\tUndoing ", undo_stack_source[-1])
-			active = undo_stack[-1]
-			#
-			if self._director.common.have_active_configuration():
-				self._director.configuration_active.print_active_function()
-				self._director.create_configuration_plot_for_tabs()
-			del undo_stack[-1]
-			del undo_stack_source[-1]
-		else:
-			title_msg = "No previous configuration"
+		if cmd_state is None:
+			title_msg = "Nothing to undo"
 			detail_msg = (
-				"Establish more than one active configuration "
-				"before using Undo"
+				"No commands have been executed yet. "
+				"Execute an active command before using Undo."
 			)
 			raise SpacesError(title_msg, detail_msg)
-		self._director.undo_stack = undo_stack
-		self._director.undo_stack_source = undo_stack_source
-		self._director.active = active
+
+		print(f"\n\tUndoing {cmd_state.command_name} command")
+
+		# Restore all captured state
+		cmd_state.restore_all_state(self._director)
+
+		# Build appropriate output and title based on restored state
+		self._build_undo_output(cmd_state)
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _build_undo_output(self, cmd_state: CommandState) -> None:
+		"""Build output and title based on what was undone."""
+		# Set simple title indicating what was undone
+		self._director.title_for_table_widget = (
+			f"Undid {cmd_state.command_name} command"
+		)
+
+		# If configuration was restored, recreate the plot
+		if self._director.common.have_active_configuration():
+			self._director.configuration_active.print_active_function()
+			self._director.common.create_plot_for_tabs("configuration")
 
 		return

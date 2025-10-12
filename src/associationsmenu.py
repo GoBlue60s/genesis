@@ -402,6 +402,17 @@ class LineOfSightCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+		#
+		# Capture state before making changes (for undo)
+		#
+		self.common.capture_and_push_undo_state(
+			"Line of sight",
+			"active",
+			{}
+		)
+		#
+		# Now perform the line of sight calculation
+		#
 		self._director.similarities_candidate = self.common.los(
 			self._director.evaluations_active
 		)

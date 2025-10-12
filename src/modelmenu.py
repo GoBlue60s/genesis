@@ -70,7 +70,7 @@ class ClusterCommand:
 	# ------------------------------------------------------------------------
 		
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		
+
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		# Ask user which data source to use
@@ -87,9 +87,46 @@ class ClusterCommand:
 			self.number_clusters_integer,
 			self.number_clusters_default
 		)
-		# peek(f"{n_clusters=}")
-		# Perform k-means clustering on the selected data
+		#
+		# Capture state before making changes (for undo)
+		# State capture depends on which data source user selected
+		#
+		state_to_capture = ["scores"]  # Always capture scores
+		if name_source == "distances":
+			state_to_capture.append("configuration")
+		elif name_source == "evaluations":
+			state_to_capture.append("evaluations")
+		elif name_source == "similarities":
+			state_to_capture.append("similarities")
+		# Note: if name_source == "scores", we already capture scores
 
+		# Build parameters dict for redo/scripting
+		params = {
+			"data_source": name_source,
+			"n_clusters": n_clusters
+		}
+
+		# Capture state using helper - manually iterate state_to_capture
+		from command_state import CommandState  # noqa: PLC0415
+		from datetime import datetime  # noqa: PLC0415
+
+		cmd_state = CommandState("Cluster", "active", params)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+		for feature in state_to_capture:
+			if feature == "configuration":
+				cmd_state.capture_configuration_state(self._director)
+			elif feature == "scores":
+				cmd_state.capture_scores_state(self._director)
+			elif feature == "evaluations":
+				cmd_state.capture_evaluations_state(self._director)
+			elif feature == "similarities":
+				cmd_state.capture_similarities_state(self._director)
+
+		self._director.push_undo_state(cmd_state)
+		#
+		# Now perform k-means clustering on the selected data
+		#
 		kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
 		cluster_labels = kmeans.fit_predict(self.data_for_clustering)
 		cluster_centers = kmeans.cluster_centers_
@@ -633,6 +670,18 @@ class FactorAnalysisCommand:
 			self._default,
 		)
 		configuration_active.ndim = int(ext_fact)
+		#
+		# Capture state before making changes (for undo)
+		#
+		params = {
+			"n_factors": ext_fact
+		}
+		common.capture_and_push_undo_state(
+			"Factor analysis", "active", params
+		)
+		#
+		# Now perform factor analysis
+		#
 		self._factors_and_scores()
 		self._director.common.create_plot_for_tabs("scree")
 		self._create_factor_analysis_table()
@@ -933,6 +982,18 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		n_components = self._get_components_from_user()
+		#
+		# Capture state before making changes (for undo)
+		#
+		params = {
+			"n_components": n_components
+		}
+		common.capture_and_push_undo_state(
+			"Factor analysis machine learning", "active", params
+		)
+		#
+		# Now perform factor analysis
+		#
 		self._perform_factor_analysis_m_l_and_setup(n_components)
 		self._director.common.create_plot_for_tabs("scree")
 		self._display()
@@ -1459,6 +1520,20 @@ class MDSCommand:
 			self._mds_components_default,
 			self._mds_components_an_integer,
 		)
+		#
+		# Capture state before making changes (for undo)
+		#
+		n_comp = self._director.configuration_active.n_comp
+		params = {
+			"n_components": n_comp,
+			"use_metric": use_metric
+		}
+		self.common.capture_and_push_undo_state(
+			"MDS", "active", params
+		)
+		#
+		# Now perform MDS
+		#
 		self._perform_mds_pick_up_point_labelling_from_similarities()
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
@@ -1612,6 +1687,18 @@ class PrincipalComponentsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+		#
+		# Capture state before making changes (for undo)
+		#
+		params = {
+			"n_components": 2  # PCA always uses 2 components
+		}
+		self.common.capture_and_push_undo_state(
+			"Principal components", "active", params
+		)
+		#
+		# Now perform PCA
+		#
 		(
 			pca_transformer,
 			X_pca_transformed,  # noqa:N806
@@ -1964,7 +2051,19 @@ class UncertaintyCommand:
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
-
+		#
+		# Capture state before making changes (for undo)
+		#
+		params = {
+			"sample_repetitions": sample_repetitions.shape[0],  # number of rows
+			"nreferent": nreferent
+		}
+		common.capture_and_push_undo_state(
+			"Uncertainty", "active", params
+		)
+		#
+		# Now perform uncertainty analysis
+		#
 		self.target_out, self.active_out = self._get_solutions_from_mds(
 			common, sample_repetitions, nreferent
 		)

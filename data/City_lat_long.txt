@@ -1,0 +1,24 @@
+Configuration
+ 2 10
+Long;Longitude
+Lat;Latitude
+ATL;Atlanta
+CHI;Chicago
+DEN;Denver
+HOU;Houston
+LA;Los Angeles
+MIA;Miami
+NYC;New York
+SF;San Francisco
+SEA;Seattle
+DC;Washington DC
+-84.386330  33.753746 
+-87.623177  41.881832 
+-104.991531 39.742043 
+-95.369957  29.759438
+-118.243683 34.052235 
+-80.191788  25.761681 
+-73.935242  40.730610
+-122.446747 37.733795 
+-122.335167 47.608013 
+-77.035278  38.889484

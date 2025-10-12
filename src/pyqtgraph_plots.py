@@ -1732,7 +1732,7 @@ class PyQtGraphMethods:
 			pen=score_color,
 			symbol="o",
 			symbolSize=5,
-			symbolBrush=(0, 255, 0),
+			symbolBrush=score_color,
 		)
 		if common.have_reference_points():
 			pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
@@ -1940,7 +1940,7 @@ class PyQtGraphMethods:
 			pen=score_color,
 			symbol="o",
 			symbolSize=point_size,
-			symbolBrush="k",
+			symbolBrush=score_color,
 		)
 
 		director.set_focus_on_tab("Plot")

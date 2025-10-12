@@ -624,15 +624,16 @@ class Point:
 		return None
 
 	@x.setter
-	def x(self, value: float) -> None:
+	def x(self, value: float | None) -> None:
 		"""Set the first coordinate."""
+		if value is None:
+			return
 		if "dim_1" in self._coords:
 			self._coords["dim_1"] = float(value)
 		elif self._coords:
 			first_key = next(iter(self._coords.keys()))
 			self._coords[first_key] = float(value)
 		else:
-			self._coords["dim_1"] = float(value)
 			self._coords["dim_1"] = float(value)
 
 	@property
@@ -646,15 +647,16 @@ class Point:
 		return None
 
 	@y.setter
-	def y(self, value: float) -> None:
+	def y(self, value: float | None) -> None:
 		"""Set the second coordinate."""
+		if value is None:
+			return
 		if "dim_2" in self._coords:
 			self._coords["dim_2"] = float(value)
 		elif len(self._coords) > TEST_FOR_MORE_THAN_ONE_COORDINATE:
 			second_key = next(itertools.islice(self._coords.keys(), 1, None))
 			self._coords[second_key] = float(value)
 		else:
-			self._coords["dim_2"] = float(value)
 			self._coords["dim_2"] = float(value)
 
 	@property
@@ -667,15 +669,16 @@ class Point:
 		return None
 
 	@z.setter
-	def z(self, value: float) -> None:
+	def z(self, value: float | None) -> None:
 		"""Set the third coordinate."""
+		if value is None:
+			return
 		if "dim_3" in self._coords:
 			self._coords["dim_3"] = float(value)
 		elif len(self._coords) > TEST_FOR_MORE_THAN_TWO_COORDINATES:
 			third_key = next(itertools.islice(self._coords.keys(), 2, None))
 			self._coords[third_key] = float(value)
 		else:
-			self._coords["dim_3"] = float(value)
 			self._coords["dim_3"] = float(value)
 
 	def __getitem__(self, key: str | int) -> float | None:
