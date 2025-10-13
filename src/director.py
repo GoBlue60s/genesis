@@ -771,6 +771,7 @@ class Status(QMainWindow):
 			"Open sample repetitions",
 			"Open sample solutions",
 			"Open scores",
+			"Open script",
 			"Paired",
 			"Principal Components",
 			"Print configuration",
@@ -799,6 +800,7 @@ class Status(QMainWindow):
 			"Save sample repetitions",
 			"Save sample solutions",
 			"Save scores",
+			"Save script",
 			"Save similarities",
 			"Save target",
 			"Score individuals",
@@ -836,6 +838,7 @@ class Status(QMainWindow):
 			"View sample repetitions",
 			"View sample solutions",
 			"View scores",
+			"View script",
 			"View similarities",
 			"View spatial uncertainty",
 			"View target",
@@ -931,7 +934,8 @@ class Status(QMainWindow):
 			"Factor analysis machine learning", "Grouped data", "Individuals",
 			"Invert", "Line of sight", "MDS", "Move", "New grouped data",
 			"Open sample design", "Open sample repetitions",
-			"Open sample solutions", "Open scores", "Principal components",
+			"Open sample solutions", "Open scores", "Open script",
+			"Principal components",
 			"Redo",  "Reference points", "Rescale", "Rotate",
 			"Sample designer", "Sample repetitions", "Score individuals",
 			"Settings - display sizing", "Settings - layout options",
@@ -953,14 +957,15 @@ class Status(QMainWindow):
 			"Ranks", "Save configuration",
 			"Save correlations", "Save individuals", "Save sample design",
 			"Save sample repetitions", "Save sample solutions",
-			"Save scores", "Save similarities","Save target", "Scree",
+			"Save scores", "Save script", "Save similarities","Save target", "Scree",
 			"Second dimension", "Segments","Shepard",
 			"Status", "Stress contribution", "Terse", "Vectors", "Verbose",
 			"View configuration", "View correlations", "View custom",
 			"View distances", "View evaluations", "View grouped data",
 			"View individuals", "View point uncertainty", "View sample design",
 			"View sample repetitions", "View sample solutions", "View scores",
-			"View similarities", "View spatial uncertainty", "View target")
+			"View script", "View similarities", "View spatial uncertainty",
+			"View target")
 
 	# ------------------------------------------------------------------------
 

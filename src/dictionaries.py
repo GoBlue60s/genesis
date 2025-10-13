@@ -146,6 +146,10 @@ command_dict = MappingProxyType({
 		"type": "active",
 		"state_capture": ["scores"]
 	},
+	"Open script": {
+		"type": "active",
+		"state_capture": []  # Executes other commands; doesn't modify state directly
+	},
 	"Paired": {
 		"type": "passive"
 	},
@@ -248,6 +252,9 @@ command_dict = MappingProxyType({
 	},
 	"Save target": {
 		"type": "passive"
+	},
+	"Save script": {
+		"type": "passive"  # Saves command history; doesn't modify application state
 	},
 	"Score individuals": {
 		"type": "active",
@@ -366,6 +373,9 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"View scores": {
+		"type": "passive"
+	},
+	"View script": {
 		"type": "passive"
 	},
 	"View similarities": {
@@ -683,6 +693,9 @@ explain_dict = MappingProxyType({
 	"Open scores": "Open scores reads in a file containing individual "
 	"scores \n"
 	"corresponding to the dimensions in the active configuration.",
+	"Open script": "Open script reads and executes a script file (.spc) "
+	"containing a sequence of Spaces commands.\n"
+	"Commands are executed in order to reproduce a previous analysis.",
 	"Paired": "Paired is used to obtain information about pairs of "
 	"points.\n"
 	"The user will be asked to select pairs of points.",
@@ -771,6 +784,10 @@ explain_dict = MappingProxyType({
 	"The user will be asked for a file name.\n",
 	"Save target": "Save target is used to save the active target "
 	"to a file.\n"
+	"The user will be asked for a file name.\n",
+	"Save script": "Save script exports the command history from the "
+	"current session to a script file (.spc).\n"
+	"The script can be used later to reproduce the analysis.\n"
 	"The user will be asked for a file name.\n",
 	"Score individuals": "Score individuals is used to create "
 	"scores for individuals based on evaluations.",
@@ -895,6 +912,9 @@ explain_dict = MappingProxyType({
 	"View sample solutions": "View sample solutions is used to "
 	"view the active sample solutions.",
 	"View scores": "View scores is used to view the active scores.",
+	"View script": "View script displays the current command history "
+	"that would be saved if Save script were executed.\n"
+	"This allows review of commands before saving to a script file.",
 	"View similarities": "View similarities is used to view the "
 	"active similarities.",
 	"View spatial uncertainty": "View spatial uncertainty is used to "
