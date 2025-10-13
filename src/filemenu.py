@@ -73,23 +73,6 @@ class ConfigurationCommand:
 		self.common = common
 		self._director.command = "Configuration"
 		# self._director.abandon_configuration()
-		configuration_candidate = self._director.configuration_candidate
-		configuration_candidate.file_handle = ""
-
-		configuration_candidate.ndim = 0
-		configuration_candidate.npoint = 0
-		configuration_candidate.dim_labels.clear()
-		configuration_candidate.dim_names.clear()
-		configuration_candidate.point_labels.clear()
-		configuration_candidate.point_names.clear()
-		configuration_candidate.point_coords = pd.DataFrame()
-		# self._director.configuration_candidate.bisector.case = "Unknown"
-		# self._director.configuration_candidate.bisector.direction = "Unknown"
-		configuration_candidate.distances.clear()
-		configuration_candidate.seg = pd.DataFrame()
-		# rivalry = self._director.rivalry
-		# rivalry.rival_a.index = None
-		# rivalry.rival_b.index = None
 
 		common.show_bisector = False
 		self._dialog_caption: str = "Open configuration"

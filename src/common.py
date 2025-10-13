@@ -2313,5 +2313,8 @@ class Spaces:
 			elif item == "settings":
 				cmd_state.capture_settings_state(self._director)
 
+		# Clear redo stack when a new command executes (not undo/redo)
+		self._director.clear_redo_stack()
+
 		self._director.push_undo_state(cmd_state)
 		return

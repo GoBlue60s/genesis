@@ -807,7 +807,7 @@ class CommandState:
 		rivalry.second_pcts = rivalry_snapshot["second_pcts"].copy()
 		rivalry.core_radius = rivalry_snapshot["core_radius"]
 
-		# Restore LineInPlot objects (bisector, east, west, connector, first, second)
+		# Restore LineInPlot objects
 		bisector_data = rivalry_snapshot.get("bisector")
 		east_data = rivalry_snapshot.get("east")
 		west_data = rivalry_snapshot.get("west")
@@ -831,6 +831,8 @@ class CommandState:
 	) -> None:
 		"""Restore a LineInPlot object from captured data.
 
+		Creates a new line object if needed to restore the saved state.
+
 		Args:
 			rivalry: The rivalry instance to restore the line into
 			line_attr_name: Name of the line attribute to restore
@@ -843,7 +845,11 @@ class CommandState:
 
 		line = getattr(rivalry, line_attr_name)
 		if line is None:
-			return
+			# Need to create a new line object to restore into
+			line = self._create_line_object(
+				rivalry._director, line_attr_name, line_data
+			)
+			setattr(rivalry, line_attr_name, line)
 
 		# Restore basic attributes
 		line._x = line_data["x"]
@@ -871,6 +877,66 @@ class CommandState:
 		# Connector has additional length attribute
 		if line_attr_name == "connector":
 			line.length = line_data["length"]
+
+	# ------------------------------------------------------------------------
+
+	def _create_line_object(
+		self,
+		director: Status,
+		line_attr_name: str,
+		line_data: dict[str, object]
+	) -> object:
+		"""Create a line object for restoration.
+
+		Creates a minimal line object using dummy values. The actual
+		state will be overwritten immediately after creation.
+
+		Args:
+			director: The director instance
+			line_attr_name: Name of the line type (bisector, east, etc.)
+			line_data: The saved line data (used to get correct class)
+
+		Returns:
+			A new line object of the appropriate type
+		"""
+		# Import line classes locally to avoid circular imports
+		from rivalry import (  # noqa: PLC0415
+			Bisector,
+			East,
+			West,
+			Connector,
+			First,
+			Second,
+		)
+
+		# Map line attribute names to their classes
+		line_classes = {
+			"bisector": Bisector,
+			"east": East,
+			"west": West,
+			"connector": Connector,
+			"first": First,
+			"second": Second,
+		}
+
+		# Get the appropriate class
+		line_class = line_classes[line_attr_name]
+
+		# Create a dummy point and use saved slope for construction
+		dummy_point = Point(0.0, 0.0)
+		slope = line_data["slope"]
+
+		# Connector requires additional rival_a and rival_b parameters
+		if line_attr_name == "connector":
+			# Use dummy rival points for construction
+			rival_a = Point(0.0, 0.0)
+			rival_b = Point(0.0, 0.0)
+			return line_class(
+				director, dummy_point, slope, rival_a, rival_b
+			)
+
+		# All other line types just need director, point, slope
+		return line_class(director, dummy_point, slope)
 
 	# ------------------------------------------------------------------------
 

@@ -123,6 +123,8 @@ class Status(QMainWindow):
 		self.command = _structure.command
 		self.undo_stack = _structure.undo_stack
 		self.undo_stack_source = _structure.undo_stack_source
+		self.redo_stack = _structure.redo_stack
+		self.redo_stack_source = _structure.redo_stack_source
 		self.deactivated_items = _structure.deactivated_items
 		self.deactivated_descriptions = _structure.deactivated_descriptions
 
@@ -1259,6 +1261,51 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
+	def push_redo_state(self, cmd_state: CommandState) -> None:
+		"""Push a CommandState onto the redo stack.
+
+		Args:
+			cmd_state: The CommandState to push onto the stack
+		"""
+		self.redo_stack.append(cmd_state)
+		self.redo_stack_source.append(cmd_state.command_name)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def pop_redo_state(self) -> CommandState | None:
+		"""Pop and return the most recent CommandState from the redo stack.
+
+		Returns:
+			The most recent CommandState, or None if stack is empty
+		"""
+		if not self.redo_stack:
+			return None
+		self.redo_stack_source.pop()
+		return self.redo_stack.pop()
+
+	# ------------------------------------------------------------------------
+
+	def peek_redo_state(self) -> CommandState | None:
+		"""Return the most recent CommandState without removing it.
+
+		Returns:
+			The most recent CommandState, or None if stack is empty
+		"""
+		if not self.redo_stack:
+			return None
+		return self.redo_stack[-1]
+
+	# ------------------------------------------------------------------------
+
+	def clear_redo_stack(self) -> None:
+		"""Clear all CommandStates from the redo stack."""
+		self.redo_stack.clear()
+		self.redo_stack_source.clear()
+		return
+
+	# ------------------------------------------------------------------------
+
 	def print_the_configuration(self) -> None:
 		ndim = self.configuration_active.ndim
 		npoint = self.configuration_active.npoint
@@ -1303,6 +1350,8 @@ class EstablishSpacesStructure:
 		self.command: str = ""
 		self.undo_stack: list[CommandState] = []
 		self.undo_stack_source: list[str] = ["Initialize"]
+		self.redo_stack: list[CommandState] = []
+		self.redo_stack_source: list[str] = []
 		self.deactivated_items: list[str] = []
 		self.deactivated_descriptions: list[str] = []
 		# self.rivalry = Rivalry(parent, self.command)

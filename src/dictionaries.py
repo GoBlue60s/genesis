@@ -31,7 +31,7 @@ command_dict = MappingProxyType({
 	},
 	"Center": {
 		"type": "active",
-		"state_capture": ["configuration", "scores"]
+		"state_capture": ["configuration", "scores", "rivalry"]
 	},
 	"Cluster": {
 		"type": "active",
@@ -39,7 +39,7 @@ command_dict = MappingProxyType({
 	},
 	"Compare": {
 		"type": "active",
-		"state_capture": ["configuration", "target", "scores"]
+		"state_capture": ["configuration", "target", "scores", "rivalry"]
 	},
 	"Configuration": {
 		"type": "active",
@@ -106,7 +106,7 @@ command_dict = MappingProxyType({
 	},
 	"Invert": {
 		"type": "active",
-		"state_capture": ["configuration", "scores"]
+		"state_capture": ["configuration", "scores", "rivalry"]
 	},
 	"Joint": {
 		"type": "passive"
@@ -124,7 +124,7 @@ command_dict = MappingProxyType({
 	},
 	"Move": {
 		"type": "active",
-		"state_capture": ["configuration", "scores"]
+		"state_capture": ["configuration", "scores", "rivalry"]
 	},
 	"New grouped data": {
 		"type": "active",
@@ -208,11 +208,11 @@ command_dict = MappingProxyType({
 	},
 	"Rescale": {
 		"type": "active",
-		"state_capture": ["configuration", "scores"]
+		"state_capture": ["configuration", "scores", "rivalry"]
 	},
 	"Rotate": {
 		"type": "active",
-		"state_capture": ["configuration", "scores"]
+		"state_capture": ["configuration", "scores", "rivalry"]
 	},
 	"Sample designer": {
 		"type": "active",
@@ -324,7 +324,7 @@ command_dict = MappingProxyType({
 	},
 	"Varimax": {
 		"type": "active",
-		"state_capture": ["configuration", "scores"]
+		"state_capture": ["configuration", "scores", "rivalry"]
 	},
 	"Vectors": {
 		"type": "passive"
@@ -1621,7 +1621,7 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.statistics.display_table("uncertainty"),
 		],
-		"Undo": [UndoCommand, "shared", parent.display_coming_soon],
+		"Undo": [UndoCommand, "unique", None],
 		"Varimax": [
 			VarimaxCommand,
 			"shared",
@@ -1968,12 +1968,14 @@ edit_menu_dict = MappingProxyType({
 		"icon": "spaces_undo_icon.jpg",
 		"command": "undo",
 		"enabled": True,
+		"shortcut": "Ctrl+Z",
 		"tooltip": "Undo the last action",
 	},
 	"Redo": {
 		"icon": "spaces_redo_icon.jpg",
 		"command": "redo",
 		"enabled": True,
+		"shortcut": "Ctrl+Y",
 		"tooltip": "Redo the last undone action",
 	},
 })

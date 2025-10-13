@@ -50,7 +50,9 @@ class CompareCommand:
 		#
 		# Capture state before making changes (for undo)
 		#
-		self.common.capture_and_push_undo_state("Compare", "active", {})
+		self.common.capture_and_push_undo_state(
+			"Compare", "active", {}
+		)
 		#
 		# Now perform the comparison/rotation
 		#
@@ -177,7 +179,9 @@ class CenterCommand:
 		#
 		# Capture state before making changes (for undo)
 		#
-		self.common.capture_and_push_undo_state("Center", "active", {})
+		self.common.capture_and_push_undo_state(
+			"Center", "active", {}
+		)
 		#
 		# Now perform the center operation
 		#
@@ -663,7 +667,8 @@ class RotateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
+		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -689,9 +694,13 @@ class RotateCommand:
 		radians = math.radians(float(deg))
 		self._rotate(radians)
 		self._director.scores_active.scores = pd.DataFrame()
-		self._director.rivalry.create_or_revise_rivalry_attributes(
+		rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)
+		if common.have_reference_points():
+			rivalry.use_reference_points_to_define_segments(
+				self._director
+			)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_active.ndim
@@ -792,7 +801,9 @@ class VarimaxCommand:
 		#
 		# Capture state before making changes (for undo)
 		#
-		self.common.capture_and_push_undo_state("Varimax", "active", {})
+		self.common.capture_and_push_undo_state(
+			"Varimax", "active", {}
+		)
 		#
 		# Now perform the varimax rotation
 		#
