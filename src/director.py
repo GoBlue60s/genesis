@@ -159,6 +159,8 @@ class Status(QMainWindow):
 		self.create_explanations()
 		self.create_tool_bar()
 		self.create_tabs()
+		# Initialize Redo as disabled (no redo stack items on startup)
+		self.disable_redo()
 		# self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
@@ -623,6 +625,10 @@ class Status(QMainWindow):
 		)
 		menu.addAction(action)
 
+		# Store reference to Redo action for enable/disable control
+		if name == "Redo":
+			self.redo_action = action
+
 	def _create_submenu_from_dict(
 		self, menu: QMenu, name: str, properties: dict
 	) -> None:
@@ -889,6 +895,10 @@ class Status(QMainWindow):
 
 			# Set the tool button as an attribute of the class
 			setattr(self, f"{key}_tool_button", tool_button)
+
+			# Store reference to redo toolbar button action for enable/disable
+			if key == "redo":
+				self.redo_toolbar_action = button_action
 
 			# Add the tool button to the toolbar
 			self.spaces_toolbar.addWidget(tool_button)
@@ -1219,11 +1229,21 @@ class Status(QMainWindow):
 	def push_undo_state(self, cmd_state: CommandState) -> None:
 		"""Push a CommandState onto the undo stack.
 
+		When a new active command executes (not Undo/Redo), clear the redo
+		stack and disable Redo, matching Microsoft Word behavior.
+
 		Args:
 			cmd_state: The CommandState to push onto the stack
 		"""
 		self.undo_stack.append(cmd_state)
 		self.undo_stack_source.append(cmd_state.command_name)
+
+		# Clear redo stack when a new command executes (not Undo/Redo)
+		# This matches Microsoft Word behavior
+		if cmd_state.command_name not in ["Undo", "Redo"]:
+			self.clear_redo_stack()
+			self.disable_redo()
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -1302,6 +1322,26 @@ class Status(QMainWindow):
 		"""Clear all CommandStates from the redo stack."""
 		self.redo_stack.clear()
 		self.redo_stack_source.clear()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def enable_redo(self) -> None:
+		"""Enable the Redo command in menu and toolbar."""
+		if hasattr(self, "redo_action"):
+			self.redo_action.setEnabled(True)
+		if hasattr(self, "redo_toolbar_action"):
+			self.redo_toolbar_action.setEnabled(True)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def disable_redo(self) -> None:
+		"""Disable the Redo command in menu and toolbar."""
+		if hasattr(self, "redo_action"):
+			self.redo_action.setEnabled(False)
+		if hasattr(self, "redo_toolbar_action"):
+			self.redo_toolbar_action.setEnabled(False)
 		return
 
 	# ------------------------------------------------------------------------

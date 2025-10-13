@@ -224,6 +224,9 @@ class UndoCommand:
 				capture_method(self._director)
 		self._director.push_redo_state(current_state)
 
+		# Enable Redo now that redo stack has an item
+		self._director.enable_redo()
+
 		# Restore all captured state
 		cmd_state.restore_all_state(self._director)
 

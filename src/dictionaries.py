@@ -1475,7 +1475,7 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.squares.display_table("ranked_similarities"),
 		],
-		"Redo": [RedoCommand, "shared", parent.display_coming_soon],
+		"Redo": [RedoCommand, "unique", None],
 		"Reference points": [
 			ReferencePointsCommand,
 			"shared",
