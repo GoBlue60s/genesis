@@ -366,10 +366,12 @@ class ReferencePointsCommand:
 			)
 		)
 
-		# Capture OLD state BEFORE modifications, save NEW indices as params
+		# Capture OLD state BEFORE modifications, save NEW names as params
 		params = {
-			"rival_a_index": new_rival_a_index,
-			"rival_b_index": new_rival_b_index
+			"contest": [
+				point_names[new_rival_a_index],
+				point_names[new_rival_b_index]
+			]
 		}
 		self.common.capture_and_push_undo_state(
 			"Reference points", "active", params

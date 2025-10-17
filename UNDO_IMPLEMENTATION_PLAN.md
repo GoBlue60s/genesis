@@ -865,6 +865,29 @@ Scree
 - Error handling for file write failures
 - Integration with existing director patterns
 
+**Phase 2c: View Script Implementation** ✅ COMPLETE (2025-10-17)
+
+**Completed:**
+- ✅ Implemented ViewScriptCommand class in `viewmenu.py:879-930`
+- ✅ Displays current command history in script format on Output tab
+- ✅ Shows what would be saved before user executes Save Script
+- ✅ Uses same formatting as SaveScriptCommand for consistency
+- ✅ Includes metadata header with timestamp and Spaces version
+- ✅ Passive command automatically tracked in undo stack for scripting
+- ✅ Successfully tested with various command sequences
+- ✅ Added view script icon (spaces_view_script_icon.jpg)
+
+**Implementation Details:**
+- Located in `viewmenu.py` alongside other view commands
+- Reuses `_format_script_line()` helper from SaveScriptCommand
+- Implements passive command tracking via `push_passive_command_to_undo_stack()`
+- Added `_track_passive_command_for_scripting()` to director.py for automatic tracking
+- No user dialogs needed - immediate display on Output tab
+- Full integration with existing director patterns
+
+**Git Commits:**
+- 05ffbeb: "Implement ViewScript command for script history preview" (2025-10-17)
+
 **Next Phase Tasks:**
 - ⏳ Implement script parser for OpenScriptCommand
 - ⏳ Test script execution with saved script files

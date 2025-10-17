@@ -464,7 +464,8 @@ class MatplotlibCommon:
 		self._director.tab_gallery_layout.addWidget(canvas_gallery)
 		# Add a spacer at the end to push plots to the top
 		spacer = QSpacerItem(
-			20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding
+			20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding \
+			# type: ignore[unresolved-argument]
 		)
 		self._director.tab_gallery_layout.addItem(spacer)
 		plt.close(fig)
@@ -546,7 +547,7 @@ class MatplotlibCommon:
 		self, ax: plt.Axes, x_coords: np.ndarray, y_coords: np.ndarray
 	) -> None:
 		"""Add ellipse mode visualization to uncertainty plots."""
-		ax.patches.Ellipse = (
+		ax.patches.Ellipse = ( # type: ignore[unresolved-attribute]
 			self.confidence_ellipse_using_matplotlib(
 				x_coords, y_coords, ax, n_std=2.0,
 				facecolor="none", edgecolor="r"

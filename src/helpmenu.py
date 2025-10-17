@@ -8,7 +8,7 @@ from pyqtgraph import QtCore
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 from exceptions import SpacesError
-from common import Spaces
+# from common import Spaces
 from constants import (
 	MAXIMUM_NUMBER_OF_ROWS_IN_ACKNOWLEDGEMENTS_TABLE,
 	N_ROWS_IN_STATUS_TABLE,
@@ -16,6 +16,7 @@ from constants import (
 
 if TYPE_CHECKING:
 	from director import Status
+	from common import Spaces
 # ----------------------------------------------------------------------------
 
 
@@ -58,7 +59,7 @@ class AboutCommand:
 			"Real Python",
 			"Roger Shepard",
 			"Donald Stokes",
-			"Warren Tobler",
+			"Waldo Tobler",
 			"Ruud van der Ham",
 			"Herbert Weisberg",
 			"Bartosz Zaczynski",
@@ -68,7 +69,7 @@ class AboutCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.title_for_table_widget = (
 			"Spaces was developed by Ed Schneider."
@@ -132,12 +133,14 @@ class AboutCommand:
 			table_widget.setHorizontalHeaderLabels([combined_faux_header])
 			header_item = QTableWidgetItem(combined_faux_header)
 			#
-			header_item.setTextAlignment(QtCore.Qt.AlignCenter)
+			header_item.setTextAlignment(QtCore.Qt.AlignCenter) \
+				# type: ignore[unresolved-attribute]
 			header_item.setBackground(QColor(faux_header_shade))
 			table_widget.horizontalHeader().show()
 
 			for each_name, item in enumerate(names):
-				table_widget.setItem(each_name, 0, QTableWidgetItem(str(item)))
+				table_widget.setItem(
+					each_name, 0, QTableWidgetItem(str(item)))
 		else:
 			columns_required = math.ceil(n_names / 10)
 			rows_required = min(n_names, 10) + 1  # custom header row
@@ -148,7 +151,7 @@ class AboutCommand:
 			header_item = QTableWidgetItem(combined_faux_header)
 
 			# Center the text in the custom header and shade it
-			header_item.setTextAlignment(QtCore.Qt.AlignCenter)
+			header_item.setTextAlignment(QtCore.Qt.AlignCenter) # type: ignore[unresolved-attribute]
 			header_item.setBackground(QColor(faux_header_shade))
 
 			table_widget.setItem(0, 0, header_item)
