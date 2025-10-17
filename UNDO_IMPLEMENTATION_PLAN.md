@@ -748,12 +748,167 @@ self.common.capture_and_push_undo_state("CommandName", "active", {params})
 
 **Next Step:** Step 7 - GUI Integration (keyboard shortcuts, toolbar, redo support)
 
-### Step 7: GUI Integration
-- Update Undo menu item
-- Add toolbar button
-- Implement keyboard shortcut (Ctrl+Z)
-- Add Redo support (Ctrl+Y)
-- Update status/feedback to user
+### Step 7: Redo Support ✅ COMPLETE
+
+**Status:** Completed on 2025-10-13
+
+**Implementation:**
+- ✅ Implemented RedoCommand class in `editmenu.py`
+- ✅ Added redo stack management methods to `director.py`
+- ✅ Added enable_redo() and disable_redo() methods
+- ✅ Redo is disabled on startup (no redo stack items)
+- ✅ Redo is enabled when Undo executes (pushes to redo stack)
+- ✅ Redo is disabled when new commands execute (clears redo stack)
+- ✅ Matches Microsoft Word's undo/redo behavior
+
+**Redo Stack Methods (`director.py`):**
+- `push_redo_state(cmd_state)`: Appends CommandState to redo stack
+- `pop_redo_state()`: Removes and returns most recent CommandState
+- `peek_redo_state()`: Returns most recent CommandState without removing
+- `clear_redo_stack()`: Clears both redo_stack and redo_stack_source
+- `enable_redo()`: Enables Redo menu item and toolbar button
+- `disable_redo()`: Disables Redo menu item and toolbar button
+
+**Redo Workflow:**
+1. User executes a command → State captured to undo stack
+2. User clicks Undo → Current state pushed to redo stack, previous state restored
+3. Redo is now enabled
+4. User clicks Redo → Current state pushed to undo stack, next state restored
+5. If user executes a new command → Redo stack cleared, Redo disabled
+
+**Integration Points:**
+- Menu item: Edit > Redo
+- Toolbar button: Redo icon
+- Both menu and toolbar items enabled/disabled together
+
+**Git Commits:**
+- 28c5e20: "Implement dynamic Redo enable/disable functionality"
+
+**Next Step:** Step 8 - Scripting Support (Phase 2 of original plan)
+
+### Step 8: Scripting Support ⚠️ IN PROGRESS
+
+**Status:** Started on 2025-10-13
+
+**Purpose:** Implement scripting capability to allow users to save and replay command sequences, enabling batch processing and reproducible analyses.
+
+**Phase 2a: Foundation and Metadata**
+
+**Completed:**
+- ✅ Designed script file format (.spc files)
+- ✅ Added three new commands to `command_dict` in `dictionaries.py`:
+  - "Open script" (active) - Executes commands from script file
+  - "Save script" (passive) - Exports command history to file
+  - "View script" (passive) - Displays current command history
+- ✅ Added explanations for all three commands to `explain_dict`
+- ✅ Updated `commands` tuple in `director.py` with three new commands
+- ✅ Added "Open script" to `active_commands` (line 937)
+- ✅ Added "Save script" and "View script" to `passive_commands` (lines 960, 967)
+- ✅ Updated command counts: 107 total (43 active + 64 passive)
+- ✅ Added "Save script" icon to resources (spaces_save_script_icon.jpg)
+- ✅ Added "Open script" icon to resources (spaces_open_script_icon.jpg)
+- ✅ Added "View script" icon to resources (spaces_view_script_icon.jpg)
+- ✅ Created menu entries in `request_dict` for all three commands
+- ✅ Created widgets in `create_widget_dict()` for all three commands
+
+**Script File Format Design:**
+```
+# Spaces Script
+# Created: 2025-10-13 14:30:00
+# Spaces Version: 2025
+
+Configuration data/Elections/2020_election.txt
+Rotate degrees=45
+Center
+MDS
+Scree
+```
+
+**Key Features:**
+- Plain text, line-based format for easy editing
+- Comments with # for metadata
+- Command name + parameters on each line
+- Blank lines ignored
+- Self-contained (includes data loading commands)
+
+**Menu Organization:**
+- **File > Open > Script** - Load and execute a script
+- **File > Save > Script** - Export command history to script
+- **View > Script** - Display current command history (review before saving)
+
+**Remaining Tasks for Phase 2a:**
+- ✅ Create SaveScriptCommand class in `filemenu.py` (stub created)
+- ✅ Create OpenScriptCommand class in `filemenu.py` (stub created)
+- ✅ Create ViewScriptCommand class in `viewmenu.py` (implemented, working)
+- ✅ Add menu items to File and View menus in `dictionaries.py`
+- ✅ Add widgets for script commands to `widget_dict`
+
+**Phase 2a Complete** ✅
+
+**Phase 2b: Save Script Implementation** ✅ COMPLETE (2025-10-16)
+
+**Completed:**
+- ✅ Implemented SaveScriptCommand class in `filemenu.py:4533-4623`
+- ✅ Added file dialog for selecting save location (.spc extension)
+- ✅ Exports complete command history from `commands_used` to script file
+- ✅ Includes all commands (no filtering - preserves complete session)
+- ✅ Formats command parameters properly for script output
+- ✅ Fixed blank line issue - commands without parameters now display correctly
+- ✅ Successfully tested with multiple command types
+- ✅ Script files are human-readable and editable
+
+**Implementation Details:**
+- Uses `_format_script_line()` helper method to generate script lines
+- Handles both parameterless commands (e.g., "Center") and parameterized commands (e.g., "Rotate degrees=45")
+- Writes metadata header with timestamp and Spaces version
+- Preserves complete command sequence including Undo, Redo, and all other commands
+- Error handling for file write failures
+- Integration with existing director patterns
+
+**Next Phase Tasks:**
+- ⏳ Implement script parser for OpenScriptCommand
+- ⏳ Test script execution with saved script files
+- ⏳ Handle script validation and error reporting
+
+**Implementation Phases:**
+
+**Phase 2a: Foundation** ✅ COMPLETE
+- ✅ Add command metadata to dictionaries
+- ✅ Create command classes with basic structure
+- ✅ Add menu items and widgets
+- ✅ Implement View Script command (working with known issue)
+
+**Phase 2b: Save Script** (Next)
+- ⏳ Export `commands_used` to script file
+- ⏳ Add metadata (timestamp, version)
+- ⏳ Handle file dialog for save location
+- ⏳ Filter out meta-commands (Undo, Redo, View*, Print*)
+- ⏳ Format command parameters for script output
+
+**Phase 2c: View Script Improvements**
+- ⏳ Fix blank line issue for commands without parameters
+- ⏳ Consider adding command numbers/line numbers
+- ⏳ Consider showing filtered vs unfiltered commands (meta-commands)
+
+**Phase 2d: Open Script**
+- ⏳ Parse script file (line-by-line)
+- ⏳ Validate commands exist and are executable
+- ⏳ Execute commands in sequence
+- ⏳ Handle errors gracefully
+- ⏳ Provide progress feedback
+
+**Benefits:**
+- Batch processing of multiple datasets
+- Reproducible analyses
+- Automation of repetitive workflows
+- Testing and validation
+- Training and documentation
+
+**Next Steps:**
+- Complete Phase 2a by creating command classes
+- Add menu integration
+- Test Save Script and View Script first (simpler)
+- Then implement Open Script with parser
 
 ## Strategic Design Considerations
 

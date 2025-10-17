@@ -45,6 +45,7 @@ from constants import TEST_IF_ACTION_OR_SUBMENU_HAS_THREE_ITEMS
 from dependencies import DependencyChecking
 from dictionaries import (
 	FrozenDict,
+	command_dict,
 	explain_dict,
 	tab_dict,
 	button_dict,
@@ -1120,14 +1121,20 @@ class Status(QMainWindow):
 	# ------------------------------------------------------------------------
 
 	def get_file_name_to_store_file(
-		self, dialog_caption: str, dialog_filter: str
+		self,
+		dialog_caption: str,
+		dialog_filter: str,
+		directory: str = "scripts"
 	) -> str:
 		# dropped positional arguments message and feedback
 
 		self.get_file_name_to_store_file_initialize_variables()
 
 		file_name, _ = QFileDialog.getSaveFileName(
-			None, caption=dialog_caption, filter=dialog_filter
+			None,
+			caption=dialog_caption,
+			filter=dialog_filter,
+			dir=directory
 		)
 
 		# Debug: Log the filename returned from the dialog
@@ -1208,6 +1215,24 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
+	def _track_passive_command_for_scripting(self) -> None:
+		"""Automatically track passive commands in undo stack for scripting.
+
+		Passive commands don't modify state, but must be recorded so they
+		appear in saved scripts. This method checks if the current command
+		is passive and adds it to the undo stack automatically.
+		"""
+		if self.command in command_dict:
+			cmd_type = command_dict[self.command].get("type", "active")
+			if cmd_type == "passive":
+				# Add passive command to undo stack for script generation
+				self.common.push_passive_command_to_undo_stack(
+					self.command, {}
+				)
+		return
+
+	# ------------------------------------------------------------------------
+
 	def record_command_as_successfully_completed(self) -> None:
 		"""The Complete command is used to indicate the end of a command.
 		It is called at the end of each command.
@@ -1226,6 +1251,9 @@ class Status(QMainWindow):
 
 		self.command = command
 		self.command_exit_code = command_exit_code
+
+		# Automatically track passive commands in undo stack for scripting
+		self._track_passive_command_for_scripting()
 
 		return
 

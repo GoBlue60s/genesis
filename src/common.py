@@ -2318,3 +2318,32 @@ class Spaces:
 
 		self._director.push_undo_state(cmd_state)
 		return
+
+	# ------------------------------------------------------------------------
+
+	def push_passive_command_to_undo_stack(
+		self,
+		command_name: str,
+		parameters: dict | None = None
+	) -> None:
+		"""Push a passive command onto the undo stack for script generation.
+
+		Passive commands don't modify application state, so they don't need
+		state snapshots. However, they must be recorded in the undo stack
+		so they appear in saved scripts.
+
+		Args:
+			command_name: Name of the passive command (e.g., "Save script")
+			parameters: Dict of command-specific parameters to store (optional)
+		"""
+		from command_state import CommandState  # noqa: PLC0415
+		from datetime import datetime  # noqa: PLC0415
+
+		cmd_state = CommandState(command_name, "passive", parameters or {})
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+		# Clear redo stack when a new command executes
+		self._director.clear_redo_stack()
+
+		self._director.push_undo_state(cmd_state)
+		return

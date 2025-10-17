@@ -807,3 +807,99 @@ class ViewUncertaintyCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+
+class ViewScriptCommand:
+	"""The View script command displays the command history that can be
+	saved as a script.
+	"""
+
+	def __init__(self, director: Status, common: Spaces) -> None:
+		self._director = director
+		self.common = common
+		self._director.command = "View script"
+		return
+
+	# ------------------------------------------------------------------------
+
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+		self._director.record_command_as_selected_and_in_process()
+		self._director.optionally_explain_what_command_does()
+		self._print_script()
+		self._director.title_for_table_widget = "Script commands"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_script(self) -> None:
+		# Get command history from undo stack (same as SaveScriptCommand)
+		undo_stack = self._director.undo_stack
+
+		print("\n\tScript commands\n")
+		for cmd_state in undo_stack:
+			# Skip commands with empty names
+			if not cmd_state.command_name:
+				continue
+
+			# Build command line with parameters
+			cmd_line = cmd_state.command_name
+			if cmd_state.command_params:
+				params_str = " ".join(
+					f'{key}={value}'
+					for key, value in cmd_state.command_params.items()
+				)
+				cmd_line = f"{cmd_line} {params_str}"
+
+			print(f"\t{cmd_line}")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> QTableWidget:
+		#
+		gui_output_as_widget = self._create_table_widget_for_script()
+		#
+		self._director.set_column_and_row_headers(
+			gui_output_as_widget, ["Command"], []
+		)
+		#
+		self._director.resize_and_set_table_size(gui_output_as_widget, 4)
+		#
+		self._director.output_widget_type = "Table"
+		return gui_output_as_widget
+
+	# ------------------------------------------------------------------------
+
+	def _create_table_widget_for_script(self) -> QTableWidget:
+		# Get command history from undo stack (same as SaveScriptCommand)
+		undo_stack = self._director.undo_stack
+
+		# Collect commands with their parameters
+		script_lines = []
+		for cmd_state in undo_stack:
+			# Skip commands with empty names
+			if not cmd_state.command_name:
+				continue
+
+			# Build command line with parameters
+			cmd_line = cmd_state.command_name
+			if cmd_state.command_params:
+				params_str = " ".join(
+					f'{key}={value}'
+					for key, value in cmd_state.command_params.items()
+				)
+				cmd_line = f"{cmd_line} {params_str}"
+			script_lines.append(cmd_line)
+
+		table_widget = QTableWidget(len(script_lines), 1)
+		#
+		for each_row, cmd in enumerate(script_lines):
+			table_widget.setItem(each_row, 0, QTableWidgetItem(cmd))
+		return table_widget
+
+	# ------------------------------------------------------------------------

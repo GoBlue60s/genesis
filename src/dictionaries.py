@@ -422,6 +422,7 @@ from filemenu import (
 	OpenSampleRepetitionsCommand,
 	OpenSampleSolutionsCommand,
 	OpenScoresCommand,
+	OpenScriptCommand,
 	PrintConfigurationCommand,
 	PrintCorrelationsCommand,
 	PrintEvaluationsCommand,
@@ -440,6 +441,7 @@ from filemenu import (
 	SaveSampleRepetitionsCommand,
 	SaveSampleSolutionsCommand,
 	SaveScoresCommand,
+	SaveScriptCommand,
 	SaveSimilaritiesCommand,
 	SaveTargetCommand,
 	SettingsDisplayCommand,
@@ -508,6 +510,7 @@ from viewmenu import (
 	ViewSampleRepetitionsCommand,
 	ViewSampleSolutionsCommand,
 	ViewScoresCommand,
+	ViewScriptCommand,
 	ViewSimilaritiesCommand,
 	ViewSpatialUncertaintyCommand,
 	ViewTargetCommand,
@@ -1090,6 +1093,7 @@ request_dict = MappingProxyType({
 	"open_sample_design": (OpenSampleDesignCommand, None),
 	"open_sample_repetitions": (OpenSampleRepetitionsCommand, None),
 	"open_sample_solutions": (OpenSampleSolutionsCommand, None),
+	"open_script": (OpenScriptCommand, None),
 	"save_configuration": (SaveConfigurationCommand, None),
 	"save_target": (SaveTargetCommand, None),
 	"save_correlations": (SaveCorrelationsCommand, None),
@@ -1099,6 +1103,7 @@ request_dict = MappingProxyType({
 	"save_sample_design": (SaveSampleDesignCommand, None),
 	"save_sample_repetitions": (SaveSampleRepetitionsCommand, None),
 	"save_sample_solutions": (SaveSampleSolutionsCommand, None),
+	"save_script": (SaveScriptCommand, None),
 	"deactivate": (DeactivateCommand, None),
 	"settings_plot": (SettingsPlotCommand, None),
 	"settings_plane": (SettingsPlaneCommand, None),
@@ -1140,6 +1145,7 @@ request_dict = MappingProxyType({
 	"view_sample_design": (ViewSampleDesignCommand, None),
 	"view_sample_repetitions": (ViewSampleRepetitionsCommand, None),
 	"view_sample_solutions": (ViewSampleSolutionsCommand, None),
+	"view_script": (ViewScriptCommand, None),
 	"view_spatial_uncertainty_lines": (
 		ViewSpatialUncertaintyCommand,
 		"lines",
@@ -1424,6 +1430,7 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.statistics.display_table("scores"),
 		],
+		"Open script": [OpenScriptCommand, "unique", None],
 		"Paired": [PairedCommand, "unique", None],
 		"Principal components": [
 			PrincipalComponentsCommand,
@@ -1565,6 +1572,11 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			SaveTargetCommand,
 			"shared",
 			lambda: parent.tables.display_table("target"),
+		],
+		"Save script": [
+			SaveScriptCommand,
+			"shared",
+			lambda: parent.display_a_line(),
 		],
 		"Score individuals": [
 			ScoreIndividualsCommand,
@@ -1724,6 +1736,7 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.tables.display_table("target"),
 		],
+		"View script": [ViewScriptCommand, "unique", None],
 	})
 
 
@@ -1823,6 +1836,11 @@ file_menu_dict = MappingProxyType({
 					],
 				},
 			},
+			"Script": [
+				"spaces_open_script_icon.jpg",
+				"open_script",
+				"Open and execute a script file",
+			],
 		},
 	},
 	"Save": {
@@ -1870,6 +1888,11 @@ file_menu_dict = MappingProxyType({
 					],
 				},
 			},
+			"Script": [
+				"spaces_save_script_icon.jpg",
+				"save_script",
+				"Save command history as script",
+			],
 		},
 	},
 	"Deactivate": [
@@ -2050,6 +2073,11 @@ view_menu_dict = MappingProxyType({
 		"spaces_history_icon.jpg",
 		"history",
 		"View history of commands",
+	],
+	"Script": [
+		"spaces_view_script_icon.jpg",
+		"view_script",
+		"View current command history as script",
 	],
 	"Sample": {
 		"icon": "spaces_sample_icon.jpg",
