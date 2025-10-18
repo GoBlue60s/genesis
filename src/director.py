@@ -131,6 +131,10 @@ class Status(QMainWindow):
 
 		self.request_dict = request_dict
 
+		# Script execution state
+		self.executing_script = False
+		self.script_parameters: dict | None = None
+
 	# ------------------------------------------------------------------------
 
 	def directories_being_used_for_data(self) -> None:
@@ -935,7 +939,7 @@ class Status(QMainWindow):
 			"Factor analysis machine learning", "Grouped data", "Individuals",
 			"Invert", "Line of sight", "MDS", "Move", "New grouped data",
 			"Open sample design", "Open sample repetitions",
-			"Open sample solutions", "Open scores", "Open script",
+			"Open sample solutions", "Open scores",
 			"Principal components",
 			"Redo",  "Reference points", "Rescale", "Rotate",
 			"Sample designer", "Sample repetitions", "Score individuals",
@@ -948,7 +952,7 @@ class Status(QMainWindow):
 			"About", "Alike", "Base", "Battleground", "Contest",
 			"Convertible", "Core supporters", "Directions",
 			"Distances", "Exit", "First dimension","Help", "History", "Joint",
-			"Likely supporters",
+			"Likely supporters", "Open script",
 			"Paired", "Print configuration", "Print correlations",
 			"Print evaluations", "Print grouped data", "Print individuals",
 			"Print sample design", "Print sample repetitions",
@@ -1095,11 +1099,15 @@ class Status(QMainWindow):
 	# ------------------------------------------------------------------------
 
 	def get_file_name_and_handle_nonexistent_file_names(
-		self, file_caption: str, file_filter: str
+		self,
+		file_caption: str,
+		file_filter: str,
+		directory: str | None = None
 	) -> str:
 		self.get_file_name_and_handle_nonexistent_file_names_init_variables()
+		dir_to_use = directory if directory is not None else os.fspath(self.filedir)
 		ui_file = QFileDialog.getOpenFileName(
-			dir=os.fspath(self.filedir),
+			dir=dir_to_use,
 			caption=file_caption,
 			filter=file_filter,
 		)
@@ -1247,7 +1255,11 @@ class Status(QMainWindow):
 		self.spaces_statusbar.showMessage(
 			f"Completed {command} command", 80000
 		)
-		print(f"\nSuccessfully completed {command} command.")
+
+		# Don't print success message for RunScript command
+		# (individual script commands already printed their messages)
+		if command != "Run script":
+			print(f"\nSuccessfully completed {command} command.")
 
 		self.command = command
 		self.command_exit_code = command_exit_code

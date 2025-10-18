@@ -430,18 +430,31 @@ class ReferencePointsCommand:
 		range_points = self._director.configuration_active.range_points
 		point_names = self._director.configuration_active.point_names
 
-		dialog = PairofPointsDialog(refs_title, refs_items)
-
-		if dialog.exec() == QDialog.Accepted:
-			selected_items = dialog.selected_items()
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "contest" in self._director.script_parameters
+		):
+			selected_items = self._director.script_parameters["contest"]
+			if not isinstance(selected_items, list) or len(selected_items) != 2:
+				raise SpacesError(
+					"Script parameter error",
+					"contest parameter must be a list of 2 point names"
+				)
 		else:
-			del dialog
-			raise SpacesError(
-				self.need_reference_points_error_title,
-				self.need_reference_points_error_message,
-			)
+			dialog = PairofPointsDialog(refs_title, refs_items)
 
-		del dialog
+			if dialog.exec() == QDialog.Accepted:
+				selected_items = dialog.selected_items()
+			else:
+				del dialog
+				raise SpacesError(
+					self.need_reference_points_error_title,
+					self.need_reference_points_error_message,
+				)
+
+			del dialog
 
 		refs_indexes = [
 			j

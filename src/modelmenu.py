@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from factor_analyzer import FactorAnalyzer
 import numpy as np
 import pandas as pd
+import peek
 
 
 from PySide6 import QtCore
@@ -1508,6 +1509,7 @@ class MDSCommand:
 		self,
 		common,  # noqa: ANN001, ARG002
 		use_metric: bool = False) -> None:  # noqa: FBT001, FBT002
+		peek("Entering MDSCommand.execute in class MDSCommand")
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -1534,14 +1536,22 @@ class MDSCommand:
 		#
 		# Now perform MDS
 		#
+		print(f"DEBUG: Before _perform_mds, self._director.configuration_active.npoint = {self._director.configuration_active.npoint}")
+		peek("self._director.ranked_similarities is unknown here")
 		self._perform_mds_pick_up_point_labelling_from_similarities()
+		peek("After _perform_mds_pick_up_point_labelling_from_similarities in MDSCommand.execute")
+
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		best_stress = self._director.configuration_active.best_stress
 		self._director.configuration_active.inter_point_distances()
+		peek("After inter_point_distances call and before rank_when_similarities_match_configuration in MDSCommand.execute")
+		peek(self._director.configuration_active.inter_point_distances)
 		self._director.similarities_active.rank_when_similarities_match_configuration(
 			self._director, self.common
 		)
+		peek("After rank_when_similarities_match_configuration in MDSCommand.execute")
+		peek("self.ranked_similarities is unknown here - this is new")
 		self._print_best_stress(ndim, best_stress)
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
@@ -1575,22 +1585,37 @@ class MDSCommand:
 		mds_components_default: float,
 		mds_components_an_integer: bool) -> None:  # noqa: FBT001
 		self._get_n_components_to_use_from_user_initialize_variables()
-		dialog = SetValueDialog(
-			mds_components_title,
-			mds_components_label,
-			mds_components_min_allowed,
-			mds_components_max_allowed,
-			mds_components_an_integer,
-			mds_components_default,
-		)
-		result = dialog.exec()
-		if result == QDialog.Accepted:
-			self._director.configuration_active.n_comp = dialog.getValue()
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "n_components" in self._director.script_parameters
+		):
+			n_comp = self._director.script_parameters["n_components"]
+			if not isinstance(n_comp, int) or n_comp < mds_components_min_allowed or n_comp > mds_components_max_allowed:
+				raise MissingInformationError(
+					"Script parameter error",
+					f"n_components must be an integer between {mds_components_min_allowed} and {mds_components_max_allowed}"
+				)
+			self._director.configuration_active.n_comp = n_comp
 		else:
-			raise MissingInformationError(
-				self.missing_n_components_error_title,
-				self.missing_n_components_error_message,
+			dialog = SetValueDialog(
+				mds_components_title,
+				mds_components_label,
+				mds_components_min_allowed,
+				mds_components_max_allowed,
+				mds_components_an_integer,
+				mds_components_default,
 			)
+			result = dialog.exec()
+			if result == QDialog.Accepted:
+				self._director.configuration_active.n_comp = dialog.getValue()
+			else:
+				raise MissingInformationError(
+					self.missing_n_components_error_title,
+					self.missing_n_components_error_message,
+				)
 		if self._director.configuration_active.n_comp == 0:
 			raise MissingInformationError(
 				self.missing_n_components_error_title,
@@ -1601,6 +1626,8 @@ class MDSCommand:
 	# ------------------------------------------------------------------------
 
 	def _perform_mds_pick_up_point_labelling_from_similarities(self) -> None:
+		peek("Entering _perform_mds_pick_up_point_labelling_from_similarities in class MDSCommand")
+		peek("self.ranked_similarities is unknown here")
 		ndim = self._director.configuration_active.ndim
 		n_comp = self._director.configuration_active.n_comp
 		use_metric = self._director.configuration_active.use_metric
@@ -1617,10 +1644,13 @@ class MDSCommand:
 			self._director.abandon_scores()
 		if ndim == 0:
 			ndim = n_comp
+		print(f"DEBUG: Before mds call in _perform_mds_pick_up_point_labelling_from_similarities, npoint = {npoint}")
+		peek("self.ranked_similarities is unknown here")
+		peek(similarities_instance.similarities_as_square)
 		configuration_instance = self._director.common.mds(
 			n_comp, use_metric, similarities_instance
 		)
-
+		peek("After mds call")
 		range_points = range(nitem)
 		if len(point_labels) == 0:
 			npoint = nreferent
@@ -1644,7 +1674,8 @@ class MDSCommand:
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)
-
+		peek("Exiting _perform_mds_pick_up_point_labelling_from_similarities in class MDSCommand")
+		peek("self.ranked_similarities STILL unknown here")
 		return
 
 	# ------------------------------------------------------------------------
@@ -2274,6 +2305,9 @@ class UncertaintyCommand:
 	def duplicate_repetition_line_of_sight(
 		self, common: Spaces, line_of_sight: SimilaritiesFeature
 	) -> None:
+		peek("At top of duplicate repetition line of sight in class UncertaintyCommand")
+		peek(line_of_sight.nitem)
+		peek(line_of_sight.similarities)
 		(
 			line_of_sight.similarities_as_dataframe,
 			line_of_sight.similarities_as_dict,

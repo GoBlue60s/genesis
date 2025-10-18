@@ -1,12 +1,11 @@
 # Spaces Script
-# Created: 2025-10-16 21:21:38
+# Created: 2025-10-17 10:25:41
 # Spaces Version: 2025
 Configuration file_name=C:/PythonProjects/genesis/data/Elections/1976/Post_1976_conf.txt
+Reference points contest=['Wallace', 'Goldwater']
 Similarities file_name=C:/PythonProjects/genesis/data/Elections/1976/post_1976_los.txt value_type=dissimilarities
-Reference points rival_a_name=Carter rival_b_name=Ford
 Contest
-Invert dimensions=['Social']
+Reference points contest=['Carter', 'Ford']
 Contest
-Battleground
-Reference points rival_a_name=Wallace rival_b_name=Goldwater
-Contest
+MDS n_components=2 use_metric=False
+History

@@ -18,13 +18,14 @@ class CommandState:
 	and the application state snapshot (data, configuration, plot
 	parameters) needed to support undo functionality.
 
-	The class distinguishes between active commands (which modify state
-	and need full snapshots) and passive commands (which only query/display
-	and need minimal tracking).
+	The class distinguishes between three types of commands:
+	- active: Modify state and need full snapshots for undo
+	- passive: Only query/display, need minimal tracking
+	- script: Meta-commands for script operations, excluded from script generation
 
 	Attributes:
 		command_name: Name of the command (e.g., "Rotate", "Center")
-		command_type: Either "active" or "passive" (from command_dict)
+		command_type: One of "active", "passive", or "script" (from command_dict)
 		command_params: Parameters used when command was executed
 		timestamp: When the command was executed
 		state_snapshot: Dictionary containing all captured state data
@@ -130,7 +131,7 @@ class CommandState:
 
 		Args:
 			command_name: Name of the command being executed
-			command_type: Either "active" or "passive"
+			command_type: One of "active", "passive", or "script"
 			command_params: Parameters passed to the command (optional)
 		"""
 		self.command_name = command_name

@@ -39,8 +39,9 @@ class MyTextEditWrapper:
 
 	# -----------------------------------------------------------------------
 
-	def write(self, text: str) -> None:
+	def write(self, text: str) -> int:
 		self.text_to_tab.insertPlainText(text)
+		return len(text)
 
 	# -----------------------------------------------------------------------
 

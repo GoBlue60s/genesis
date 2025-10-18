@@ -704,6 +704,11 @@ class Spaces:
 	) -> (tuple)[
 		pd.DataFrame, dict, list, list[list[float]], list, int, range, range
 	]:
+		peek("At top of duplicate_in_different_structures in class Spaces")
+		peek("This will raise exception if len(values != expected_rows)")
+		peek("nreferent", nreferent)
+		peek("values", values)
+		
 		values_as_dict: dict = {}
 		values_as_list: list = []
 		values_as_square: list[list[float]] = []
@@ -712,6 +717,21 @@ class Spaces:
 		b_item_name: list[str] = []  # the name of the second item
 		a_item_label: list[str] = []  # the label of the first item
 		b_item_label: list[str] = []  # the label of the second item
+
+		# Validate input: lower triangular matrix should have nreferent-1 rows
+		expected_rows = nreferent - 1
+		peek("expected_rows", expected_rows)
+		peek("len(values)", len(values))
+		if len(values) != expected_rows:
+			peek("Raising SpacesError due to invalid structure")
+			title = "Invalid lower triangular matrix structure"
+			message = (
+				f"Expected {expected_rows} rows for {nreferent} items, "
+				f"but got {len(values)} rows.\n"
+				f"value_type={value_type}"
+			)
+			raise SpacesError(title, message)
+
 		from_points = range(1, nreferent)
 		for an_item in from_points:
 			to_points = range(an_item)
@@ -776,6 +796,10 @@ class Spaces:
 						item_labels[other_item] + "_" + item_labels[each_item]
 					)
 					values_as_square[each_item].append(values_as_dict[index])
+		peek("After building values_as_square", len(values_as_square),
+			len(values_as_square[0]) if values_as_square else 0)
+		print("DEBUG: Last row of values_as_square:")
+		print(f"  Row {len(values_as_square)-1}: {values_as_square[-1]}")
 		values_as_dataframe = pd.DataFrame(
 			values_as_square, columns=item_names, index=item_names
 		)
@@ -1161,6 +1185,8 @@ class Spaces:
 		similarities: SimilaritiesFeature,
 	) -> ConfigurationFeature:
 		from features import ConfigurationFeature  # noqa: PLC0415
+		peek("In MDS with similarities_as_square")
+		peek(similarities.similarities_as_square)
 
 		configuration = ConfigurationFeature(self._director)
 		configuration.dim_names = []
@@ -1187,6 +1213,9 @@ class Spaces:
 		configuration.point_coords.columns = configuration.dim_names
 		configuration.best_stress = nmds.stress_
 		configuration.n_comp = extract_ndim
+		peek("At bottom of MDS with configuration.point_coords shape:",
+			configuration.point_coords.shape)
+
 
 		return configuration
 
@@ -1674,22 +1703,29 @@ class Spaces:
 		# And lastly it uses nelements??????? rather than self.range_points.
 		# self.range_points refers specifically
 		# to the active configuration.
-		# peek("At top of read_lower_triangular_matrix", data_type)
+		peek("At top of read_lower_triangular_matrix", data_type)
 		self.read_lower_triangular_matrix_initialize_variables()
 		try:
 			with Path(file_name).open() as file_handle:
 				nreferent = self.read_lower_triangle_size(file_handle)
+				peek("After read_lower_triangle_size", nreferent)
 				item_labels, item_names = self.read_lower_triangle_dictionary(
 					file_handle, nreferent
 				)
+				peek("After read_lower_triangle_dictionary",
+					len(item_labels), len(item_names))
 				if data_type in {"similarities", "dissimilarities"}:
 					similarities = self.read_lower_triangle_values(
 						file_handle, nreferent
 					)
+					peek("After read_lower_triangle_values",
+						len(similarities), type(similarities))
 				elif data_type == "correlations":
 					correlations = self.read_lower_triangle_values(
 						file_handle, nreferent
 					)
+					peek("After read_lower_triangle_values for correlations",
+						len(correlations), type(correlations))
 
 		except EOFError:
 			raise SpacesError(
@@ -1713,11 +1749,17 @@ class Spaces:
 			)
 			destination.similarities = similarities
 			destination.value_type = "similarities"
+			peek("After assigning similarities (similarities type)",
+				len(destination.similarities))
 		elif data_type == "dissimilarities":
 			destination: SimilaritiesFeature = SimilaritiesFeature(
 				self._director
 			)
+			peek("Before assigning similarities (dissimilarities type)",
+				len(similarities), type(similarities))
 			destination.similarities = similarities
+			peek("After assigning similarities (dissimilarities type)",
+				len(destination.similarities), type(destination.similarities))
 			destination.value_type = "dissimilarities"
 		elif data_type == "correlations":
 			# peek("At elif data_type == 'correlations'")
@@ -1732,10 +1774,10 @@ class Spaces:
 		destination.npoints = destination.nreferent
 		destination.item_labels = item_labels
 		destination.item_names = item_names
-		# peek("At bottom of read_lower_triangular_matrix",
-		# 	destination,
-		# 	destination.item_labels, destination.item_names,
-		# 	destination.nreferent, destination.nitem, destination.npoint)
+		peek("At bottom of read_lower_triangular_matrix",
+			destination.value_type,
+			len(destination.similarities),
+			destination.nreferent, destination.nitem, destination.npoints)
 		return destination
 
 	# ------------------------------------------------------------------------
@@ -2253,7 +2295,7 @@ class Spaces:
 
 		Args:
 			command_name: Name of the command (e.g., "Rotate", "Rescale")
-			command_type: Type of command ("active" or "passive")
+			command_type: Type of command ("active", "passive", or "script")
 			parameters: Dict of command-specific parameters to store
 
 		Raises:
@@ -2332,8 +2374,11 @@ class Spaces:
 		state snapshots. However, they must be recorded in the undo stack
 		so they appear in saved scripts.
 
+		Note: This should NOT be used for script-type commands (OpenScript,
+		SaveScript, ViewScript), which should be excluded from script generation.
+
 		Args:
-			command_name: Name of the passive command (e.g., "Save script")
+			command_name: Name of the passive command
 			parameters: Dict of command-specific parameters to store (optional)
 		"""
 		from command_state import CommandState  # noqa: PLC0415

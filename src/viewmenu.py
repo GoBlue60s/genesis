@@ -846,6 +846,11 @@ class ViewScriptCommand:
 			if not cmd_state.command_name:
 				continue
 
+			# Skip script-type commands (OpenScript, SaveScript, ViewScript)
+			# These are meta-commands that should not appear in generated scripts
+			if cmd_state.command_type == "script":
+				continue
+
 			# Build command line with parameters
 			cmd_line = cmd_state.command_name
 			if cmd_state.command_params:
@@ -884,6 +889,11 @@ class ViewScriptCommand:
 		for cmd_state in undo_stack:
 			# Skip commands with empty names
 			if not cmd_state.command_name:
+				continue
+
+			# Skip script-type commands (OpenScript, SaveScript, ViewScript)
+			# These are meta-commands that should not appear in generated scripts
+			if cmd_state.command_type == "script":
 				continue
 
 			# Build command line with parameters

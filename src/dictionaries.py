@@ -147,8 +147,7 @@ command_dict = MappingProxyType({
 		"state_capture": ["scores"]
 	},
 	"Open script": {
-		"type": "active",
-		"state_capture": []  # Executes other commands; doesn't modify state directly
+		"type": "script"  # Meta-command for script operations
 	},
 	"Paired": {
 		"type": "passive"
@@ -254,7 +253,7 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"Save script": {
-		"type": "passive"  # Saves command history; doesn't modify application state
+		"type": "script"  # Meta-command for script operations
 	},
 	"Score individuals": {
 		"type": "active",
@@ -376,7 +375,7 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"View script": {
-		"type": "passive"
+		"type": "script"  # Meta-command for script operations
 	},
 	"View similarities": {
 		"type": "passive"

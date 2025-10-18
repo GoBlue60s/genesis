@@ -39,9 +39,18 @@ class ConfigurationCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._config_caption, self._config_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._config_caption, self._config_filter
+			)
 
 		# Capture state for undo BEFORE modifications
 		params = {"file_name": file_name}
@@ -1090,7 +1099,7 @@ class OpenScriptCommand:
 		# Default to scripts directory if it exists
 		scripts_dir = Path.cwd() / "scripts"
 		if scripts_dir.exists():
-			file_name = self._director.get_file_name_and_handle_nonexistent_file_names_in_directory(
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._script_caption,
 				self._script_filter,
 				str(scripts_dir)
@@ -1100,11 +1109,10 @@ class OpenScriptCommand:
 				self._script_caption, self._script_filter
 			)
 
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Open script", "active", params
-		)
+		# Note: OpenScript doesn't create its own undo state because it
+		# executes other commands that will create their own undo states.
+		# The individual commands in the script are undoable, not the
+		# script execution itself.
 
 		# Read and parse script file
 		try:
@@ -1116,56 +1124,170 @@ class OpenScriptCommand:
 				f"Unable to read script file: {e}",
 			) from e
 
-		# Parse and execute commands
+		# Set flag to indicate script execution (no user dialogs)
+		self._director.executing_script = True
 		commands_executed = 0
-		for line_num, line in enumerate(script_lines, 1):
-			line = line.strip()
-			# Skip empty lines and comments
-			if not line or line.startswith("#"):
-				continue
+		commands_failed = 0
 
-			# Parse command line: command_name param1=value1 param2=value2
-			try:
-				parts = line.split()
-				if not parts:
+		try:
+			# Parse and execute commands
+			for line_num, line in enumerate(script_lines, 1):
+				line = line.strip()
+				# Skip empty lines and comments
+				if not line or line.startswith("#"):
 					continue
 
-				# First part is command name (may be multiple words)
-				# Determine where command name ends and parameters begin
-				command_name = self._parse_command_name_from_line(parts)
+				# Parse command line: command_name param1=value1 param2=value2
+				try:
+					command_name, params_dict = self._parse_script_line(line)
 
-				# Parse parameters (key=value pairs)
-				params_dict = {}
-				# Start after command name tokens
-				param_start = len(command_name.split())
-				for param in parts[param_start:]:
-					if "=" in param:
-						key, value = param.split("=", 1)
-						params_dict[key] = value
+					# Execute command with parameters
+					self._execute_script_command(
+						command_name, params_dict, line_num, line
+					)
+					commands_executed += 1
 
-				# Map command name to request_dict key
-				request_key = command_name.lower().replace(" ", "_")
+				except SpacesError as e:
+					# Script command failed - stop execution
+					commands_failed += 1
+					error_msg = (
+						f"Script stopped at line {line_num}: {line}\n"
+						f"Error: {e.message}"
+					)
+					raise SpacesError(
+						self._script_error_bad_input_title,
+						error_msg,
+					) from e
 
-				# TODO: Pass parameters to command when executing
-				# For now, just execute without parameters
-				self._director.request_control(request_key)
-				commands_executed += 1
+				except Exception as e:  # noqa: BLE001
+					# Unexpected error - stop execution
+					commands_failed += 1
+					error_msg = (
+						f"Script stopped at line {line_num}: {line}\n"
+						f"Unexpected error: {e}"
+					)
+					raise SpacesError(
+						self._script_error_bad_input_title,
+						error_msg,
+					) from e
 
-			except Exception as e:  # noqa: BLE001
-				# Log error but continue with next command
-				print(
-					f"Warning: Error executing line {line_num}: {line}\n"
-					f"Error: {e}"
-				)
-				continue
+		finally:
+			# Always clear script execution flag
+			self._director.executing_script = False
+
+		# Reset command name to "Open script" before recording completion
+		# (otherwise it will print success message for the last script command)
+		self._director.command = "Open script"
 
 		self._director.title_for_table_widget = (
-			f"Script executed: {commands_executed} commands from {file_name}"
+			f"Script executed: {commands_executed} commands from "
+			f"{Path(file_name).name}"
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> object:
+		"""Display widget for script execution completion.
+
+		Returns:
+			QTextEdit widget showing script execution summary
+		"""
+		return self._director.display_a_line()
+
+	# ------------------------------------------------------------------------
+
+	def _parse_script_line(self, line: str) -> tuple[str, dict]:
+		"""Parse a script line into command name and parameters.
+
+		Args:
+			line: Script line (e.g., "Reference points contest=['Carter', 'Ford']")
+
+		Returns:
+			Tuple of (command_name, params_dict)
+		"""
+		import ast  # noqa: PLC0415
+		from dictionaries import command_dict  # noqa: PLC0415
+
+		# Split into tokens, but preserve quoted strings and brackets
+		# For now, use simple split - parameters will be parsed separately
+		parts = line.split()
+
+		# Find command name (may be multi-word)
+		command_name = self._parse_command_name_from_line(parts)
+
+		# Parse parameters
+		params_dict = {}
+		param_start = len(command_name.split())
+
+		# Rejoin remaining parts to handle values with spaces
+		param_str = " ".join(parts[param_start:])
+
+		if param_str:
+			# Parse key=value pairs
+			# Handle cases like: file_name=path or contest=['a', 'b']
+			current_key = None
+			current_value = ""
+			in_brackets = 0
+
+			i = 0
+			while i < len(param_str):
+				char = param_str[i]
+
+				if char == "=" and current_key is None and in_brackets == 0:
+					# Found key=value separator
+					current_key = current_value.strip()
+					current_value = ""
+				elif char in "[{(" :
+					in_brackets += 1
+					current_value += char
+				elif char in "]})":
+					in_brackets -= 1
+					current_value += char
+				elif char == " " and in_brackets == 0:
+					# Space outside brackets - check if we have a complete param
+					if current_key and current_value:
+						# Try to evaluate Python literals (lists, etc.)
+						try:
+							params_dict[current_key] = ast.literal_eval(
+								current_value.strip()
+							)
+						except (ValueError, SyntaxError):
+							# Not a Python literal, store as string
+							# Remove quotes if present
+							val = current_value.strip()
+							if (
+								(val.startswith('"') and val.endswith('"'))
+								or (val.startswith("'") and val.endswith("'"))
+							):
+								val = val[1:-1]
+							params_dict[current_key] = val
+						current_key = None
+						current_value = ""
+				else:
+					current_value += char
+
+				i += 1
+
+			# Handle last parameter
+			if current_key and current_value:
+				try:
+					params_dict[current_key] = ast.literal_eval(
+						current_value.strip()
+					)
+				except (ValueError, SyntaxError):
+					val = current_value.strip()
+					if (
+						(val.startswith('"') and val.endswith('"'))
+						or (val.startswith("'") and val.endswith("'"))
+					):
+						val = val[1:-1]
+					params_dict[current_key] = val
+
+		return command_name, params_dict
 
 	# ------------------------------------------------------------------------
 
@@ -1188,6 +1310,80 @@ class OpenScriptCommand:
 
 		# If no match found, assume single word
 		return parts[0] if parts else ""
+
+	# ------------------------------------------------------------------------
+
+	def _execute_script_command(
+		self,
+		command_name: str,
+		params_dict: dict,
+		line_num: int,
+		line: str,
+	) -> None:
+		"""Execute a command from a script with given parameters.
+
+		Args:
+			command_name: Name of command to execute
+			params_dict: Dictionary of parameters for the command
+			line_num: Line number in script (for error messages)
+			line: Original line text (for error messages)
+		"""
+		import inspect  # noqa: PLC0415
+
+		# Get command class from widget_dict (which maps command names to classes)
+		widget_dict = self._director.widget_dict
+
+		if command_name not in widget_dict:
+			raise SpacesError(
+				"Unknown command",
+				f"Command '{command_name}' not found in line {line_num}",
+			)
+
+		# widget_dict format: [CommandClass, sharing_type, display_lambda]
+		command_class = widget_dict[command_name][0]
+
+		# Store script parameters in director for command to access
+		self._director.script_parameters = params_dict
+
+		try:
+			# Instantiate command
+			command_instance = command_class(self._director, self.common)
+
+			# Check execute method signature to determine if extra param needed
+			execute_sig = inspect.signature(command_instance.execute)
+			params = list(execute_sig.parameters.keys())
+
+			# Most commands have: execute(self, common)
+			# Some have: execute(self, common, extra_param)
+			# Note: inspect.signature on bound method excludes 'self'
+			# so params only contains 'common' and any extra parameters
+			# Call appropriately based on signature
+			if len(params) > 1:
+				# Has extra parameter - try to provide it from script params
+				param_name = params[1]
+				if param_name in params_dict:
+					extra_value = params_dict[param_name]
+					command_instance.execute(self.common, extra_value)
+				else:
+					# No value in script - check if parameter has default
+					param_obj = execute_sig.parameters[param_name]
+					if param_obj.default != inspect.Parameter.empty:
+						# Has default, call without extra param
+						command_instance.execute(self.common)
+					else:
+						# Required but not provided
+						raise SpacesError(
+							"Missing parameter",
+							f"Command '{command_name}' requires parameter '{param_name}' "
+							f"but it was not provided in line {line_num}"
+						)
+			else:
+				# Standard execute(self, common) signature
+				command_instance.execute(self.common)
+
+		finally:
+			# Clear script parameters
+			self._director.script_parameters = None
 
 	# ------------------------------------------------------------------------
 
@@ -2011,14 +2207,31 @@ class SaveScriptCommand:
 			if not cmd_state.command_name:
 				continue
 
+			# Skip script-type commands (OpenScript, SaveScript, ViewScript)
+			# These are meta-commands that should not appear in generated scripts
+			if cmd_state.command_type == "script":
+				continue
+
 			# Build command line with parameters
 			cmd_line = cmd_state.command_name
 			if cmd_state.command_params:
-				# Add parameters as key=value pairs (without quotes around value)
-				params_str = " ".join(
-					f'{key}={value}'
-					for key, value in cmd_state.command_params.items()
-				)
+				# Add parameters as key=value pairs
+				# Format values appropriately: lists/dicts as-is, strings with quotes if needed
+				param_parts = []
+				for key, value in cmd_state.command_params.items():
+					if isinstance(value, str):
+						# String values - add quotes if they contain spaces or special chars
+						if ' ' in value or '/' in value or '\\' in value:
+							param_parts.append(f'{key}="{value}"')
+						else:
+							param_parts.append(f'{key}={value}')
+					elif isinstance(value, (list, dict)):
+						# Lists and dicts - write as Python literals
+						param_parts.append(f'{key}={value}')
+					else:
+						# Numbers, booleans, etc.
+						param_parts.append(f'{key}={value}')
+				params_str = " ".join(param_parts)
 				cmd_line = f"{cmd_line} {params_str}"
 			script_lines.append(cmd_line)
 
@@ -2496,9 +2709,21 @@ class SimilaritiesCommand:
 	def execute(self, common: Spaces, value_type: str) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._similarities_caption, self._similarities_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+			# Also check for value_type override in script
+			if "value_type" in self._director.script_parameters:
+				value_type = self._director.script_parameters["value_type"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._similarities_caption, self._similarities_filter
+			)
 		# Read and validate similarities file
 		self._director.similarities_candidate = common.read_lower_triangular_matrix(
 			file_name,
@@ -2516,7 +2741,12 @@ class SimilaritiesCommand:
 
 		# Convert similarities into different data structures
 		self._director.similarities_candidate.duplicate_similarities(common)
-
+		# inserted missing lines here
+		self._director.similarities_candidate.range_similarities = \
+			range(len(
+				self._director.similarities_candidate.similarities_as_list))
+		self._director.similarities_candidate.rank_similarities()
+		# end of insertion
 		self._director.similarities_active = (
 			self._director.similarities_candidate
 		)

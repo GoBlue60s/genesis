@@ -295,24 +295,44 @@ class InvertCommand:
 		range_dims = self._director.configuration_active.range_dims
 		dim_names = self._director.configuration_active.dim_names
 
-		# selected_items = []
-		# dims_indexes = []
-		dialog = SelectItemsDialog(dimensions_to_invert_title, dimensions)
-		if dialog.exec() == QDialog.Accepted:
-			# try:
-			selected_items = dialog.selected_items()
-			dims_indexes = [
-				j
-				for i in range(len(selected_items))
-				for j in range_dims
-				if selected_items[i] == dim_names[j]
-			]
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "dimensions" in self._director.script_parameters
+		):
+			selected_items = self._director.script_parameters["dimensions"]
+			if not isinstance(selected_items, list) or len(selected_items) == 0:
+				raise SelectionError(
+					"Script parameter error",
+					"dimensions parameter must be a non-empty list of dimension names"
+				)
+			# Validate that all dimension names exist
+			for dim in selected_items:
+				if dim not in dim_names:
+					raise SelectionError(
+						"Script parameter error",
+						f"Dimension '{dim}' not found in configuration dimensions: {dim_names}"
+					)
 		else:
-			print("Canceled")
-			raise SelectionError(
-				self.select_dim_to_invert_error_title,
-				self.select_dim_to_invert_error_message,
-			)
+			dialog = SelectItemsDialog(dimensions_to_invert_title, dimensions)
+			if dialog.exec() == QDialog.Accepted:
+				selected_items = dialog.selected_items()
+			else:
+				print("Canceled")
+				raise SelectionError(
+					self.select_dim_to_invert_error_title,
+					self.select_dim_to_invert_error_message,
+				)
+
+		# Convert selected dimension names to indexes
+		dims_indexes = [
+			j
+			for i in range(len(selected_items))
+			for j in range_dims
+			if selected_items[i] == dim_names[j]
+		]
+
 		return selected_items, dims_indexes
 
 	# ------------------------------------------------------------------------

@@ -1107,6 +1107,7 @@ class SimilaritiesFeature:
 	# ------------------------------------------------------------------------
 
 	def compute_differences_in_ranks(self) -> None:
+		peek("\nAt top of compute_differences_in_ranks")
 		nreferent = self._director.similarities_active.nreferent
 		ranked_similarities_as_list = (
 			self._director.similarities_active.ranked_similarities_as_list
@@ -1186,6 +1187,7 @@ class SimilaritiesFeature:
 			self.nitem,
 			self.value_type,
 		)
+		self.range_similarities = self.range_dyads
 
 	# ------------------------------------------------------------------------
 
@@ -1251,7 +1253,8 @@ class SimilaritiesFeature:
 	# ------------------------------------------------------------------------
 
 	def create_ranked_similarities_dataframe(self) -> None:
-		# director: Status) -> None:
+		
+		peek("At top of Creating ranked similarities dataframe in SimilaritiesFeature")
 		#
 		# Create dataframe which is used for computing and displaying ranks
 		# It will start with self.sorted_similarities_w_pairs which has
@@ -1266,6 +1269,9 @@ class SimilaritiesFeature:
 		sorted_similarities_w_pairs = self.sorted_similarities_w_pairs
 		range_similarities = self.range_similarities
 		# columns_for_ranks = self.columns_for_ranks
+		peek(self.range_similarities)
+		peek(self.range_items)
+		peek(sorted_similarities_w_pairs)
 		range_items = self.range_items
 		item_labels = self.item_labels
 
@@ -1361,12 +1367,17 @@ class SimilaritiesFeature:
 		self._director.similarities_active.columns_for_ranks = (
 			columns_for_ranks
 		)
-
+		peek("Finished creating ranked similarities dataframe in SimilaritiesFeature")
+		peek("Can we see this ????????????????????????????????????")
+		print("Ranks_df: ", ranks_df)
+		print("self._director.similarities_active.ranks_df:", self._director.similarities_active.ranks_df)
+		print("self.ranked_similarities:", self.ranked_similarities)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def rank_similarities(self) -> None:
+		peek("At top of Rank similarities in SimilaritiesFeature")
 		nitem = self.nitem
 		item_names = self.item_names
 		item_labels = self.item_labels
@@ -1415,6 +1426,7 @@ class SimilaritiesFeature:
 			ranked_similarities_as_square, columns=item_names, index=item_names
 		)
 
+		self.ranked_similarities = ranked_similarities
 		self.range_items = range_items
 		self.ranked_similarities_as_list = ranked_similarities_as_list
 		self.ranked_similarities_as_dict = ranked_similarities_as_dict
@@ -1422,6 +1434,8 @@ class SimilaritiesFeature:
 		self.ranked_similarities_as_dataframe = (
 			ranked_similarities_as_dataframe
 		)
+		peek("Finished ranking similarities in SimilaritiesFeature")
+		peek(self.ranked_similarities)
 
 		return
 
@@ -1430,17 +1444,26 @@ class SimilaritiesFeature:
 	def rank_when_similarities_match_configuration(
 		self, director: Status, common: Spaces
 	) -> None:
+		peek("At top of Rank similarities when they match configuration in SimilaritiesFeature")
+		peek(self.ranked_similarities)
 		if common.have_similarities():
 			director.similarities_active.create_ranked_similarities_dataframe()
 			# director)
+			peek("After creating ranked similarities dataframe - Do we get here?")
 			director.similarities_active.duplicate_ranked_similarities(common)
 			director.similarities_active.compute_differences_in_ranks()
+		peek("Finished ranking similarities when they match configuration")
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def duplicate_ranked_similarities(self, common: Spaces) -> None:
+		peek("At top of Duplicating ranked similarities in SimilaritiesFeature")
+		peek(self.range_dyads)
+		peek(self.range_items)
+		peek("self.nreferent:", self.nreferent)
+		peek(self.ranked_similarities)
 		(
 			self.ranked_similarities_as_dataframe,
 			self.ranked_similarities_as_dict,
@@ -1457,7 +1480,8 @@ class SimilaritiesFeature:
 			self.nreferent,
 			self.value_type,
 		)
-
+		peek("Finished duplicating ranked similarities in SimilaritiesFeature")
+		peek(self.ranked_similarities)
 
 # --------------------------------------------------------------------------
 

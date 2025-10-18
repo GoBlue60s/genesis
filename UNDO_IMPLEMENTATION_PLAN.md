@@ -16,7 +16,7 @@ This approach no longer works with the PySide6 GUI because Qt objects cannot be 
 - **Commands**: 104 unique command implementations (what actually executes)
 - **Menu items**: 140 entries in `request_dict` (multiple menu items can invoke same command)
 
-Commands are classified into two immutable types based on whether they modify application state:
+Commands are classified into three immutable types based on their behavior:
 
 **Active Commands:** Modify application state and require state snapshots for undo
 - Data transformations (Center, Rotate, Rescale, Invert)
@@ -32,6 +32,12 @@ Commands are classified into two immutable types based on whether they modify ap
 - Output displays (Base, Battleground, Contest, Convertible, Core supporters)
 - Verbosity toggles (Terse, Verbose)
 - Display-only analysis (Scree)
+
+**Script Commands:** Meta-commands for script operations (excluded from script generation)
+- OpenScript: Loads and executes script files
+- SaveScript: Exports command history to script file
+- ViewScript: Displays current command history
+- **Special behavior**: These commands do not appear in generated scripts to prevent recursion
 
 **Implementation:**
 - Command type is an **immutable property**, not runtime state
@@ -72,7 +78,7 @@ Create general undo infrastructure:
        """Lightweight state snapshot with scriptability support"""
        def __init__(self):
            self.command_name = ""         # Command identifier
-           self.command_type = ""         # "active" or "passive" (immutable property)
+           self.command_type = ""         # "active", "passive", or "script" (immutable property)
            self.command_params = {}       # Parameters for script generation
            self.state_snapshot = None     # Only populated for active commands
            # State snapshot components (for active commands):
@@ -146,30 +152,39 @@ Add undo support one command at a time:
 
 Most commands will use one or more of these standard patterns.
 
-## Active vs Passive Command Handling
+## Command Type Handling
 
-**All commands go on the command stack** for complete session recording, but are handled differently:
+**All commands except script-type commands go on the command stack** for complete session recording:
 
 **Active Commands:**
 - Capture full state snapshot before execution
 - State restoration on undo
+- Appear in generated scripts
 - Heavier memory footprint (state data)
 
 **Passive Commands:**
 - Record command name and parameters only
 - No state snapshot needed
+- Appear in generated scripts
 - Replay by re-execution with saved params (idempotent)
 - Minimal memory footprint
 
-**Rationale for recording both:**
-1. **Complete session history** for script generation/replay
-2. **User transparency** - full command sequence visible
-3. **Debugging** - complete audit trail
-4. **Minimal cost** - passive commands store name + params only
+**Script Commands:**
+- Record command name and parameters only
+- No state snapshot needed
+- **Excluded from generated scripts** (prevents recursion)
+- Minimal memory footprint
+- Examples: OpenScript, SaveScript, ViewScript
+
+**Rationale for script command exclusion:**
+1. **Prevent recursion** - scripts shouldn't generate script commands
+2. **Cleaner scripts** - focus on data operations, not meta-operations
+3. **Script independence** - scripts should be self-contained workflows
 
 **Undo behavior:**
 - Active: Restore state snapshot
 - Passive: Skip (or optionally re-execute if needed for consistency)
+- Script: Skip (meta-commands don't need undo)
 
 ## Implementation Steps
 
@@ -888,10 +903,140 @@ Scree
 **Git Commits:**
 - 05ffbeb: "Implement ViewScript command for script history preview" (2025-10-17)
 
-**Next Phase Tasks:**
-- ⏳ Implement script parser for OpenScriptCommand
-- ⏳ Test script execution with saved script files
-- ⏳ Handle script validation and error reporting
+**Phase 2d: Open Script Implementation** ⚠️ PARTIALLY COMPLETE (2025-10-18)
+
+**Infrastructure Completed:**
+- ✅ Implemented OpenScriptCommand class in `filemenu.py:4625-4860`
+- ✅ Added `executing_script` flag to director (director.py:135)
+- ✅ Implemented parameter parsing with Python literal support (lists, strings)
+- ✅ Direct command instantiation bypassing `request_control()` for dynamic parameters
+- ✅ Error handling with clear user feedback on failures
+- ✅ Commands executed from scripts appear in command history
+- ✅ Undo works normally with script-executed commands
+- ✅ Script execution stops on first error with informative messages
+
+**Commands Modified for Script Support (5 of 42 active commands):**
+1. ✅ **Configuration** (filemenu.py:45) - accepts `file_name` parameter
+2. ✅ **Similarities** (filemenu.py:2715) - accepts `file_name` and `value_type` parameters
+3. ✅ **MDS** (modelmenu.py:1591) - accepts `n_components` and `use_metric` parameters
+4. ✅ **Reference points** (respondentsmenu.py:435) - accepts `contest` parameter
+5. ✅ **Invert** (transformmenu.py:300) - accepts `dimensions` parameter
+
+**Scripts Successfully Tested:**
+- ✅ test_23.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
+- ✅ test_22.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
+- ✅ test_21.spc: Configuration, Reference points, Contest, Invert
+- ✅ test_simple_history.spc: Configuration, History
+
+**Commands Still Needing Script Support (37 of 42 active commands):**
+
+**Transform Menu (6 remaining):**
+- ⏳ Center
+- ⏳ Compare
+- ⏳ Move
+- ⏳ Rescale
+- ⏳ Rotate
+- ⏳ Varimax
+
+**Model Menu (4 remaining):**
+- ⏳ Cluster
+- ⏳ Factor analysis
+- ⏳ Factor analysis machine learning
+- ⏳ Principal components
+- ⏳ Uncertainty
+
+**Respondents Menu (2 remaining):**
+- ⏳ Sample designer
+- ⏳ Sample repetitions
+- ⏳ Score individuals
+
+**Associations Menu (1 remaining):**
+- ⏳ Line of sight
+
+**File Menu (21 remaining):**
+- ⏳ Correlations
+- ⏳ Create
+- ⏳ Deactivate
+- ⏳ Evaluations
+- ⏳ Grouped data
+- ⏳ Individuals
+- ⏳ New grouped data
+- ⏳ Open sample design
+- ⏳ Open sample repetitions
+- ⏳ Open sample solutions
+- ⏳ Open scores
+- ⏳ Target
+
+**Settings Commands (7 remaining):**
+- ⏳ Settings - display sizing
+- ⏳ Settings - layout options
+- ⏳ Settings - plane
+- ⏳ Settings - plot settings
+- ⏳ Settings - presentation layer
+- ⏳ Settings - segment sizing
+- ⏳ Settings - vector sizing
+
+**Meta Commands (N/A):**
+- ⚫ Redo (N/A - meta-command)
+- ⚫ Tester (N/A - experimental)
+- ⚫ Undo (N/A - meta-command)
+
+**Implementation Pattern for Each Command:**
+Each command needs modification to check for script execution and use script parameters instead of user dialogs:
+```python
+# Check if executing from script with parameters
+if (
+	self._director.executing_script
+	and self._director.script_parameters
+	and "parameter_name" in self._director.script_parameters
+):
+	# Use script parameter
+	value = self._director.script_parameters["parameter_name"]
+else:
+	# Show dialog to get user input
+	value = self._get_user_input_via_dialog()
+```
+
+**Design Decisions:**
+
+**Parameter Passing Strategy:**
+- **Bypass `request_control()`**: Direct command instantiation to pass dynamic script parameters
+- `request_control()` only supports fixed parameters from `request_dict`, not runtime parameters from scripts
+- Solution: Instantiate command classes directly and call `execute()` with script parameters
+
+**Script Format Examples:**
+```
+Configuration file_name=C:/PythonProjects/genesis/data/Elections/1976/Post_1976_conf.txt
+Reference points contest=['Carter', 'Ford']
+Contest
+Invert dimensions=['Left-Right', 'Social']
+```
+
+**Key Features:**
+- Python list syntax supported: `contest=['Carter', 'Ford']`
+- File paths can be quoted or unquoted
+- Commands without parameters: just command name
+- Multi-word commands: `Reference points`
+
+**No User Interaction During Scripts:**
+- `self._director.executing_script = True` flag during script execution
+- Commands check this flag to skip dialogs and use script parameters
+- **Fail fast**: Raise exception if command needs input and no parameter provided
+- **Stop on error**: Any exception halts script and returns to GUI
+- All script commands must be fully parameterized
+
+**History Tracking:**
+- Commands executed from scripts appear in history (call `record_command_as_selected_and_in_process()`)
+- Undo works normally (commands call `capture_and_push_undo_state()`)
+- Complete session history preserved
+
+**Status Summary:**
+- **Infrastructure:** 100% complete
+- **Command modifications:** 5 of 42 active commands (12% complete)
+- **Testing:** 4 test scripts validated
+- **Remaining work:** 37 commands need script parameter support added
+
+**Next Step:** Incrementally add script support to remaining active commands as needed for specific workflows
 
 **Implementation Phases:**
 
