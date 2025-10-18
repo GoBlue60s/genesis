@@ -915,12 +915,21 @@ Scree
 - ✅ Undo works normally with script-executed commands
 - ✅ Script execution stops on first error with informative messages
 
-**Commands Modified for Script Support (5 of 42 active commands):**
+**Commands Modified for Script Support (14 of 42 active commands):**
 1. ✅ **Configuration** (filemenu.py:45) - accepts `file_name` parameter
-2. ✅ **Similarities** (filemenu.py:2715) - accepts `file_name` and `value_type` parameters
-3. ✅ **MDS** (modelmenu.py:1591) - accepts `n_components` and `use_metric` parameters
-4. ✅ **Reference points** (respondentsmenu.py:435) - accepts `contest` parameter
-5. ✅ **Invert** (transformmenu.py:300) - accepts `dimensions` parameter
+2. ✅ **Correlations** (filemenu.py:114) - accepts `file_name` parameter
+3. ✅ **Evaluations** (filemenu.py:503) - accepts `file_name` parameter
+4. ✅ **Grouped data** (filemenu.py:609) - accepts `file_name` parameter
+5. ✅ **Individuals** (filemenu.py:681) - accepts `file_name` parameter
+6. ✅ **Open sample design** (filemenu.py:912) - accepts `file_name` parameter
+7. ✅ **Open sample repetitions** (filemenu.py:976) - accepts `file_name` parameter
+8. ✅ **Open sample solutions** (filemenu.py:1040) - accepts `file_name` parameter
+9. ✅ **Open scores** (filemenu.py:1102) - accepts `file_name` parameter
+10. ✅ **Target** (filemenu.py:2866) - accepts `file_name` parameter
+11. ✅ **Similarities** (filemenu.py:2781) - accepts `file_name` and `value_type` parameters
+12. ✅ **MDS** (modelmenu.py:1591) - accepts `n_components` and `use_metric` parameters
+13. ✅ **Reference points** (respondentsmenu.py:435) - accepts `contest` parameter
+14. ✅ **Invert** (transformmenu.py:300) - accepts `dimensions` parameter
 
 **Scripts Successfully Tested:**
 - ✅ test_23.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
@@ -928,7 +937,7 @@ Scree
 - ✅ test_21.spc: Configuration, Reference points, Contest, Invert
 - ✅ test_simple_history.spc: Configuration, History
 
-**Commands Still Needing Script Support (37 of 42 active commands):**
+**Commands Still Needing Script Support (28 of 42 active commands):**
 
 **Transform Menu (6 remaining):**
 - ⏳ Center
@@ -953,21 +962,12 @@ Scree
 **Associations Menu (1 remaining):**
 - ⏳ Line of sight
 
-**File Menu (21 remaining):**
-- ⏳ Correlations
-- ⏳ Create
-- ⏳ Deactivate
-- ⏳ Evaluations
-- ⏳ Grouped data
-- ⏳ Individuals
-- ⏳ New grouped data
-- ⏳ Open sample design
-- ⏳ Open sample repetitions
-- ⏳ Open sample solutions
-- ⏳ Open scores
-- ⏳ Target
+**File Menu (12 remaining):**
+- ⏳ Create (complex: requires multiple interactive inputs for configuration creation)
+- ⏳ Deactivate (complex: requires checkbox selection of items to deactivate)
+- ⏳ New grouped data (complex: requires multiple interactive inputs)
 
-**Settings Commands (7 remaining):**
+**Settings Commands (7 remaining - complex dialogs):**
 - ⏳ Settings - display sizing
 - ⏳ Settings - layout options
 - ⏳ Settings - plane
@@ -1032,11 +1032,22 @@ Invert dimensions=['Left-Right', 'Social']
 
 **Status Summary:**
 - **Infrastructure:** 100% complete
-- **Command modifications:** 5 of 42 active commands (12% complete)
+- **Command modifications:** 14 of 42 active commands (33% complete)
+- **File-loading commands:** 9 of 9 completed (100%)
+- **Transform/Model commands:** 2 of 17 completed (12%)
+- **Complex interactive commands:** 0 of 10 (deferred - require extensive refactoring)
 - **Testing:** 4 test scripts validated
-- **Remaining work:** 37 commands need script parameter support added
+- **Remaining work:** 28 commands need script parameter support added
 
-**Next Step:** Incrementally add script support to remaining active commands as needed for specific workflows
+**Recent Progress (2025-10-18):**
+- ✅ Added script support to 9 file-loading commands in filemenu
+- ✅ All file-loading commands now support automated workflows
+- ✅ Committed changes (abd352d): "Add script support to file-loading commands in filemenu"
+
+**Next Steps:**
+- Add script support to Transform menu commands (Center, Compare, Move, Rescale, Rotate, Varimax)
+- Add script support to Model menu commands (Cluster, Factor analysis, etc.)
+- Consider whether complex interactive commands (Create, Deactivate, Settings) need script support
 
 **Implementation Phases:**
 
