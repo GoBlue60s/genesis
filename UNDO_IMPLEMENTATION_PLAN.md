@@ -915,7 +915,9 @@ Scree
 - ✅ Undo works normally with script-executed commands
 - ✅ Script execution stops on first error with informative messages
 
-**Commands Modified for Script Support (14 of 42 active commands):**
+**Commands Script-Ready (15 of 42 active commands):**
+
+**Modified with parameter support (14 commands):**
 1. ✅ **Configuration** (filemenu.py:45) - accepts `file_name` parameter
 2. ✅ **Correlations** (filemenu.py:114) - accepts `file_name` parameter
 3. ✅ **Evaluations** (filemenu.py:503) - accepts `file_name` parameter
@@ -931,17 +933,19 @@ Scree
 13. ✅ **Reference points** (respondentsmenu.py:435) - accepts `contest` parameter
 14. ✅ **Invert** (transformmenu.py:300) - accepts `dimensions` parameter
 
+**Already script-ready without modification (1 command):**
+15. ✅ **Compare** (transformmenu.py:45) - no parameters needed (automatic Procrustes rotation)
+
 **Scripts Successfully Tested:**
 - ✅ test_23.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
 - ✅ test_22.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
 - ✅ test_21.spc: Configuration, Reference points, Contest, Invert
 - ✅ test_simple_history.spc: Configuration, History
 
-**Commands Still Needing Script Support (28 of 42 active commands):**
+**Commands Still Needing Script Support (27 of 42 active commands):**
 
-**Transform Menu (6 remaining):**
-- ⏳ Center
-- ⏳ Compare
+**Transform Menu (5 remaining):**
+- ⏳ Center (no parameters - should work as-is)
 - ⏳ Move
 - ⏳ Rescale
 - ⏳ Rotate
@@ -1032,21 +1036,27 @@ Invert dimensions=['Left-Right', 'Social']
 
 **Status Summary:**
 - **Infrastructure:** 100% complete
-- **Command modifications:** 14 of 42 active commands (33% complete)
+- **Script-ready commands:** 15 of 42 active commands (36% complete)
+  - **Modified with parameters:** 14 commands
+  - **Already script-ready:** 1 command (Compare)
 - **File-loading commands:** 9 of 9 completed (100%)
-- **Transform/Model commands:** 2 of 17 completed (12%)
+- **Transform commands:** 2 of 7 completed (29%) - Compare already works, Invert modified
+- **Model commands:** 1 of 6 completed (17%) - MDS modified
 - **Complex interactive commands:** 0 of 10 (deferred - require extensive refactoring)
 - **Testing:** 4 test scripts validated
-- **Remaining work:** 28 commands need script parameter support added
+- **Remaining work:** 27 commands need script parameter support added
 
 **Recent Progress (2025-10-18):**
 - ✅ Added script support to 9 file-loading commands in filemenu
 - ✅ All file-loading commands now support automated workflows
+- ✅ Identified Compare as already script-ready (no parameters needed)
 - ✅ Committed changes (abd352d): "Add script support to file-loading commands in filemenu"
+- ✅ Updated documentation (8069120)
 
 **Next Steps:**
-- Add script support to Transform menu commands (Center, Compare, Move, Rescale, Rotate, Varimax)
-- Add script support to Model menu commands (Cluster, Factor analysis, etc.)
+- Verify Center command works in scripts (appears to have no parameters)
+- Add script support to remaining Transform menu commands (Move, Rescale, Rotate, Varimax)
+- Add script support to Model menu commands (Cluster, Factor analysis, Principal components, etc.)
 - Consider whether complex interactive commands (Create, Deactivate, Settings) need script support
 
 **Implementation Phases:**
