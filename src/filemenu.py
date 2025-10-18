@@ -111,9 +111,18 @@ class CorrelationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._correlations_caption, self._correlations_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._correlations_caption, self._correlations_filter
+			)
 		# Error handling
 		# If not a correlations file, then return an error message
 		try:
@@ -494,9 +503,18 @@ class EvaluationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._evaluations_caption, self._evaluations_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._evaluations_caption, self._evaluations_filter
+			)
 		# Error handling
 		# If not an evaluations file, then return an error message
 		try:
@@ -591,9 +609,18 @@ class GroupedDataCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._grouped_data_caption, self._grouped_data_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._grouped_data_caption, self._grouped_data_filter
+			)
 		# Error handling
 		# If not a grouped data file, then return an error message
 		try:
@@ -654,9 +681,18 @@ class IndividualsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._individuals_caption, self._individuals_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._individuals_caption, self._individuals_filter
+			)
 		# Error handling
 		# If not an individuals file, then return an error message
 		try:
@@ -876,9 +912,18 @@ class OpenSampleDesignCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._sample_design_caption, self._sample_design_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._sample_design_caption, self._sample_design_filter
+			)
 		# Error handling
 		# If not a sample design file, then return an error message
 		try:
@@ -931,9 +976,18 @@ class OpenSampleRepetitionsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._sample_repetitions_caption, self._sample_repetitions_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._sample_repetitions_caption, self._sample_repetitions_filter
+			)
 		# Error handling
 		# If not a sample repetitions file, then return an error message
 		try:
@@ -986,9 +1040,18 @@ class OpenSampleSolutionsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._sample_solutions_caption, self._sample_solutions_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._sample_solutions_caption, self._sample_solutions_filter
+			)
 		# Error handling
 		# If not a sample solutions file, then return an error message
 		try:
@@ -1039,9 +1102,18 @@ class OpenScoresCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._scores_caption, self._scores_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._scores_caption, self._scores_filter
+			)
 		# Error handling
 		# If not a scores file, then return an error message
 		try:
@@ -2794,9 +2866,18 @@ class TargetCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-			self._target_caption, self._target_filter
-		)
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			file_name = self._director.script_parameters["file_name"]
+		else:
+			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+				self._target_caption, self._target_filter
+			)
 
 		# Capture state for undo BEFORE modifications
 		params = {"file_name": file_name}
