@@ -1171,18 +1171,20 @@ class Rivalry:
 			core_pcts = core_pcts.reindex(
 				core_pcts.index.union([i]), fill_value=0.0
 			)
-		for i in range(1, 2):
+		for i in range(1, 3):
 			likely_pcts = likely_pcts.reindex(
 				likely_pcts.index.union([i]), fill_value=0.0
 			)
-			battleground_pcts = battleground_pcts.reindex(
-				battleground_pcts.index.union([i]), fill_value=0.0
-			)
+		for i in range(1, 3):
 			first_pcts = first_pcts.reindex(
 				first_pcts.index.union([i]), fill_value=0.0
 			)
 			second_pcts = second_pcts.reindex(
 				second_pcts.index.union([i]), fill_value=0.0
+			)
+		for i in range(1, 3):
+			battleground_pcts = battleground_pcts.reindex(
+				battleground_pcts.index.union([i]), fill_value=0.0
 			)
 		#
 		# Ensures order of pcts

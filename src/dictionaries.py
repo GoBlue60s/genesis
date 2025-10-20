@@ -205,7 +205,8 @@ command_dict = MappingProxyType({
 	},
 	"Reference points": {
 		"type": "active",
-		"state_capture": ["rivalry"]
+		"state_capture": ["rivalry"],
+		"script_params": ["contest"]
 	},
 	"Rescale": {
 		"type": "active",

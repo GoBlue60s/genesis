@@ -1234,10 +1234,20 @@ class Status(QMainWindow):
 		Passive commands don't modify state, but must be recorded so they
 		appear in saved scripts. This method checks if the current command
 		is passive and adds it to the undo stack automatically.
+
+		If the command was already manually tracked with parameters,
+		skip automatic tracking to avoid duplicates.
 		"""
 		if self.command in command_dict:
 			cmd_type = command_dict[self.command].get("type", "active")
 			if cmd_type == "passive":
+				# Check if command was already manually tracked
+				if (
+					self.undo_stack
+					and self.undo_stack[-1].command_name == self.command
+				):
+					# Command already tracked with parameters, skip
+					return
 				# Add passive command to undo stack for script generation
 				self.common.push_passive_command_to_undo_stack(
 					self.command, {}

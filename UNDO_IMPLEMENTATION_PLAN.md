@@ -583,9 +583,9 @@ Created `capture_and_push_undo_state()` in `common.py:2241-2277` to consolidate 
 14. ✅ **Uncertainty** (`modelmenu.py`) - State: uncertainty
 
 **Respondents Menu (4 commands) - ALL COMPLETE:**
-15. ✅ **Reference points** (`respondentsmenu.py`) - State: rivalry
-16. ✅ **Sample designer** (`respondentsmenu.py`) - State: uncertainty
-17. ✅ **Sample repetitions** (`respondentsmenu.py`) - State: uncertainty
+15. ✅ **Reference points** (`respondentsmenu.py`) - State: rivalry (script support complete)
+16. ✅ **Sample designer** (`respondentsmenu.py`) - State: uncertainty (script support complete)
+17. ✅ **Sample repetitions** (`respondentsmenu.py`) - State: uncertainty (script support complete)
 18. ✅ **Score individuals** (`respondentsmenu.py`) - State: scores
 
 **Additional Commands (Non-File Menu) - ALL COMPLETE:**
@@ -920,9 +920,9 @@ Scree
 - ✅ Undo works normally with script-executed commands
 - ✅ Script execution stops on first error with informative messages
 
-**Commands Script-Ready (15 of 42 active commands):**
+**Commands Script-Ready (16 of 42 active commands):**
 
-**Modified with parameter support (14 commands):**
+**Modified with parameter support (16 commands):**
 1. ✅ **Configuration** (filemenu.py:45) - accepts `file_name` parameter
 2. ✅ **Correlations** (filemenu.py:114) - accepts `file_name` parameter
 3. ✅ **Evaluations** (filemenu.py:503) - accepts `file_name` parameter
@@ -937,8 +937,6 @@ Scree
 12. ✅ **MDS** (modelmenu.py:1591) - accepts `n_components` and `use_metric` parameters
 13. ✅ **Reference points** (respondentsmenu.py:435) - accepts `contest` parameter
 14. ✅ **Invert** (transformmenu.py:300) - accepts `dimensions` parameter
-
-**Modified with parameter support (16 commands):**
 15. ✅ **Factor analysis** (modelmenu.py:632) - accepts `n_factors` parameter
 16. ✅ **Factor analysis machine learning** (modelmenu.py:964) - accepts `n_components` parameter
 
@@ -954,6 +952,7 @@ Scree
 - ✅ test_21.spc: Configuration, Reference points, Contest, Invert
 - ✅ test_simple_history.spc: Configuration, History
 - ✅ test_transform_complete.spc: Configuration, Center, Rotate, Rescale, Invert, Move, Varimax, Compare (all transform commands successfully tested)
+- ✅ test_scores_joint.spc: Evaluations, Reference points (Reference Points command script support validated)
 
 **Commands Still Needing Script Support (16 of 42 active commands):**
 

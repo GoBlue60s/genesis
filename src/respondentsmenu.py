@@ -44,6 +44,13 @@ class BaseCommand(ASupporterGrouping):
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
 		director.current_command._base_groups_to_show = groups_to_show
+
+		# Track passive command with parameters for script generation
+		common.push_passive_command_to_undo_stack(
+			director.command,
+			{"groups_to_show": groups_to_show}
+		)
+
 		common.create_plot_for_tabs("base")
 		director.title_for_table_widget = (
 			f"Base supporters of {self._rival_a.name} and {self._rival_b.name}"
@@ -87,6 +94,13 @@ class BattlegroundCommand(ASupporterGrouping):
 		self._director.current_command._battleground_groups_to_show = (
 			groups_to_show
 		)
+
+		# Track passive command with parameters for script generation
+		self._director.common.push_passive_command_to_undo_stack(
+			self._director.command,
+			{"groups_to_show": groups_to_show}
+		)
+
 		self._director.common.create_plot_for_tabs("battleground")
 		self._director.title_for_table_widget = "Size of battleground"
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -157,6 +171,13 @@ class ConvertibleCommand(ASupporterGrouping):
 		self._director.current_command._convertible_groups_to_show = (
 			groups_to_show
 		)
+
+		# Track passive command with parameters for script generation
+		self._director.common.push_passive_command_to_undo_stack(
+			self._director.command,
+			{"groups_to_show": groups_to_show}
+		)
+
 		self._director.common.create_plot_for_tabs("convertible")
 		self._director.title_for_table_widget = (
 			f"Potential supporters convertible to "
@@ -195,6 +216,13 @@ class CoreSupportersCommand(ASupporterGrouping):
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command.core_groups_to_show = groups_to_show
+
+		# Track passive command with parameters for script generation
+		self._director.common.push_passive_command_to_undo_stack(
+			self._director.command,
+			{"groups_to_show": groups_to_show}
+		)
+
 		self._director.common.create_plot_for_tabs("core")
 		self._director.title_for_table_widget = (
 			f"Core supporters of {self._rival_a.name} and {self._rival_b.name}"
@@ -235,6 +263,13 @@ class FirstDimensionCommand(ASupporterGrouping):
 		self._director.current_command._first_dim_groups_to_show = (
 			groups_to_show
 		)
+
+		# Track passive command with parameters for script generation
+		common.push_passive_command_to_undo_stack(
+			self._director.command,
+			{"groups_to_show": groups_to_show}
+		)
+
 		common.create_plot_for_tabs("first")
 		self._director.title_for_table_widget = "Party oriented segments"
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -305,6 +340,13 @@ class LikelySupportersCommand(ASupporterGrouping):
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command.likely_groups_to_show = groups_to_show
+
+		# Track passive command with parameters for script generation
+		self._director.common.push_passive_command_to_undo_stack(
+			self._director.command,
+			{"groups_to_show": groups_to_show}
+		)
+
 		self._director.common.create_plot_for_tabs("likely")
 		self._director.title_for_table_widget = (
 			f"Likely supporters of {self._rival_a.name} "
@@ -450,12 +492,20 @@ class ReferencePointsCommand:
 
 			del dialog
 
-		refs_indexes = [
-			j
-			for i in range(2)
-			for j in range_points
-			if selected_items[i] == point_names[j]
-		]
+		# Find the index for each selected item
+		refs_indexes = []
+		for selected_name in selected_items:
+			found_index = None
+			for j in range_points:
+				if selected_name == point_names[j]:
+					found_index = j
+					break
+			if found_index is None:
+				raise SpacesError(
+					"Invalid reference point",
+					f"Point '{selected_name}' not found in configuration"
+				)
+			refs_indexes.append(found_index)
 
 		refs_a = refs_indexes[0]
 		refs_b = refs_indexes[1]
@@ -990,6 +1040,12 @@ class SecondDimensionCommand(ASupporterGrouping):
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command._second_dim_groups_to_show = (
 			groups_to_show
+		)
+
+		# Track passive command with parameters for script generation
+		self._director.common.push_passive_command_to_undo_stack(
+			self._director.command,
+			{"groups_to_show": groups_to_show}
 		)
 
 		self._director.common.create_plot_for_tabs("second")

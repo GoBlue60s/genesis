@@ -1201,12 +1201,11 @@ class OpenScoresCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._scores_caption, self._scores_filter
 			)
+
 		# Error handling
 		# If not a scores file, then return an error message
 		try:
-			common.read_scores_file_check_for_errors_store_as_candidate(
-				file_name, self._director.scores_candidate
-			)
+			self._read_scores(file_name)
 		except ValueError as e:
 			raise SpacesError(
 				self._scores_error_bad_input_title,
@@ -1222,7 +1221,11 @@ class OpenScoresCommand:
 		self._director.scores_active = self._director.scores_candidate
 		self._director.scores_original = self._director.scores_active
 		self._director.scores_last = self._director.scores_active
+		self._director.rivalry.create_or_revise_rivalry_attributes(
+			self._director, common)
+		self._director.scores_active.summarize_scores()
 		self._director.scores_active.print_scores()
+		self._director.common.create_plot_for_tabs("scores")
 		self._director.title_for_table_widget = (
 			f"Scores have been read "
 			f"({len(self._director.scores_active.scores)} rows)"
@@ -1230,6 +1233,55 @@ class OpenScoresCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_scores(self, file_name: str) -> None:
+		"""Read scores from CSV file and store in candidate."""
+		try:
+			scores = pd.read_csv(file_name)
+
+			if scores.empty:
+				raise ValueError("Scores file is empty")
+
+			self._director.scores_candidate.scores = scores
+			self._director.scores_candidate.file_handle = file_name
+
+			# Extract dimension names from column headers (skip first column)
+			columns = scores.columns.tolist()
+			if len(columns) > 1:
+				dim_names = columns[1:]  # Skip first column (index column)
+				self._director.scores_candidate.dim_names = dim_names
+
+				# Set horizontal and vertical axis names
+				if len(dim_names) >= 2:
+					self._director.scores_candidate.hor_axis_name = dim_names[0]
+					self._director.scores_candidate.vert_axis_name = dim_names[1]
+				elif len(dim_names) == 1:
+					self._director.scores_candidate.hor_axis_name = dim_names[0]
+					self._director.scores_candidate.vert_axis_name = "Dimension 2"
+
+				# Set ndim based on number of score columns
+				self._director.scores_candidate.ndim = len(dim_names)
+
+				# Extract score_1 and score_2 for plotting
+				if len(dim_names) >= 1:
+					hor_axis_name = self._director.scores_candidate.hor_axis_name
+					self._director.scores_candidate.score_1 = scores[hor_axis_name]
+					self._director.scores_candidate.score_1_name = dim_names[0]
+
+				if len(dim_names) >= 2:
+					vert_axis_name = self._director.scores_candidate.vert_axis_name
+					self._director.scores_candidate.score_2 = scores[vert_axis_name]
+					self._director.scores_candidate.score_2_name = dim_names[1]
+
+		except (
+			FileNotFoundError,
+			PermissionError,
+			pd.errors.EmptyDataError,
+			pd.errors.ParserError,
+		) as e:
+			raise ValueError(f"Unable to read scores file: {e}") from e
 
 	# ------------------------------------------------------------------------
 
