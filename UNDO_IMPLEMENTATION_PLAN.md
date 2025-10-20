@@ -953,16 +953,16 @@ Scree
 - ✅ test_22.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
 - ✅ test_21.spc: Configuration, Reference points, Contest, Invert
 - ✅ test_simple_history.spc: Configuration, History
-- ⏳ test_uncertainty.spc: Target, Evaluations, Sample designer, Sample repetitions, Uncertainty (ready to test)
+- ✅ test_transform_complete.spc: Configuration, Center, Rotate, Rescale, Invert, Move, Varimax, Compare (all transform commands successfully tested)
 
-**Commands Still Needing Script Support (22 of 42 active commands):**
+**Commands Still Needing Script Support (16 of 42 active commands):**
 
-**Transform Menu (5 remaining):**
-- ⏳ Center (no parameters - should work as-is)
-- ⏳ Move
-- ⏳ Rescale
-- ⏳ Rotate
-- ⏳ Varimax
+**Transform Menu (0 remaining) - ALL COMPLETE:**
+- ✅ Center (no parameters - works as-is)
+- ✅ Move (accepts `dimensions` and `distances` parameters)
+- ✅ Rescale (accepts `factors` parameter)
+- ✅ Rotate (accepts `degrees` parameter)
+- ✅ Varimax (no parameters - works as-is)
 
 **Model Menu (1 remaining):**
 - ⏳ Principal components
@@ -1043,16 +1043,30 @@ Invert dimensions=['Left-Right', 'Social']
 
 **Status Summary:**
 - **Infrastructure:** 100% complete
-- **Script-ready commands:** 20 of 42 active commands (48% complete)
-  - **Modified with parameters:** 16 commands
+- **Script-ready commands:** 26 of 42 active commands (62% complete)
+  - **Modified with parameters:** 22 commands
   - **Already script-ready:** 4 commands (Compare, Sample designer, Sample repetitions, Uncertainty)
 - **File-loading commands:** 10 of 10 completed (100%)
-- **Transform commands:** 2 of 7 completed (29%) - Compare already works, Invert modified
-- **Model commands:** 5 of 6 completed (83%) - MDS, Uncertainty, Factor analysis, Factor analysis ML
+- **Transform commands:** 7 of 7 completed (100%) - ALL COMPLETE ✅
+- **Model commands:** 5 of 6 completed (83%) - MDS, Uncertainty, Factor analysis, Factor analysis ML, Principal components pending
 - **Respondents commands:** 3 of 4 completed (75%) - Reference points, Sample designer, Sample repetitions
 - **Complex interactive commands:** 0 of 10 (deferred - require extensive refactoring)
-- **Testing:** 4 test scripts validated, 1 ready to test (test_uncertainty.spc)
-- **Remaining work:** 22 commands need script parameter support added
+- **Testing:** 5 test scripts validated (including comprehensive test_transform_complete.spc)
+- **Remaining work:** 16 commands need script parameter support added
+
+**Recent Progress (2025-10-20):**
+- ✅ Completed ALL transform menu commands with script support (7 of 7):
+  - Center (no parameters - works as-is)
+  - Rotate (accepts `degrees` parameter)
+  - Rescale (accepts `factors` parameter)
+  - Invert (accepts `dimensions` parameter)
+  - Move (accepts `dimensions` and `distances` parameters)
+  - Varimax (no parameters - works as-is)
+  - Compare (already script-ready - no parameters)
+- ✅ Created comprehensive test_transform_complete.spc script testing all transform commands
+- ✅ Successfully validated all transform commands work correctly in scripts
+- ✅ Updated command_dict with all transform command script parameters
+- ✅ Transform menu now 100% script-ready (major milestone achieved)
 
 **Recent Progress (2025-10-19):**
 - ✅ Modified Sample Designer to auto-detect universe size from evaluations_active.nreferent

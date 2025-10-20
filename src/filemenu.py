@@ -92,7 +92,7 @@ class CorrelationsCommand:
 		self.common = common
 		self._director.command = "Correlations"
 		self._correlations_caption = "Open correlations"
-		self._correlations_filter = "*.csv"
+		self._correlations_filter = "*.txt"
 		self._correlations_error_bad_input_title = "Correlations problem"
 		self._correlations_error_bad_input_message = (
 			"Input is inconsistent with a correlations file.\nLook "
@@ -126,9 +126,7 @@ class CorrelationsCommand:
 		# Error handling
 		# If not a correlations file, then return an error message
 		try:
-			common.read_correlations_file_check_for_errors_store_as_candidate(
-				file_name, self._director.correlations_candidate
-			)
+			self._read_correlations(file_name, common)
 		except ValueError as e:
 			raise SpacesError(
 				self._correlations_error_bad_input_title,
@@ -151,11 +149,10 @@ class CorrelationsCommand:
 			self._director.correlations_active
 		)
 		self._director.correlations_last = self._director.correlations_active
-		self._director.correlations_active.print_correlations_or_dissimilarities(
-			self._director.correlations_active.nvar,
-			self._director.correlations_active.var_labels,
-			self._director.correlations_active.var_names,
-			self._director.correlations_active.correlations_as_square,
+		self._director.correlations_active.print_the_correlations(
+			width=8,
+			decimals=3,
+			common=common,
 		)
 		self._director.title_for_table_widget = (
 			"The correlations are shown as a square matrix"
@@ -163,6 +160,29 @@ class CorrelationsCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_correlations(self, file_name: str, common: Spaces) -> None:
+		"""Read correlations from lower triangular file and store in candidate.
+
+		Correlations are stored in a lower triangular matrix format, which is
+		different from the rectangular format used for evaluations.
+		"""
+		try:
+			# Use the existing read_lower_triangular_matrix function
+			self._director.correlations_candidate = (
+				common.read_lower_triangular_matrix(file_name, "correlations")
+			)
+
+			# Duplicate correlations to create all required formats
+			self._director.correlations_candidate.duplicate_correlations(common)
+
+		except (
+			FileNotFoundError,
+			PermissionError,
+		) as e:
+			raise ValueError(f"Unable to read correlations file: {e}") from e
 
 	# ------------------------------------------------------------------------
 
@@ -1612,11 +1632,10 @@ class PrintCorrelationsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.correlations_active.print_correlations_or_dissimilarities(
-			self._director.correlations_active.nvar,
-			self._director.correlations_active.var_labels,
-			self._director.correlations_active.var_names,
-			self._director.correlations_active.correlations_as_square,
+		self._director.correlations_active.print_the_correlations(
+			width=8,
+			decimals=3,
+			common=self._director.common,
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")

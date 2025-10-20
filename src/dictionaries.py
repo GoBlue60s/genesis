@@ -1652,7 +1652,7 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			lambda: parent.tables.display_table("target"),
 		],
 		"Terse": [TerseCommand, "shared", parent.display_a_line],
-		"Tester": [HelpCommand, "unique", None],
+		"Tester": [TesterCommand, "unique", None],
 		"Uncertainty": [
 			UncertaintyCommand,
 			"shared",
@@ -1726,6 +1726,7 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.statistics.display_table("scores"),
 		],
+		"View script": [ViewScriptCommand, "unique", None],
 		"View similarities": [
 			ViewSimilaritiesCommand,
 			"shared",
@@ -1741,7 +1742,6 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.tables.display_table("target"),
 		],
-		"View script": [ViewScriptCommand, "unique", None],
 	})
 
 
