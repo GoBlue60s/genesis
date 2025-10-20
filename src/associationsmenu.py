@@ -98,23 +98,17 @@ class AlikeCommand:
 		Raises:
 			SelectionError: If no pairs satisfy the cutoff criteria
 		"""
-		# peek("At start of determine_alike_pairs")
 		self._determine_alike_pairs_initialize_variables()
 		cut_point = self._director.cut_point
 		value_type = self._director.similarities_active.value_type
 		sorted_pairs = (
 			self._director.similarities_active.sorted_similarities_w_pairs
 		)
-		# peek("In determine_alike_pairs"
-		# 	f"\nsorted pairs: \n{sorted_pairs}")
 		# Use the filter_pairs_by_cutoff method to get qualifying pairs
 		filtered_pairs = self._filter_pairs_by_cutoff(
 			sorted_pairs, cut_point, value_type
 		)
 		n_similar_pairs = len(filtered_pairs)
-
-		# peek("In determine_alike_pairs"
-		# 	f"\nfiltered pairs: \n{filtered_pairs}")
 
 		if n_similar_pairs == 0:
 			raise SelectionError(
@@ -123,12 +117,10 @@ class AlikeCommand:
 
 		# Store filtered pairs and update coordinate lists for plotting
 		self._director.similarities_active.filtered_pairs = filtered_pairs
-		# peek("In determine_alike_pairs about to update coordinates")
+
 		self._update_coordinates_for_similar_pairs(filtered_pairs)
 		self._director.n_similar_pairs = n_similar_pairs
 
-		# peek("At end of determine_alike_pairs"
-		# 	f"Number of similar pairs: {n_similar_pairs}")
 		return
 
 	# ------------------------------------------------------------------------
@@ -161,8 +153,6 @@ class AlikeCommand:
 		This method updates the a_x_alike, a_y_alike, b_x_alike, and b_y_alike
 		lists in the similarities_active object for plotting.
 		"""
-		# peek("At top of _update_coordinates_for_similar_pairs"
-		# 	f"\nfiltered pairs: \n{filtered_pairs}")
 		# Get necessary objects
 		similarities_active = self._director.similarities_active
 		point_coords = self._director.configuration_active.point_coords
@@ -207,8 +197,6 @@ class AlikeCommand:
 			similarities_active.b_y_alike.append(
 				point_coords.iloc[item_b_index, vert_dim]
 			)
-		# peek("At end of _update_coordinates_for_similar_pairs")
-		# Coordinates updated for plotting
 
 		return
 
@@ -270,9 +258,6 @@ class AlikeCommand:
 			)
 
 		self._director.cut_point = cut_point
-
-		# peek(f"\nAt end of _get_cutoff_from_user:"
-		# 	f"\n{self._director.cut_point=}")
 
 		return
 

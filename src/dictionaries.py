@@ -1472,6 +1472,11 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.statistics.display_table("sample_repetitions"),
 		],
+		"Print sample solutions": [
+			PrintSampleSolutionsCommand,
+			"shared",
+			lambda: parent.statistics.display_table("sample_solutions"),
+		],
 		"Print scores": [
 			PrintScoresCommand,
 			"shared",

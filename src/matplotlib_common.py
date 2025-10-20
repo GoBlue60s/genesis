@@ -138,11 +138,6 @@ class MatplotlibCommon:
 		offset = self._director.common.plot_ranges.offset
 		range_points = self._director.configuration_active.range_points
 
-		# conf = self._director.configuration_active.config_as_itemframe
-		# conf = self._director.configuration_active.point_coords
-		# peek("\nIn add_configuration_to_matplotlib_plot"
-		# 	f"\n conf = {conf}")
-
 		x_coords = []
 		y_coords = []
 		for each_point in range_points:

@@ -347,12 +347,6 @@ class ReferencePointsCommand:
 		point_labels = self._director.configuration_active.point_labels
 		rival_a = rivalry.rival_a
 		rival_b = rivalry.rival_b
-		# peek(
-		# 	"After setting up rivalry and point names in "
-		# 	"ReferencePointsCommand"
-		# )
-		# peek(rival_a)
-		# peek(rival_b)
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -737,9 +731,7 @@ class SampleRepetitionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		# peek("At top of SampleRepetitionsCommand.execute()"
-		# 	" - self._director.uncertainty_active.sample_design: ",
-		# 	f"{self._director.uncertainty_active.sample_design}")
+
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()

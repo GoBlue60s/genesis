@@ -2886,9 +2886,8 @@ class Rivalry:
 						case_combination[key] = default_result
 
 		case_key = f"{bisector._case}_{west._case}_{east._case}"
-		# peek(case_key)
 		result = case_combination[case_key]()
-		# peek(result)
+
 		return result
 
 

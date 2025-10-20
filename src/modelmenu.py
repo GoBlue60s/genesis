@@ -131,8 +131,6 @@ class ClusterCommand:
 		kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
 		cluster_labels = kmeans.fit_predict(self.data_for_clustering)
 		cluster_centers = kmeans.cluster_centers_
-		# peek(f"{cluster_labels=}")
-		# peek(f"{cluster_centers=}")
 
 		# Store cluster results
 		self._director.scores_active.cluster_labels = cluster_labels
@@ -1544,7 +1542,7 @@ class MDSCommand:
 		self,
 		common,  # noqa: ANN001, ARG002
 		use_metric: bool = False) -> None:  # noqa: FBT001, FBT002
-		peek("Entering MDSCommand.execute in class MDSCommand")
+
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -1571,22 +1569,15 @@ class MDSCommand:
 		#
 		# Now perform MDS
 		#
-		print(f"DEBUG: Before _perform_mds, self._director.configuration_active.npoint = {self._director.configuration_active.npoint}")
-		peek("self._director.ranked_similarities is unknown here")
 		self._perform_mds_pick_up_point_labelling_from_similarities()
-		peek("After _perform_mds_pick_up_point_labelling_from_similarities in MDSCommand.execute")
 
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		best_stress = self._director.configuration_active.best_stress
 		self._director.configuration_active.inter_point_distances()
-		peek("After inter_point_distances call and before rank_when_similarities_match_configuration in MDSCommand.execute")
-		peek(self._director.configuration_active.inter_point_distances)
 		self._director.similarities_active.rank_when_similarities_match_configuration(
 			self._director, self.common
 		)
-		peek("After rank_when_similarities_match_configuration in MDSCommand.execute")
-		peek("self.ranked_similarities is unknown here - this is new")
 		self._print_best_stress(ndim, best_stress)
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
@@ -1661,8 +1652,7 @@ class MDSCommand:
 	# ------------------------------------------------------------------------
 
 	def _perform_mds_pick_up_point_labelling_from_similarities(self) -> None:
-		peek("Entering _perform_mds_pick_up_point_labelling_from_similarities in class MDSCommand")
-		peek("self.ranked_similarities is unknown here")
+
 		ndim = self._director.configuration_active.ndim
 		n_comp = self._director.configuration_active.n_comp
 		use_metric = self._director.configuration_active.use_metric
@@ -1679,13 +1669,10 @@ class MDSCommand:
 			self._director.abandon_scores()
 		if ndim == 0:
 			ndim = n_comp
-		print(f"DEBUG: Before mds call in _perform_mds_pick_up_point_labelling_from_similarities, npoint = {npoint}")
-		peek("self.ranked_similarities is unknown here")
-		peek(similarities_instance.similarities_as_square)
+
 		configuration_instance = self._director.common.mds(
 			n_comp, use_metric, similarities_instance
 		)
-		peek("After mds call")
 		range_points = range(nitem)
 		if len(point_labels) == 0:
 			npoint = nreferent
@@ -1709,8 +1696,6 @@ class MDSCommand:
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)
-		peek("Exiting _perform_mds_pick_up_point_labelling_from_similarities in class MDSCommand")
-		peek("self.ranked_similarities STILL unknown here")
 		return
 
 	# ------------------------------------------------------------------------
@@ -2242,15 +2227,6 @@ class UncertaintyCommand:
 
 		self.establish_sample_solutions_info()
 
-		# uncertainty_active.nrepetitions = nrepetitions
-
-		# peek("At end of _get_solutions_from_mds\n",
-		# 	"self._director.uncertainty_active.sample_solutions: \n"
-		# 	f"{self._director.uncertainty_active.sample_solutions}\n"
-		# 	"self._director.uncertainty_active.sample_repetitions_stress: \n"
-		# 	f"{self._director.uncertainty_active.sample_repetitions_stress}\n"
-		# )
-
 		return target_out, active_out
 
 	# -------------------------------------------------------------------------
@@ -2340,9 +2316,7 @@ class UncertaintyCommand:
 	def duplicate_repetition_line_of_sight(
 		self, common: Spaces, line_of_sight: SimilaritiesFeature
 	) -> None:
-		peek("At top of duplicate repetition line of sight in class UncertaintyCommand")
-		peek(line_of_sight.nitem)
-		peek(line_of_sight.similarities)
+
 		(
 			line_of_sight.similarities_as_dataframe,
 			line_of_sight.similarities_as_dict,

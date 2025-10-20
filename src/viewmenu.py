@@ -416,11 +416,7 @@ class ViewPointUncertaintyCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces, plot_to_show: str) -> None:
-		peek(
-			"At top of ViewPointUncertaintyCommand.execute()"
-			" - self._director.uncertainty_active.sample_solutions: ",
-			f"{self._director.uncertainty_active.sample_solutions}",
-		)
+
 		self.plot_to_show = plot_to_show
 
 		director = self._director
@@ -494,11 +490,7 @@ class ViewSampleDesignCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		peek(
-			"At top of ViewSampleDesignCommand.execute()"
-			" - self._director.uncertainty_active.sample_design: ",
-			f"{self._director.uncertainty_active.sample_design}",
-		)
+
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()

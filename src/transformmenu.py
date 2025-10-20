@@ -70,7 +70,6 @@ class CompareCommand:
 			f"matches target configuration with disparity of "
 			f"{disparity:8.4f}"
 		)
-		# peek("In Compare about to create widgets for output and log tabs")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

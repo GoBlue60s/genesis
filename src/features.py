@@ -400,7 +400,7 @@ class ConfigurationFeature:
 		# sorted_distances = self.sorted_distances
 
 		# calculate the inter-point distances in separate function??
-		# peek("\nAt top of inter_point_distances")
+
 		if npoint == 0:
 			npoint = nreferent
 
@@ -409,10 +409,6 @@ class ConfigurationFeature:
 				point_coords, point_labels, npoint, range_dims
 			)
 		)
-		# peek("\nAfter calculate_inter_point_distances")
-		# peek("\t distances_as_list: ", distances_as_list)
-		# peek("\t distances_as_dict: ", distances_as_dict)
-		# peek("\t distances: ", distances)
 
 		sorted_distances = dict(
 			sorted(distances_as_dict.items(), key=lambda x: x[1])
@@ -489,10 +485,7 @@ class ConfigurationFeature:
 		npoint: int,
 		range_dims: range,
 	) -> tuple[list, dict, list[list[float]]]:
-		# peek("\nAt top of calculate_inter_point_distances")
-		# peek("\t npoint: ", npoint)
 
-		# peek("\t range_dims: ", range_dims)
 		distances_as_list: list[float] = []
 		distances_as_dict: dict = {}
 		distances: list[list[float]] = []
@@ -532,30 +525,17 @@ class ConfigurationFeature:
 				sqs = []
 				sumofsqs = 0
 			distances.append(a_row)
-		# peek("At bottom of calculate_inter_point_distances")
-		# peek("\t distances_as_list: ", distances_as_list)
+
 		return distances_as_list, distances_as_dict, distances
 
 	# ------------------------------------------------------------------------
 	def rank_distances(self) -> None:
-		# peek("\nAt top of rank_distances")
 
 		point_names = self.point_names
 		point_labels = self.point_labels
 		range_points = self.range_points
 		npoint = self.npoint
 
-		# peek("\t point_names: ", point_names)
-		# peek("\t point_labels: ", point_labels)
-		# peek("\t range_points: ", range_points)
-		# peek("\t npoint: ", npoint)
-		# peek("\t self.distances: ", self.distances)
-		# peek("\t self.distances_as_list: ", self.distances_as_list)
-		# peek("\t self.ranked_distances: ", self.ranked_distances)
-		# peek("\t self.ranked_distances_as_square: ",
-		# 	self.ranked_distances_as_square)
-		# peek("\t self.ranked_distances_as_dict: ",
-		# 	self.ranked_distances_as_dict)
 		# ???????????????????????????
 		# nreferent = self.nreferent
 		distances = self.distances
@@ -852,11 +832,8 @@ class EvaluationsFeature:
 		stats_eval = stats_eval.reindex(columns=new_order)
 		stats_eval_sorted = stats_eval.sort_values(by="Mean", ascending=False)
 		# stats_eval_sorted = pd.DataFrame(stats_eval_sorted)
-		# peek(type(stats_eval_sorted))
 		names_eval_sorted = stats_eval_sorted.index.tolist()
-		# peek(names_eval_sorted)
 		# columns = stats_eval_sorted.columns.tolist()
-		# peek(columns)
 
 		avg_eval = evaluations.mean()
 		avg_eval.sort_values(inplace=True)
@@ -1107,7 +1084,7 @@ class SimilaritiesFeature:
 	# ------------------------------------------------------------------------
 
 	def compute_differences_in_ranks(self) -> None:
-		peek("\nAt top of compute_differences_in_ranks")
+
 		nreferent = self._director.similarities_active.nreferent
 		ranked_similarities_as_list = (
 			self._director.similarities_active.ranked_similarities_as_list
@@ -1246,7 +1223,8 @@ class SimilaritiesFeature:
 
 		print("\n\tThe", value_type, "matrix has", nitem, "items")
 		common.print_lower_triangle(
-			decimals, item_labels, item_names, nitem, similarities, width
+			decimals, item_labels, item_names,
+			nitem, similarities, width
 		)
 		return
 
@@ -1254,7 +1232,6 @@ class SimilaritiesFeature:
 
 	def create_ranked_similarities_dataframe(self) -> None:
 		
-		peek("At top of Creating ranked similarities dataframe in SimilaritiesFeature")
 		#
 		# Create dataframe which is used for computing and displaying ranks
 		# It will start with self.sorted_similarities_w_pairs which has
@@ -1269,9 +1246,7 @@ class SimilaritiesFeature:
 		sorted_similarities_w_pairs = self.sorted_similarities_w_pairs
 		range_similarities = self.range_similarities
 		# columns_for_ranks = self.columns_for_ranks
-		peek(self.range_similarities)
-		peek(self.range_items)
-		peek(sorted_similarities_w_pairs)
+
 		range_items = self.range_items
 		item_labels = self.item_labels
 
@@ -1367,17 +1342,13 @@ class SimilaritiesFeature:
 		self._director.similarities_active.columns_for_ranks = (
 			columns_for_ranks
 		)
-		peek("Finished creating ranked similarities dataframe in SimilaritiesFeature")
-		peek("Can we see this ????????????????????????????????????")
-		print("Ranks_df: ", ranks_df)
-		print("self._director.similarities_active.ranks_df:", self._director.similarities_active.ranks_df)
-		print("self.ranked_similarities:", self.ranked_similarities)
+
 		return
 
 	# ------------------------------------------------------------------------
 
 	def rank_similarities(self) -> None:
-		peek("At top of Rank similarities in SimilaritiesFeature")
+
 		nitem = self.nitem
 		item_names = self.item_names
 		item_labels = self.item_labels
@@ -1434,8 +1405,6 @@ class SimilaritiesFeature:
 		self.ranked_similarities_as_dataframe = (
 			ranked_similarities_as_dataframe
 		)
-		peek("Finished ranking similarities in SimilaritiesFeature")
-		peek(self.ranked_similarities)
 
 		return
 
@@ -1444,26 +1413,19 @@ class SimilaritiesFeature:
 	def rank_when_similarities_match_configuration(
 		self, director: Status, common: Spaces
 	) -> None:
-		peek("At top of Rank similarities when they match configuration in SimilaritiesFeature")
-		peek(self.ranked_similarities)
+
 		if common.have_similarities():
 			director.similarities_active.create_ranked_similarities_dataframe()
-			# director)
-			peek("After creating ranked similarities dataframe - Do we get here?")
+
 			director.similarities_active.duplicate_ranked_similarities(common)
 			director.similarities_active.compute_differences_in_ranks()
-		peek("Finished ranking similarities when they match configuration")
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def duplicate_ranked_similarities(self, common: Spaces) -> None:
-		peek("At top of Duplicating ranked similarities in SimilaritiesFeature")
-		peek(self.range_dyads)
-		peek(self.range_items)
-		peek("self.nreferent:", self.nreferent)
-		peek(self.ranked_similarities)
+
 		(
 			self.ranked_similarities_as_dataframe,
 			self.ranked_similarities_as_dict,
@@ -1480,8 +1442,6 @@ class SimilaritiesFeature:
 			self.nreferent,
 			self.value_type,
 		)
-		peek("Finished duplicating ranked similarities in SimilaritiesFeature")
-		peek(self.ranked_similarities)
 
 # --------------------------------------------------------------------------
 
