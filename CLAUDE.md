@@ -195,3 +195,53 @@ All new commands should follow this consistent structure:
 ## Archive Structure
 
 The `archive/` directory contains historical versions and development snapshots, organized chronologically with descriptive folder names indicating major refactoring milestones.
+
+## Communication and Change Management Guidelines
+
+### Proposing Code Changes
+
+When proposing code changes using the Edit tool, ALWAYS include:
+
+1. **File path and line numbers** (already shown by the tool)
+2. **Class name** - If the change is within a class, specify which class
+3. **Method/function name** - Specify which method or function is being modified
+4. **Context description** - Brief explanation of what section of code is being changed
+
+**Example of good communication:**
+"I'm modifying the `_execute_script_command` method in the `OpenScriptCommand` class in `filemenu.py` (around line 1455) to add a check for interactive_only commands."
+
+**Why this matters:**
+- Large files have many classes and functions
+- Line numbers alone are insufficient for navigation
+- User needs to quickly locate the change in their editor
+- Provides context for understanding the proposed change
+
+### Handling Rejected Changes
+
+When the user rejects a proposed change:
+
+1. **DO NOT immediately re-propose** - Wait for user guidance
+2. **Preserve the context** - Keep the proposed change visible in conversation if possible
+3. **Explain your reasoning** - After rejection, briefly state:
+   - What you were trying to accomplish
+   - Why you chose that approach
+   - What the proposed change would have done
+4. **Ask for clarification** - Request specific guidance on:
+   - What was problematic about the proposal
+   - What alternative approach the user prefers
+   - Whether the goal itself needs reconsideration
+
+**Example response to rejection:**
+"I understand. I was proposing to add a check in the `_execute_script_command` method of the `OpenScriptCommand` class to reject interactive_only commands before attempting to execute them. My reasoning was to fail early with a clear error message.
+
+What aspect of this approach would you like me to reconsider? Should I:
+- Place the check in a different location?
+- Use a different error handling approach?
+- Reconsider whether this check is needed at all?"
+
+### Summary of Communication Best Practices
+
+- **Be specific**: Always include class/method names with file paths
+- **Be patient**: Wait for user direction after rejections
+- **Be clear**: Explain what and why, not just how
+- **Be collaborative**: Ask questions when unclear rather than assuming

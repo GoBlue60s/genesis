@@ -12,8 +12,9 @@ FrozenDict = MappingProxyType
 
 # ----------------------------------------------------------------------------
 # Dictionary: command_dict
-# Source: director.py lines 915-949 (active_commands and passive_commands)
-# Purpose: Command classification and undo metadata for all 104 commands
+# Source: director.py lines 936-977 (active_commands, interactive_only_commands, script_commands, passive_commands)
+# Purpose: Command classification and undo metadata for all 108 commands
+#          (40 active + 2 interactive_only + 3 script + 63 passive)
 # ----------------------------------------------------------------------------
 
 command_dict = MappingProxyType({
@@ -59,7 +60,7 @@ command_dict = MappingProxyType({
 		"state_capture": ["correlations"]
 	},
 	"Create": {
-		"type": "active",
+		"type": "interactive_only",
 		"state_capture": ["configuration"]
 	},
 	"Deactivate": {
@@ -127,7 +128,7 @@ command_dict = MappingProxyType({
 		"state_capture": ["configuration", "scores", "rivalry"]
 	},
 	"New grouped data": {
-		"type": "active",
+		"type": "interactive_only",
 		"state_capture": ["grouped_data"]
 	},
 	"Open sample design": {
@@ -189,9 +190,6 @@ command_dict = MappingProxyType({
 	"Print target": {
 		"type": "passive"
 	},
-	"Ranks": {
-		"type": "passive"
-	},
 	"Ranks differences": {
 		"type": "passive"
 	},
@@ -219,7 +217,8 @@ command_dict = MappingProxyType({
 	},
 	"Sample designer": {
 		"type": "active",
-		"state_capture": ["uncertainty"]
+		"state_capture": ["uncertainty"],
+		"script_params": ["probability_of_inclusion", "nrepetitions"]
 	},
 	"Sample repetitions": {
 		"type": "active",
@@ -718,6 +717,8 @@ explain_dict = MappingProxyType({
 	"the active sample design.",
 	"Print sample repetitions": "Print sample repetitions is used "
 	"to print the active sample repetitions.",
+	"Print sample solutions": "Print sample solutions is used "
+	"to print the active sample solutions.",
 	"Print scores": "Print scores is used to print the active scores.",
 	"Print similarities": "Print similarities is used to print "
 	"the active similarities.",

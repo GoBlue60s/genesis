@@ -59,12 +59,16 @@ class HistoryCommand:
 		range_commands_used = range(1, len(commands_used))
 		for i in range_commands_used:
 			line = line + commands_used[i] + "\t"
-			if command_exit_code[i] == 0:
-				line = line + "Completed successfully"
-			elif i < (len(commands_used) - 1):
-				line = line + "Failed"
-			else:
-				line = line + "In process"
+			status = command_exit_code[i]
+			match status:
+				case 1:
+					line = line + "Failed"
+				case 0:
+					line = line + "Completed successfully"
+				case -1:
+					line = line + "In process"
+				case _:
+					line = line + "Unknown status"
 			print(line)
 			line = "\t"
 		return

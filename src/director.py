@@ -935,9 +935,9 @@ class Status(QMainWindow):
 		#
 		active_commands = (
 			"Center", "Cluster", "Compare", "Configuration", "Correlations",
-			"Create", "Deactivate", "Evaluations", "Factor analysis",
+			"Deactivate", "Evaluations", "Factor analysis",
 			"Factor analysis machine learning", "Grouped data", "Individuals",
-			"Invert", "Line of sight", "MDS", "Move", "New grouped data",
+			"Invert", "Line of sight", "MDS", "Move",
 			"Open sample design", "Open sample repetitions",
 			"Open sample solutions", "Open scores",
 			"Principal components",
@@ -948,28 +948,32 @@ class Status(QMainWindow):
 			"Settings - presentation layer", "Settings - segment sizing",
 			"Settings - vector sizing", "Similarities",
 			"Target", "Tester", "Uncertainty", "Undo", "Varimax")
+		interactive_only_commands = (
+			"Create", "New grouped data")
+		script_commands = (
+			"Open script", "Save script", "View script")
 		passive_commands = (
 			"About", "Alike", "Base", "Battleground", "Contest",
 			"Convertible", "Core supporters", "Directions",
 			"Distances", "Exit", "First dimension","Help", "History", "Joint",
-			"Likely supporters", "Open script",
+			"Likely supporters",
 			"Paired", "Print configuration", "Print correlations",
 			"Print evaluations", "Print grouped data", "Print individuals",
 			"Print sample design", "Print sample repetitions",
 			"Print sample solutions", "Print scores",
 			"Print similarities", "Print target", "Ranks differences",
 			"Ranks distances", "Ranks similarities",
-			"Ranks", "Save configuration",
+			"Save configuration",
 			"Save correlations", "Save individuals", "Save sample design",
 			"Save sample repetitions", "Save sample solutions",
-			"Save scores", "Save script", "Save similarities","Save target", "Scree",
+			"Save scores", "Save similarities","Save target", "Scree",
 			"Second dimension", "Segments","Shepard",
 			"Status", "Stress contribution", "Terse", "Vectors", "Verbose",
 			"View configuration", "View correlations", "View custom",
 			"View distances", "View evaluations", "View grouped data",
 			"View individuals", "View point uncertainty", "View sample design",
 			"View sample repetitions", "View sample solutions", "View scores",
-			"View script", "View similarities", "View spatial uncertainty",
+			"View similarities", "View spatial uncertainty",
 			"View target")
 
 	# ------------------------------------------------------------------------
@@ -1255,11 +1259,7 @@ class Status(QMainWindow):
 		self.spaces_statusbar.showMessage(
 			f"Completed {command} command", 80000
 		)
-
-		# Don't print success message for RunScript command
-		# (individual script commands already printed their messages)
-		if command != "Run script":
-			print(f"\nSuccessfully completed {command} command.")
+		print(f"\nSuccessfully completed {command} command.")
 
 		self.command = command
 		self.command_exit_code = command_exit_code

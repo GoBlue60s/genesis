@@ -518,9 +518,7 @@ class EvaluationsCommand:
 		# Error handling
 		# If not an evaluations file, then return an error message
 		try:
-			common.read_evaluations_file_check_for_errors_store_as_candidate(
-				file_name, self._director.evaluations_candidate
-			)
+			self._read_evaluations(file_name)
 		except ValueError as e:
 			raise SpacesError(
 				self._evaluations_error_bad_input_title,
@@ -544,12 +542,89 @@ class EvaluationsCommand:
 		)
 		self._director.evaluations_last = self._director.evaluations_active
 
-		# Also compute correlations from evaluations
-		self._director.correlations_candidate = (
-			common.convert_evaluations_to_correlations(
-				self._director.evaluations_active
-			)
+		# Compute correlations from evaluations
+		self._compute_correlations_from_evaluations(common)
+
+		self._director.evaluations_active.print_the_evaluations()
+		self._director.evaluations_active.summarize_evaluations()
+		self._director.title_for_table_widget = (
+			"Evaluations have been read and correlations computed"
 		)
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_evaluations(self, file_name: str) -> None:
+		"""Read evaluations from CSV file and store in candidate."""
+		try:
+			evaluations = pd.read_csv(file_name)
+			(nevaluators, nreferent) = evaluations.shape
+			nitem = nreferent
+			range_items = range(nreferent)
+			item_names = evaluations.columns.tolist()
+			item_labels = [label[0:4] for label in item_names]
+
+			if len(item_names) < 3:
+				raise ValueError("Evaluations file must have at least 3 items")
+
+			self._director.evaluations_candidate.evaluations = evaluations
+			self._director.evaluations_candidate.nevaluators = nevaluators
+			self._director.evaluations_candidate.nreferent = nreferent
+			self._director.evaluations_candidate.nitem = nitem
+			self._director.evaluations_candidate.range_items = range_items
+			self._director.evaluations_candidate.item_names = item_names
+			self._director.evaluations_candidate.item_labels = item_labels
+			self._director.evaluations_candidate.file_handle = file_name
+
+		except (
+			FileNotFoundError,
+			PermissionError,
+			pd.errors.EmptyDataError,
+			pd.errors.ParserError,
+		) as e:
+			raise ValueError(f"Unable to read evaluations file: {e}") from e
+
+	# ------------------------------------------------------------------------
+
+	def _compute_correlations_from_evaluations(
+		self, common: Spaces
+	) -> None:
+		"""Compute correlations from evaluations data."""
+		nreferent = self._director.evaluations_active.nreferent
+		item_names = self._director.evaluations_active.item_names
+		item_labels = self._director.evaluations_active.item_labels
+		evaluations = self._director.evaluations_active.evaluations
+
+		correlations_as_dataframe = evaluations.corr(method="pearson")
+
+		correlations = []
+		for each_col in range(1, nreferent):
+			a_row = []
+			for each_row in range(each_col):
+				a_row.append(correlations_as_dataframe.iloc[each_row, each_col])
+			correlations.append(a_row)
+
+		self._director.correlations_candidate.nreferent = nreferent
+		self._director.correlations_candidate.nitem = nreferent
+		self._director.correlations_candidate.item_names = item_names
+		self._director.correlations_candidate.item_labels = item_labels
+		self._director.correlations_candidate.correlations = correlations
+		self._director.correlations_candidate.correlations_as_dataframe = (
+			correlations_as_dataframe
+		)
+		self._director.correlations_candidate.duplicate_correlations(common)
+		self._director.correlations_candidate.ndyad = len(
+			self._director.correlations_candidate.correlations_as_list
+		)
+		self._director.correlations_candidate.n_pairs = len(
+			self._director.correlations_candidate.correlations_as_list
+		)
+		self._director.correlations_candidate.range_dyads = range(
+			self._director.correlations_candidate.ndyad
+		)
+
 		self._director.correlations_active = (
 			self._director.correlations_candidate
 		)
@@ -557,14 +632,6 @@ class EvaluationsCommand:
 			self._director.correlations_active
 		)
 		self._director.correlations_last = self._director.correlations_active
-
-		self._director.evaluations_active.print_evaluations()
-		self._director.title_for_table_widget = (
-			"Evaluations have been read and correlations computed"
-		)
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
-		return
 
 	# ------------------------------------------------------------------------
 
@@ -1160,6 +1227,7 @@ class OpenScriptCommand:
 		self._script_error_bad_input_message = (
 			"Unable to execute script file.\nCheck file format and try again."
 		)
+		self._executed_commands = []  # Track commands executed in script
 		return
 
 	# ------------------------------------------------------------------------
@@ -1218,6 +1286,7 @@ class OpenScriptCommand:
 						command_name, params_dict, line_num, line
 					)
 					commands_executed += 1
+					self._executed_commands.append(command_name)
 
 				except SpacesError as e:
 					# Script command failed - stop execution
@@ -1251,6 +1320,12 @@ class OpenScriptCommand:
 		# (otherwise it will print success message for the last script command)
 		self._director.command = "Open script"
 
+		# Set current_command to self so widget_control calls this command's _display
+		# (not the last executed command's _display)
+		self._director.current_command = self
+
+		# Call _display to create the widget showing executed commands
+		self._display()
 		self._director.title_for_table_widget = (
 			f"Script executed: {commands_executed} commands from "
 			f"{Path(file_name).name}"
@@ -1268,7 +1343,24 @@ class OpenScriptCommand:
 		Returns:
 			QTextEdit widget showing script execution summary
 		"""
-		return self._director.display_a_line()
+		from PySide6.QtWidgets import QTextEdit  # noqa: PLC0415
+
+		# Create text widget with command list
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+
+		# Build summary text
+		summary_lines = [
+			f"Executed {len(self._executed_commands)} commands:\n"
+		]
+
+		for idx, cmd_name in enumerate(self._executed_commands, 1):
+			summary_lines.append(f"{idx}. {cmd_name}")
+
+		widget.setPlainText("\n".join(summary_lines))
+		self._director.output_widget_type = "Table"
+
+		return widget
 
 	# ------------------------------------------------------------------------
 
@@ -1364,23 +1456,33 @@ class OpenScriptCommand:
 	# ------------------------------------------------------------------------
 
 	def _parse_command_name_from_line(self, parts: list[str]) -> str:
-		"""Parse command name from line parts, handling multi-word commands.
+		"""Parse command name from line parts by matching against command_dict.
+
+		Finds the longest command name from command_dict that matches
+		the beginning of the line. This works for any command length
+		without arbitrary word limits.
 
 		Args:
 			parts: List of whitespace-separated tokens from script line
 
 		Returns:
-			The command name (may be multi-word like "Reference points")
+			The command name (may be multi-word like "Factor analysis machine learning")
 		"""
 		from dictionaries import command_dict  # noqa: PLC0415
 
-		# Try progressively longer command names (up to 3 words)
-		for num_words in range(min(3, len(parts)), 0, -1):
-			candidate = " ".join(parts[:num_words])
-			if candidate in command_dict:
-				return candidate
+		line_text = " ".join(parts)
 
-		# If no match found, assume single word
+		# Find all commands that match the beginning of the line
+		matching_commands = [
+			cmd for cmd in command_dict.keys()
+			if line_text.startswith(cmd + " ") or line_text == cmd
+		]
+
+		# Return the longest match (most specific)
+		if matching_commands:
+			return max(matching_commands, key=len)
+
+		# No match found
 		return parts[0] if parts else ""
 
 	# ------------------------------------------------------------------------
@@ -1401,6 +1503,7 @@ class OpenScriptCommand:
 			line: Original line text (for error messages)
 		"""
 		import inspect  # noqa: PLC0415
+		from dictionaries import command_dict  # noqa: PLC0415
 
 		# Get command class from widget_dict (which maps command names to classes)
 		widget_dict = self._director.widget_dict
@@ -1411,6 +1514,12 @@ class OpenScriptCommand:
 				f"Command '{command_name}' not found in line {line_num}",
 			)
 
+		# Skip interactive_only commands (they cannot be scripted)
+		if command_name in command_dict:
+			cmd_type = command_dict[command_name].get("type")
+			if cmd_type == "interactive_only":
+				return
+
 		# widget_dict format: [CommandClass, sharing_type, display_lambda]
 		command_class = widget_dict[command_name][0]
 
@@ -1420,6 +1529,10 @@ class OpenScriptCommand:
 		try:
 			# Instantiate command
 			command_instance = command_class(self._director, self.common)
+
+			# Store command instance in director so _display() can be called
+			# for table widget creation (needed for "unique" type commands)
+			self._director.current_command = command_instance
 
 			# Check execute method signature to determine if extra param needed
 			execute_sig = inspect.signature(command_instance.execute)
@@ -2282,6 +2395,11 @@ class SaveScriptCommand:
 			# Skip script-type commands (OpenScript, SaveScript, ViewScript)
 			# These are meta-commands that should not appear in generated scripts
 			if cmd_state.command_type == "script":
+				continue
+
+			# Skip interactive_only commands (Create, New grouped data)
+			# These require extensive user interaction and cannot be scripted
+			if cmd_state.command_type == "interactive_only":
 				continue
 
 			# Build command line with parameters

@@ -500,12 +500,11 @@ class SampleDesignerCommand:
 		)
 		self._designer_title = "Set sample parameters.."
 		self._designer_items = [
-			"Size of universe",
 			"Probability of inclusion",
 			"Number of repetitions",
 		]
-		self._designer_integers = [True, True, True]
-		self._designer_default_values = [100, 50, 2]
+		self._designer_integers = [True, True]
+		self._designer_default_values = [50, 2]
 		self._director.uncertainty_active.sample_design_frequencies_as_json = (
 			""
 		)
@@ -571,21 +570,49 @@ class SampleDesignerCommand:
 		default_values: list[int],
 	) -> None:
 		self._establish_sample_designer_sizes_initialize_variables()
-		dialog = ModifyValuesDialog(
-			title, items, integers, default_values=default_values
-		)
-		dialog.selected_items()
-		result = dialog.exec()
-		if result == QDialog.Accepted:
-			value = dialog.selected_items()
-			universe_size = value[0][1]
-			probability_of_inclusion = value[1][1]
-			nrepetitions = value[2][1]
+
+		# Get universe size automatically from evaluations_active
+		universe_size = self._director.evaluations_active.nevaluators
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+		):
+			# Get parameters from script
+			if "probability_of_inclusion" in self._director.script_parameters:
+				probability_of_inclusion = (
+					self._director.script_parameters["probability_of_inclusion"]
+				)
+			else:
+				raise SpacesError(
+					"Missing script parameter",
+					"probability_of_inclusion parameter required for Sample designer"
+				)
+
+			if "nrepetitions" in self._director.script_parameters:
+				nrepetitions = self._director.script_parameters["nrepetitions"]
+			else:
+				raise SpacesError(
+					"Missing script parameter",
+					"nrepetitions parameter required for Sample designer"
+				)
 		else:
-			raise SpacesError(
-				self._need_sample_sizes_error_title,
-				self._need_sample_sizes_error_message,
+			# Show dialog to get user input
+			dialog = ModifyValuesDialog(
+				title, items, integers, default_values=default_values
 			)
+			dialog.selected_items()
+			result = dialog.exec()
+			if result == QDialog.Accepted:
+				value = dialog.selected_items()
+				probability_of_inclusion = value[0][1]
+				nrepetitions = value[1][1]
+			else:
+				raise SpacesError(
+					self._need_sample_sizes_error_title,
+					self._need_sample_sizes_error_message,
+				)
 
 		self._director.uncertainty_active.universe_size = universe_size
 		self._director.uncertainty_active.probability_of_inclusion = (
