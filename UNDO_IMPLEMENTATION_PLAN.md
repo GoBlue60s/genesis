@@ -900,6 +900,11 @@ Scree
 - No user dialogs needed - immediate display on Output tab
 - Full integration with existing director patterns
 
+**Enhancement (2025-10-19):**
+- ✅ Fixed table widget display on Output tab (displays script history as formatted table)
+- ✅ Fixed History command table widget as well (same underlying issue)
+- ✅ Both commands now correctly show table widgets on Output tab after execution
+
 **Git Commits:**
 - 05ffbeb: "Implement ViewScript command for script history preview" (2025-10-17)
 
@@ -933,16 +938,24 @@ Scree
 13. ✅ **Reference points** (respondentsmenu.py:435) - accepts `contest` parameter
 14. ✅ **Invert** (transformmenu.py:300) - accepts `dimensions` parameter
 
-**Already script-ready without modification (1 command):**
-15. ✅ **Compare** (transformmenu.py:45) - no parameters needed (automatic Procrustes rotation)
+**Modified with parameter support (16 commands):**
+15. ✅ **Factor analysis** (modelmenu.py:632) - accepts `n_factors` parameter
+16. ✅ **Factor analysis machine learning** (modelmenu.py:964) - accepts `n_components` parameter
+
+**Already script-ready without modification (4 commands):**
+17. ✅ **Compare** (transformmenu.py:45) - no parameters needed (automatic Procrustes rotation)
+18. ✅ **Sample designer** (respondentsmenu.py:486) - accepts `probability_of_inclusion` and `nrepetitions` parameters
+19. ✅ **Sample repetitions** (respondentsmenu.py:725) - no parameters needed (processes sample design)
+20. ✅ **Uncertainty** (modelmenu.py:2091) - no parameters needed (processes sample repetitions)
 
 **Scripts Successfully Tested:**
 - ✅ test_23.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
 - ✅ test_22.spc: Configuration, Reference points (2x), Similarities, Contest (2x), MDS, History
 - ✅ test_21.spc: Configuration, Reference points, Contest, Invert
 - ✅ test_simple_history.spc: Configuration, History
+- ⏳ test_uncertainty.spc: Target, Evaluations, Sample designer, Sample repetitions, Uncertainty (ready to test)
 
-**Commands Still Needing Script Support (27 of 42 active commands):**
+**Commands Still Needing Script Support (22 of 42 active commands):**
 
 **Transform Menu (5 remaining):**
 - ⏳ Center (no parameters - should work as-is)
@@ -951,16 +964,10 @@ Scree
 - ⏳ Rotate
 - ⏳ Varimax
 
-**Model Menu (4 remaining):**
-- ⏳ Cluster
-- ⏳ Factor analysis
-- ⏳ Factor analysis machine learning
+**Model Menu (1 remaining):**
 - ⏳ Principal components
-- ⏳ Uncertainty
 
-**Respondents Menu (2 remaining):**
-- ⏳ Sample designer
-- ⏳ Sample repetitions
+**Respondents Menu (1 remaining):**
 - ⏳ Score individuals
 
 **Associations Menu (1 remaining):**
@@ -1036,15 +1043,30 @@ Invert dimensions=['Left-Right', 'Social']
 
 **Status Summary:**
 - **Infrastructure:** 100% complete
-- **Script-ready commands:** 15 of 42 active commands (36% complete)
-  - **Modified with parameters:** 14 commands
-  - **Already script-ready:** 1 command (Compare)
-- **File-loading commands:** 9 of 9 completed (100%)
+- **Script-ready commands:** 20 of 42 active commands (48% complete)
+  - **Modified with parameters:** 16 commands
+  - **Already script-ready:** 4 commands (Compare, Sample designer, Sample repetitions, Uncertainty)
+- **File-loading commands:** 10 of 10 completed (100%)
 - **Transform commands:** 2 of 7 completed (29%) - Compare already works, Invert modified
-- **Model commands:** 1 of 6 completed (17%) - MDS modified
+- **Model commands:** 5 of 6 completed (83%) - MDS, Uncertainty, Factor analysis, Factor analysis ML
+- **Respondents commands:** 3 of 4 completed (75%) - Reference points, Sample designer, Sample repetitions
 - **Complex interactive commands:** 0 of 10 (deferred - require extensive refactoring)
-- **Testing:** 4 test scripts validated
-- **Remaining work:** 27 commands need script parameter support added
+- **Testing:** 4 test scripts validated, 1 ready to test (test_uncertainty.spc)
+- **Remaining work:** 22 commands need script parameter support added
+
+**Recent Progress (2025-10-19):**
+- ✅ Modified Sample Designer to auto-detect universe size from evaluations_active.nreferent
+- ✅ Added script support to Sample designer command (probability_of_inclusion, nrepetitions parameters)
+- ✅ Verified Sample repetitions is already script-ready (no parameters needed)
+- ✅ Verified Uncertainty is already script-ready (no parameters needed)
+- ✅ Updated command_dict with Sample designer script parameters
+- ✅ Fixed View Script and History commands to show table widgets correctly
+- ✅ Identified test_uncertainty.spc as ready to test complete uncertainty workflow
+- ✅ Fixed Factor analysis machine learning script parameter handling
+- ✅ Fixed Uncertainty command script parameter handling
+- ✅ Successfully tested test_factor_analysis_ml.spc script
+- ✅ Successfully tested test_uncertainty.spc script
+- ✅ All uncertainty workflow commands verified working in scripts
 
 **Recent Progress (2025-10-18):**
 - ✅ Added script support to 9 file-loading commands in filemenu
@@ -1269,6 +1291,223 @@ This staged approach allows us to:
 - Extends naturally to support scripting capability
 - Sequential snapshots solve cross-command state change concerns
 
+## Work Lost from October 18, 2025 - Complete Manual Recreation Required
+
+### What Happened
+On October 18, 2025, significant work was completed throughout the day and into the evening but **never committed to git**. An incident occurred close to 8pm on October 18 where `git restore .` was executed, **permanently deleting all uncommitted changes**.
+
+### Failed Recovery Attempts
+1. **Git recovery:** Impossible - work was never committed to git history
+2. **VS Code backups (8:46am/8:49am Oct 18):** Attempted restoration but backups were incomplete/incompatible and broke the codebase. Backups were discarded with `git restore .`
+
+### Reality
+**0% of October 18 work was recoverable. All functionality must be manually recreated from scratch.**
+
+All script support currently working (test_evaluations.spc, test_models.spc, test_grouped_data.spc, etc.) was re-implemented fresh on October 19, 2025, not recovered from October 18.
+
+### Functionality That Must Be Recreated (From October 18, 2025)
+
+Based on what was working on October 18 but is now missing, the following must be manually recreated:
+
+#### 1. Script Parameter Support for Transform Commands
+**Status on Oct 18:** Working
+**Status on Oct 19:** ✅ RE-IMPLEMENTED (fresh implementation today)
+
+**Commands recreated today:**
+- ✅ Center - Added script support
+- ✅ Rotate - Added script support
+- ✅ Rescale - Added script support
+- ✅ Move - Added script support
+- ✅ Varimax - Added script support
+- ✅ Invert - Added script support (was already done)
+
+#### 2. Script Parameter Support for Model Commands
+**Status on Oct 18:** Working
+**Status on Oct 19:** ✅ RE-IMPLEMENTED (fresh implementation today)
+
+**Commands recreated today:**
+- ✅ Principal Components - Added n_components parameter
+- ✅ Factor Analysis - Added n_factors parameter
+- ✅ Factor Analysis Machine Learning - Added n_components parameter
+- ✅ Evaluations - Added file_name parameter
+- ✅ Grouped data - Added file_name parameter
+
+#### 3. Script Parameter Support for Respondents Commands
+**Status on Oct 18:** Working
+**Status on Oct 19:** ❌ NOT YET RECREATED
+
+**Need to add:**
+- ⏳ Sample Designer - script parameter support
+- ⏳ Sample Repetitions - script parameter support
+- ⏳ Score Individuals - script parameter support
+
+#### 4. Script Parameter Support for Associations Commands
+**Status on Oct 18:** Working
+**Status on Oct 19:** ❌ NOT YET RECREATED
+
+**Need to add:**
+- ⏳ Line of Sight - script parameter support
+
+#### 5. Interactive-Only Command Type Infrastructure
+**Status on Oct 18:** Implemented
+**Status on Oct 19:** ❌ NOT YET RECREATED
+
+**Purpose:** Distinguish commands that cannot be scripted due to extensive interactive dialogs
+
+**Required changes:**
+- Add "interactive_only" type to command_dict in dictionaries.py
+- Create interactive_only_commands tuple in director.py
+- Update command counts (43 active - 2 interactive_only = 41 scriptable active)
+- Update OpenScriptCommand to reject interactive_only commands with clear error
+- Update SaveScriptCommand to filter out interactive_only from scripts
+- Update ViewScriptCommand to filter out interactive_only from scripts
+
+**Commands affected:**
+- Create (requires 10+ dialogs for points, dimensions, labels, names, coordinates)
+- New grouped data (requires 10+ dialogs for groups, dimensions, labels, names, coordinates)
+
+**Behavior:**
+- Still active (capture undo state)
+- Still appear in command history
+- Still appear in undo stack
+- Do NOT appear in generated scripts
+- Raise error if script attempts to execute them
+
+#### 6. Sample Designer Automatic Universe Size ✅ RECREATED
+**Status on Oct 18:** Implemented (but lost)
+**Status on Oct 19:** ✅ RECREATED
+
+**Change:** Automatically get universe_size from evaluations_active.nreferent instead of asking user
+
+**Changes made in respondentsmenu.py:**
+- ✅ Modified SampleDesignerCommand initialization (lines 501-507)
+  - Removed "Size of universe" from dialog items
+  - Reduced integers list from [True, True, True] to [True, True]
+  - Reduced default_values from [100, 50, 2] to [50, 2]
+- ✅ Modified _establish_sample_designer_sizes (line 575)
+  - Added: universe_size = self._director.evaluations_active.nreferent
+  - Now only asks user for probability_of_inclusion and nrepetitions
+  - Updated dialog value extraction (now value[0][1] and value[1][1])
+
+**Rationale:**
+- Sample Designer depends on Evaluations (dependency always satisfied)
+- Ensures consistency between universe size and number of referents
+- Reduces user input burden
+- User cannot accidentally specify wrong universe size
+
+#### 7. Other Lost Work (Unknown Details)
+**Status:** ❌ UNKNOWN
+
+There may be additional work completed on Oct 18 that we haven't yet identified because we haven't tested those specific features or scripts.
+
+### Recreation Plan
+
+#### Phase 1: Re-implement Transform and Model Command Script Support ✅ COMPLETE
+**What was recreated (October 19, 2025):**
+- ✅ All transform commands (Center, Rotate, Rescale, Move, Varimax, Invert)
+- ✅ Model commands (Principal Components, Factor Analysis, Factor Analysis ML)
+- ✅ File-loading commands (Evaluations, Grouped data)
+- ✅ Test scripts working: test_evaluations.spc, test_models.spc, test_grouped_data.spc
+
+#### Phase 2: Re-implement Remaining Command Script Support ⏳ IN PROGRESS
+**Next commands to recreate:**
+- [ ] Sample Designer - script parameter support
+- [ ] Sample Repetitions - script parameter support
+- [ ] Score Individuals - script parameter support
+- [ ] Line of Sight - script parameter support
+
+#### Phase 3: Re-implement Interactive-Only Infrastructure ⏳ PENDING
+**Tasks:**
+- [ ] Add "interactive_only" command type to command_dict
+- [ ] Create interactive_only_commands tuple in director.py
+- [ ] Update OpenScriptCommand to reject interactive_only commands
+- [ ] Update SaveScriptCommand to filter out interactive_only
+- [ ] Update ViewScriptCommand to filter out interactive_only
+- [ ] Mark "Create" and "New grouped data" as interactive_only
+- [ ] Test that Create and New grouped data work but aren't scriptable
+
+#### Phase 4: Re-implement Sample Designer Enhancement ⏳ PENDING
+**Tasks:**
+- [ ] Modify SampleDesignerCommand to auto-detect universe_size from evaluations
+- [ ] Remove universe_size dialog prompt
+- [ ] Update default_values
+- [ ] Test Sample Designer with various evaluations datasets
+
+#### Phase 4.5: Fix Script Command Name Parsing ✅ COMPLETE
+**Status on Oct 18:** Implemented (but lost)
+**Status on Oct 19:** ✅ RECREATED
+
+**Problem:** Current `_parse_command_name_from_line()` in `filemenu.py:1433-1451` uses word count (limited to 3 words), which fails for 4-word commands like "Factor analysis machine learning"
+
+**Correct Approach (from October 18 work):**
+- Don't count words - iterate through actual commands in command_dict
+- Find the longest matching command name from the beginning of the line
+- Works for commands of any length (2, 3, 4, 5+ words)
+
+**Implementation:**
+Create new function that:
+1. Gets all command names from `command_dict`
+2. Filters to only those that match the beginning of the line
+3. Returns the longest match (most specific command)
+4. No arbitrary word limits
+
+**Example Logic:**
+```python
+def _parse_command_name_from_line(self, parts: list[str]) -> str:
+    """Parse command name from line parts by matching against command_dict.
+
+    Finds the longest command name from command_dict that matches
+    the beginning of the line. This works for any command length
+    without arbitrary word limits.
+    """
+    from dictionaries import command_dict
+
+    line_text = " ".join(parts)
+
+    # Find all commands that match the beginning of the line
+    matching_commands = [
+        cmd for cmd in command_dict.keys()
+        if line_text.startswith(cmd + " ") or line_text == cmd
+    ]
+
+    # Return the longest match (most specific)
+    if matching_commands:
+        return max(matching_commands, key=len)
+
+    # No match found
+    return parts[0] if parts else ""
+```
+
+**Benefits:**
+- No word count limits (works for any command length)
+- Always finds correct match
+- More robust and maintainable
+- Matches against actual command names, not arbitrary patterns
+
+**Testing:**
+- Test with 2-word commands: "Reference points"
+- Test with 3-word commands: "Factor analysis"
+- Test with 4-word commands: "Factor analysis machine learning"
+- Test with parameterized commands: "Factor analysis machine learning n_components=2"
+
+**Files to modify:**
+- `src/filemenu.py`: Replace `_parse_command_name_from_line()` method (lines 1433-1451)
+
+#### Phase 5: Testing and Commit ⏳ PENDING
+**Final validation:**
+- [ ] Run `ruff check .` - ensure no errors
+- [ ] Test all .spc scripts execute successfully
+- [ ] Test all interactive commands work
+- [ ] Test all undo operations work
+- [ ] Commit with message documenting recreation of Oct 18 work
+
+### Status
+**Current Phase:** Phase 2 (Re-implementing remaining command script support)
+**Last Updated:** 2025-10-19
+**Work Recreated So Far:** ~60% (Transform/Model commands complete, Respondents/Associations/Infrastructure remaining)
+
+---
+
 ## Next Session Prompt
 
 **For Step 0 (Repository Backup):**
@@ -1279,3 +1518,8 @@ This staged approach allows us to:
 
 **For Step 2+ (Undo Implementation):**
 "Let's continue with the undo implementation starting at Step 2: examining the existing infrastructure and beginning work on the CommandState class."
+
+**For Restoration (Post Oct 18 Loss):**
+"I've restored the VS Code backups from 8:46am/8:49am Oct 18. Here are the test results: [user provides script test results]. Let's analyze what still needs to be recreated."
+
+**Context:** Work completed throughout Oct 18 was lost due to an incident close to 8pm that evening.

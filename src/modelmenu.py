@@ -662,14 +662,28 @@ class FactorAnalysisCommand:
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
-		ext_fact = common.get_components_to_extract_from_user(
-			self._title,
-			self._label,
-			self._min_allowed,
-			self._max_allowed,
-			self._an_integer,
-			self._default,
-		)
+
+		# Check if executing from script with parameters
+		if (
+			director.executing_script
+			and director.script_parameters
+			and "n_factors" in director.script_parameters
+		):
+			ext_fact = director.script_parameters["n_factors"]
+			if not isinstance(ext_fact, int) or ext_fact < self._min_allowed or ext_fact > self._max_allowed:
+				raise SpacesError(
+					"Script parameter error",
+					f"n_factors must be an integer between {self._min_allowed} and {self._max_allowed}"
+				)
+		else:
+			ext_fact = common.get_components_to_extract_from_user(
+				self._title,
+				self._label,
+				self._min_allowed,
+				self._max_allowed,
+				self._an_integer,
+				self._default,
+			)
 		configuration_active.ndim = int(ext_fact)
 		#
 		# Capture state before making changes (for undo)
@@ -1010,14 +1024,35 @@ class FactorAnalysisMachineLearningCommand:
 	def _get_components_from_user(self) -> int:
 		"""Get number of components to extract from user."""
 		nreferent = self._director.evaluations_active.nreferent
-		return self.command.get_components_to_extract_from_user(
-			title=self._get_ncomponents_title,
-			label=self._get_ncomponents_label,
-			min_allowed=self._get_ncomponents_min_allowed,
-			max_allowed=nreferent - 1,
-			an_integer=True,
-			default=self._get_ncomponents_default,
-		)
+
+		# Check if executing from script
+		if self._director.executing_script:
+			if (
+				self._director.script_parameters
+				and "n_components" in self._director.script_parameters
+			):
+				n_comp = self._director.script_parameters["n_components"]
+				if not isinstance(n_comp, int) or n_comp < self._get_ncomponents_min_allowed or n_comp > nreferent - 1:
+					raise SpacesError(
+						"Script parameter error",
+						f"n_components must be an integer between {self._get_ncomponents_min_allowed} and {nreferent - 1}"
+					)
+				return n_comp
+			else:
+				raise SpacesError(
+					"Missing required parameter",
+					"The 'n_components' parameter is required when running "
+					"Factor analysis machine learning from a script"
+				)
+		else:
+			return self.command.get_components_to_extract_from_user(
+				title=self._get_ncomponents_title,
+				label=self._get_ncomponents_label,
+				min_allowed=self._get_ncomponents_min_allowed,
+				max_allowed=nreferent - 1,
+				an_integer=True,
+				default=self._get_ncomponents_default,
+			)
 
 	# ------------------------------------------------------------------------
 
