@@ -763,6 +763,81 @@ self.common.capture_and_push_undo_state("CommandName", "active", {params})
 
 **Next Step:** Step 7 - GUI Integration (keyboard shortcuts, toolbar, redo support)
 
+### Step 6.6: Code Cleanup Phase ⏳ PENDING
+
+**Status:** To be started after comprehensive testing
+
+**Purpose:** Remove unnecessary helper functions and boilerplate code introduced during initial undo implementation.
+
+**Issue Identified:**
+During initial undo implementation, many commands were given helper functions like `_capture_state_for_undo()` that do nothing but call `common.capture_and_push_undo_state()`. These pass-through wrappers add no value and should be eliminated.
+
+**Example from EvaluationsCommand (filemenu.py):**
+```python
+# BEFORE cleanup (unnecessary helper):
+def execute(self, common: Spaces) -> None:
+    self._director.record_command_as_selected_and_in_process()
+    self._director.optionally_explain_what_command_does()
+    self._capture_state_for_undo()  # Calls helper
+    # ... rest of execute
+
+def _capture_state_for_undo(self) -> None:
+    self.common.capture_and_push_undo_state("Evaluations", "active", {})
+    return
+
+# AFTER cleanup (direct call):
+def execute(self, common: Spaces) -> None:
+    self._director.record_command_as_selected_and_in_process()
+    self._director.optionally_explain_what_command_does()
+    self.common.capture_and_push_undo_state("Evaluations", "active", {})
+    # ... rest of execute
+
+# Helper function removed entirely
+```
+
+**Cleanup Tasks:**
+
+1. **Search for Unnecessary Helper Functions (All Menus):**
+   - Search pattern: `def _capture_state_for_undo`
+   - Search pattern: `def _save_state_for_undo`
+   - Search pattern: helper functions that only call `capture_and_push_undo_state()`
+
+2. **Replace Helper Calls with Direct Calls:**
+   - In each command's `execute()` method, replace helper call with direct call
+   - Ensure parameters are passed correctly (command name, type, params dict)
+
+3. **Remove Helper Functions:**
+   - Delete the now-unused helper function definitions
+   - Clean up any imports that are no longer needed
+
+4. **Files to Review:**
+   - `src/filemenu.py` - All file menu commands (Configuration, Evaluations, etc.)
+   - `src/transformmenu.py` - Transform commands (Rotate, Center, etc.)
+   - `src/modelmenu.py` - Model commands (MDS, Factor analysis, etc.)
+   - `src/respondentsmenu.py` - Respondent commands (Reference points, etc.)
+   - `src/associationsmenu.py` - Association commands (Line of sight)
+   - `src/editmenu.py` - Edit commands (Settings commands)
+
+5. **Testing After Cleanup:**
+   - Run all test scripts to ensure undo still works
+   - Test interactive undo/redo operations
+   - Verify no functionality was broken by cleanup
+   - Run `ruff check .` to ensure code quality
+
+**Benefits:**
+- Reduced code complexity (fewer functions to maintain)
+- More direct and readable code
+- Easier to understand undo implementation
+- Consistent pattern across all commands
+- Reduced cognitive load for future maintenance
+
+**Estimated Scope:**
+- Potentially 30-40 commands may have unnecessary helpers
+- Each cleanup takes ~2 minutes (find, replace, test)
+- Total estimated time: 1-2 hours
+
+**Next Step:** Comprehensive testing phase to identify all commands needing cleanup
+
 ### Step 7: Redo Support ✅ COMPLETE
 
 **Status:** Completed on 2025-10-13

@@ -7,6 +7,7 @@ Reference points contest=['Chen', 'Ashc']
 Contest
 Factor analysis n_factors=2
 View configuration
+Reference points contest=['Chen', 'BCli']
 Contest
 History
 Factor analysis machine learning n_components=2

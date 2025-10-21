@@ -8,6 +8,7 @@ from datetime import datetime
 import pandas as pd
 
 from exceptions import SpacesError
+from rivalry import Rivalry
 
 if __name__ == "__main__":  # pragma: no cover
 	print(f"This module is not designed to run as a script.  {Path(__file__).name}")
@@ -70,6 +71,10 @@ class ConfigurationCommand:
 			self._director.configuration_active
 		)
 		self._director.configuration_last = self._director.configuration_active
+
+		# Eliminate rivalry when new configuration is loaded
+		self._director.rivalry = Rivalry(self._director)
+
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_candidate.ndim
@@ -542,7 +547,6 @@ class EvaluationsCommand:
 			"Evaluations have been read and correlations computed"
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
 

@@ -827,6 +827,10 @@ class FactorAnalysisCommand:
 		configuration_active = self._director.configuration_active
 		evaluations_active = self._director.evaluations_active
 
+		# Factor analysis creates a new configuration, so clear old rivalry
+		from rivalry import Rivalry  # noqa: PLC0415
+		self._director.rivalry = Rivalry(self._director)
+
 		configuration_active.range_dims = range_dims
 		configuration_active.point_coords = point_coords
 		configuration_active.dim_names = dim_names
@@ -1164,6 +1168,10 @@ class FactorAnalysisMachineLearningCommand:
 		configuration_active = director.configuration_active
 		evaluations_active = director.evaluations_active
 		matplotlib_plotter = director.matplotlib_plotter
+
+		# Factor analysis creates a new configuration, so clear old rivalry
+		from rivalry import Rivalry  # noqa: PLC0415
+		director.rivalry = Rivalry(director)
 
 		common.show_bisector = False
 		common.show_connector = False
@@ -1680,6 +1688,11 @@ class MDSCommand:
 			point_labels = item_labels
 
 		self._director.configuration_active = configuration_instance
+
+		# MDS creates a new configuration, so clear old rivalry
+		from rivalry import Rivalry  # noqa: PLC0415
+		self._director.rivalry = Rivalry(self._director)
+
 		self._director.configuration_active.ndim = ndim
 		self._director.configuration_active.range_points = range_points
 		self._director.configuration_active.npoint = npoint
@@ -1828,6 +1841,10 @@ class PrincipalComponentsCommand:
 		self, trans: pd.DataFrame
 	) -> None:
 		"""Establish the principal components as the active configuration."""
+		# PCA creates a new configuration, so clear old rivalry
+		from rivalry import Rivalry  # noqa: PLC0415
+		self._director.rivalry = Rivalry(self._director)
+
 		ndim = trans.shape[1]
 		npoint = trans.shape[0]
 		dim_names = []
