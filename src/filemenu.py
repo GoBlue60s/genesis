@@ -2682,31 +2682,77 @@ class SettingsDisplayCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
-		from dialogs import SettingsDisplayDialog  # noqa: PLC0415
+	def execute(
+		self,
+		common: Spaces,
+		axis_extra: float = None,
+		displacement: float = None,
+		point_size: int = None,
+	) -> None:
+		from dialogs import ModifyValuesDialog  # noqa: PLC0415
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		dialog = SettingsDisplayDialog(self._director, common)
-		if dialog.exec():
-			# Capture state for undo BEFORE modifications
-			params = dialog.get_settings()
-			self.common.capture_and_push_undo_state(
-				"Settings - display sizing", "active", params
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+		):
+			# Use script parameters
+			if "axis_extra" in self._director.script_parameters:
+				axis_extra = float(self._director.script_parameters["axis_extra"])
+			if "displacement" in self._director.script_parameters:
+				displacement = float(self._director.script_parameters["displacement"])
+			if "point_size" in self._director.script_parameters:
+				point_size = int(self._director.script_parameters["point_size"])
+
+		# If no parameters provided, use dialog
+		if axis_extra is None or displacement is None or point_size is None:
+			# Get current values as defaults
+			current_axis = int(common.axis_extra * 100)
+			current_displacement = int(common.displacement * 100)
+			current_point = common.point_size
+
+			items = ["Axis extra (%)", "Displacement (%)", "Point size"]
+			default_values = [current_axis, current_displacement, current_point]
+
+			dialog = ModifyValuesDialog(
+				"Display Sizing Settings",
+				items,
+				integers=True,
+				default_values=default_values,
 			)
 
-			# Apply settings
-			dialog.apply_settings()
+			if dialog.exec():
+				values = dialog.selected_items()
+				axis_extra = values[0][1] / 100.0
+				displacement = values[1][1] / 100.0
+				point_size = values[2][1]
+			else:
+				raise SpacesError(
+					"Settings cancelled",
+					"Display sizing settings were not changed",
+				)
 
-			self._director.title_for_table_widget = "Display sizing settings updated"
-			self._director.create_widgets_for_output_and_log_tabs()
-			self._director.set_focus_on_tab("Output")
-		else:
-			raise SpacesError(
-				"Settings cancelled", "Display sizing settings were not changed"
-			)
+		# Capture state for undo BEFORE modifications
+		params = {
+			"axis_extra": axis_extra,
+			"displacement": displacement,
+			"point_size": point_size,
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - display sizing", "active", params
+		)
 
+		# Apply settings
+		common.axis_extra = axis_extra
+		common.displacement = displacement
+		common.point_size = point_size
+
+		self._director.title_for_table_widget = "Display sizing settings updated"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -2724,31 +2770,77 @@ class SettingsLayoutCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
-		from dialogs import SettingsLayoutDialog  # noqa: PLC0415
+	def execute(
+		self,
+		common: Spaces,
+		max_cols: int = None,
+		width: int = None,
+		decimals: int = None,
+	) -> None:
+		from dialogs import ModifyValuesDialog  # noqa: PLC0415
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		dialog = SettingsLayoutDialog(self._director, common)
-		if dialog.exec():
-			# Capture state for undo BEFORE modifications
-			params = dialog.get_settings()
-			self.common.capture_and_push_undo_state(
-				"Settings - layout options", "active", params
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+		):
+			# Use script parameters
+			if "max_cols" in self._director.script_parameters:
+				max_cols = int(self._director.script_parameters["max_cols"])
+			if "width" in self._director.script_parameters:
+				width = int(self._director.script_parameters["width"])
+			if "decimals" in self._director.script_parameters:
+				decimals = int(self._director.script_parameters["decimals"])
+
+		# If no parameters provided, use dialog
+		if max_cols is None or width is None or decimals is None:
+			# Get current values as defaults
+			current_max_cols = common.max_cols
+			current_width = common.width
+			current_decimals = common.decimals
+
+			items = ["Max columns", "Width", "Decimals"]
+			default_values = [current_max_cols, current_width, current_decimals]
+
+			dialog = ModifyValuesDialog(
+				"Layout Options",
+				items,
+				integers=True,
+				default_values=default_values,
 			)
 
-			# Apply settings
-			dialog.apply_settings()
+			if dialog.exec():
+				values = dialog.selected_items()
+				max_cols = values[0][1]
+				width = values[1][1]
+				decimals = values[2][1]
+			else:
+				raise SpacesError(
+					"Settings cancelled",
+					"Layout options were not changed",
+				)
 
-			self._director.title_for_table_widget = "Layout options updated"
-			self._director.create_widgets_for_output_and_log_tabs()
-			self._director.set_focus_on_tab("Output")
-		else:
-			raise SpacesError(
-				"Settings cancelled", "Layout options were not changed"
-			)
+		# Capture state for undo BEFORE modifications
+		params = {
+			"max_cols": max_cols,
+			"width": width,
+			"decimals": decimals,
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - layout options", "active", params
+		)
 
+		# Apply settings
+		common.max_cols = max_cols
+		common.width = width
+		common.decimals = decimals
+
+		self._director.title_for_table_widget = "Layout options updated"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -2766,31 +2858,82 @@ class SettingsPlaneCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
-		from dialogs import SettingsPlaneDialog  # noqa: PLC0415
+	def execute(self, common: Spaces, plane: str = None) -> None:
+		from dialogs import ChoseOptionDialog  # noqa: PLC0415
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		dialog = SettingsPlaneDialog(self._director, common)
-		if dialog.exec():
-			# Capture state for undo BEFORE modifications
-			params = dialog.get_settings()
-			self.common.capture_and_push_undo_state(
-				"Settings - plane", "active", params
-			)
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "plane" in self._director.script_parameters
+		):
+			plane = self._director.script_parameters["plane"]
 
-			# Apply settings
-			dialog.apply_settings()
+		# Get dimension names from active configuration
+		dim_names = self._director.configuration_active.dim_names
 
-			self._director.title_for_table_widget = "Plane settings updated"
-			self._director.create_widgets_for_output_and_log_tabs()
-			self._director.set_focus_on_tab("Output")
+		# If no parameter provided, use dialog
+		if plane is None:
+			title = "Plane Settings"
+			items = "Select plane orientation:"
+			options = [f"{dim_names[0]} x {dim_names[1]}", f"{dim_names[1]} x {dim_names[0]}"]
+
+			dialog = ChoseOptionDialog(title, items, options)
+
+			if dialog.exec():
+				selected_option = dialog.selected_option
+				if selected_option == 0:
+					plane = f"{dim_names[0]} x {dim_names[1]}"
+				elif selected_option == 1:
+					plane = f"{dim_names[1]} x {dim_names[0]}"
+				else:
+					raise SpacesError(
+						"Settings cancelled",
+						"Plane settings were not changed",
+					)
+			else:
+				raise SpacesError(
+					"Settings cancelled",
+					"Plane settings were not changed",
+				)
+
+		# Parse the plane parameter to determine dimensions
+		if plane == f"{dim_names[0]} x {dim_names[1]}":
+			hor_axis_name = dim_names[0]
+			hor_dim = 0
+			vert_axis_name = dim_names[1]
+			vert_dim = 1
+		elif plane == f"{dim_names[1]} x {dim_names[0]}":
+			hor_axis_name = dim_names[1]
+			hor_dim = 1
+			vert_axis_name = dim_names[0]
+			vert_dim = 0
 		else:
 			raise SpacesError(
-				"Settings cancelled", "Plane settings were not changed"
+				"Invalid plane parameter",
+				f"Plane must be '{dim_names[0]} x {dim_names[1]}' or '{dim_names[1]} x {dim_names[0]}'",
 			)
 
+		# Capture state for undo BEFORE modifications
+		params = {
+			"plane": plane,
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - plane", "active", params
+		)
+
+		# Apply settings
+		common.hor_dim = hor_dim
+		common.vert_dim = vert_dim
+		self._director.configuration_active.hor_axis_name = hor_axis_name
+		self._director.configuration_active.vert_axis_name = vert_axis_name
+
+		self._director.title_for_table_widget = "Plane settings updated"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -2808,31 +2951,107 @@ class SettingsPlotCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
-		from dialogs import SettingsPlotDialog  # noqa: PLC0415
+	def execute(
+		self,
+		common: Spaces,
+		show_bisector: bool = None,
+		show_connector: bool = None,
+		show_reference_points: bool = None,
+		show_just_reference_points: bool = None,
+	) -> None:
+		from constants import (  # noqa: PLC0415
+			TEST_IF_BISECTOR_SELECTED,
+			TEST_IF_CONNECTOR_SELECTED,
+			TEST_IF_JUST_REFERENCE_POINTS_SELECTED,
+			TEST_IF_REFERENCE_POINTS_SELECTED,
+		)
+		from dialogs import ModifyItemsDialog  # noqa: PLC0415
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		dialog = SettingsPlotDialog(self._director, common)
-		if dialog.exec():
-			# Capture state for undo BEFORE modifications
-			params = dialog.get_settings()
-			self.common.capture_and_push_undo_state(
-				"Settings - plot settings", "active", params
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+		):
+			# Use script parameters
+			if "show_bisector" in self._director.script_parameters:
+				show_bisector = self._director.script_parameters["show_bisector"].lower() == "true"
+			if "show_connector" in self._director.script_parameters:
+				show_connector = self._director.script_parameters["show_connector"].lower() == "true"
+			if "show_reference_points" in self._director.script_parameters:
+				show_reference_points = self._director.script_parameters["show_reference_points"].lower() == "true"
+			if "show_just_reference_points" in self._director.script_parameters:
+				show_just_reference_points = self._director.script_parameters["show_just_reference_points"].lower() == "true"
+
+		# If no parameters provided, use dialog
+		if (
+			show_bisector is None
+			or show_connector is None
+			or show_reference_points is None
+			or show_just_reference_points is None
+		):
+			# Get current values as defaults
+			items = [
+				"Show bisector",
+				"Show connector",
+				"Show reference points",
+				"Show just reference points",
+			]
+			default_values = [
+				common.show_bisector,
+				common.show_connector,
+				common.show_reference_points,
+				common.show_just_reference_points,
+			]
+
+			dialog = ModifyItemsDialog(
+				"Plot Settings", items, default_values=default_values
 			)
 
-			# Apply settings
-			dialog.apply_settings()
+			if dialog.exec():
+				selected_items = dialog.selected_items()
+				features_indexes = [
+					j
+					for i in range(len(selected_items))
+					for j in range(len(items))
+					if selected_items[i] == items[j]
+				]
+				show_bisector = TEST_IF_BISECTOR_SELECTED in features_indexes
+				show_connector = TEST_IF_CONNECTOR_SELECTED in features_indexes
+				show_reference_points = (
+					TEST_IF_REFERENCE_POINTS_SELECTED in features_indexes
+				)
+				show_just_reference_points = (
+					TEST_IF_JUST_REFERENCE_POINTS_SELECTED in features_indexes
+				)
+			else:
+				raise SpacesError(
+					"Settings cancelled",
+					"Plot settings were not changed",
+				)
 
-			self._director.title_for_table_widget = "Plot settings updated"
-			self._director.create_widgets_for_output_and_log_tabs()
-			self._director.set_focus_on_tab("Output")
-		else:
-			raise SpacesError(
-				"Settings cancelled", "Plot settings were not changed"
-			)
+		# Capture state for undo BEFORE modifications
+		params = {
+			"show_bisector": show_bisector,
+			"show_connector": show_connector,
+			"show_reference_points": show_reference_points,
+			"show_just_reference_points": show_just_reference_points,
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - plot settings", "active", params
+		)
 
+		# Apply settings
+		common.show_bisector = show_bisector
+		common.show_connector = show_connector
+		common.show_reference_points = show_reference_points
+		common.show_just_reference_points = show_just_reference_points
+
+		self._director.title_for_table_widget = "Plot settings updated"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -2908,31 +3127,70 @@ class SettingsSegmentCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
-		from dialogs import SettingsSegmentDialog  # noqa: PLC0415
+	def execute(
+		self,
+		common: Spaces,
+		battleground_size: float = None,
+		core_tolerance: float = None,
+	) -> None:
+		from dialogs import ModifyValuesDialog  # noqa: PLC0415
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		dialog = SettingsSegmentDialog(self._director, common)
-		if dialog.exec():
-			# Capture state for undo BEFORE modifications
-			params = dialog.get_settings()
-			self.common.capture_and_push_undo_state(
-				"Settings - segment sizing", "active", params
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+		):
+			# Use script parameters
+			if "battleground_size" in self._director.script_parameters:
+				battleground_size = float(self._director.script_parameters["battleground_size"])
+			if "core_tolerance" in self._director.script_parameters:
+				core_tolerance = float(self._director.script_parameters["core_tolerance"])
+
+		# If no parameters provided, use dialog
+		if battleground_size is None or core_tolerance is None:
+			# Get current values as defaults (convert to percentage)
+			current_battleground = int(common.battleground_size * 100)
+			current_core = int(common.core_tolerance * 100)
+
+			items = ["Battleground size (%)", "Core tolerance (%)"]
+			default_values = [current_battleground, current_core]
+
+			dialog = ModifyValuesDialog(
+				"Segment Sizing Settings",
+				items,
+				integers=True,
+				default_values=default_values,
 			)
 
-			# Apply settings
-			dialog.apply_settings()
+			if dialog.exec():
+				values = dialog.selected_items()
+				battleground_size = values[0][1] / 100.0
+				core_tolerance = values[1][1] / 100.0
+			else:
+				raise SpacesError(
+					"Settings cancelled",
+					"Segment sizing settings were not changed",
+				)
 
-			self._director.title_for_table_widget = "Segment sizing settings updated"
-			self._director.create_widgets_for_output_and_log_tabs()
-			self._director.set_focus_on_tab("Output")
-		else:
-			raise SpacesError(
-				"Settings cancelled", "Segment sizing settings were not changed"
-			)
+		# Capture state for undo BEFORE modifications
+		params = {
+			"battleground_size": battleground_size,
+			"core_tolerance": core_tolerance,
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - segment sizing", "active", params
+		)
 
+		# Apply settings
+		common.battleground_size = battleground_size
+		common.core_tolerance = core_tolerance
+
+		self._director.title_for_table_widget = "Segment sizing settings updated"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -2950,31 +3208,70 @@ class SettingsVectorSizeCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
-		from dialogs import SettingsVectorDialog  # noqa: PLC0415
+	def execute(
+		self,
+		common: Spaces,
+		vector_head_width: float = None,
+		vector_width: float = None,
+	) -> None:
+		from dialogs import ModifyValuesDialog  # noqa: PLC0415
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		dialog = SettingsVectorDialog(self._director, common)
-		if dialog.exec():
-			# Capture state for undo BEFORE modifications
-			params = dialog.get_settings()
-			self.common.capture_and_push_undo_state(
-				"Settings - vector sizing", "active", params
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+		):
+			# Use script parameters
+			if "vector_head_width" in self._director.script_parameters:
+				vector_head_width = float(self._director.script_parameters["vector_head_width"])
+			if "vector_width" in self._director.script_parameters:
+				vector_width = float(self._director.script_parameters["vector_width"])
+
+		# If no parameters provided, use dialog
+		if vector_head_width is None or vector_width is None:
+			# Get current values as defaults
+			current_head_width = common.vector_head_width
+			current_width = common.vector_width
+
+			items = ["Vector head width", "Vector width"]
+			default_values = [current_head_width, current_width]
+
+			dialog = ModifyValuesDialog(
+				"Vector Sizing Settings",
+				items,
+				integers=False,
+				default_values=default_values,
 			)
 
-			# Apply settings
-			dialog.apply_settings()
+			if dialog.exec():
+				values = dialog.selected_items()
+				vector_head_width = values[0][1]
+				vector_width = values[1][1]
+			else:
+				raise SpacesError(
+					"Settings cancelled",
+					"Vector sizing settings were not changed",
+				)
 
-			self._director.title_for_table_widget = "Vector sizing settings updated"
-			self._director.create_widgets_for_output_and_log_tabs()
-			self._director.set_focus_on_tab("Output")
-		else:
-			raise SpacesError(
-				"Settings cancelled", "Vector sizing settings were not changed"
-			)
+		# Capture state for undo BEFORE modifications
+		params = {
+			"vector_head_width": vector_head_width,
+			"vector_width": vector_width,
+		}
+		self.common.capture_and_push_undo_state(
+			"Settings - vector sizing", "active", params
+		)
 
+		# Apply settings
+		common.vector_head_width = vector_head_width
+		common.vector_width = vector_width
+
+		self._director.title_for_table_widget = "Vector sizing settings updated"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 

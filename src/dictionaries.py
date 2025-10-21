@@ -270,19 +270,23 @@ command_dict = MappingProxyType({
 	},
 	"Settings - display sizing": {
 		"type": "active",
-		"state_capture": ["settings"]
+		"state_capture": ["settings"],
+		"script_parameters": ["axis_extra", "displacement", "point_size"]
 	},
 	"Settings - layout options": {
 		"type": "active",
-		"state_capture": ["settings"]
+		"state_capture": ["settings"],
+		"script_parameters": ["max_cols", "width", "decimals"]
 	},
 	"Settings - plane": {
 		"type": "active",
-		"state_capture": ["settings"]
+		"state_capture": ["settings"],
+		"script_parameters": ["plane"]
 	},
 	"Settings - plot settings": {
 		"type": "active",
-		"state_capture": ["settings"]
+		"state_capture": ["settings"],
+		"script_parameters": ["show_bisector", "show_connector", "show_reference_points", "show_just_reference_points"]
 	},
 	"Settings - presentation layer": {
 		"type": "active",
@@ -291,11 +295,13 @@ command_dict = MappingProxyType({
 	},
 	"Settings - segment sizing": {
 		"type": "active",
-		"state_capture": ["settings"]
+		"state_capture": ["settings"],
+		"script_parameters": ["battleground_size", "core_tolerance"]
 	},
 	"Settings - vector sizing": {
 		"type": "active",
-		"state_capture": ["settings"]
+		"state_capture": ["settings"],
+		"script_parameters": ["vector_head_width", "vector_width"]
 	},
 	"Shepard": {
 		"type": "passive"
