@@ -523,37 +523,10 @@ class EvaluationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "file_name" in self._director.script_parameters
-		):
-			file_name = self._director.script_parameters["file_name"]
-		else:
-			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-				self._evaluations_caption, self._evaluations_filter
-			)
-		# Error handling
-		# If not an evaluations file, then return an error message
-		try:
-			self._read_evaluations(file_name)
-		except ValueError as e:
-			raise SpacesError(
-				self._evaluations_error_bad_input_title,
-				self._evaluations_error_bad_input_message,
-			) from e
-
-		# Check for consistency between evaluations and active configuration
+		self.common.capture_and_push_undo_state("Evaluations", "active", {})
+		file_name = self._get_file_name()
+		self._read_evaluations(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
-
-		# Capture state for undo BEFORE modifications (evaluations + correlations)
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Evaluations", "active", params
-		)
-
 		self._director.evaluations_active = (
 			self._director.evaluations_candidate
 		)
@@ -561,8 +534,6 @@ class EvaluationsCommand:
 			self._director.evaluations_active
 		)
 		self._director.evaluations_last = self._director.evaluations_active
-
-		# Compute correlations from evaluations
 		self._compute_correlations_from_evaluations(common)
 		self._director.evaluations_active.print_the_evaluations()
 		self._director.evaluations_active.summarize_evaluations()
@@ -577,8 +548,20 @@ class EvaluationsCommand:
 
 	# ------------------------------------------------------------------------
 
+	def _get_file_name(self) -> str:
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "file_name" in self._director.script_parameters
+		):
+			return self._director.script_parameters["file_name"]
+		return self._director.get_file_name_and_handle_nonexistent_file_names(
+			self._evaluations_caption, self._evaluations_filter
+		)
+
+	# ------------------------------------------------------------------------
+
 	def _read_evaluations(self, file_name: str) -> None:
-		"""Read evaluations from CSV file and store in candidate."""
 		try:
 			evaluations = pd.read_csv(file_name)
 			(nevaluators, nreferent) = evaluations.shape
@@ -604,8 +587,12 @@ class EvaluationsCommand:
 			PermissionError,
 			pd.errors.EmptyDataError,
 			pd.errors.ParserError,
+			ValueError,
 		) as e:
-			raise ValueError(f"Unable to read evaluations file: {e}") from e
+			raise SpacesError(
+				self._evaluations_error_bad_input_title,
+				self._evaluations_error_bad_input_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
