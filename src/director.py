@@ -1266,7 +1266,16 @@ class Status(QMainWindow):
 		command = self.command
 		command_exit_code = self.command_exit_code
 
-		command_exit_code[-1] = 0
+		# For OpenScript commands, mark the script's index as complete
+		# rather than the last command in the exit code array
+		from filemenu import OpenScriptCommand  # noqa: PLC0415
+
+		if isinstance(self.current_command, OpenScriptCommand):
+			script_index = self.current_command.index_of_script_in_command_used
+			command_exit_code[script_index] = 0
+		else:
+			command_exit_code[-1] = 0
+
 		self.spaces_statusbar.showMessage(
 			f"Completed {command} command", 80000
 		)

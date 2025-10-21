@@ -1300,6 +1300,7 @@ class OpenScriptCommand:
 			"Unable to execute script file.\nCheck file format and try again."
 		)
 		self._executed_commands = []  # Track commands executed in script
+		self.index_of_script_in_command_used = None  # Track index for completion
 		return
 
 	# ------------------------------------------------------------------------
@@ -1307,6 +1308,11 @@ class OpenScriptCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Save the index of the "Open script" command in the exit code array
+		# so we can update it later (after script commands are executed)
+		open_script_index = len(self._director.command_exit_code) - 1
+		self.index_of_script_in_command_used = open_script_index
 
 		# Default to scripts directory if it exists
 		scripts_dir = Path.cwd() / "scripts"
@@ -1404,7 +1410,15 @@ class OpenScriptCommand:
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
-		self._director.record_command_as_successfully_completed()
+
+		# Update the "Open script" command's exit code directly
+		# (can't use record_command_as_successfully_completed because that
+		# would update the last script command's exit code, not Open script's)
+		self._director.command_exit_code[open_script_index] = 0
+		self._director.spaces_statusbar.showMessage(
+			"Completed Open script command", 80000
+		)
+		print("\nSuccessfully completed Open script command.")
 		return
 
 	# ------------------------------------------------------------------------
@@ -2836,9 +2850,32 @@ class SettingsPresentationLayerCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, layer: str) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces, layer: str = None) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "layer" in self._director.script_parameters
+		):
+			# Use script parameter
+			layer = self._director.script_parameters["layer"]
+		elif layer is None:
+			# No layer provided and not in script - this is an error
+			raise SpacesError(
+				"Missing layer parameter",
+				"Settings - presentation layer requires a layer parameter "
+				"(either 'Matplotlib' or 'PyQtGraph')"
+			)
+
+		# Validate layer parameter
+		if layer not in ["Matplotlib", "PyQtGraph"]:
+			raise SpacesError(
+				"Invalid layer parameter",
+				f"Layer must be 'Matplotlib' or 'PyQtGraph', not '{layer}'"
+			)
 
 		# Capture state for undo BEFORE modifications
 		params = {"layer": layer}

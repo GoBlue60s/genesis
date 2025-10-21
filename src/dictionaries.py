@@ -286,7 +286,8 @@ command_dict = MappingProxyType({
 	},
 	"Settings - presentation layer": {
 		"type": "active",
-		"state_capture": ["settings"]
+		"state_capture": ["settings"],
+		"script_parameters": ["layer"]
 	},
 	"Settings - segment sizing": {
 		"type": "active",
