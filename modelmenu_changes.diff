@@ -1,0 +1,56 @@
+diff --git a/src/modelmenu.py b/src/modelmenu.py
+index 9dd0a7a..21d0b97 100644
+--- a/src/modelmenu.py
++++ b/src/modelmenu.py
+@@ -1585,37 +1585,22 @@ class MDSCommand:
+ 		mds_components_default: float,
+ 		mds_components_an_integer: bool) -> None:  # noqa: FBT001
+ 		self._get_n_components_to_use_from_user_initialize_variables()
+-
+-		# Check if executing from script with parameters
+-		if (
+-			self._director.executing_script
+-			and self._director.script_parameters
+-			and "n_components" in self._director.script_parameters
+-		):
+-			n_comp = self._director.script_parameters["n_components"]
+-			if not isinstance(n_comp, int) or n_comp < mds_components_min_allowed or n_comp > mds_components_max_allowed:
+-				raise MissingInformationError(
+-					"Script parameter error",
+-					f"n_components must be an integer between {mds_components_min_allowed} and {mds_components_max_allowed}"
+-				)
+-			self._director.configuration_active.n_comp = n_comp
++		dialog = SetValueDialog(
++			mds_components_title,
++			mds_components_label,
++			mds_components_min_allowed,
++			mds_components_max_allowed,
++			mds_components_an_integer,
++			mds_components_default,
++		)
++		result = dialog.exec()
++		if result == QDialog.Accepted:
++			self._director.configuration_active.n_comp = dialog.getValue()
+ 		else:
+-			dialog = SetValueDialog(
+-				mds_components_title,
+-				mds_components_label,
+-				mds_components_min_allowed,
+-				mds_components_max_allowed,
+-				mds_components_an_integer,
+-				mds_components_default,
++			raise MissingInformationError(
++				self.missing_n_components_error_title,
++				self.missing_n_components_error_message,
+ 			)
+-			result = dialog.exec()
+-			if result == QDialog.Accepted:
+-				self._director.configuration_active.n_comp = dialog.getValue()
+-			else:
+-				raise MissingInformationError(
+-					self.missing_n_components_error_title,
+-					self.missing_n_components_error_message,
+-				)
+ 		if self._director.configuration_active.n_comp == 0:
+ 			raise MissingInformationError(
+ 				self.missing_n_components_error_title,

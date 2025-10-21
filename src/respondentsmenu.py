@@ -440,12 +440,6 @@ class ReferencePointsCommand:
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
-		peek(rival_a.label, rival_b.label,
-			self._director.rivalry.bisector._case,
-			self._director.rivalry.west._case,
-			self._director.rivalry.east._case
-		)
-
 		self._director.record_command_as_successfully_completed()
 		return
 

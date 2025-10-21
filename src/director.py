@@ -166,7 +166,7 @@ class Status(QMainWindow):
 		self.create_tabs()
 		# Initialize Redo as disabled (no redo stack items on startup)
 		self.disable_redo()
-		self.check_consistency_of_dictionaries_and_arrays()
+		# self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
 

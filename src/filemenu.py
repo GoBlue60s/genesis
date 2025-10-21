@@ -564,13 +564,14 @@ class EvaluationsCommand:
 
 		# Compute correlations from evaluations
 		self._compute_correlations_from_evaluations(common)
-
 		self._director.evaluations_active.print_the_evaluations()
 		self._director.evaluations_active.summarize_evaluations()
+		self._director.common.create_plot_for_tabs("evaluations")
 		self._director.title_for_table_widget = (
 			"Evaluations have been read and correlations computed"
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
 
