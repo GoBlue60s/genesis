@@ -128,6 +128,13 @@ class CorrelationsCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._correlations_caption, self._correlations_filter
 			)
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Correlations", "active", params
+		)
+
 		# Error handling
 		# If not a correlations file, then return an error message
 		try:
@@ -140,12 +147,6 @@ class CorrelationsCommand:
 
 		# Check for consistency between correlations and active configuration
 		self._director.dependency_checker.detect_consistency_issues()
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Correlations", "active", params
-		)
 
 		self._director.correlations_active = (
 			self._director.correlations_candidate
@@ -700,6 +701,13 @@ class GroupedDataCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._grouped_data_caption, self._grouped_data_filter
 			)
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Grouped data", "active", params
+		)
+
 		# Error handling
 		# If not a grouped data file, then return an error message
 		try:
@@ -711,12 +719,6 @@ class GroupedDataCommand:
 				self._grouped_data_error_bad_input_title,
 				self._grouped_data_error_bad_input_message,
 			) from e
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Grouped data", "active", params
-		)
 
 		self._director.grouped_data_active = (
 			self._director.grouped_data_candidate
@@ -772,6 +774,13 @@ class IndividualsCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._individuals_caption, self._individuals_filter
 			)
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Individuals", "active", params
+		)
+
 		# Error handling
 		# If not an individuals file, then return an error message
 		try:
@@ -783,12 +792,6 @@ class IndividualsCommand:
 				self._individuals_error_bad_input_title,
 				self._individuals_error_bad_input_message,
 			) from e
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Individuals", "active", params
-		)
 
 		self._director.individuals_active = (
 			self._director.individuals_candidate
@@ -1003,6 +1006,13 @@ class OpenSampleDesignCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._sample_design_caption, self._sample_design_filter
 			)
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Open sample design", "active", params
+		)
+
 		# Error handling
 		# If not a sample design file, then return an error message
 		try:
@@ -1014,12 +1024,6 @@ class OpenSampleDesignCommand:
 				self._sample_design_error_bad_input_title,
 				self._sample_design_error_bad_input_message,
 			) from e
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Open sample design", "active", params
-		)
 
 		self._director.uncertainty_active.print_sample_design()
 		self._director.title_for_table_widget = (
@@ -1067,6 +1071,13 @@ class OpenSampleRepetitionsCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._sample_repetitions_caption, self._sample_repetitions_filter
 			)
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Open sample repetitions", "active", params
+		)
+
 		# Error handling
 		# If not a sample repetitions file, then return an error message
 		try:
@@ -1078,12 +1089,6 @@ class OpenSampleRepetitionsCommand:
 				self._sample_repetitions_error_bad_input_title,
 				self._sample_repetitions_error_bad_input_message,
 			) from e
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Open sample repetitions", "active", params
-		)
 
 		self._director.uncertainty_active.print_sample_repetitions()
 		self._director.title_for_table_widget = (
@@ -1131,6 +1136,13 @@ class OpenSampleSolutionsCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._sample_solutions_caption, self._sample_solutions_filter
 			)
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Open sample solutions", "active", params
+		)
+
 		# Error handling
 		# If not a sample solutions file, then return an error message
 		try:
@@ -1142,12 +1154,6 @@ class OpenSampleSolutionsCommand:
 				self._sample_solutions_error_bad_input_title,
 				self._sample_solutions_error_bad_input_message,
 			) from e
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Open sample solutions", "active", params
-		)
 
 		self._director.uncertainty_active.print_sample_solutions()
 		self._director.title_for_table_widget = (
@@ -1194,6 +1200,12 @@ class OpenScoresCommand:
 				self._scores_caption, self._scores_filter
 			)
 
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name}
+		self.common.capture_and_push_undo_state(
+			"Open scores", "active", params
+		)
+
 		# Error handling
 		# If not a scores file, then return an error message
 		try:
@@ -1203,12 +1215,6 @@ class OpenScoresCommand:
 				self._scores_error_bad_input_title,
 				self._scores_error_bad_input_message,
 			) from e
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name}
-		self.common.capture_and_push_undo_state(
-			"Open scores", "active", params
-		)
 
 		self._director.scores_active = self._director.scores_candidate
 		self._director.scores_original = self._director.scores_active
@@ -3311,6 +3317,13 @@ class SimilaritiesCommand:
 			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
 				self._similarities_caption, self._similarities_filter
 			)
+
+		# Capture state for undo BEFORE modifications
+		params = {"file_name": file_name, "value_type": value_type}
+		self.common.capture_and_push_undo_state(
+			"Similarities", "active", params
+		)
+
 		# Read and validate similarities file
 		self._director.similarities_candidate = common.read_lower_triangular_matrix(
 			file_name,
@@ -3319,12 +3332,6 @@ class SimilaritiesCommand:
 
 		# Check for consistency between similarities and active configuration
 		self._director.dependency_checker.detect_consistency_issues()
-
-		# Capture state for undo BEFORE modifications
-		params = {"file_name": file_name, "value_type": value_type}
-		self.common.capture_and_push_undo_state(
-			"Similarities", "active", params
-		)
 
 		# Convert similarities into different data structures
 		self._director.similarities_candidate.duplicate_similarities(common)

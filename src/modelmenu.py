@@ -682,7 +682,6 @@ class FactorAnalysisCommand:
 				self._an_integer,
 				self._default,
 			)
-		configuration_active.ndim = int(ext_fact)
 		#
 		# Capture state before making changes (for undo)
 		#
@@ -693,8 +692,9 @@ class FactorAnalysisCommand:
 			"Factor analysis", "active", params
 		)
 		#
-		# Now perform factor analysis
+		# Now perform factor analysis - set ndim and continue
 		#
+		configuration_active.ndim = int(ext_fact)
 		self._factors_and_scores()
 		self._director.common.create_plot_for_tabs("scree")
 		self._create_factor_analysis_table()
@@ -1554,8 +1554,9 @@ class MDSCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.configuration_active.use_metric = use_metric
-		self._get_n_components_to_use_from_user(
+
+		# Get n_components from user (but don't set it yet)
+		n_comp = self._get_n_components_to_use_from_user(
 			self._mds_components_title,
 			self._mds_components_label,
 			self._mds_components_min_allowed,
@@ -1563,10 +1564,10 @@ class MDSCommand:
 			self._mds_components_default,
 			self._mds_components_an_integer,
 		)
+
 		#
 		# Capture state before making changes (for undo)
 		#
-		n_comp = self._director.configuration_active.n_comp
 		params = {
 			"n_components": n_comp,
 			"use_metric": use_metric
@@ -1574,9 +1575,12 @@ class MDSCommand:
 		self.common.capture_and_push_undo_state(
 			"MDS", "active", params
 		)
+
 		#
-		# Now perform MDS
+		# Now perform MDS - set use_metric, n_comp and continue
 		#
+		self._director.configuration_active.use_metric = use_metric
+		self._director.configuration_active.n_comp = n_comp
 		self._perform_mds_pick_up_point_labelling_from_similarities()
 
 		ndim = self._director.configuration_active.ndim
@@ -1617,7 +1621,7 @@ class MDSCommand:
 		mds_components_min_allowed: int,
 		mds_components_max_allowed: int,
 		mds_components_default: float,
-		mds_components_an_integer: bool) -> None:  # noqa: FBT001
+		mds_components_an_integer: bool) -> int:  # noqa: FBT001
 		self._get_n_components_to_use_from_user_initialize_variables()
 
 		# Check if executing from script with parameters
@@ -1632,7 +1636,7 @@ class MDSCommand:
 					"Script parameter error",
 					f"n_components must be an integer between {mds_components_min_allowed} and {mds_components_max_allowed}"
 				)
-			self._director.configuration_active.n_comp = n_comp
+			return n_comp
 		else:
 			dialog = SetValueDialog(
 				mds_components_title,
@@ -1644,18 +1648,18 @@ class MDSCommand:
 			)
 			result = dialog.exec()
 			if result == QDialog.Accepted:
-				self._director.configuration_active.n_comp = dialog.getValue()
+				n_comp = dialog.getValue()
+				if n_comp == 0:
+					raise MissingInformationError(
+						self.missing_n_components_error_title,
+						self.missing_n_components_error_message,
+					)
+				return n_comp
 			else:
 				raise MissingInformationError(
 					self.missing_n_components_error_title,
 					self.missing_n_components_error_message,
 				)
-		if self._director.configuration_active.n_comp == 0:
-			raise MissingInformationError(
-				self.missing_n_components_error_title,
-				self.missing_n_components_error_message,
-			)
-		return
 
 	# ------------------------------------------------------------------------
 
