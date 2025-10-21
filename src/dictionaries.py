@@ -117,7 +117,8 @@ command_dict = MappingProxyType({
 	},
 	"Line of sight": {
 		"type": "active",
-		"state_capture": ["similarities"]
+		"state_capture": ["similarities"],
+		"script_parameters": []
 	},
 	"MDS": {
 		"type": "active",
@@ -155,7 +156,8 @@ command_dict = MappingProxyType({
 	},
 	"Principal components": {
 		"type": "active",
-		"state_capture": ["configuration"]
+		"state_capture": ["configuration"],
+		"script_parameters": ["n_components"]
 	},
 	"Print configuration": {
 		"type": "passive"
@@ -257,7 +259,8 @@ command_dict = MappingProxyType({
 	},
 	"Score individuals": {
 		"type": "active",
-		"state_capture": ["scores", "rivalry"]
+		"state_capture": ["scores", "rivalry"],
+		"script_parameters": []
 	},
 	"Scree": {
 		"type": "passive"

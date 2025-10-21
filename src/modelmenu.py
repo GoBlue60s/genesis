@@ -1734,15 +1734,27 @@ class PrincipalComponentsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces, n_components: int = None) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+
+		# Check if executing from script with parameters
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+			and "n_components" in self._director.script_parameters
+		):
+			n_components = int(self._director.script_parameters["n_components"])
+		elif n_components is None:
+			# Default to 2 components if not specified
+			n_components = 2
+
 		#
 		# Capture state before making changes (for undo)
 		#
 		params = {
-			"n_components": 2  # PCA always uses 2 components
+			"n_components": n_components
 		}
 		self.common.capture_and_push_undo_state(
 			"Principal components", "active", params
@@ -1756,7 +1768,7 @@ class PrincipalComponentsCommand:
 			x_pca_trans,
 			transpose,
 			trans,
-		) = self._perform_principal_component_analysis()
+		) = self._perform_principal_component_analysis(n_components)
 		self._establish_principal_components_as_active_configuration(trans)
 		self._establish_pca_results_as_scores(X_pca_transformed)
 		self._print_pca(
@@ -1776,13 +1788,13 @@ class PrincipalComponentsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _perform_principal_component_analysis(self) -> tuple:
+	def _perform_principal_component_analysis(self, n_components: int) -> tuple:
 
 
 		item_names = self._director.evaluations_active.item_names
 
 		X_pca = self._director.evaluations_active.evaluations  # noqa: N806
-		pca_transformer = PCA(n_components=2, copy=True, random_state=0)
+		pca_transformer = PCA(n_components=n_components, copy=True, random_state=0)
 		X_pca_transformed = pca_transformer.fit_transform(X_pca)  # noqa: N806
 		pd.set_option("display.max_columns", None)
 		pd.set_option("display.precision", 2)
