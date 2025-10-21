@@ -954,29 +954,51 @@ Scree
 - ✅ test_transform_complete.spc: Configuration, Center, Rotate, Rescale, Invert, Move, Varimax, Compare (all transform commands successfully tested)
 - ✅ test_scores_joint.spc: Evaluations, Reference points (Reference Points command script support validated)
 
-**Commands Still Needing Script Support (3 of 42 active commands):**
+**🎉 ALL COMMANDS NOW SCRIPT-READY (42 of 42 active commands - 100% COMPLETE) 🎉**
 
-**Transform Menu (0 remaining) - ALL COMPLETE:**
+**Transform Menu (7/7) - ALL COMPLETE:**
 - ✅ Center (no parameters - works as-is)
+- ✅ Compare (no parameters - works as-is)
+- ✅ Invert (accepts `dimensions` parameter)
 - ✅ Move (accepts `dimensions` and `distances` parameters)
 - ✅ Rescale (accepts `factors` parameter)
 - ✅ Rotate (accepts `degrees` parameter)
 - ✅ Varimax (no parameters - works as-is)
 
-**Model Menu (1 remaining):**
-- ⏳ Principal components
+**Model Menu (6/6) - ALL COMPLETE:**
+- ✅ Cluster (conditional state capture)
+- ✅ Factor analysis (accepts `n_factors` parameter)
+- ✅ Factor analysis machine learning (accepts `n_components` parameter)
+- ✅ MDS (accepts `n_components` and `use_metric` parameters)
+- ✅ Principal components (accepts `n_components` parameter)
+- ✅ Uncertainty (no parameters - works as-is)
 
-**Respondents Menu (1 remaining):**
-- ⏳ Score individuals
+**Respondents Menu (4/4) - ALL COMPLETE:**
+- ✅ Reference points (accepts `contest` parameter)
+- ✅ Sample designer (accepts `probability_of_inclusion` and `nrepetitions` parameters)
+- ✅ Sample repetitions (no parameters - works as-is)
+- ✅ Score individuals (no parameters - works as-is)
 
-**Associations Menu (1 remaining):**
-- ⏳ Line of sight
+**Associations Menu (1/1) - ALL COMPLETE:**
+- ✅ Line of sight (no parameters - works as-is)
 
-**File Menu (0 remaining - interactive commands complete):**
+**File Menu (12/12) - ALL COMPLETE:**
+- ✅ Configuration (accepts `file_name` parameter)
+- ✅ Correlations (accepts `file_name` parameter)
 - ✅ Create (interactive_only: has undo support, excluded from scripts)
+- ✅ Deactivate (conditional state capture based on user selection)
+- ✅ Evaluations (accepts `file_name` parameter)
+- ✅ Grouped data (accepts `file_name` parameter)
+- ✅ Individuals (accepts `file_name` parameter)
 - ✅ New grouped data (interactive_only: has undo support, excluded from scripts)
+- ✅ Open sample design (accepts `file_name` parameter)
+- ✅ Open sample repetitions (accepts `file_name` parameter)
+- ✅ Open sample solutions (accepts `file_name` parameter)
+- ✅ Open scores (accepts `file_name` parameter)
+- ✅ Similarities (accepts `file_name` and `value_type` parameters)
+- ✅ Target (accepts `file_name` parameter)
 
-**Settings Commands (0 remaining) - ALL COMPLETE:**
+**Settings Commands (7/7) - ALL COMPLETE:**
 - ✅ Settings - display sizing (accepts axis_extra, displacement, point_size)
 - ✅ Settings - layout options (accepts max_cols, width, decimals)
 - ✅ Settings - plane (accepts plane)
@@ -1040,22 +1062,24 @@ Invert dimensions=['Left-Right', 'Social']
 - Complete session history preserved
 
 **Status Summary:**
-- **Infrastructure:** 100% complete
-- **Script-ready commands:** 39 of 42 active commands (93% complete)
-  - **Modified with parameters:** 33 commands
-  - **Already script-ready:** 4 commands (Compare, Sample designer, Sample repetitions, Uncertainty)
+- **Infrastructure:** 100% complete ✅
+- **Script-ready commands:** 42 of 42 active commands (100% complete) ✅
+  - **Modified with parameters:** 34 commands
+  - **Already script-ready:** 6 commands (Compare, Line of sight, Sample designer, Sample repetitions, Score individuals, Uncertainty)
   - **Interactive-only:** 2 commands (Create, New grouped data - have undo, excluded from scripts)
-- **File-loading commands:** 10 of 10 completed (100%)
-- **Transform commands:** 7 of 7 completed (100%) - ALL COMPLETE ✅
-- **Model commands:** 5 of 6 completed (83%) - Principal components pending
-- **Respondents commands:** 3 of 4 completed (75%) - Score individuals pending
-- **Associations commands:** 0 of 1 completed (0%) - Line of sight pending
-- **Settings commands:** 7 of 7 completed (100%) - ALL COMPLETE ✅
-- **Interactive-only commands:** 2 of 2 completed (100%) - Create, New grouped data ✅
-- **Testing:** 6 test scripts validated (including test_transform_complete.spc and test_presentation_layer.spc)
-- **Remaining work:** 3 commands need script parameter support added (Principal components, Score individuals, Line of sight)
+- **File-loading commands:** 10 of 10 completed (100%) ✅
+- **Transform commands:** 7 of 7 completed (100%) ✅
+- **Model commands:** 6 of 6 completed (100%) ✅
+- **Respondents commands:** 4 of 4 completed (100%) ✅
+- **Associations commands:** 1 of 1 completed (100%) ✅
+- **Settings commands:** 7 of 7 completed (100%) ✅
+- **Interactive-only commands:** 2 of 2 completed (100%) ✅
+- **Testing:** 9 test scripts validated (including test_transform_complete.spc, test_presentation_layer.spc, test_principal_components.spc, test_line_of_sight.spc, test_score_individuals.spc)
+- **Remaining work:** NONE - ALL COMMANDS COMPLETE! 🎉
 
-**Recent Progress (2025-10-20):**
+**Recent Progress (2025-10-20) - SCRIPT SUPPORT 100% COMPLETE:**
+
+**Session 1: Settings Commands (7 commands)**
 - ✅ Completed ALL Settings commands with script support (7 of 7):
   - Settings - display sizing (accepts axis_extra, displacement, point_size)
   - Settings - layout options (accepts max_cols, width, decimals)
@@ -1071,6 +1095,22 @@ Invert dimensions=['Left-Right', 'Social']
 - ✅ Updated command_dict with all Settings command script parameters
 - ✅ Settings menu now 100% script-ready (major milestone achieved)
 - ✅ Committed: "Complete script support for all Settings commands" (464f850)
+
+**Session 2: Final 3 Commands - 100% Coverage Achieved**
+- ✅ Completed Principal components command:
+  - Added n_components parameter (defaults to 2)
+  - Modified execute() and _perform_principal_component_analysis() methods
+  - Created test_principal_components.spc
+- ✅ Completed Line of sight command:
+  - No parameters needed, already fully functional
+  - Marked as script-ready in command_dict
+  - Created test_line_of_sight.spc
+- ✅ Completed Score individuals command:
+  - No parameters needed, already fully functional
+  - Marked as script-ready in command_dict
+  - Created test_score_individuals.spc
+- ✅ All 42 active commands now support scripting (100% complete)
+- ✅ Committed: "Complete script support for final 3 commands - 100% coverage achieved" (f9c3fe9)
 
 **Earlier Progress (2025-10-20):**
 - ✅ Completed ALL transform menu commands with script support (7 of 7):
