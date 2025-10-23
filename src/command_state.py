@@ -134,9 +134,9 @@ class CommandState:
 			command_type: One of "active", "passive", or "script"
 			command_params: Parameters passed to the command (optional)
 		"""
-		self.command_name = command_name
-		self.command_type = command_type
-		self.command_params = command_params or {}
+		self.command_name: str = command_name
+		self.command_type: str = command_type
+		self.command_params: dict[str, Any] = command_params or {}
 		self.timestamp: str = ""  # Will be set when state is captured
 		self.state_snapshot: dict[str, Any] = {}
 
@@ -439,7 +439,7 @@ class CommandState:
 			}
 
 		# Capture connector (includes length attribute)
-		connector_data = None
+		connector_data: dict[str, object] | None = None
 		if rivalry.connector is not None:
 			connector_data = capture_line(rivalry.connector)
 			connector_data["length"] = rivalry.connector.length
@@ -580,11 +580,11 @@ class CommandState:
 
 		# Restore similarities_active
 		sims = director.similarities_active
-		sims_active_data = sims_snapshot["active"]
+		sims_active_data: dict[str, Any] = sims_snapshot["active"]
 		sims.similarities = [
 			row.copy() for row in sims_active_data["similarities"]
 		]
-		sims.similarities_as_dataframe = sims_active_data[
+		sims.similarities_as_dataframe: pd.DataFrame = sims_active_data[
 			"similarities_as_dataframe"
 		].copy()
 		sims.item_names = sims_active_data["item_names"].copy()
@@ -654,7 +654,7 @@ class CommandState:
 		if "individuals" not in self.state_snapshot:
 			return
 
-		inds_snapshot = self.state_snapshot["individuals"]
+		inds_snapshot: dict[str, Any] = self.state_snapshot["individuals"]
 		inds = director.individuals_active
 
 		inds.ind_vars = inds_snapshot["ind_vars"].copy()
@@ -673,7 +673,7 @@ class CommandState:
 		if "scores" not in self.state_snapshot:
 			return
 
-		scores_snapshot = self.state_snapshot["scores"]
+		scores_snapshot: dict[str, Any] = self.state_snapshot["scores"]
 		scores = director.scores_active
 
 		scores.scores = scores_snapshot["scores"].copy()
@@ -718,7 +718,7 @@ class CommandState:
 		if "target" not in self.state_snapshot:
 			return
 
-		target_snapshot = self.state_snapshot["target"]
+		target_snapshot: dict[str, Any] = self.state_snapshot["target"]
 		target = director.target_active
 
 		target.point_coords = target_snapshot["point_coords"].copy()
@@ -783,7 +783,7 @@ class CommandState:
 		if "rivalry" not in self.state_snapshot:
 			return
 
-		rivalry_snapshot = self.state_snapshot["rivalry"]
+		rivalry_snapshot: dict[str, Any] = self.state_snapshot["rivalry"]
 		rivalry = director.rivalry
 
 		rivalry.rival_a.index = rivalry_snapshot["rival_a_index"]
@@ -924,14 +924,14 @@ class CommandState:
 		line_class = line_classes[line_attr_name]
 
 		# Create a dummy point and use saved slope for construction
-		dummy_point = Point(0.0, 0.0)
+		dummy_point: Point = Point(0.0, 0.0)
 		slope = line_data["slope"]
 
 		# Connector requires additional rival_a and rival_b parameters
 		if line_attr_name == "connector":
 			# Use dummy rival points for construction
-			rival_a = Point(0.0, 0.0)
-			rival_b = Point(0.0, 0.0)
+			rival_a: Point = Point(0.0, 0.0)
+			rival_b: Point = Point(0.0, 0.0)
 			return line_class(
 				director, dummy_point, slope, rival_a, rival_b
 			)

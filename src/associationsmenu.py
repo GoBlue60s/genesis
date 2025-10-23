@@ -73,7 +73,7 @@ class AlikeCommand:
 		self._print_alike_pairs()
 		self._create_alike_table()
 		cut_point = self._director.cut_point
-		self._director.title_for_table_widget = (
+		self._director.title_for_table_widget= (
 			f"Pairs with similarity using cutoff: {cut_point}"
 		)
 		self._director.common.create_plot_for_tabs("alike")
@@ -99,16 +99,16 @@ class AlikeCommand:
 			SelectionError: If no pairs satisfy the cutoff criteria
 		"""
 		self._determine_alike_pairs_initialize_variables()
-		cut_point = self._director.cut_point
-		value_type = self._director.similarities_active.value_type
-		sorted_pairs = (
+		cut_point: float = self._director.cut_point
+		value_type: str = self._director.similarities_active.value_type
+		sorted_pairs: list[list] = (
 			self._director.similarities_active.sorted_similarities_w_pairs
 		)
 		# Use the filter_pairs_by_cutoff method to get qualifying pairs
-		filtered_pairs = self._filter_pairs_by_cutoff(
+		filtered_pairs: list[list] = self._filter_pairs_by_cutoff(
 			sorted_pairs, cut_point, value_type
 		)
-		n_similar_pairs = len(filtered_pairs)
+		n_similar_pairs: int = len(filtered_pairs)
 
 		if n_similar_pairs == 0:
 			raise SelectionError(
@@ -130,7 +130,7 @@ class AlikeCommand:
 	) -> list[list]:
 		"""Filter pairs based on cutoff criteria and return qualifying
 		pairs."""
-		filtered_pairs = []
+		filtered_pairs: list[list] = []
 		for pair in sorted_pairs:
 			similarity = pair[0]
 			# Add pairs that meet cutoff criteria
@@ -169,16 +169,16 @@ class AlikeCommand:
 		for pair in filtered_pairs:
 			# Each pair contains: [similarity_value, item_a_label,
 			# item_b_label, item_a_name, item_b_name]
-			item_a_label = pair[1]
-			item_b_label = pair[2]
+			item_a_label: str = pair[1]
+			item_b_label: str = pair[2]
 
 			# Find indices of these items in point_coords
-			item_a_index = (
+			item_a_index: int = (
 				self._director.configuration_active.point_labels.index(
 					item_a_label
 				)
 			)
-			item_b_index = (
+			item_b_index: int = (
 				self._director.configuration_active.point_labels.index(
 					item_b_label
 				)
@@ -204,8 +204,9 @@ class AlikeCommand:
 
 	def _print_alike_pairs(self) -> None:
 		"""Print information about the cutoff and similar pairs."""
-		most_alike_pairs = self._director.similarities_active.filtered_pairs
-		cut_point = self._director.cut_point
+		most_alike_pairs: list[list] = \
+			self._director.similarities_active.filtered_pairs
+		cut_point: float = self._director.cut_point
 		print("\tCut point: ", cut_point)
 		print(f"\tNumber of similar pairs: {self._director.n_similar_pairs}")
 
@@ -223,29 +224,29 @@ class AlikeCommand:
 	# ------------------------------------------------------------------------
 
 	def _get_cutoff_from_user_initialize_variables(self) -> None:
-		self.cutoff_value_needed_title = self._director.command
-		self.cutoff_value_needed_message = "Value for cutoff needed"
+		self.cutoff_value_needed_title: str = self._director.command
+		self.cutoff_value_needed_message: str = "Value for cutoff needed"
 
 	# ------------------------------------------------------------------------
 
 	def _get_cutoff_from_user(self) -> None:
 		self._get_cutoff_from_user_initialize_variables()
 		# command = self._director.command
-		title = self._title
-		label = self._label
-		min_allowed = self._min_allowed
-		max_allowed = self._max_allowed
-		an_integer = self._an_integer
-		default = self._default
+		title: str = self._title
+		label: str = self._label
+		min_allowed: float = self._min_allowed
+		max_allowed: float = self._max_allowed
+		an_integer: bool = self._an_integer
+		default: float = self._default
 		# cut_point = self._director.cut_point
 
 		cutoff_dialog = SetValueDialog(
 			title, label, min_allowed,
 			max_allowed, an_integer, default
 		)
-		result = cutoff_dialog.exec()
+		result: int = cutoff_dialog.exec()
 		if result == QDialog.Accepted: # ty: ignore[unresolved-attribute]
-			cut_point = cutoff_dialog.getValue()
+			cut_point: int | float = cutoff_dialog.getValue()
 		else:
 			raise SelectionError(
 				self.cutoff_value_needed_title,
@@ -272,22 +273,21 @@ class AlikeCommand:
 		"""
 		# Get similarity information
 		similarities_active = self._director.similarities_active
-		sorted_similarities_w_pairs = (
+		sorted_similarities_w_pairs: list[list] = (
 			similarities_active.sorted_similarities_w_pairs
 		)
-		value_type = similarities_active.value_type
+		value_type: str = similarities_active.value_type
 		# print(f"\nDEBUG -- in _create_alike_table:"
 		# 	f"\n{value_type=}")
-		cut_point = self._director.cut_point
+		cut_point: float = self._director.cut_point
 		# print(f"\nDEBUG -- also in _create_alike_table:"
 		# 	f"\n{sorted_similarities_w_pairs=}")
 		# Filter pairs that meet the cutoff criteria
-		alike_pairs = []
+		alike_pairs: list[tuple] = []
 		for pair in sorted_similarities_w_pairs:
-			similarity = pair[0]
-			item_a = pair[1]
-			item_b = pair[2]
-
+			similarity: float = pair[0]
+			item_a: str = pair[1]
+			item_b: str = pair[2]
 			# Add pairs that meet cutoff criteria based on value_type
 			if (value_type == "similarities" and similarity > cut_point) or (
 				value_type == "dissimilarities" and similarity < cut_point
@@ -298,13 +298,13 @@ class AlikeCommand:
 		similarity_column_name = (
 			"Similarity" if value_type == "similarities" else "Dis/similarity"
 		)
-		alike_df = pd.DataFrame(
+		alike_df: pd.DataFrame = pd.DataFrame(
 			alike_pairs,
 			columns=["Item", "Paired with", similarity_column_name],
 		)
 
 		# Store in the director for later use
-		self._director.similarities_active.alike_df = alike_df
+		self._director.similarities_active.alike_df= alike_df
 
 		return alike_df
 
@@ -343,9 +343,9 @@ class DistancesCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Distances"
-		self._width = 8
-		self._decimals = 2
-		self.title_for_table_widget = "Inter-point distances"
+		self._width: int = 8
+		self._decimals: int = 2
+		self.title_for_table_widget: str = "Inter-point distances"
 		return
 
 	# ------------------------------------------------------------------------
@@ -374,8 +374,8 @@ class LineOfSightCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Line of sight"
-		self._width = 8
-		self._decimals = 1
+		self._width: int = 8
+		self._decimals: int = 1
 
 		return
 
@@ -475,13 +475,13 @@ class PairedCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		# self._get_pair_from_user(self._paired_title, self._paired_items)
-		focal_index = common.get_focal_item_from_user(
+		focal_index: int = common.get_focal_item_from_user(
 			self._paired_title,
 			"Select point to view relationships with others",
 			self._paired_items,
 		)
 
-		self._focal_item_index = focal_index
+		self._focal_item_index: int = focal_index
 		self._create_paired_dataframe()
 		self._print_paired()
 		point_names = self._director.configuration_active.point_names
@@ -503,11 +503,11 @@ class PairedCommand:
 
 		focal_index = self._focal_item_index
 		point_names = self._director.configuration_active.point_names
-		similarities_as_dataframe = (
+		similarities_as_dataframe: pd.DataFrame = (
 			self._director.similarities_active.similarities_as_dataframe
 		)
-		value_type = self._director.similarities_active.value_type
-		distances_as_dataframe = (
+		value_type: str = self._director.similarities_active.value_type
+		distances_as_dataframe: pd.DataFrame = (
 			self._director.configuration_active.distances_as_dataframe
 		)
 
@@ -518,10 +518,11 @@ class PairedCommand:
 		for i, name in enumerate(point_names):
 			if i != focal_index:  # Skip the focal point itself
 				# Get similarity between focal point and this point
-				similarity = similarities_as_dataframe.iloc[focal_index, i]
+				similarity: float = \
+					similarities_as_dataframe.iloc[focal_index, i]
 
 				# Get distance between focal point and this point
-				distance = distances_as_dataframe.iloc[focal_index, i]
+				distance: float = distances_as_dataframe.iloc[focal_index, i]
 
 				# Add to data list
 				paired_data.append(
@@ -533,16 +534,18 @@ class PairedCommand:
 				)
 
 		# Create DataFrame
-		paired_df = pd.DataFrame(paired_data)
+		paired_df: pd.DataFrame = pd.DataFrame(paired_data)
 
 		# Sort by similarity (ascending or descending based on value_type)
 		if value_type == "similarities":
-			paired_df = paired_df.sort_values(by="Similarity", ascending=False)
+			paired_df: pd.DataFrame = \
+				paired_df.sort_values(by="Similarity", ascending=False)
 		else:  # "dissimilarities"
-			paired_df = paired_df.sort_values(by="Similarity", ascending=True)
+			paired_df: pd.DataFrame = \
+				paired_df.sort_values(by="Similarity", ascending=True)
 
 		# Store the DataFrame for display
-		self._paired_df = paired_df
+		self._paired_df: pd.DataFrame = paired_df
 
 		return paired_df
 
@@ -552,9 +555,10 @@ class PairedCommand:
 		"""Print the DataFrame showing relationships between the focal
 		point and all other points."""
 
-		focal_index = self._focal_item_index
-		point_names = self._director.configuration_active.point_names
-		value_type = self._director.similarities_active.value_type
+		focal_index: int = self._focal_item_index
+		point_names: list[str] = \
+			self._director.configuration_active.point_names
+		value_type: str = self._director.similarities_active.value_type
 
 		# Determine the similarity label based on value type
 		sim_label = (
@@ -568,7 +572,8 @@ class PairedCommand:
 		)
 
 		# Print just the three columns with appropriate headers
-		display_df = self._paired_df[["Name", "Similarity", "Distance"]]
+		display_df: pd.DataFrame = \
+			self._paired_df[["Name", "Similarity", "Distance"]]
 
 		print(
 			f"  {display_df.columns[0]:<20} {sim_label:>12} "
@@ -594,7 +599,7 @@ class PairedCommand:
 			"paired"
 		)
 
-		self._director.output_widget_type = "Table"
+		self._director.output_widget_type= "Table"
 		return gui_output_as_widget
 
 	# ------------------------------------------------------------------------
@@ -733,7 +738,7 @@ class ScreeCommand:
 
 	def _get_model_for_scree_diagram_initialize_variables(self) -> None:
 		self.need_model_for_scree_error_title = self._director.command
-		self.need_model_for_scree_error_message = (
+		self.need_model_for_scree_error_message: str = (
 			"A model is needed to use in creating scree diagram."
 		)
 
@@ -757,9 +762,9 @@ class ScreeCommand:
 			selected_option = dialog.selected_option  # + 1
 			match selected_option:
 				case 0:
-					use_metric = False
+					use_metric: bool = False
 				case 1:
-					use_metric = True
+					use_metric: bool = True
 				case _:
 					raise SpacesError(
 						self.need_model_for_scree_error_title,
@@ -772,7 +777,7 @@ class ScreeCommand:
 				self.need_model_for_scree_error_message,
 			)
 
-		self._use_metric = use_metric
+		self._use_metric: bool = use_metric
 		self._director.common._use_metric = use_metric
 
 		return
@@ -783,10 +788,10 @@ class ScreeCommand:
 		similarities_as_square = (
 			self._director.similarities_active.similarities_as_square
 		)
-		min_stress = self._min_stress
+		min_stress: pd.DataFrame = self._min_stress
 
-		dim_names = []
-		dim_labels = []
+		dim_names: list[str] = []
+		dim_labels: list[str] = []
 
 		dim_names.append("Dimension 1")
 		dim_labels.append("Dim1")
@@ -813,11 +818,11 @@ class ScreeCommand:
 				f"\tBest stress in {each_n_comp} dimensions: {best_stress:.4f}"
 			)
 
-		self.point_coords = point_coords
-		self._dim_names = dim_names
-		self._dim_labels = dim_labels
-		self.best_stress = best_stress
-		self._min_stress = min_stress
+		self.point_coords: pd.DataFrame = point_coords
+		self._dim_names: list[str] = dim_names
+		self._dim_labels: list[str] = dim_labels
+		self.best_stress: float = best_stress
+		self._min_stress: pd.DataFrame = min_stress
 		self._director.common._min_stress = min_stress
 
 		return
@@ -854,7 +859,7 @@ class ShepardCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self.shepard_axis = axis
+		self.shepard_axis: str = axis
 		self._director.common.shepard_axis = axis
 		self._director.common.create_plot_for_tabs("shepard")
 		self._director.title_for_table_widget = (
@@ -889,7 +894,7 @@ class StressContributionCommand:
 		self._contributions_items: list[str] = (
 			self._director.configuration_active.point_names
 		)
-		self._worst_fit = pd.DataFrame()
+		self._worst_fit: pd.DataFrame = pd.DataFrame()
 
 		return
 
@@ -905,20 +910,22 @@ class StressContributionCommand:
 		worst_fit = self._calculate_and_sort_stress_contributions()
 		self._print_highest_stress_contributions(worst_fit)
 		# self._director.configuration_active.print_the_configuration()
-		index = self.common.get_focal_item_from_user(
+		index: int = self.common.get_focal_item_from_user(
 			self._contributions_title,
 			self._contributions_label,
 			self._contributions_items)
-		stress_contribution_df = \
+		stress_contribution_df: pd.DataFrame = \
 			self._create_stress_contribution_df(index, worst_fit)
 		self._director.similarities_active.stress_contribution_df = \
 			stress_contribution_df
-		point_labels = self._director.configuration_active.point_labels
-		point_to_plot_label = point_labels[index]
-		self._point_to_plot_label = point_to_plot_label
-		self._point_to_plot_index = index
+		point_labels: list[str] = \
+			self._director.configuration_active.point_labels
+		point_to_plot_label: str = point_labels[index]
+		self._point_to_plot_label: str = point_to_plot_label
+		self._point_to_plot_index: int = index
 		self._director.common.create_plot_for_tabs("stress_contribution")
-		point_names = self._director.configuration_active.point_names
+		point_names: list[str] = \
+			self._director.configuration_active.point_names
 		self._director.title_for_table_widget = (
 			f"Stress contribution of "
 			f"{point_names[index]}")
@@ -934,7 +941,7 @@ class StressContributionCommand:
 		worst_fit: list[float] = []
 		ranks_df["Absolute_Difference"] = abs(ranks_df["AB_Rank_Difference"])
 		ranks_df["Pct_of_Stress"] = ranks_df["Absolute_Difference"]
-		total_differences = np.sum(ranks_df["Pct_of_Stress"])
+		total_differences: float = np.sum(ranks_df["Pct_of_Stress"])
 		# print(
 		# 	f"\nDEBUG -- in middle of _calculate_and_sort..."
 		# 	f"\n{total_differences=}"
@@ -943,10 +950,10 @@ class StressContributionCommand:
 			ranks_df["Pct_of_Stress"] / total_differences
 		) * 100
 		# print(f"\n\nDEBUG -- nxt...\n{ranks_df['Pct_of_Stress'].sum()=}")
-		sorted_dyads = ranks_df.sort_values(
+		sorted_dyads: pd.DataFrame = ranks_df.sort_values(
 			by="Absolute_Difference", ascending=False
 		)
-		worst_fit = sorted_dyads[
+		worst_fit: pd.DataFrame = sorted_dyads[
 			[
 				"A_label",
 				"B_label",
@@ -987,12 +994,14 @@ class StressContributionCommand:
 			DataFrame with columns 'Item' and 'Stress Contribution',
 			sorted by contribution
 		"""
-		point_names = self._director.configuration_active.point_names
-		point_labels = self._director.configuration_active.point_labels
-		focal_label = point_labels[index]
+		point_names: list[str] = \
+			self._director.configuration_active.point_names
+		point_labels: list[str] = \
+			self._director.configuration_active.point_labels
+		focal_label: str = point_labels[index]
 
 		contributions = []
-		label_to_name_map = self._create_label_to_name_mapping(
+		label_to_name_map: dict[str, str] = self._create_label_to_name_mapping(
 			point_labels, point_names
 		)
 
@@ -1009,7 +1018,8 @@ class StressContributionCommand:
 						)
 					)
 
-		result_df = self._create_and_sort_dataframe(contributions)
+		result_df: pd.DataFrame = \
+			self._create_and_sort_dataframe(contributions)
 		self.stress_contribution_df = result_df
 		return result_df
 
@@ -1051,7 +1061,7 @@ class StressContributionCommand:
 	) -> pd.DataFrame:
 		"""Create DataFrame from contributions and sort by stress
 		contribution."""
-		result_df = pd.DataFrame(contributions)
+		result_df: pd.DataFrame = pd.DataFrame(contributions)
 		if not result_df.empty:
 			result_df = result_df.sort_values(
 				by="Stress Contribution", ascending=False

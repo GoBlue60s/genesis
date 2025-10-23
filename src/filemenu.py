@@ -4,8 +4,17 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from datetime import datetime
-
+from typing import TYPE_CHECKING
+# from dialogs import (  # noqa: PLC0415
+# 	GetIntegerDialog,
+# 	GetStringDialog,
+# 	GetCoordinatesDialog,
+# )
 import pandas as pd
+
+if TYPE_CHECKING:
+	from director import Spaces
+	from director import Status
 
 from exceptions import SpacesError
 from rivalry import Rivalry
@@ -160,6 +169,7 @@ class CorrelationsCommand:
 			decimals=3,
 			common=common,
 		)
+		self._director.common.create_plot_for_tabs("heatmap_corr")
 		self._director.title_for_table_widget = (
 			"The correlations are shown as a square matrix"
 		)
@@ -220,12 +230,12 @@ class CreateCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
+
 		from dialogs import (  # noqa: PLC0415
 			GetIntegerDialog,
 			GetStringDialog,
 			GetCoordinatesDialog,
 		)
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
@@ -441,9 +451,9 @@ class DeactivateCommand:
 		)
 
 		if not dialog.exec():
-			raise SpacesError(
-				"Deactivate cancelled", "Deactivation was cancelled"
-			)
+			msg_title = "Deactivate cancelled"
+			msg = "Deactivation was cancelled"
+			raise SpacesError(msg_title, msg)
 
 		selected_items = dialog.get_selected_items()
 
@@ -530,7 +540,7 @@ class EvaluationsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self.common.capture_and_push_undo_state("Evaluations", "active", {})
-		file_name = self._get_file_name()
+		file_name: str = self._get_file_name()
 		self._read_evaluations(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.evaluations_active = (

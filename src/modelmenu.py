@@ -1015,7 +1015,7 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.common.create_plot_for_tabs("scree")
 		self._display()
 		self._director.title_for_table_widget = \
-			"Factor analysis (Machine Learning)"
+			"Factor Analysis - Machine Learning"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -1415,8 +1415,8 @@ class FactorAnalysisMachineLearningCommand:
 		print("\nnew_trans: ", new_trans)
 		print(
 			"\nPoint_coords: \n",
-			self._director.configuration_active.point_coords,
-		)
+			self._director.configuration_active.point_coords.to_string(float_format="{:.2f}".format))
+		
 		print("\nEigenvalues:")
 		for i, eigenvalue in enumerate(eigenvalues[:nreferent]):
 			print(f"  Component {i+1}: {eigenvalue:.4f}")
@@ -1799,7 +1799,7 @@ class PrincipalComponentsCommand:
 		self._director.record_command_as_successfully_completed()
 		print(
 			# f"DEBUG -- at bottom of PrincipalComponentsCommand"
-			f" {self._director.configuration_active.point_coords=}"
+			f" {self._director.configuration_active.point_coords.to_string(float_format='{:.2f}'.format)}"
 		)
 		return
 
@@ -1924,9 +1924,11 @@ class PrincipalComponentsCommand:
 			pca_transformer.get_feature_names_out(),
 		)
 		print("PCA Covariance: \n", pca_covar)
-		print("\nTranspose: \n", transpose)
-		print("\nPoint_coords: \n", point_coords)
-		print(f"\nScores from components\n {scores=}")
+		print("\nTranspose: \n",
+			transpose.to_string(float_format="{:.2f}".format))
+		print("\nPoint_coords: \n",
+			point_coords.to_string(float_format="{:.2f}".format))
+		print(f"\nScores from components\n ",scores.to_string(float_format='{:.2f}'.format))
 		return
 
 

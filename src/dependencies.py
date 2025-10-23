@@ -227,14 +227,16 @@ class DependencyChecking:
 		satisfied before the command can be executed.
 		"""
 
-		n_problems = self.detect_dependency_problems_initialize_variables()
+		n_problems: int = \
+			self.detect_dependency_problems_initialize_variables()
 
 		for each_test in range(len(self.commands_having_this_dependency)):
 			if (
 				self._director.command.lower()
 				in self.commands_having_this_dependency[each_test]
 			):
-				problem_detected = self.test_for_that_dependency_no_parens[
+				problem_detected: bool = \
+					self.test_for_that_dependency_no_parens[
 					each_test
 				](self._director.command)
 				if problem_detected:
@@ -503,7 +505,7 @@ class DependencyChecking:
 		# n_exist = self._check_if_any_features_exist()
 		# if n_exist == 0:
 		# 	return
-		new = self._create_new_from_command_without_open()
+		new: str = self._create_new_from_command_without_open()
 		for each_feature in features:
 			if self._skip_when_new_and_existing_are_same_type_of_feature(
 				new, each_feature
@@ -530,12 +532,12 @@ class DependencyChecking:
 		command = self._director.command
 
 		if command[0:4] == "Open":
-			new = command[5:]
-			new = new.capitalize()
+			new: str = command[5:]
+			new: str = new.capitalize()
 		elif command == "Create":
-			new = "Configuration"
+			new: str = "Configuration"
 		else:
-			new = command
+			new: str = command
 		return new
 
 	# ------------------------------------------------------------------------
@@ -552,10 +554,10 @@ class DependencyChecking:
 	def _check_if_dimensions_match_and_resolve_conflict(
 		self, new: str, each_feature: str
 	) -> bool:
-		existing_feature_dict = self.existing_feature_dict
-		new_feature_dict = self.new_feature_dict
+		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
+		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
-		existing_abandoned = False
+		existing_abandoned: bool = False
 		if (
 			new_feature_dict[new][2] == "Dimensions"
 			and existing_feature_dict[each_feature][3] == "Dimensions"
@@ -569,7 +571,7 @@ class DependencyChecking:
 				new_feature_dict[new][8],
 			)
 			if not dimensions_match:
-				nothing_in_common = False
+				nothing_in_common: bool = False
 				existing_abandoned = self.resolve_conflict_w_existing_data(
 					existing_feature_dict[each_feature][0],
 					new_feature_dict[new][0],
@@ -582,10 +584,10 @@ class DependencyChecking:
 	def _check_if_points_match_and_resolve_conflict(
 		self, new: str, each_feature: str
 	) -> bool:
-		existing_feature_dict = self.existing_feature_dict
-		new_feature_dict = self.new_feature_dict
+		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
+		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
-		existing_abandoned = False
+		existing_abandoned: bool = False
 		# points_match = False
 		if (
 			new_feature_dict[new][1] == "Points"
@@ -613,8 +615,8 @@ class DependencyChecking:
 	def _check_that_both_features_have_both_points_and_dimensions(
 		self, new: str, each_feature: str
 	) -> bool:
-		existing_feature_dict = self.existing_feature_dict
-		new_feature_dict = self.new_feature_dict
+		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
+		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
 		return (
 			new_feature_dict[new][2] == "Dimensions"
@@ -628,8 +630,8 @@ class DependencyChecking:
 	def _check_that_both_features_have_dimensions(
 		self, new: str, each_feature: str
 	) -> bool:
-		existing_feature_dict = self.existing_feature_dict
-		new_feature_dict = self.new_feature_dict
+		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
+		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
 		return (
 			new_feature_dict[new][2] == "Dimensions"
@@ -641,8 +643,8 @@ class DependencyChecking:
 	def _check_that_both_features_have_points(
 		self, new: str, each_feature: str
 	) -> bool:
-		existing_feature_dict = self.existing_feature_dict
-		new_feature_dict = self.new_feature_dict
+		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
+		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
 		return (
 			new_feature_dict[new][1] == "Points"
@@ -711,7 +713,7 @@ class DependencyChecking:
 		new_dim_names: list[str],
 		new_dim_labels: list[str],
 	) -> bool:
-		dimensions_match = False
+		dimensions_match: bool = False
 
 		if self.check_label_consistency:
 			if existing_dim_labels == new_dim_labels:
@@ -734,18 +736,18 @@ class DependencyChecking:
 		new_point_names: list[str],
 		new_point_labels: list[str],
 	) -> bool:
-		points_match = False
+		points_match: bool = False
 		if self.check_label_consistency:
 			if existing_point_labels == new_point_labels:
 				pass
 			else:
-				points_match = False
+				points_match: bool = False
 			return points_match
 		if (
 			existing_npoint == new_npoint
 			and existing_point_names == new_point_names
 		):
-			points_match = True
+			points_match: bool = True
 		return points_match
 
 	# ------------------------------------------------------------------------
@@ -795,21 +797,23 @@ class DependencyChecking:
 			match selected_option:
 				case 0:
 					abandon_dict[existing]()
-					existing_abandoned = True
+					existing_abandoned: bool = True
 				case 1:
 					abandon_dict[new]()
-					abandon_needed_error_title = self._director.command
-					abandon_needed_error_message = f"{new} has been abandoned"
+					abandon_needed_error_title: str = self._director.command
+					abandon_needed_error_message: str = \
+						f"{new} has been abandoned"
 					raise SpacesError(
 						abandon_needed_error_title,
 						abandon_needed_error_message,
 					)
 				case 2:
-					existing_abandoned = False
+					existing_abandoned: bool = False
 				case _:
 					abandon_dict[existing]()
-					inconsistency_error_title = f"{new} has been abandoned"
-					inconsistency_error_message = (
+					inconsistency_error_title: str = \
+						f"{new} has been abandoned"
+					inconsistency_error_message: str = (
 						f"Inconsistency between {new.lower()} "
 						f"and {existing.lower()} was not resolved"
 					)
@@ -818,8 +822,9 @@ class DependencyChecking:
 					)
 		else:
 			abandon_dict[existing]()
-			inconsistency_unresolved_error_title = f"{new} has been abandoned"
-			inconsistency_unresolved_error_message = (
+			inconsistency_unresolved_error_title: str = \
+				f"{new} has been abandoned"
+			inconsistency_unresolved_error_message: str = (
 				f"Inconsistency between {new.lower()} "
 				f"and {existing.lower()} was not resolved"
 			)
@@ -842,12 +847,13 @@ class DependencyChecking:
 	def _when_no_information_in_common_get_user_to_resolve_conflict(
 		self, new: str, each_feature: str
 	) -> bool:
-		existing_feature_dict = self.existing_feature_dict
-		new_feature_dict = self.new_feature_dict
+		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
+		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
-		existing_abandoned = False
-		feature_group_1 = ["Similarities", "Correlations", "Evaluations"]
-		feature_group_2 = ["Grouped data", "Scores"]
+		existing_abandoned: bool = False
+		feature_group_1: list[str] = \
+			["Similarities", "Correlations", "Evaluations"]
+		feature_group_2: list[str] = ["Grouped data", "Scores"]
 		if existing_feature_dict[each_feature][
 			10
 		] == "No information in common" and (
@@ -860,8 +866,8 @@ class DependencyChecking:
 				and existing_feature_dict[each_feature][0] in feature_group_1
 			)
 		):
-			nothing_in_common = True
-			existing_abandoned = self.resolve_conflict_w_existing_data(
+			nothing_in_common: bool = True
+			existing_abandoned: bool = self.resolve_conflict_w_existing_data(
 				existing_feature_dict[each_feature][0],
 				new_feature_dict[new][0],
 				nothing_in_common,

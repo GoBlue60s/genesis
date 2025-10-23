@@ -39,8 +39,8 @@ class RedoCommand:
 		cmd_state = self._director.pop_redo_state()
 
 		if cmd_state is None:
-			title_msg = "Nothing to redo"
-			detail_msg = (
+			title_msg: str = "Nothing to redo"
+			detail_msg: str = (
 				"No commands have been undone. "
 				"Use Undo before using Redo."
 			)
@@ -51,7 +51,7 @@ class RedoCommand:
 		# Push the current state to undo stack before redoing
 		from command_state import CommandState
 		current_state = CommandState(cmd_state.command_name, "active", {})
-		current_state.timestamp = cmd_state.timestamp
+		current_state.timestamp= cmd_state.timestamp
 		# Capture all state types that were in the original command
 		for feature_name in cmd_state.state_snapshot.keys():
 			capture_method = getattr(
@@ -74,7 +74,7 @@ class RedoCommand:
 	def _build_redo_output(self, cmd_state: CommandState) -> None:
 		"""Build output and title based on what was redone."""
 		# Set simple title indicating what was redone
-		self._director.title_for_table_widget = (
+		self._director.title_for_table_widget: str = (
 			f"Redid {cmd_state.command_name} command"
 		)
 
@@ -98,7 +98,7 @@ class RedoCommand:
 		"""
 		# Build and return restoration details table
 		table_widget = self._build_restoration_table(self._restored_cmd_state)
-		self._director.output_widget_type = "Table"
+		self._director.output_widget_type: str = "Table"
 		return table_widget
 
 	# ------------------------------------------------------------------------
@@ -119,19 +119,18 @@ class RedoCommand:
 
 		if not restoration_data:
 			# No items were restored, create empty table widget
-			table_widget = QTableWidget(1, 1)
+			table_widget: QTableWidget = QTableWidget(1, 1)
 			table_widget.setItem(
 				0, 0, QTableWidgetItem("No state items were restored")
 			)
 			return table_widget
 
 		# Create DataFrame for the table
-		columns = ["Items Restored", "Details"]
-		df = pd.DataFrame(restoration_data, columns=columns)
+		columns: list[str] = ["Items Restored", "Details"]
+		df: pd.DataFrame = pd.DataFrame(restoration_data, columns=columns)
 
 		# Create table widget
-		table_widget = QTableWidget(df.shape[0], df.shape[1])
-
+		table_widget: QTableWidget = QTableWidget(df.shape[0], df.shape[1])
 		# Fill table with data
 		self._director.common.fill_table_with_formatted_data(
 			table_widget, df, ["s", "s"]  # Both columns are strings
@@ -160,7 +159,7 @@ class RedoCommand:
 		Returns:
 			List of [item_name, details] pairs for each restored item
 		"""
-		restoration_details = []
+		restoration_details: list[list[str]] = []
 		snapshot = cmd_state.state_snapshot
 
 		# Use the same helper methods from UndoCommand
@@ -201,8 +200,8 @@ class UndoCommand:
 		cmd_state = self._director.pop_undo_state()
 
 		if cmd_state is None:
-			title_msg = "Nothing to undo"
-			detail_msg = (
+			title_msg: str = "Nothing to undo"
+			detail_msg: str = (
 				"No commands have been executed yet. "
 				"Execute an active command before using Undo."
 			)
@@ -213,8 +212,10 @@ class UndoCommand:
 		# Push the current state to redo stack before undoing
 		# We need to capture the current state first
 		from command_state import CommandState
-		current_state = CommandState(cmd_state.command_name, "active", {})
-		current_state.timestamp = cmd_state.timestamp
+		current_state = \
+			CommandState(cmd_state.command_name,
+				"active", {})
+		current_state.timestamp: float = cmd_state.timestamp
 		# Capture all state types that were in the original command
 		for feature_name in cmd_state.state_snapshot.keys():
 			capture_method = getattr(
@@ -240,7 +241,7 @@ class UndoCommand:
 	def _build_undo_output(self, cmd_state: CommandState) -> None:
 		"""Build output and title based on what was undone."""
 		# Set simple title indicating what was undone
-		self._director.title_for_table_widget = (
+		self._director.title_for_table_widget: str = (
 			f"Undid {cmd_state.command_name} command"
 		)
 
@@ -264,7 +265,7 @@ class UndoCommand:
 		"""
 		# Build and return restoration details table
 		table_widget = self._build_restoration_table(self._restored_cmd_state)
-		self._director.output_widget_type = "Table"
+		self._director.output_widget_type: str = "Table"
 		return table_widget
 
 	# ------------------------------------------------------------------------
@@ -285,19 +286,18 @@ class UndoCommand:
 
 		if not restoration_data:
 			# No items were restored, create empty table widget
-			table_widget = QTableWidget(1, 1)
+			table_widget: QTableWidget = QTableWidget(1, 1)
 			table_widget.setItem(
 				0, 0, QTableWidgetItem("No state items were restored")
 			)
 			return table_widget
 
 		# Create DataFrame for the table
-		columns = ["Items Restored", "Details"]
-		df = pd.DataFrame(restoration_data, columns=columns)
+		columns: list[str] = ["Items Restored", "Details"]
+		df: pd.DataFrame = pd.DataFrame(restoration_data, columns=columns)
 
 		# Create table widget
-		table_widget = QTableWidget(df.shape[0], df.shape[1])
-
+		table_widget: QTableWidget = QTableWidget(df.shape[0], df.shape[1])
 		# Fill table with data
 		self._director.common.fill_table_with_formatted_data(
 			table_widget, df, ["s", "s"]  # Both columns are strings
@@ -326,7 +326,7 @@ class UndoCommand:
 		Returns:
 			List of [item_name, details] pairs for each restored item
 		"""
-		restoration_details = []
+		restoration_details: list[list[str]] = []
 		snapshot = cmd_state.state_snapshot
 
 		# Process each type of state item
@@ -346,13 +346,13 @@ class UndoCommand:
 	) -> None:
 		"""Add configuration details to restoration list."""
 		if "configuration" in snapshot:
-			config = snapshot["configuration"]
-			ndim = config.get("ndim", 0)
-			npoint = config.get("npoint", 0)
+			config: dict = snapshot["configuration"]
+			ndim: int = config.get("ndim", 0)
+			npoint: int = config.get("npoint", 0)
 			# Show coordinates info - this is what most commands modify
 			point_coords = config.get("point_coords")
 			if point_coords is not None and not point_coords.empty:
-				coords_text = f"{ndim} dimensions, {npoint} points"
+				coords_text: str = f"{ndim} dimensions, {npoint} points"
 				details.append(["Coordinates", coords_text])
 			# Only show metadata if dimensions actually changed
 			details.append(["Configuration", f"{ndim} dimensions, {npoint} points"])
@@ -364,9 +364,9 @@ class UndoCommand:
 	) -> None:
 		"""Add target details to restoration list."""
 		if "target" in snapshot:
-			target = snapshot["target"]
-			ndim = target.get("ndim", 0)
-			npoint = target.get("npoint", 0)
+			target: dict = snapshot["target"]
+			ndim: int = target.get("ndim", 0)
+			npoint: int = target.get("npoint", 0)
 			details.append(["Target", f"{ndim} dimensions, {npoint} points"])
 
 	# ------------------------------------------------------------------------
@@ -376,8 +376,8 @@ class UndoCommand:
 	) -> None:
 		"""Add distance matrix details to restoration list."""
 		if "configuration" in snapshot:
-			config = snapshot["configuration"]
-			dist_df = config.get("distances_as_dataframe")
+			config: dict = snapshot["configuration"]
+			dist_df: pd.DataFrame = config.get("distances_as_dataframe")
 			if dist_df is not None and not dist_df.empty:
 				nrows, ncols = dist_df.shape
 				details.append(["Distances", f"{nrows}x{ncols} matrix"])
@@ -389,50 +389,50 @@ class UndoCommand:
 	) -> None:
 		"""Add data-related details (correlations, individuals, etc.)."""
 		if "correlations" in snapshot:
-			corr = snapshot["correlations"]
-			nitem = corr.get("nitem", 0)
+			corr: dict = snapshot["correlations"]
+			nitem: int = corr.get("nitem", 0)
 			details.append(["Correlations", f"{nitem} items"])
 
 		if "individuals" in snapshot:
-			inds = snapshot["individuals"]
-			n_individ = inds.get("n_individ", 0)
-			nvar = inds.get("nvar", 0)
+			inds: dict = snapshot["individuals"]
+			n_individ: int = inds.get("n_individ", 0)
+			nvar: int = inds.get("nvar", 0)
 			details.append(
 				["Individuals", f"{n_individ} individuals, {nvar} variables"]
 			)
 
 		if "similarities" in snapshot:
-			sims = snapshot["similarities"]["active"]
-			nitem = sims.get("nitem", 0)
-			value_type = sims.get("value_type", "unknown")
+			sims: dict = snapshot["similarities"]["active"]
+			nitem: int = sims.get("nitem", 0)
+			value_type: str = sims.get("value_type", "unknown")
 			details.append(["Similarities", f"{nitem} items, {value_type}"])
 
 		if "evaluations" in snapshot:
-			evals = snapshot["evaluations"]
-			nitem = evals.get("nitem", 0)
-			nevaluators = evals.get("nevaluators", 0)
-			text = f"{nitem} items, {nevaluators} evaluators"
+			evals: dict = snapshot["evaluations"]
+			nitem: int = evals.get("nitem", 0)
+			nevaluators: int = evals.get("nevaluators", 0)
+			text: str = f"{nitem} items, {nevaluators} evaluators"
 			details.append(["Evaluations", text])
 
 		if "scores" in snapshot:
-			scores = snapshot["scores"]
-			nscored_individ = scores.get("nscored_individ", 0)
-			ndim = scores.get("ndim", 0)
-			text = f"{ndim} dimensions, {nscored_individ} individuals"
+			scores: dict = snapshot["scores"]
+			nscored_individ: int = scores.get("nscored_individ", 0)
+			ndim: int = scores.get("ndim", 0)
+			text: str = f"{ndim} dimensions, {nscored_individ} individuals"
 			details.append(["Scores", text])
 
 		if "grouped_data" in snapshot:
-			grouped = snapshot["grouped_data"]
-			ngroups = grouped.get("ngroups", 0)
-			ndim = grouped.get("ndim", 0)
-			grouping_var = grouped.get("grouping_var", "unknown")
-			text = f"{ndim} dimensions, {ngroups} groups, var={grouping_var}"
+			grouped: dict = snapshot["grouped_data"]
+			ngroups: int = grouped.get("ngroups", 0)
+			ndim: int = grouped.get("ndim", 0)
+			grouping_var: str = grouped.get("grouping_var", "unknown")
+			text: str = f"{ndim} dimensions, {ngroups} groups, var={grouping_var}"
 			details.append(["Grouped data", text])
 
 		if "uncertainty" in snapshot:
-			unc = snapshot["uncertainty"]
-			nsolutions = unc.get("nsolutions", 0)
-			npoints = unc.get("npoints", 0)
+			unc: dict = snapshot["uncertainty"]
+			nsolutions: int = unc.get("nsolutions", 0)
+			npoints: int = unc.get("npoints", 0)
 			details.append(
 				["Uncertainty", f"{nsolutions} solutions, {npoints} points"]
 			)
@@ -444,11 +444,11 @@ class UndoCommand:
 	) -> None:
 		"""Add settings details to restoration list."""
 		if "settings" in snapshot:
-			settings = snapshot["settings"]
-			hor_dim = settings.get("hor_dim", 0)
-			vert_dim = settings.get("vert_dim", 0)
-			layer = settings.get("presentation_layer", "unknown")
-			text = f"hor_dim={hor_dim}, vert_dim={vert_dim}, layer={layer}"
+			settings: dict = snapshot["settings"]
+			hor_dim: int = settings.get("hor_dim", 0)
+			vert_dim: int = settings.get("vert_dim", 0)
+			layer: str = settings.get("presentation_layer", "unknown")
+			text: str = f"hor_dim={hor_dim}, vert_dim={vert_dim}, layer={layer}"
 			details.append(["Settings", text])
 
 	# ------------------------------------------------------------------------
@@ -458,9 +458,9 @@ class UndoCommand:
 	) -> None:
 		"""Add rivalry details to restoration list."""
 		if "rivalry" in snapshot:
-			riv = snapshot["rivalry"]
-			rival_a_name = riv.get("rival_a_name", "unknown")
-			rival_b_name = riv.get("rival_b_name", "unknown")
+			riv: dict = snapshot["rivalry"]
+			rival_a_name: str = riv.get("rival_a_name", "unknown")
+			rival_b_name: str = riv.get("rival_b_name", "unknown")
 			details.append(
 				["Reference points", f"{rival_a_name} vs {rival_b_name}"]
 			)
@@ -468,7 +468,7 @@ class UndoCommand:
 			# Check if segments were restored
 			seg = riv.get("seg")
 			if seg is not None and not seg.empty:
-				nsegments = len(seg)
+				nsegments: int = len(seg)
 				details.append(["Segments", f"{nsegments} segments restored"])
 
 			# Check if bisector and other lines were restored
@@ -480,20 +480,20 @@ class UndoCommand:
 				if riv.get(line_name) is not None
 			]
 			if lines_restored:
-				line_list = ", ".join(lines_restored)
+				line_list: str = ", ".join(lines_restored)
 				details.append(["Lines", f"{line_list}"])
 
 			# Check if percentages were restored
-			pct_types = []
+			pct_types: list[str] = []
 			for pct_type in [
 				"base_pcts",
 				"battleground_pcts",
 				"core_pcts",
 				"likely_pcts"
 			]:
-				pcts = riv.get(pct_type)
+				pcts: list[float] = riv.get(pct_type)
 				if pcts and len(pcts) > 0:
 					pct_types.append(pct_type.replace("_pcts", ""))
 			if pct_types:
-				pct_list = ", ".join(pct_types)
+				pct_list: str = ", ".join(pct_types)
 				details.append(["Percentages", f"{pct_list} restored"])

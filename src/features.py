@@ -602,7 +602,7 @@ class ConfigurationFeature:
 		"""print active function - is used by many commands to print the
 		active configuration.
 		"""
-		print(self.point_coords)
+		print(self.point_coords.to_string(float_format="{:.2f}".format))
 		# print(self.point_coords.index.format())
 		return
 
