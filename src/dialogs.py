@@ -594,3 +594,174 @@ class SetValueDialog(QDialog):
 	def getValue(self) -> float:  # noqa: N802
 		# Retrieve the value of the spin box when the dialog is accepted
 		return self.spin_box.value()
+
+
+# --------------------------------------------------------------------------
+
+
+class GetIntegerDialog(QDialog):
+	"""Simple dialog to get an integer value with min/max validation."""
+
+	def __init__(
+		self,
+		title: str,
+		message: str,
+		min_value: int = 1,
+		max_value: int = 100,
+		default_value: int | None = None,
+		parent: QWidget | None = None,
+	) -> None:
+		super().__init__(parent)
+
+		self.setWindowTitle(title)
+		self.setFixedSize(350, 150)
+
+		# Create main layout
+		layout = QVBoxLayout(self)
+
+		# Add message label
+		label = QLabel(message, self)
+		layout.addWidget(label)
+
+		# Create spin box for integer input
+		self.spin_box = QSpinBox(self)
+		self.spin_box.setFixedWidth(100)
+		self.spin_box.setAlignment(QtCore.Qt.AlignHCenter)
+		self.spin_box.setMinimum(min_value)
+		self.spin_box.setMaximum(max_value)
+		if default_value is None:
+			default_value = min_value
+		self.spin_box.setValue(default_value)
+
+		# Add spin box to layout
+		layout.addWidget(self.spin_box)
+		layout.setAlignment(QtCore.Qt.AlignHCenter)
+
+		# Create button box with OK and Cancel buttons
+		button_box = QDialogButtonBox(
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self
+		)
+		button_box.accepted.connect(self.accept)
+		button_box.rejected.connect(self.reject)
+
+		# Add button box to layout
+		layout.addWidget(button_box)
+
+	# ------------------------------------------------------------------------
+
+	def get_value(self) -> int:
+		"""Return the integer value entered by the user."""
+		return self.spin_box.value()
+
+
+# --------------------------------------------------------------------------
+
+
+class GetStringDialog(QDialog):
+	"""Simple dialog to get a string value with optional max length."""
+
+	def __init__(
+		self,
+		title: str,
+		message: str,
+		max_length: int = 32,
+		default_value: str = "",
+		parent: QWidget | None = None,
+	) -> None:
+		super().__init__(parent)
+
+		self.setWindowTitle(title)
+		self.setFixedSize(400, 150)
+
+		# Create main layout
+		layout = QVBoxLayout(self)
+
+		# Add message label
+		label = QLabel(message, self)
+		layout.addWidget(label)
+
+		# Create line edit for string input
+		self.line_edit = QLineEdit(self)
+		self.line_edit.setMaxLength(max_length)
+		self.line_edit.setText(default_value)
+
+		# Add line edit to layout
+		layout.addWidget(self.line_edit)
+
+		# Create button box with OK and Cancel buttons
+		button_box = QDialogButtonBox(
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self
+		)
+		button_box.accepted.connect(self.accept)
+		button_box.rejected.connect(self.reject)
+
+		# Add button box to layout
+		layout.addWidget(button_box)
+
+	# ------------------------------------------------------------------------
+
+	def get_value(self) -> str:
+		"""Return the string value entered by the user."""
+		return self.line_edit.text()
+
+
+# --------------------------------------------------------------------------
+
+
+class GetCoordinatesDialog(QDialog):
+	"""Dialog to get N coordinate values for N-dimensional space."""
+
+	def __init__(
+		self,
+		title: str,
+		message: str,
+		ndim: int,
+		parent: QWidget | None = None,
+	) -> None:
+		super().__init__(parent)
+
+		self.setWindowTitle(title)
+		self.setFixedSize(400, 100 + (ndim * 40))
+
+		# Create main layout
+		layout = QVBoxLayout(self)
+
+		# Add message label
+		label = QLabel(message, self)
+		layout.addWidget(label)
+
+		# Create grid layout for coordinate inputs
+		grid_layout = QGridLayout()
+
+		# Create spin boxes for each dimension
+		self.spin_boxes: list[QDoubleSpinBox] = []
+		for each_dim in range(ndim):
+			dim_label = QLabel(f"Dimension {each_dim + 1}:", self)
+			grid_layout.addWidget(dim_label, each_dim, 0)
+
+			spin_box = QDoubleSpinBox(self)
+			spin_box.setMinimum(-9999.0)
+			spin_box.setMaximum(9999.0)
+			spin_box.setDecimals(3)
+			spin_box.setValue(0.0)
+			grid_layout.addWidget(spin_box, each_dim, 1)
+
+			self.spin_boxes.append(spin_box)
+
+		layout.addLayout(grid_layout)
+
+		# Create button box with OK and Cancel buttons
+		button_box = QDialogButtonBox(
+			QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self
+		)
+		button_box.accepted.connect(self.accept)
+		button_box.rejected.connect(self.reject)
+
+		# Add button box to layout
+		layout.addWidget(button_box)
+
+	# ------------------------------------------------------------------------
+
+	def get_values(self) -> list[float]:
+		"""Return the list of coordinate values entered by the user."""
+		return [spin_box.value() for spin_box in self.spin_boxes]

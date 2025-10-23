@@ -314,7 +314,7 @@ class CreateCommand:
 			dim_names.append(name_dialog.get_value())
 
 		# Get coordinates for each point
-		point_coords = pd.DataFrame()
+		coords_data = []
 		for each_point in range(npoint):
 			coords_dialog = GetCoordinatesDialog(
 				self._coordinates_title,
@@ -326,9 +326,12 @@ class CreateCommand:
 					"Create cancelled", "Configuration creation was cancelled"
 				)
 			coords = coords_dialog.get_values()
-			point_coords = pd.concat(
-				[point_coords, pd.DataFrame([coords])], ignore_index=True
-			)
+			coords_data.append(coords)
+
+		# Create DataFrame with proper labels
+		point_coords = pd.DataFrame(
+			coords_data, index=point_labels, columns=dim_labels
+		)
 
 		# Capture state for undo BEFORE modifications
 		params = {"npoint": npoint, "ndim": ndim}
@@ -337,6 +340,8 @@ class CreateCommand:
 		# Store the new configuration
 		self._director.configuration_candidate.ndim = ndim
 		self._director.configuration_candidate.npoint = npoint
+		self._director.configuration_candidate.range_dims = range(ndim)
+		self._director.configuration_candidate.range_points = range(npoint)
 		self._director.configuration_candidate.dim_labels = dim_labels
 		self._director.configuration_candidate.dim_names = dim_names
 		self._director.configuration_candidate.point_labels = point_labels
@@ -933,7 +938,7 @@ class NewGroupedDataCommand:
 			dim_names.append(name_dialog.get_value())
 
 		# Get coordinates for each group
-		group_coords = pd.DataFrame()
+		coords_data = []
 		for each_group in range(ngroups):
 			coords_dialog = GetCoordinatesDialog(
 				self._coordinates_title,
@@ -945,9 +950,12 @@ class NewGroupedDataCommand:
 					"Create cancelled", "Grouped data creation was cancelled"
 				)
 			coords = coords_dialog.get_values()
-			group_coords = pd.concat(
-				[group_coords, pd.DataFrame([coords])], ignore_index=True
-			)
+			coords_data.append(coords)
+
+		# Create DataFrame with proper labels
+		group_coords = pd.DataFrame(
+			coords_data, index=group_labels, columns=dim_labels
+		)
 
 		# Capture state for undo BEFORE modifications
 		params = {"ngroups": ngroups, "ndim": ndim}
@@ -958,6 +966,8 @@ class NewGroupedDataCommand:
 		# Store the new grouped data
 		self._director.grouped_data_candidate.ndim = ndim
 		self._director.grouped_data_candidate.ngroups = ngroups
+		self._director.grouped_data_candidate.range_dims = range(ndim)
+		self._director.grouped_data_candidate.range_groups = range(ngroups)
 		self._director.grouped_data_candidate.dim_labels = dim_labels
 		self._director.grouped_data_candidate.dim_names = dim_names
 		self._director.grouped_data_candidate.group_labels = group_labels
@@ -1972,7 +1982,7 @@ class SaveConfigurationCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_conf_caption, self._save_conf_filter
+			self._save_conf_caption, self._save_conf_filter, directory="data"
 		)
 		self._director.configuration_active.write_a_configuration_type_file(
 			file_name, self._director.configuration_active
@@ -2027,7 +2037,7 @@ class SaveCorrelationsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_correlations_caption, self._save_correlations_filter
+			self._save_correlations_caption, self._save_correlations_filter, directory="data"
 		)
 		# Write correlations to CSV
 		correlations_df = pd.DataFrame(
@@ -2085,7 +2095,7 @@ class SaveIndividualsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_individuals_title, self._save_individuals_filter
+			self._save_individuals_title, self._save_individuals_filter, directory="data"
 		)
 		self._director.individuals_active.ind_vars.to_csv(file_name)
 		self._director.name_of_file_written_to = file_name
@@ -2132,7 +2142,7 @@ class SaveSampleDesignCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_sample_design_caption, self._save_sample_design_filter
+			self._save_sample_design_caption, self._save_sample_design_filter, directory="data"
 		)
 		self._write_sample_design_file(file_name)
 		self._director.name_of_file_written_to = file_name
@@ -2228,6 +2238,7 @@ class SaveSampleRepetitionsCommand:
 		file_name = self._director.get_file_name_to_store_file(
 			self._save_sample_repetitions_caption,
 			self._save_sample_repetitions_filter,
+			directory="data"
 		)
 		self._write_sample_repetitions_file(file_name)
 		self._director.name_of_file_written_to = file_name
@@ -2317,6 +2328,7 @@ class SaveSampleSolutionsCommand:
 		file_name = self._director.get_file_name_to_store_file(
 			self._save_sample_solutions_caption,
 			self._save_sample_solutions_filter,
+			directory="data"
 		)
 		self._write_sample_solutions_file(file_name)
 		self._director.name_of_file_written_to = file_name
@@ -2425,7 +2437,7 @@ class SaveScoresCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_scores_title, self._save_scores_filter
+			self._save_scores_title, self._save_scores_filter, directory="data"
 		)
 		self._director.scores_active.scores.to_csv(
 			file_name, columns=[score_1_name, score_2_name]
@@ -2595,7 +2607,7 @@ class SaveSimilaritiesCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_similarities_caption, self._save_similarities_filter
+			self._save_similarities_caption, self._save_similarities_filter, directory="data"
 		)
 		# Write similarities to CSV
 		similarities_df = pd.DataFrame(
@@ -2650,7 +2662,7 @@ class SaveTargetCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_target_caption, self._save_target_filter
+			self._save_target_caption, self._save_target_filter, directory="data"
 		)
 		self._director.target_active.write_a_configuration_type_file(
 			file_name, self._director.target_active

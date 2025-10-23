@@ -869,7 +869,7 @@ class GroupedDataFeature:
 
 	# ------------------------------------------------------------------------
 
-	def print_grouped_function(self) -> None:
+	def print_grouped_data(self) -> None:
 		"""print grouped - is used to print the grouped data configuration."""
 		grouping_var = self.grouping_var
 		group_coords = self.group_coords
