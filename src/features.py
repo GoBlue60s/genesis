@@ -875,6 +875,57 @@ class GroupedDataFeature:
 		group_coords = self.group_coords
 		print(f" Configuration is based on {grouping_var} \n")
 		print(group_coords)
+		print(f"\nDEBUG: dim_labels right after printing grouped data: {self.dim_labels}")
+		print(f"DEBUG: dim_names right after printing grouped data: {self.dim_names}")
+		print(f"DEBUG: ndim = {self.ndim}")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def write_a_grouped_data_file(
+		self, file_name: str, source: GroupedDataFeature
+	) -> None:
+		"""Write grouped data to a file in configuration format."""
+		file_type: str = "Grouped"
+		try:
+			with Path(file_name).open("w") as file_handle:
+				# Line 1: File type
+				file_handle.write(file_type + "\n")
+				# Line 2: Grouping variable name
+				file_handle.write(f"{source.grouping_var}\n")
+				# Line 3: Dimensions (ndim ngroups)
+				file_handle.write(
+					f"   {source.ndim}  {source.ngroups}\n"
+				)
+				# Next lines: Dimension labels and names
+				lines = [
+					f"{source.dim_labels[each_dim]};"
+					f"{source.dim_names[each_dim].strip()}\n"
+					for each_dim in source.range_dims
+				]
+				file_handle.write("".join(lines))
+				# Next lines: Group labels, codes, and names
+				lines = [
+					f"{source.group_labels[each_group]};"
+					f"{source.group_codes[each_group]};"
+					f"{source.group_names[each_group]}\n"
+					for each_group in source.range_groups
+				]
+				file_handle.write("".join(lines))
+				# Next lines: Coordinates
+				for each_group in source.range_groups:
+					for each_dim in source.range_dims:
+						coord = source.group_coords.iloc[each_group].iloc[
+							each_dim
+						]
+						file_handle.write(f"{coord:6.3f} ")
+					file_handle.write("\n")
+
+		except Exception as exc:
+			raise SpacesError(
+				"File write error",
+				"Error writing grouped data file",
+			) from exc
 		return
 
 

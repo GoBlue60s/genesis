@@ -233,6 +233,9 @@ command_dict = MappingProxyType({
 	"Save correlations": {
 		"type": "passive"
 	},
+	"Save grouped data": {
+		"type": "passive"
+	},
 	"Save individuals": {
 		"type": "passive"
 	},
@@ -445,6 +448,7 @@ from filemenu import (
 	PrintTargetCommand,
 	SaveConfigurationCommand,
 	SaveCorrelationsCommand,
+	SaveGroupedDataCommand,
 	SaveIndividualsCommand,
 	SaveSampleDesignCommand,
 	SaveSampleRepetitionsCommand,
@@ -778,6 +782,9 @@ explain_dict = MappingProxyType({
 	"Save correlations": "Save correlations is used to save the "
 	"active correlations to a file.\n"
 	"The user will be asked for a file name.\n",
+	"Save grouped data": "Save grouped data is used to save the "
+	"active grouped data to a file.\n"
+	"The user will be asked for a file name.\n",
 	"Save individuals": "Save individuals is used to save the "
 	"active individuals to a file.\n"
 	"The user will be asked for a file name.\n",
@@ -1108,6 +1115,7 @@ request_dict = MappingProxyType({
 	"save_configuration": (SaveConfigurationCommand, None),
 	"save_target": (SaveTargetCommand, None),
 	"save_correlations": (SaveCorrelationsCommand, None),
+	"save_grouped_data": (SaveGroupedDataCommand, None),
 	"save_similarities": (SaveSimilaritiesCommand, None),
 	"save_individuals": (SaveIndividualsCommand, None),
 	"save_scores": (SaveScoresCommand, None),
@@ -1554,6 +1562,11 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			"shared",
 			lambda: parent.squares.display_table("correlations"),
 		],
+		"Save grouped data": [
+			SaveGroupedDataCommand,
+			"shared",
+			lambda: parent.tables.display_table("grouped_data"),
+		],
 		"Save individuals": [
 			SaveIndividualsCommand,
 			"shared",
@@ -1872,6 +1885,11 @@ file_menu_dict = MappingProxyType({
 				None,
 				"save_correlations",
 				"Save the active correlations",
+			],
+			"Grouped data": [
+				None,
+				"save_grouped_data",
+				"Save the active grouped data",
 			],
 			"Similarities": [
 				None,

@@ -159,6 +159,7 @@ class DependencyChecking:
 		}
 		self.commands_that_need_grouped_data: set = {
 			"print grouped data",
+			"save grouped data",
 			"view grouped data",
 		}
 		self.commands_that_need_sample_design: set = {

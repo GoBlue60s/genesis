@@ -726,9 +726,7 @@ class GroupedDataCommand:
 		# Error handling
 		# If not a grouped data file, then return an error message
 		try:
-			common.read_grouped_data_file_check_for_errors_store_as_candidate(
-				file_name, self._director.grouped_data_candidate
-			)
+			self._read_grouped_data(file_name)
 		except ValueError as e:
 			raise SpacesError(
 				self._grouped_data_error_bad_input_title,
@@ -751,6 +749,118 @@ class GroupedDataCommand:
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_grouped_data_initialized_variables(
+		self, file_name: str, file_handle: str
+	) -> None:
+		self.grouped_data_file_not_found_error_title = "Grouped data"
+		self.grouped_data_file_not_found_error_message = (
+			f"File not found: \n{file_name}"
+		)
+		self.grouped_data_file_not_found_error_title = "Grouped data"
+		self.grouped_data_empty_header_error_message = (
+			f"The header line is empty in file:.\n{file_handle}"
+		)
+		self.grouped_data_file_not_grouped_error_title = "Grouped data"
+		self.grouped_data_file_not_grouped_error_message = (
+			f"File is not a grouped data file:\n{file_handle}"
+		)
+		self.missing_grouping_var_error_title = "Grouped data"
+		self.missing_grouping_var_error_message = (
+			f"Line for grouping variable name is empty in file: \n{file_handle}"
+		)
+		self.group_data_file_not_found_error_title = "Grouped data"
+		self.group_data_file_not_found_error_message = (
+			f"File not found: \n{file_handle}"
+		)
+
+	# ------------------------------------------------------------------------
+
+	def _read_grouped_data(self, file_name: str) -> None:
+		"""Read groups - is used by group command needing to read
+		a group configuration from a file.
+		"""
+		file_handle = self._director.grouped_data_candidate.file_handle
+
+		self._read_grouped_data_initialized_variables(file_name, file_handle)
+
+		dim_names = []
+		dim_labels = []
+		group_names = []
+		group_labels = []
+		group_codes = []
+		try:
+			with Path(file_name).open() as file_handle:
+				header = file_handle.readline()
+				if len(header) == 0:
+					raise SpacesError(
+						self.grouped_data_file_not_found_error_title,
+						self.grouped_data_file_not_found_error_message,
+					) from None
+
+				if header.lower().strip() != "grouped":
+					raise SpacesError(
+						self.grouped_data_file_not_grouped_error_title,
+						self.grouped_data_file_not_grouped_error_message,
+					) from None
+
+				grouping_var = file_handle.readline()
+				if len(grouping_var) == 0:
+					raise SpacesError(
+						self.missing_grouping_var_error_title,
+						self.missing_grouping_var_error_message,
+					) from None
+				grouping_var = grouping_var.strip("\n")
+				dim = file_handle.readline()
+				dim_list = dim.strip("\n").split()
+				expected_dim = int(dim_list[0])
+				expected_groups = int(dim_list[1])
+				range_groups = range(expected_groups)
+				range_dims = range(expected_dim)
+				for _ in range(expected_dim):
+					(dim_label, dim_name) = file_handle.readline().split(";")
+					dim_labels.append(dim_label)
+					dim_name = dim_name.strip("\n")
+					dim_names.append(dim_name)
+				for i in range(expected_groups):
+					(group_label, group_code, group_name) = (
+						file_handle.readline().split(";")
+					)
+					group_names.append(group_name)
+					group_labels.append(group_label)
+					group_codes.append(group_code)
+
+					group_names[i] = group_names[i].strip()
+				group_coords = pd.DataFrame(
+					[
+						[float(g) for g in file_handle.readline().split()]
+						for i in range(expected_groups)
+					],
+					index=group_names,
+					columns=dim_labels,
+				)
+		except FileNotFoundError:
+			raise SpacesError(
+				self.group_data_file_not_found_error_title,
+				self.group_data_file_not_found_error_message,
+			) from None
+
+		self._director.grouped_data_candidate.grouping_var = grouping_var
+		self._director.grouped_data_candidate.ndim = expected_dim
+		self._director.grouped_data_candidate.dim_names = dim_names
+		self._director.grouped_data_candidate.dim_labels = dim_labels
+		self._director.grouped_data_candidate.npoint = expected_groups
+		self._director.grouped_data_candidate.ngroups = expected_groups
+		self._director.grouped_data_candidate.range_groups = range_groups
+		self._director.grouped_data_candidate.group_names = group_names
+		self._director.grouped_data_candidate.group_labels = group_labels
+		self._director.grouped_data_candidate.group_codes = group_codes
+		self._director.grouped_data_candidate.group_coords = group_coords
+		self._director.grouped_data_candidate.range_dims = range_dims
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -835,6 +945,10 @@ class NewGroupedDataCommand:
 		self.common = common
 		self._director.command = "New grouped data"
 		self._director.title_for_table_widget = "Create grouped data"
+		self._group_title = "Grouping variable"
+		self._group_label = "Enter name of grouping variable"
+		self._group_default = {"Grouping variable"}
+		self._group_max_chars = 32
 		self._number_of_groups_title = "Specify the number of groups"
 		self._number_of_groups_message = (
 			"Enter the number of groups in the grouped data:"
@@ -862,6 +976,7 @@ class NewGroupedDataCommand:
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._get_grouping_var()
 
 		# Get number of groups from user
 		ngroups_dialog = GetIntegerDialog(
@@ -892,6 +1007,7 @@ class NewGroupedDataCommand:
 		# Get group labels and names
 		group_labels = []
 		group_names = []
+		group_codes = []
 		for each_group in range(ngroups):
 			label_dialog = GetStringDialog(
 				self._labels_title,
@@ -912,6 +1028,8 @@ class NewGroupedDataCommand:
 					"Create cancelled", "Grouped data creation was cancelled"
 				)
 			group_names.append(name_dialog.get_value())
+			# Generate sequential group codes starting from 1
+			group_codes.append(str(each_group + 1))
 
 		# Get dimension labels and names
 		dim_labels = []
@@ -954,7 +1072,7 @@ class NewGroupedDataCommand:
 
 		# Create DataFrame with proper labels
 		group_coords = pd.DataFrame(
-			coords_data, index=group_labels, columns=dim_labels
+			coords_data, index=group_names, columns=dim_labels
 		)
 
 		# Capture state for undo BEFORE modifications
@@ -972,6 +1090,7 @@ class NewGroupedDataCommand:
 		self._director.grouped_data_candidate.dim_names = dim_names
 		self._director.grouped_data_candidate.group_labels = group_labels
 		self._director.grouped_data_candidate.group_names = group_names
+		self._director.grouped_data_candidate.group_codes = group_codes
 		self._director.grouped_data_candidate.group_coords = group_coords
 
 		self._director.grouped_data_active = (
@@ -988,6 +1107,41 @@ class NewGroupedDataCommand:
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _get_grouping_var_initialize_variables(self) -> None:
+		self.missing_grouping_var_error_title = "New grouped data configuration"
+		self.missing_grouping_var_error_message = (
+			"Need name of grouping variable for "
+			"new grouped data configuration"
+		)
+
+	# ------------------------------------------------------------------------
+
+	def _get_grouping_var(self) -> None:
+		from dialogs import SetNamesDialog  # noqa: PLC0415
+
+		self._get_grouping_var_initialize_variables()
+		group_title = self._group_title
+		group_label = self._group_label
+		group_default = self._group_default
+		group_max_chars = self._group_max_chars
+
+		dialog = SetNamesDialog(
+			group_title, group_label, group_default, group_max_chars
+		)
+		if dialog.exec():
+			group_var_list = dialog.getNames()
+			grouping_var = group_var_list[0]
+		else:
+			raise SpacesError(
+				self.missing_grouping_var_error_title,
+				self.missing_grouping_var_error_message,
+			)
+
+		self._director.grouped_data_candidate.grouping_var = grouping_var
 		return
 
 	# ------------------------------------------------------------------------
@@ -2004,6 +2158,57 @@ class SaveConfigurationCommand:
 	def _print_active_configuration_confirmation(self, file_name: str) -> None:
 		print(
 			f"\n\tThe active configuration has been written to:\n"
+			f"\t{file_name}\n"
+		)
+		return
+
+
+# ----------------------------------------------------------------------------
+
+
+class SaveGroupedDataCommand:
+	"""The Save grouped data command is used to write a copy of the active
+	grouped data to a file.
+	"""
+
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
+		self._director = director
+		self._director.command = "Save grouped data"
+		self._save_grouped_caption = "Save active grouped data"
+		self._save_grouped_filter = "*.txt"
+		self._director.name_of_file_written_to = ""
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+		self._director.record_command_as_selected_and_in_process()
+		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
+		file_name = self._director.get_file_name_to_store_file(
+			self._save_grouped_caption, self._save_grouped_filter, directory="data"
+		)
+		self._director.grouped_data_active.write_a_grouped_data_file(
+			file_name, self._director.grouped_data_active
+		)
+		self._director.name_of_file_written_to = file_name
+		self._print_active_grouped_data_confirmation(file_name)
+		name_of_file_written_to = self._director.name_of_file_written_to
+		self._director.title_for_table_widget = (
+			f"The active grouped data has been written to: "
+			f"\n {name_of_file_written_to}\n"
+		)
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_active_grouped_data_confirmation(self, file_name: str) -> None:
+		print(
+			f"\n\tThe active grouped data has been written to:\n"
 			f"\t{file_name}\n"
 		)
 		return

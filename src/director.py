@@ -801,6 +801,7 @@ class Status(QMainWindow):
 			"Sample repetitions",
 			"Save configuration",
 			"Save correlations",
+			"Save grouped data",
 			"Save individuals",
 			"Save sample design",
 			"Save sample repetitions",
@@ -1150,18 +1151,11 @@ class Status(QMainWindow):
 			dir=directory
 		)
 
-		# Debug: Log the filename returned from the dialog
-		print(f"DEBUG: QFileDialog returned filename: '{file_name}'")
-		print(f"DEBUG: filename type: {type(file_name)}")
-		print(f"DEBUG: filename length: {len(file_name)}")
-
 		if len(file_name) == 0:
 			raise SpacesError(
 				self.empty_response_title, self.empty_response_message
 			)
 
-		# Debug: Log the filename being returned
-		print(f"DEBUG: Returning filename: '{file_name}'")
 		return file_name
 
 	# ------------------------------------------------------------------------
