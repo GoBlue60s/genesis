@@ -660,34 +660,8 @@ class FactorAnalysisCommand:
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
-
-		# Check if executing from script with parameters
-		if (
-			director.executing_script
-			and director.script_parameters
-			and "n_factors" in director.script_parameters
-		):
-			ext_fact = director.script_parameters["n_factors"]
-			if not isinstance(ext_fact, int) or ext_fact < self._min_allowed or ext_fact > self._max_allowed:
-				raise SpacesError(
-					"Script parameter error",
-					f"n_factors must be an integer between {self._min_allowed} and {self._max_allowed}"
-				)
-		else:
-			ext_fact = common.get_components_to_extract_from_user(
-				self._title,
-				self._label,
-				self._min_allowed,
-				self._max_allowed,
-				self._an_integer,
-				self._default,
-			)
-		#
-		# Capture state before making changes (for undo)
-		#
-		params = {
-			"n_factors": ext_fact
-		}
+		params = common.get_command_parameters("Factor analysis")
+		ext_fact: int = params["n_factors"]
 		common.capture_and_push_undo_state(
 			"Factor analysis", "active", params
 		)
@@ -998,13 +972,8 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		n_components = self._get_components_from_user()
-		#
-		# Capture state before making changes (for undo)
-		#
-		params = {
-			"n_components": n_components
-		}
+		params = common.get_command_parameters("Factor analysis machine learning")
+		n_components: int = params["n_components"]
 		common.capture_and_push_undo_state(
 			"Factor analysis machine learning", "active", params
 		)
@@ -1020,41 +989,6 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
-
-	# ------------------------------------------------------------------------
-
-	def _get_components_from_user(self) -> int:
-		"""Get number of components to extract from user."""
-		nreferent = self._director.evaluations_active.nreferent
-
-		# Check if executing from script
-		if self._director.executing_script:
-			if (
-				self._director.script_parameters
-				and "n_components" in self._director.script_parameters
-			):
-				n_comp = self._director.script_parameters["n_components"]
-				if not isinstance(n_comp, int) or n_comp < self._get_ncomponents_min_allowed or n_comp > nreferent - 1:
-					raise SpacesError(
-						"Script parameter error",
-						f"n_components must be an integer between {self._get_ncomponents_min_allowed} and {nreferent - 1}"
-					)
-				return n_comp
-			else:
-				raise SpacesError(
-					"Missing required parameter",
-					"The 'n_components' parameter is required when running "
-					"Factor analysis machine learning from a script"
-				)
-		else:
-			return self.command.get_components_to_extract_from_user(
-				title=self._get_ncomponents_title,
-				label=self._get_ncomponents_label,
-				min_allowed=self._get_ncomponents_min_allowed,
-				max_allowed=nreferent - 1,
-				an_integer=True,
-				default=self._get_ncomponents_default,
-			)
 
 	# ------------------------------------------------------------------------
 
@@ -1554,24 +1488,8 @@ class MDSCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-
-		# Get n_components from user (but don't set it yet)
-		n_comp = self._get_n_components_to_use_from_user(
-			self._mds_components_title,
-			self._mds_components_label,
-			self._mds_components_min_allowed,
-			self._mds_components_max_allowed,
-			self._mds_components_default,
-			self._mds_components_an_integer,
-		)
-
-		#
-		# Capture state before making changes (for undo)
-		#
-		params = {
-			"n_components": n_comp,
-			"use_metric": use_metric
-		}
+		params = self.common.get_command_parameters("MDS")
+		n_comp: int = params["n_components"]
 		self.common.capture_and_push_undo_state(
 			"MDS", "active", params
 		)
@@ -1603,63 +1521,6 @@ class MDSCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-
-	# ------------------------------------------------------------------------
-
-	def _get_n_components_to_use_from_user_initialize_variables(self) -> None:
-		self.missing_n_components_error_title = self._director.command
-		self.missing_n_components_error_message = (
-			"Need number of components to use."
-		)
-
-	# ------------------------------------------------------------------------
-
-	def _get_n_components_to_use_from_user(
-		self,
-		mds_components_title: str,
-		mds_components_label: str,
-		mds_components_min_allowed: int,
-		mds_components_max_allowed: int,
-		mds_components_default: float,
-		mds_components_an_integer: bool) -> int:  # noqa: FBT001
-		self._get_n_components_to_use_from_user_initialize_variables()
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "n_components" in self._director.script_parameters
-		):
-			n_comp = self._director.script_parameters["n_components"]
-			if not isinstance(n_comp, int) or n_comp < mds_components_min_allowed or n_comp > mds_components_max_allowed:
-				raise MissingInformationError(
-					"Script parameter error",
-					f"n_components must be an integer between {mds_components_min_allowed} and {mds_components_max_allowed}"
-				)
-			return n_comp
-		else:
-			dialog = SetValueDialog(
-				mds_components_title,
-				mds_components_label,
-				mds_components_min_allowed,
-				mds_components_max_allowed,
-				mds_components_an_integer,
-				mds_components_default,
-			)
-			result = dialog.exec()
-			if result == QDialog.Accepted:
-				n_comp = dialog.getValue()
-				if n_comp == 0:
-					raise MissingInformationError(
-						self.missing_n_components_error_title,
-						self.missing_n_components_error_message,
-					)
-				return n_comp
-			else:
-				raise MissingInformationError(
-					self.missing_n_components_error_title,
-					self.missing_n_components_error_message,
-				)
 
 	# ------------------------------------------------------------------------
 
@@ -1755,24 +1616,8 @@ class PrincipalComponentsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "n_components" in self._director.script_parameters
-		):
-			n_components = int(self._director.script_parameters["n_components"])
-		elif n_components is None:
-			# Default to 2 components if not specified
-			n_components = 2
-
-		#
-		# Capture state before making changes (for undo)
-		#
-		params = {
-			"n_components": n_components
-		}
+		params = self.common.get_command_parameters("Principal components")
+		n_components: int = params["n_components"]
 		self.common.capture_and_push_undo_state(
 			"Principal components", "active", params
 		)

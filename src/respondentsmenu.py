@@ -394,21 +394,10 @@ class ReferencePointsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_configuration()
-
-		# Get user's desired reference points WITHOUT modifying state
-		new_rival_a_index, new_rival_b_index = (
-			self._get_reference_points_from_user(
-				self._refs_title, self._refs_items
-			)
-		)
-
-		# Capture OLD state BEFORE modifications, save NEW names as params
-		params = {
-			"contest": [
-				point_names[new_rival_a_index],
-				point_names[new_rival_b_index]
-			]
-		}
+		params = self.common.get_command_parameters("Reference points")
+		contest: list = params["contest"]
+		new_rival_a_index = point_names.index(contest[0])
+		new_rival_b_index = point_names.index(contest[1])
 		self.common.capture_and_push_undo_state(
 			"Reference points", "active", params
 		)
@@ -444,67 +433,6 @@ class ReferencePointsCommand:
 		return
 
 	# ------------------------------------------------------------------------
-
-	def _get_reference_points_from_user_initialize_variables(self) -> None:
-		self.need_reference_points_error_title = self._director.command
-		self.need_reference_points_error_message = (
-			"A pair of reference points needs to be established."
-		)
-
-	# ------------------------------------------------------------------------
-
-	def _get_reference_points_from_user(
-		self, refs_title: str, refs_items: list[str]
-	) -> tuple[int, int]:
-		self._get_reference_points_from_user_initialize_variables()
-		range_points = self._director.configuration_active.range_points
-		point_names = self._director.configuration_active.point_names
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "contest" in self._director.script_parameters
-		):
-			selected_items = self._director.script_parameters["contest"]
-			if not isinstance(selected_items, list) or len(selected_items) != 2:
-				raise SpacesError(
-					"Script parameter error",
-					"contest parameter must be a list of 2 point names"
-				)
-		else:
-			dialog = PairofPointsDialog(refs_title, refs_items)
-
-			if dialog.exec() == QDialog.Accepted:
-				selected_items = dialog.selected_items()
-			else:
-				del dialog
-				raise SpacesError(
-					self.need_reference_points_error_title,
-					self.need_reference_points_error_message,
-				)
-
-			del dialog
-
-		# Find the index for each selected item
-		refs_indexes = []
-		for selected_name in selected_items:
-			found_index = None
-			for j in range_points:
-				if selected_name == point_names[j]:
-					found_index = j
-					break
-			if found_index is None:
-				raise SpacesError(
-					"Invalid reference point",
-					f"Point '{selected_name}' not found in configuration"
-				)
-			refs_indexes.append(found_index)
-
-		refs_a = refs_indexes[0]
-		refs_b = refs_indexes[1]
-
-		return refs_a, refs_b
 
 	# ------------------------------------------------------------------------
 
@@ -554,21 +482,13 @@ class SampleDesignerCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._establish_sample_designer_sizes(
-			self._designer_title,
-			self._designer_items,
-			self._designer_integers,
-			self._designer_default_values,
-		)
-
-		# Capture state for undo AFTER user input but BEFORE modifications
-		params = {
-			"universe_size": self._director.uncertainty_active.universe_size,
-			"probability_of_inclusion": (
-				self._director.uncertainty_active.probability_of_inclusion
-			),
-			"nrepetitions": self._director.uncertainty_active.nrepetitions
-		}
+		params = self.common.get_command_parameters("Sample designer")
+		probability_of_inclusion: int = params["probability_of_inclusion"]
+		nrepetitions: int = params["nrepetitions"]
+		universe_size = self._director.evaluations_active.nevaluators
+		self._director.uncertainty_active.universe_size = universe_size
+		self._director.uncertainty_active.probability_of_inclusion = probability_of_inclusion
+		self._director.uncertainty_active.nrepetitions = nrepetitions
 		self.common.capture_and_push_undo_state(
 			"Sample designer", "active", params
 		)
@@ -591,73 +511,6 @@ class SampleDesignerCommand:
 		return
 
 	# ------------------------------------------------------------------------
-
-	def _establish_sample_designer_sizes_initialize_variables(self) -> None:
-		self._need_sample_sizes_error_title = "Sample parameters"
-		self._need_sample_sizes_error_message = (
-			"Need sample parameters to create a sample design."
-		)
-
-	# ------------------------------------------------------------------------
-
-	def _establish_sample_designer_sizes(
-		self,
-		title: str,
-		items: list[str],
-		integers: list[bool],
-		default_values: list[int],
-	) -> None:
-		self._establish_sample_designer_sizes_initialize_variables()
-
-		# Get universe size automatically from evaluations_active
-		universe_size = self._director.evaluations_active.nevaluators
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-		):
-			# Get parameters from script
-			if "probability_of_inclusion" in self._director.script_parameters:
-				probability_of_inclusion = (
-					self._director.script_parameters["probability_of_inclusion"]
-				)
-			else:
-				raise SpacesError(
-					"Missing script parameter",
-					"probability_of_inclusion parameter required for Sample designer"
-				)
-
-			if "nrepetitions" in self._director.script_parameters:
-				nrepetitions = self._director.script_parameters["nrepetitions"]
-			else:
-				raise SpacesError(
-					"Missing script parameter",
-					"nrepetitions parameter required for Sample designer"
-				)
-		else:
-			# Show dialog to get user input
-			dialog = ModifyValuesDialog(
-				title, items, integers, default_values=default_values
-			)
-			dialog.selected_items()
-			result = dialog.exec()
-			if result == QDialog.Accepted:
-				value = dialog.selected_items()
-				probability_of_inclusion = value[0][1]
-				nrepetitions = value[1][1]
-			else:
-				raise SpacesError(
-					self._need_sample_sizes_error_title,
-					self._need_sample_sizes_error_message,
-				)
-
-		self._director.uncertainty_active.universe_size = universe_size
-		self._director.uncertainty_active.probability_of_inclusion = (
-			probability_of_inclusion
-		)
-		self._director.uncertainty_active.nrepetitions = nrepetitions
-		return
 
 	# ------------------------------------------------------------------------
 

@@ -238,16 +238,14 @@ class InvertCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		selected_items, dims_indexes = self._select_dimensions_to_invert(
-			self._dimensions_to_invert_title, self._dimensions
-		)
-		#
-		# Capture state before making changes (for undo)
-		#
+		params = self.common.get_command_parameters("Invert")
+		selected_items: list = params["dimensions"]
+		dim_names = self._director.configuration_active.dim_names
+		dims_indexes = [dim_names.index(dim) for dim in selected_items]
 		self.common.capture_and_push_undo_state(
 			"Invert",
 			"active",
-			{"dimensions": selected_items}
+			params
 		)
 		#
 		# Now perform the invert
@@ -275,64 +273,6 @@ class InvertCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-
-	# -- ---------------------------------------------------------------------
-
-	def _select_dimensions_to_invert_initialize_variables(self) -> None:
-		self.select_dim_to_invert_error_title = "Invert dimensions"
-		self.select_dim_to_invert_error_message = (
-			"Please select at least one dimension to invert."
-		)
-
-	# ------------------------------------------------------------------------
-
-	def _select_dimensions_to_invert(
-		self, dimensions_to_invert_title: str, dimensions: list[str]
-	) -> tuple[list, list]:
-		self._select_dimensions_to_invert_initialize_variables()
-
-		range_dims = self._director.configuration_active.range_dims
-		dim_names = self._director.configuration_active.dim_names
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "dimensions" in self._director.script_parameters
-		):
-			selected_items = self._director.script_parameters["dimensions"]
-			if not isinstance(selected_items, list) or len(selected_items) == 0:
-				raise SelectionError(
-					"Script parameter error",
-					"dimensions parameter must be a non-empty list of dimension names"
-				)
-			# Validate that all dimension names exist
-			for dim in selected_items:
-				if dim not in dim_names:
-					raise SelectionError(
-						"Script parameter error",
-						f"Dimension '{dim}' not found in configuration dimensions: {dim_names}"
-					)
-		else:
-			dialog = SelectItemsDialog(dimensions_to_invert_title, dimensions)
-			if dialog.exec() == QDialog.Accepted:
-				selected_items = dialog.selected_items()
-			else:
-				print("Canceled")
-				raise SelectionError(
-					self.select_dim_to_invert_error_title,
-					self.select_dim_to_invert_error_message,
-				)
-
-		# Convert selected dimension names to indexes
-		dims_indexes = [
-			j
-			for i in range(len(selected_items))
-			for j in range_dims
-			if selected_items[i] == dim_names[j]
-		]
-
-		return selected_items, dims_indexes
 
 	# ------------------------------------------------------------------------
 
@@ -403,25 +343,19 @@ class MoveCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# point_coords = self._director.configuration_active.point_coords
-
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		(selected_option, decimal_value) = (
-			self._get_dimension_to_move_and_amount_from_user(
-				self._move_title, self._move_value_title, self._move_options
-			)
-		)
-		#
-		# Capture state before making changes (for undo)
-		#
-		dimension_name = self._move_options[selected_option]
+		params = self.common.get_command_parameters("Move")
+		dimension_name: str = params["dimension"]
+		decimal_value: float = params["distance"]
+		dim_names = self._director.configuration_active.dim_names
+		selected_option = dim_names.index(dimension_name)
 		self.common.capture_and_push_undo_state(
 			"Move",
 			"active",
-			{"dimension": dimension_name, "distance": decimal_value}
+			params
 		)
 		#
 		# Now perform the move
@@ -455,75 +389,6 @@ class MoveCommand:
 		return
 
 	# ------------------------------------------------------------------------
-	def _get_dimension_to_move_and_amount_from_user_initialize_variables(
-		self,
-	) -> None:
-		self.missing_dimension_and_value_error_title = self._director.command
-		self.missing_dimension_and_value_error_message = (
-			"Need dimension and value to move."
-		)
-
-	# ------------------------------------------------------------------------
-
-	def _get_dimension_to_move_and_amount_from_user(
-		self, move_title: str, move_value_title: str, move_options: list[str]
-	) -> tuple[int, float]:
-		self._get_dimension_to_move_and_amount_from_user_initialize_variables()
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "dimension" in self._director.script_parameters
-			and "distance" in self._director.script_parameters
-		):
-			dimension_name = self._director.script_parameters["dimension"]
-			decimal_value = self._director.script_parameters["distance"]
-
-			# Validate dimension name
-			if dimension_name not in move_options:
-				raise MissingInformationError(
-					self.missing_dimension_and_value_error_title,
-					f"Script parameter error: dimension '{dimension_name}' not found"
-				)
-
-			# Get dimension index
-			selected_option = move_options.index(dimension_name)
-
-			# Validate value
-			if not isinstance(decimal_value, (int, float)):
-				raise MissingInformationError(
-					self.missing_dimension_and_value_error_title,
-					"Script parameter error: distance must be a number"
-				)
-			decimal_value = float(decimal_value)
-
-			if decimal_value == 0.0:
-				raise MissingInformationError(
-					self.missing_dimension_and_value_error_title,
-					self.missing_dimension_and_value_error_message,
-				)
-
-			return selected_option, decimal_value
-
-		selected_option = 0
-		decimal_value = 0.0
-		dialog = MoveDialog(move_title, move_value_title, move_options)
-		result = dialog.exec()
-		if result == QDialog.Accepted:
-			selected_option = dialog.selected_option
-			decimal_value = dialog.getDecimalValue()
-			if decimal_value == 0.0:
-				raise MissingInformationError(
-					self.missing_dimension_and_value_error_title,
-					self.missing_dimension_and_value_error_message,
-				)
-		elif result == QDialog.Rejected:
-			raise MissingInformationError(
-				self.missing_dimension_and_value_error_title,
-				self.missing_dimension_and_value_error_message,
-			)
-		return selected_option, decimal_value
 
 
 # ------------------------------------------------------------------------
@@ -562,24 +427,13 @@ class RescaleCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		selected_items = self._get_dimension_to_rescale_from_user(
-			self._rescale_title, self._rescale_dims
-		)
-		value = self._get_amount_to_rescale_from_user(
-			self._rescale_by_title,
-			self._rescale_by_label,
-			self._rescale_by_min_val,
-			self._rescale_by_max_val,
-			self._rescale_by_an_integer,
-			self._rescale_by_default,
-		)
-		#
-		# Capture state before making changes (for undo)
-		#
+		params = self.common.get_command_parameters("Rescale")
+		selected_items: list = params["dimensions"]
+		value: float = params["scale_factor"]
 		self.common.capture_and_push_undo_state(
 			"Rescale",
 			"active",
-			{"dimensions": selected_items, "scale_factor": value}
+			params
 		)
 		#
 		# Now perform the rescale
@@ -596,131 +450,6 @@ class RescaleCommand:
 		return
 
 	# ------------------------------------------------------------------------
-
-	def _get_dimension_to_rescale_from_user_initialize_variables(self) -> None:
-		self._need_dimension_to_rescale_error_title = self._director.command
-		self._need_dimension_to_rescale_error_message = (
-			"A dimension to rescale is needed."
-		)
-
-		return
-
-	# ------------------------------------------------------------------------
-
-	def _get_dimension_to_rescale_from_user(
-		self, rescale_title: str, rescale_dims: list[str]
-	) -> list[str]:
-		self._get_dimension_to_rescale_from_user_initialize_variables()
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "dimensions" in self._director.script_parameters
-		):
-			selected_items = self._director.script_parameters["dimensions"]
-			if not isinstance(selected_items, list) or len(selected_items) == 0:
-				raise SpacesError(
-					self._need_dimension_to_rescale_error_title,
-					"Script parameter error: dimensions must be a non-empty list"
-				)
-			# Validate dimension names
-			for dim_name in selected_items:
-				if dim_name not in rescale_dims:
-					raise SpacesError(
-						self._need_dimension_to_rescale_error_title,
-						f"Script parameter error: dimension '{dim_name}' not found"
-					)
-			return selected_items
-
-		dialog = SelectItemsDialog(rescale_title, rescale_dims)
-		# selected_items = []
-		if dialog.exec() == QDialog.Accepted:
-			try:
-				selected_items = dialog.selected_items()
-
-			except ValueError:
-				raise SpacesError(
-					self._need_dimension_to_rescale_error_title,
-					self._need_dimension_to_rescale_error_message,
-				) from None
-
-		else:
-			raise SpacesError(
-				self._need_dimension_to_rescale_error_title,
-				self._need_dimension_to_rescale_error_message,
-			) from None
-		if len(selected_items) == 0:
-			raise SpacesError(
-				self._need_dimension_to_rescale_error_title,
-				self._need_dimension_to_rescale_error_message,
-			) from None
-
-		del dialog
-		return selected_items
-
-	# ------------------------------------------------------------------------
-
-	def _get_amount_to_rescale_from_user_initialize_variables(self) -> None:
-		self._need_amount_to_rescale_error_title = self._director.command
-		self._need_amount_to_rescale_error_message = (
-			"An amount to rescale by is needed."
-		)
-
-		return
-
-	# ------------------------------------------------------------------------
-
-	def _get_amount_to_rescale_from_user(
-		self,
-		rescale_by_title: str,
-		rescale_by_label: str,
-		rescale_by_min_val: float,
-		rescale_by_max_val: float,
-		rescale_by_an_integer: bool,  # noqa: FBT001
-		rescale_by_default: float,
-	) -> float:
-		self._get_amount_to_rescale_from_user_initialize_variables()
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "scale_factor" in self._director.script_parameters
-		):
-			value = self._director.script_parameters["scale_factor"]
-			if not isinstance(value, (int, float)):
-				raise SpacesError(
-					self._need_amount_to_rescale_error_title,
-					"Script parameter error: scale_factor must be a number"
-				)
-			value = float(value)
-		else:
-			value = 0.0
-			dialog = SetValueDialog(
-				rescale_by_title,
-				rescale_by_label,
-				rescale_by_min_val,
-				rescale_by_max_val,
-				rescale_by_an_integer,
-				rescale_by_default,
-			)
-			result = dialog.exec()
-			if result == QDialog.Accepted:
-				value = dialog.getValue()
-			else:
-				raise SpacesError(
-					self._need_amount_to_rescale_error_title,
-					self._need_amount_to_rescale_error_message,
-				)
-
-		if value == 0.0:
-			raise SpacesError(
-				self._need_amount_to_rescale_error_title,
-				self._need_amount_to_rescale_error_message,
-			)
-
-		return value
 
 	# ------------------------------------------------------------------------
 
@@ -766,21 +495,12 @@ class RotateCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		deg = self._get_degree_to_rotate_from_user(
-			self._rotate_title,
-			self._rotate_label,
-			self._rotate_min_val,
-			self._rotate_max_val,
-			self._rotate_an_integer,
-			self._rotate_default,
-		)
-		#
-		# Capture state before making changes (for undo)
-		#
+		params = self.common.get_command_parameters("Rotate")
+		deg: int = params["degrees"]
 		self.common.capture_and_push_undo_state(
 			"Rotate",
 			"active",
-			{"degrees": deg}
+			params
 		)
 		#
 		# Now perform the rotation
@@ -805,54 +525,6 @@ class RotateCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-
-	# ------------------------------------------------------------------------
-
-	def _get_degree_to_rotate_from_user(
-		self,
-		rotate_title: str,
-		rotate_label: str,
-		rotate_min_val: int,
-		rotate_max_val: int,
-		rotate_an_integer: bool,  # noqa: FBT001
-		rotate_default: int,
-	) -> int:
-		command = self._director.command
-
-		# Check if executing from script with parameters
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-			and "degrees" in self._director.script_parameters
-		):
-			deg = self._director.script_parameters["degrees"]
-			if not isinstance(deg, (int, float)):
-				raise SpacesError(
-					command,
-					"Script parameter error: degrees must be a number"
-				)
-			deg = int(deg)
-		else:
-			dialog = SetValueDialog(
-				rotate_title,
-				rotate_label,
-				rotate_min_val,
-				rotate_max_val,
-				rotate_an_integer,
-				rotate_default,
-			)
-			result = dialog.exec()
-			if result == QDialog.Accepted:
-				deg = int(dialog.getValue())
-			else:
-				raise SpacesError(
-					command, "Degree to rotate configuration is needed."
-				)
-		if deg == 0:
-			raise SpacesError(
-				command, "Degree to rotate configuration is needed."
-			)
-		return deg
 
 	# ------------------------------------------------------------------------
 
