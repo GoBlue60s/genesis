@@ -44,7 +44,7 @@ from exceptions import (
 )
 
 from geometry import PlotExtremes
-from dialogs import SetValueDialog
+from dialogs import PairofPointsDialog, SetValueDialog
 from typing import TextIO, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -2245,6 +2245,368 @@ class Spaces:
 			)
 
 		return ext_comp
+
+	# ------------------------------------------------------------------------
+
+	def get_command_parameters(
+		self, command_name: str, **kwargs
+	) -> dict[str, any]:
+		"""Get command parameters from script or interactive dialogs.
+
+		This helper function consolidates the repetitive pattern of checking
+		whether we're executing from a script and either retrieving script
+		parameters or calling interactive dialogs to get parameter values.
+
+		Args:
+			command_name: Name of the command (e.g., "Evaluations", "Rotate")
+			**kwargs: Optional keyword arguments for parameters passed from
+				execute method (e.g., value_type="Similarities")
+
+		Returns:
+			Dictionary of parameter_name -> value
+
+		Raises:
+			SpacesError: If a required script parameter is missing or if
+				interactive getter metadata is incomplete
+
+		Example:
+			# Simple command:
+			params = self.common.get_command_parameters("Evaluations")
+			file_name = params["file_name"]
+
+			# With execute parameter:
+			params = self.common.get_command_parameters(
+				"Similarities", value_type=value_type
+			)
+			file_name = params["file_name"]
+			value_type = params["value_type"]
+		"""
+		from dictionaries import command_dict  # noqa: PLC0415
+		from dialogs import (  # noqa: PLC0415
+			ChoseOptionDialog,
+			GetCoordinatesDialog,
+			GetIntegerDialog,
+			GetStringDialog,
+			MatrixDialog,
+			ModifyItemsDialog,
+			ModifyTextDialog,
+			ModifyValuesDialog,
+			MoveDialog,
+			SelectItemsDialog,
+			SetNamesDialog,
+			SetValueDialog,
+		)
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		params = {}
+
+		# Get metadata from command_dict
+		cmd_info = command_dict.get(command_name, {})
+		expected_params = cmd_info.get("script_parameters", [])
+
+		if self._director.executing_script and self._director.script_parameters:
+			# Get from script parameters
+			for param_name in expected_params:
+				if param_name in self._director.script_parameters:
+					params[param_name] = self._director.script_parameters[param_name]
+				else:
+					# Required parameter missing from script
+					title = f"{command_name} script parameter error"
+					message = f"Missing required parameter: {param_name}"
+					raise SpacesError(title, message)
+		else:
+			# Get from interactive dialogs using metadata
+			interactive_getters = cmd_info.get("interactive_getters", {})
+			execute_parameters = cmd_info.get("execute_parameters", [])
+
+			for param_name in expected_params:
+				# Check if this parameter was passed as kwarg
+				if param_name in kwargs:
+					params[param_name] = kwargs[param_name]
+					continue
+
+				# Check if this parameter comes from execute method
+				if param_name in execute_parameters:
+					param_value = getattr(
+						self._director.current_command, param_name, None
+					)
+					if param_value is not None:
+						params[param_name] = param_value
+						continue
+					# If not set, fall through to error below
+
+				if param_name not in interactive_getters:
+					# No interactive getter defined for this parameter
+					title = f"{command_name} metadata error"
+					message = (
+						f"No interactive getter defined for parameter: {param_name}\n"
+						f"Add '{param_name}' to interactive_getters in command_dict"
+					)
+					raise SpacesError(title, message)
+
+				getter_info = interactive_getters[param_name]
+				getter_type = getter_info.get("getter_type")
+
+				if getter_type == "file_dialog":
+					# Use file dialog
+					caption = getter_info.get("caption", "Open file")
+					file_filter = getter_info.get("filter", "*.*")
+					params[param_name] = (
+						self._director.get_file_name_and_handle_nonexistent_file_names(
+							caption, file_filter
+						)
+					)
+
+				elif getter_type == "set_value_dialog":
+					# Use SetValueDialog for numeric input
+					title = getter_info.get("title", "Enter value")
+					label = getter_info.get("label", "")
+					min_val = getter_info.get("min_val", 0)
+					max_val = getter_info.get("max_val", 100)
+					default = getter_info.get("default", 0)
+					is_integer = getter_info.get("is_integer", False)
+
+					dialog = SetValueDialog(
+						title, label, min_val, max_val, is_integer, default
+					)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						value = dialog.getValue()
+						params[param_name] = int(value) if is_integer else value
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "pair_of_points_dialog":
+					# Use PairofPointsDialog for selecting exactly two items
+					title = getter_info.get("title", "Select two points")
+					items_source = getter_info.get("items_source", None)
+
+					# Get items from director attribute if items_source specified
+					if items_source:
+						items = getattr(
+							self._director.configuration_active, items_source
+						)
+					else:
+						items = getter_info.get("items", [])
+
+					dialog = PairofPointsDialog(title, items)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.selected_items()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "chose_option_dialog":
+					# Use ChoseOptionDialog for radio button selection
+					title = getter_info.get("title", "Choose option")
+					options_title = getter_info.get("options_title", "Select one:")
+					options = getter_info.get("options", [])
+
+					dialog = ChoseOptionDialog(title, options_title, options)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.selected_option
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "get_integer_dialog":
+					# Use GetIntegerDialog for single integer input (newer style)
+					title = getter_info.get("title", "Enter value")
+					message = getter_info.get("message", "")
+					min_value = getter_info.get("min_value", 1)
+					max_value = getter_info.get("max_value", 100)
+					default_value = getter_info.get("default_value", None)
+
+					dialog = GetIntegerDialog(
+						title, message, min_value, max_value, default_value
+					)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_value()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "get_string_dialog":
+					# Use GetStringDialog for single string input (newer style)
+					title = getter_info.get("title", "Enter text")
+					message = getter_info.get("message", "")
+					max_length = getter_info.get("max_length", 32)
+					default_value = getter_info.get("default_value", "")
+
+					dialog = GetStringDialog(
+						title, message, max_length, default_value
+					)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_value()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "get_coordinates_dialog":
+					# Use GetCoordinatesDialog for N-dimensional coordinates
+					title = getter_info.get("title", "Enter coordinates")
+					message = getter_info.get("message", "")
+					ndim = getter_info.get("ndim", 2)
+
+					dialog = GetCoordinatesDialog(title, message, ndim)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_coordinates()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "modify_items_dialog":
+					# Use ModifyItemsDialog for checkbox list selection
+					title = getter_info.get("title", "Select items")
+					items_source = getter_info.get("items_source", None)
+					default_values = getter_info.get("default_values", None)
+
+					# Get items from director attribute if items_source specified
+					if items_source:
+						items = getattr(self._director, items_source)
+					else:
+						items = getter_info.get("items", [])
+
+					dialog = ModifyItemsDialog(title, items, default_values)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.checked_items()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "select_items_dialog":
+					# Use SelectItemsDialog for checkbox selection returning strings
+					title = getter_info.get("title", "Select items")
+					items_source = getter_info.get("items_source", None)
+
+					# Get items from director attribute if items_source specified
+					if items_source:
+						items = getattr(self._director, items_source)
+					else:
+						items = getter_info.get("items", [])
+
+					dialog = SelectItemsDialog(title, items)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_selected_items()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "modify_values_dialog":
+					# Use ModifyValuesDialog for multiple numeric inputs
+					title = getter_info.get("title", "Modify values")
+					labels = getter_info.get("labels", [])
+					values = getter_info.get("values", [])
+					min_value = getter_info.get("min_value", -1000.0)
+					max_value = getter_info.get("max_value", 1000.0)
+
+					dialog = ModifyValuesDialog(
+						title, labels, values, min_value, max_value
+					)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_new_values()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "move_dialog":
+					# Use MoveDialog for dimension/distance pairs
+					title = getter_info.get("title", "Move points")
+					n_dimensions = getter_info.get("n_dimensions", 2)
+
+					dialog = MoveDialog(title, n_dimensions)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_dimensions_and_distances()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "matrix_dialog":
+					# Use MatrixDialog for grid of numeric inputs
+					title = getter_info.get("title", "Enter matrix")
+					label = getter_info.get("label", "")
+					column_labels = getter_info.get("column_labels", [])
+					row_labels = getter_info.get("row_labels", [])
+
+					dialog = MatrixDialog(title, label, column_labels, row_labels)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_matrix()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "modify_text_dialog":
+					# Use ModifyTextDialog for multiple text inputs
+					title = getter_info.get("title", "Modify text")
+					labels = getter_info.get("labels", [])
+
+					dialog = ModifyTextDialog(title, labels)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.get_new_labels()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				elif getter_type == "set_names_dialog":
+					# Use SetNamesDialog for name/label table editing
+					title = getter_info.get("title", "Set names")
+					names = getter_info.get("names", [])
+
+					dialog = SetNamesDialog(title, names)
+					result = dialog.exec()
+					if result == QDialog.Accepted:
+						params[param_name] = dialog.getNames()
+					else:
+						# User cancelled
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+				else:
+					# Unknown getter type
+					title = f"{command_name} metadata error"
+					message = (
+						f"Unknown getter_type '{getter_type}' for parameter: {param_name}"
+					)
+					raise SpacesError(title, message)
+
+		return params
 
 	# ------------------------------------------------------------------------
 

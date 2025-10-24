@@ -2978,7 +2978,7 @@ class SettingsPresentationLayerCommand:
 	def execute(self, common: Spaces, layer: str = None) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Settings - presentation layer")
+		params = self.common.get_command_parameters("Settings - presentation layer", layer=layer)
 		layer: str = params["layer"]
 		self.common.capture_and_push_undo_state(
 			"Settings - presentation layer", "active", params
@@ -3102,7 +3102,9 @@ class SimilaritiesCommand:
 	def execute(self, common: Spaces, value_type: str) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Similarities")
+		params = self.common.get_command_parameters(
+			"Similarities", value_type=value_type
+		)
 		file_name: str = params["file_name"]
 		value_type: str = params["value_type"]
 		self.common.capture_and_push_undo_state(

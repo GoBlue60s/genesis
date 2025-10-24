@@ -9,7 +9,7 @@ import peek
 
 
 from PySide6 import QtCore
-from PySide6.QtWidgets import QDialog, QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 from scipy.spatial import procrustes
 
 from sklearn.cluster import KMeans
@@ -31,7 +31,6 @@ from constants import (
 	# MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 	MINIMAL_DIFFERENCE_FROM_ZERO,
 )
-from dialogs import ChoseOptionDialog, SetValueDialog
 from exceptions import MissingInformationError, SpacesError
 from features import EvaluationsFeature, SimilaritiesFeature, TargetFeature
 
@@ -74,20 +73,32 @@ class ClusterCommand:
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		# Ask user which data source to use
-		(name_source, self.data_for_clustering) = \
-			self.get_data_source_from_user()
-		# Ask user for number of clusters
-		self.number_clusters_max_allowed = \
-			min(15, len(self.data_for_clustering) - 1)
-		n_clusters = self.common.get_components_to_extract_from_user(
-			self.number_clusters_title,
-			self.number_clusters_message,
-			self.number_clusters_min_allowed,
-			self.number_clusters_max_allowed,
-			self.number_clusters_integer,
-			self.number_clusters_default
-		)
+
+		# Step 1: Get data source from user (or script)
+		params_step1 = self.common.get_command_parameters("Cluster")
+		name_source = params_step1["data_source"]
+
+		# Step 2: Validate and get data based on selected source
+		self.data_for_clustering = self._get_data_for_source(name_source)
+
+		# Step 3: Get number of clusters (handling dynamic max_val)
+		# For interactive mode, need to update max_val based on data size
+		if not self._director.executing_script:
+			from dictionaries import command_dict  # noqa: PLC0415
+			# Temporarily update the max_val for n_clusters based on data
+			self.number_clusters_max_allowed = \
+				min(15, len(self.data_for_clustering) - 1)
+			# Update metadata temporarily for this call
+			original_max = command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"]
+			command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"] = \
+				self.number_clusters_max_allowed
+			params_step2 = self.common.get_command_parameters("Cluster")
+			# Restore original max_val
+			command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"] = original_max
+			n_clusters = params_step2["n_clusters"]
+		else:
+			# Script mode: use parameter from script
+			n_clusters = params_step1["n_clusters"]
 		#
 		# Capture state before making changes (for undo)
 		# State capture depends on which data source user selected
@@ -165,32 +176,40 @@ class ClusterCommand:
 		return
 
 	# ------------------------------------------------------------------------
-	
-	def get_data_source_from_user(self) -> None:
 
-		dialog = ChoseOptionDialog(
-			self.selection_title,
-			self.selection_message,
-			self.data_source_options
-		)
-		if dialog.exec() == QDialog.Accepted:
-			selected_source = \
-				self.data_source_options[dialog.selected_option]
-		else:
-			raise SpacesError(
-				self.selection_required_title, self.selection_required_message
-			)
-		
+	def _get_data_for_source(self, selected_source: str) -> pd.DataFrame:
+		"""Get clustering data based on selected source.
+
+		Args:
+			selected_source: One of "distances", "evaluations", "scores",
+				"similarities"
+
+		Returns:
+			DataFrame containing data for clustering
+
+		Raises:
+			SpacesError: If required data is not available
+		"""
+		data_for_clustering: pd.DataFrame
 		# Check if the selected data source is available
 		if selected_source == "distances":
 			self.common.needs_distances("cluster")
 			data_for_clustering = (
 				self._director.configuration_active.distances_as_dataframe
 			)
+			if data_for_clustering.empty:
+				raise SpacesError(
+					"No distance data available for clustering. "
+					"The distances DataFrame is empty."
+				)
 			# Set axis names from configuration
 			dim_names = self._director.configuration_active.dim_names
-			self._director.scores_active.hor_axis_name = dim_names[0]
-			self._director.scores_active.vert_axis_name = dim_names[1]
+			if dim_names and len(dim_names) >= 2:
+				self._director.scores_active.hor_axis_name = dim_names[0]
+				self._director.scores_active.vert_axis_name = dim_names[1]
+			else:
+				self._director.scores_active.hor_axis_name = "Dimension 1"
+				self._director.scores_active.vert_axis_name = "Dimension 2"
 		elif selected_source == "evaluations":
 			self.common.needs_evaluations("cluster")
 			data_for_clustering = \
@@ -224,8 +243,8 @@ class ClusterCommand:
 				self._director.scores_active.hor_axis_name = "Dimension 1"
 				self._director.scores_active.vert_axis_name = "Dimension 2"
 
-		return selected_source, data_for_clustering
-	
+		return data_for_clustering
+
 	# ------------------------------------------------------------------------
 
 
@@ -1488,8 +1507,9 @@ class MDSCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		params = self.common.get_command_parameters("MDS")
+		params = self.common.get_command_parameters("MDS", use_metric=use_metric)
 		n_comp: int = params["n_components"]
+		use_metric: bool = params["use_metric"]
 		self.common.capture_and_push_undo_state(
 			"MDS", "active", params
 		)

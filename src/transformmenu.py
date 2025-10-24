@@ -476,15 +476,6 @@ class RotateCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Rotate"
-		# self._director.rivalry.bisector.case = "Unknown"
-		self._rotate_title = "Degree to rotate configuration"
-		self._rotate_label = (
-			"Positive is counter-clockwise\nNegative is clockwise"
-		)
-		self._rotate_min_val = -360
-		self._rotate_max_val = 360
-		self._rotate_default = 0
-		self._rotate_an_integer = True
 
 		return
 
@@ -497,6 +488,11 @@ class RotateCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Rotate")
 		deg: int = params["degrees"]
+		if deg == 0:
+			raise SpacesError(
+				"Rotate",
+				"Degree to rotate configuration is needed."
+			)
 		self.common.capture_and_push_undo_state(
 			"Rotate",
 			"active",

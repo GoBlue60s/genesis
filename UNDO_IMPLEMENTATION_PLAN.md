@@ -13,31 +13,36 @@ This approach no longer works with the PySide6 GUI because Qt objects cannot be 
 ## Command Classification
 
 **Important Distinction:**
-- **Commands**: 104 unique command implementations (what actually executes)
+- **Commands**: 109 unique command implementations (what actually executes)
 - **Menu items**: 140 entries in `request_dict` (multiple menu items can invoke same command)
 
-Commands are classified into three immutable types based on their behavior:
+Commands are classified into four immutable types based on their behavior:
 
-**Active Commands:** Modify application state and require state snapshots for undo
+**Active Commands (40):** Modify application state and require state snapshots for undo
 - Data transformations (Center, Rotate, Rescale, Invert)
 - Model operations (MDS, Factor analysis, Principal components, Varimax)
-- Data loading/creation (Configuration, Create, Open*, Similarities)
+- Data loading/creation (Configuration, Open*, Similarities)
 - Analysis operations (Correlations, Evaluations, Grouped, Individuals)
 - Sampling operations (Sample designer, Sample repetitions)
 - Settings commands (Settings - display sizing, Settings - layout options, Settings - plane, Settings - plot settings, Settings - presentation layer, Settings - segment sizing, Settings - vector sizing)
 
-**Passive Commands:** Query or display existing state without modification
+**Passive Commands (64):** Query or display existing state without modification
 - Reports/queries (Directions, Distances, History, Print*)
 - View operations (About, Help, Alike, Paired, Joint)
 - Output displays (Base, Battleground, Contest, Convertible, Core supporters)
 - Verbosity toggles (Terse, Verbose)
 - Display-only analysis (Scree)
 
-**Script Commands:** Meta-commands for script operations (excluded from script generation)
-- OpenScript: Loads and executes script files
-- SaveScript: Exports command history to script file
-- ViewScript: Displays current command history
+**Script Commands (3):** Meta-commands for script operations (excluded from script generation)
+- Open script: Loads and executes script files
+- Save script: Exports command history to script file
+- View script: Displays current command history
 - **Special behavior**: These commands do not appear in generated scripts to prevent recursion
+
+**Interactive-Only Commands (2):** Commands requiring extensive interactive dialogs, cannot be scripted
+- Create: Requires 10+ dialogs for points, dimensions, labels, names, coordinates
+- New grouped data: Requires 10+ dialogs for groups, dimensions, labels, names, coordinates
+- **Special behavior**: These commands capture undo state (active) but are excluded from scripts
 
 **Implementation:**
 - Command type is an **immutable property**, not runtime state
@@ -154,27 +159,34 @@ Most commands will use one or more of these standard patterns.
 
 ## Command Type Handling
 
-**All commands except script-type commands go on the command stack** for complete session recording:
+**All commands are tracked in command history** for complete session recording:
 
-**Active Commands:**
+**Active Commands (40):**
 - Capture full state snapshot before execution
 - State restoration on undo
-- Appear in generated scripts
+- Appear in generated scripts (scriptable)
 - Heavier memory footprint (state data)
 
-**Passive Commands:**
+**Passive Commands (64):**
 - Record command name and parameters only
 - No state snapshot needed
-- Appear in generated scripts
+- Appear in generated scripts (scriptable)
 - Replay by re-execution with saved params (idempotent)
 - Minimal memory footprint
 
-**Script Commands:**
+**Script Commands (3):**
 - Record command name and parameters only
 - No state snapshot needed
 - **Excluded from generated scripts** (prevents recursion)
 - Minimal memory footprint
-- Examples: OpenScript, SaveScript, ViewScript
+- Examples: Open script, Save script, View script
+
+**Interactive-Only Commands (2):**
+- Capture full state snapshot before execution (like active)
+- State restoration on undo (like active)
+- **Excluded from generated scripts** (cannot be parameterized)
+- Heavier memory footprint (state data)
+- Examples: Create, New grouped data
 
 **Rationale for script command exclusion:**
 1. **Prevent recursion** - scripts shouldn't generate script commands
@@ -185,6 +197,7 @@ Most commands will use one or more of these standard patterns.
 - Active: Restore state snapshot
 - Passive: Skip (or optionally re-execute if needed for consistency)
 - Script: Skip (meta-commands don't need undo)
+- Interactive-Only: Restore state snapshot (like active)
 
 ## Implementation Steps
 
@@ -315,14 +328,16 @@ From `table_builder.py`:
 
 ### Step 2: Examine Existing Infrastructure ✅ COMPLETE
 
-**Status:** Completed on 2025-10-09
+**Status:** Completed on 2025-10-09, updated counts on 2025-10-23
 
 **Findings:**
 
 **1. Command Infrastructure (director.py)**
-- **Total commands: 104** (in alphabetical order in `self.commands` tuple)
-- **Active commands: 42** (modify application state, require undo support)
-- **Passive commands: 62** (query/display only, no state changes)
+- **Total commands: 109** (in alphabetical order in `self.commands` tuple)
+- **Active commands: 40** (modify application state, require undo support)
+- **Passive commands: 64** (query/display only, no state changes)
+- **Script commands: 3** (meta-commands for scripting operations)
+- **Interactive-only commands: 2** (active with undo, excluded from scripts)
 - All commands uniquely classified with no overlap
 
 **2. Undo Stack Infrastructure (director.py:1255-1256, 123-124)**
@@ -373,7 +388,7 @@ Eight feature types use candidate/original/active/last pattern:
 
 **Issues Fixed:**
 - Removed duplicate entries "Deactivate" and "Sample designer" from `passive_commands`
-- Verified totals: 42 active + 62 passive = 104 total commands ✓
+- Verified totals: 40 active + 64 passive + 3 script + 2 interactive_only = 109 total commands ✓
 
 **References:**
 - `undo_stack` initialization: director.py:1255-1256
@@ -384,15 +399,16 @@ Eight feature types use candidate/original/active/last pattern:
 
 ### Step 3: Create Command Dictionary ✅ COMPLETE
 
-**Status:** Completed on 2025-10-09
+**Status:** Completed on 2025-10-09, updated counts on 2025-10-23
 
 **Implementation:**
 - ✅ Created `command_dict` in `dictionaries.py` using `MappingProxyType`
-- ✅ Contains all 106 commands in alphabetical order
-- ✅ All 42 active commands include `state_capture` field with empty list placeholder
+- ✅ Contains all 109 commands in alphabetical order
+- ✅ All 40 active commands include `state_capture` field with state requirements
 - ✅ All 64 passive commands have `type` field only
-- ✅ Added two future commands: "Print sample solutions" and "View sample solutions"
-- ✅ Updated `active_commands` and `passive_commands` tuples in director.py:915-950
+- ✅ All 3 script commands have `type` field marked as "script"
+- ✅ All 2 interactive_only commands have `type` field marked as "interactive_only"
+- ✅ Updated `active_commands` and `passive_commands` tuples in director.py
 - ✅ Fixed "Grouped" → "Grouped data" naming inconsistency
 - ✅ Verified all commands match between director.py and command_dict
 - ✅ Tested imports work correctly
@@ -421,9 +437,11 @@ Eight feature types use candidate/original/active/last pattern:
   ```
 
 **Verification Results:**
-- Total commands: 106 (42 active + 64 passive)
+- Total commands: 109 (40 active + 64 passive + 3 script + 2 interactive_only)
 - All active commands have `state_capture` field ✓
+- All interactive_only commands have `state_capture` field ✓
 - No passive commands have `state_capture` field ✓
+- No script commands have `state_capture` field ✓
 - All commands in alphabetical order ✓
 - Perfect match between director.py lists and command_dict ✓
 
@@ -560,7 +578,7 @@ Created `capture_and_push_undo_state()` in `common.py:2241-2277` to consolidate 
 
 **Status:** Completed on 2025-10-12
 
-**Commands with Undo Support Implemented (42 total - ALL ACTIVE COMMANDS):**
+**Commands with Undo Support Implemented (42 total - ALL ACTIVE + INTERACTIVE_ONLY COMMANDS):**
 
 **Transform Menu (7 commands) - ALL COMPLETE:**
 1. ✅ **Center** (`transformmenu.py`) - State: configuration, scores
@@ -628,7 +646,7 @@ self.common.capture_and_push_undo_state("CommandName", "active", {params})
 ```
 
 **Status Summary:**
-- **Total Active Commands:** 42
+- **Total Commands with Undo:** 42 (40 active + 2 interactive_only)
 - **Commands with Undo Implemented:** 39 (100% of applicable commands)
 - **Meta/Experimental Commands (N/A):** 3 (Undo, Redo, Tester)
 - **All applicable commands have undo support**
@@ -1025,6 +1043,10 @@ Scree
 - ✅ Settings - segment sizing (accepts battleground_size, core_tolerance)
 - ✅ Settings - vector sizing (accepts vector_head_width, vector_width)
 
+**Interactive-Only Commands (2/2) - ALL COMPLETE:**
+- ✅ Create (interactive_only: has undo support, excluded from scripts)
+- ✅ New grouped data (interactive_only: has undo support, excluded from scripts)
+
 **Meta Commands (N/A):**
 - ⚫ Redo (N/A - meta-command)
 - ⚫ Tester (N/A - experimental)
@@ -1081,7 +1103,8 @@ Invert dimensions=['Left-Right', 'Social']
 
 **Status Summary:**
 - **Infrastructure:** 100% complete ✅
-- **Script-ready commands:** 42 of 42 active commands (100% complete) ✅
+- **Total commands:** 109 (40 active + 64 passive + 3 script + 2 interactive_only)
+- **Script-ready commands:** 40 of 40 active commands (100% complete) ✅
   - **Modified with parameters:** 34 commands
   - **Already script-ready:** 6 commands (Compare, Line of sight, Sample designer, Sample repetitions, Score individuals, Uncertainty)
   - **Interactive-only:** 2 commands (Create, New grouped data - have undo, excluded from scripts)
@@ -1091,7 +1114,8 @@ Invert dimensions=['Left-Right', 'Social']
 - **Respondents commands:** 4 of 4 completed (100%) ✅
 - **Associations commands:** 1 of 1 completed (100%) ✅
 - **Settings commands:** 7 of 7 completed (100%) ✅
-- **Interactive-only commands:** 2 of 2 completed (100%) ✅
+- **Interactive-only commands:** 2 of 2 completed (excluded from scripts, have undo) ✅
+- **Script meta-commands:** 3 of 3 completed (Open/Save/View script) ✅
 - **Testing:** 9 test scripts validated (including test_transform_complete.spc, test_presentation_layer.spc, test_principal_components.spc, test_line_of_sight.spc, test_score_individuals.spc)
 - **Remaining work:** NONE - ALL COMMANDS COMPLETE! 🎉
 
@@ -1613,3 +1637,119 @@ def _parse_command_name_from_line(self, parts: list[str]) -> str:
 "I've restored the VS Code backups from 8:46am/8:49am Oct 18. Here are the test results: [user provides script test results]. Let's analyze what still needs to be recreated."
 
 **Context:** Work completed throughout Oct 18 was lost due to an incident close to 8pm that evening.
+
+---
+
+## Step 8.5: Complete command_dict Interactive Getters Refactoring ⏳ IN PROGRESS
+
+**Status:** Started on 2025-10-24
+
+**Purpose:** Ensure all active commands with script_parameters have interactive_getters metadata in command_dict so they can obtain parameters from users during interactive execution.
+
+**Background:**
+During the refactoring to use centralized `get_command_parameters()` in common.py, 30 commands had their execute() methods updated to call this function. However, only 12 of these commands had the corresponding `interactive_getters` metadata added to command_dict. Without this metadata, commands will fail when run interactively because get_command_parameters() won't know how to prompt the user for values.
+
+**Progress: 12 of 15 commands completed (80%)**
+
+**Completed Commands (12):**
+1. ✅ Factor analysis - set_value_dialog for n_factors
+2. ✅ Factor analysis machine learning - set_value_dialog for n_components
+3. ✅ Invert - modify_items_dialog for dimensions
+4. ✅ MDS - set_value_dialog for n_components (use_metric is execute parameter)
+5. ✅ Principal components - set_value_dialog for n_components
+6. ✅ Rescale - modify_values_dialog for factors
+7. ✅ Sample designer - set_value_dialog for probability_of_inclusion and nrepetitions
+8. ✅ Settings - display sizing - set_value_dialog for axis_extra, displacement, point_size
+9. ✅ Settings - layout options - set_value_dialog for max_cols, width, decimals
+10. ✅ Settings - presentation layer - chose_option_dialog for layer (matplotlib/pyqtgraph)
+11. ✅ Settings - segment sizing - set_value_dialog for battleground_size, core_tolerance
+12. ✅ Settings - vector sizing - set_value_dialog for vector_head_width, vector_width
+
+**Remaining Commands (3) - Special Cases:**
+
+**1. Move command (transformmenu.py)**
+- **Issue:** Parameter name inconsistency
+  - command_dict has: `"script_parameters": ["dimensions", "distances"]` (plural)
+  - Code expects: `params["dimension"]` and `params["distance"]` (singular)
+- **Resolution needed:**
+  - Either fix command_dict to use singular names OR
+  - Fix code to use plural names OR
+  - Investigate if MoveDialog returns both together
+- **Interactive getter type:** Likely move_dialog (custom dialog for dimension/distance pairs)
+
+**2. Settings - plane (filemenu.py)**
+- **Issue:** Requires dynamic options based on configuration_active.dim_names
+  - Options are dimension pair combinations like "Left-Right x Social", "Social x Left-Right", etc.
+  - Number and names of dimensions vary by loaded configuration
+- **Resolution needed:**
+  - Add support for dynamic option generation in get_command_parameters() OR
+  - Use items_source pattern to reference director attribute OR
+  - Use special getter type that can build options at runtime
+- **Interactive getter type:** chose_option_dialog with dynamic options
+
+**3. Settings - plot settings (filemenu.py)**
+- **Issue:** Has 4 separate boolean parameters
+  - Parameters: show_bisector, show_connector, show_reference_points, show_just_reference_points
+  - Each needs independent true/false value
+  - No existing getter type for individual booleans
+- **Current workaround:** Added modify_items_dialog but it returns list, not 4 separate bools
+- **Resolution needed:**
+  - Add special handling to convert checkbox list to individual boolean parameters OR
+  - Create new getter type for boolean parameters OR
+  - Use 4 separate chose_option_dialog entries with Yes/No options
+- **Interactive getter type:** TBD - needs new approach
+
+**Next Steps:**
+1. Investigate Move command parameter inconsistency and fix
+2. Add dynamic option support for Settings - plane or use alternative approach
+3. Resolve Settings - plot settings boolean parameter handling
+4. Test all 15 commands interactively to verify dialogs work correctly
+5. Update this section once all commands are complete
+
+**Files Modified:**
+- src/dictionaries.py - Added interactive_getters for 12 commands
+
+**Testing Strategy:**
+Once all 15 commands have interactive_getters:
+1. Test each command interactively to verify dialogs appear and work
+2. Test each command in scripts to verify script parameters still work
+3. Test undo after running commands both ways
+4. Verify error messages are clear when parameters missing or invalid
+
+---
+
+## Commands That Pass Information to get_command_parameters
+
+Commands that receive parameters through their `execute()` method need special handling depending on whether they're active or passive:
+
+**Active Commands (call get_command_parameters - FIXED):**
+1. ✅ **Similarities** - Passes `value_type` to get_command_parameters() (filemenu.py:3105-3107)
+   - Already had `execute_parameters: ["value_type"]` in command_dict
+2. ✅ **MDS** - Now passes `use_metric` to get_command_parameters() (FIXED: modelmenu.py:1510)
+   - Added `execute_parameters: ["use_metric"]` to command_dict
+3. ✅ **Settings - presentation layer** - Now passes `layer` to get_command_parameters() (FIXED: filemenu.py:2981)
+   - Added `execute_parameters: ["layer"]` to command_dict
+
+**Passive Commands (DON'T call get_command_parameters - no changes needed):**
+4. **View spatial uncertainty** - execute() receives `plot_to_show`, uses it directly
+5. **View point uncertainty** - execute() receives `plot_to_show`, uses it directly
+6. **Shepard** - execute() receives `axis`, uses it directly
+7. **Core supporters** - execute() receives `groups_to_show`, tracks via push_passive_command_to_undo_stack()
+8. **Base** - execute() receives `groups_to_show`, tracks via push_passive_command_to_undo_stack()
+9. **Likely supporters** - execute() receives `groups_to_show`, tracks via push_passive_command_to_undo_stack()
+10. **Battleground** - execute() receives `groups_to_show`, tracks via push_passive_command_to_undo_stack()
+11. **Convertible** - execute() receives `groups_to_show`, tracks via push_passive_command_to_undo_stack()
+12. **First dimension** - execute() receives `groups_to_show`, tracks via push_passive_command_to_undo_stack()
+13. **Second dimension** - execute() receives `groups_to_show`, tracks via push_passive_command_to_undo_stack()
+
+**How Scripts Handle These Parameters:**
+- Active commands: OpenScriptCommand stores parameters in `director.script_parameters`, then passes execute params directly to execute(). The command must pass these to get_command_parameters() as kwargs to merge them with script_parameters.
+- Passive commands: OpenScriptCommand passes parameters directly to execute(). The command uses them directly without calling get_command_parameters().
+
+**Changes Made (2025-10-24):**
+- modelmenu.py:1510 - MDS now passes `use_metric=use_metric` to get_command_parameters()
+- modelmenu.py:1512 - MDS now extracts use_metric from returned params dict
+- filemenu.py:2981 - Settings - presentation layer now passes `layer=layer` to get_command_parameters()
+- dictionaries.py:220 - Added `execute_parameters: ["use_metric"]` to MDS entry
+- dictionaries.py:573 - Added `execute_parameters: ["layer"]` to Settings - presentation layer entry
+- dictionaries.py:236 - Fixed Move command script_parameters from ["dimensions", "distances"] to ["dimension", "distance"] to match what the command actually uses (transformmenu.py:351-352)

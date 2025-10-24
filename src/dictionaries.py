@@ -32,19 +32,47 @@ command_dict = MappingProxyType({
 	},
 	"Center": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "rivalry"]
+		"state_capture": ["configuration", "scores", "rivalry"],
+		"script_parameters": []
 	},
 	"Cluster": {
 		"type": "active",
-		"state_capture": ["conditional"]  # Conditional: scores + (configuration|evaluations|similarities) based on user's data source
+		"state_capture": ["conditional"],  # Conditional: scores + (configuration|evaluations|similarities) based on user's data source
+		"script_parameters": ["data_source", "n_clusters"],
+		"interactive_getters": {
+			"data_source": {
+				"getter_type": "chose_option_dialog",
+				"title": "Select Data Source for Clustering",
+				"options_title": "Choose which data source to use for clustering",
+				"options": ["distances", "evaluations", "scores", "similarities"]
+			},
+			"n_clusters": {
+				"getter_type": "set_value_dialog",
+				"title": "Cluster Analysis",
+				"label": "Number of clusters to extract:",
+				"min_val": 2,
+				"max_val": 15,  # Will be dynamically adjusted based on data
+				"is_integer": True,
+				"default": 2
+			}
+		}
 	},
 	"Compare": {
 		"type": "active",
-		"state_capture": ["configuration", "target", "scores", "rivalry"]
+		"state_capture": ["configuration", "target", "scores", "rivalry"],
+		"script_parameters": []
 	},
 	"Configuration": {
 		"type": "active",
-		"state_capture": ["configuration"]
+		"state_capture": ["configuration"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open configuration",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Contest": {
 		"type": "passive"
@@ -57,7 +85,15 @@ command_dict = MappingProxyType({
 	},
 	"Correlations": {
 		"type": "active",
-		"state_capture": ["correlations"]
+		"state_capture": ["correlations"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open correlations",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Create": {
 		"type": "interactive_only",
@@ -75,25 +111,65 @@ command_dict = MappingProxyType({
 	},
 	"Evaluations": {
 		"type": "active",
-		"state_capture": ["evaluations", "correlations"]
+		"state_capture": ["evaluations", "correlations"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open evaluations",
+				"filter": "*.csv"
+			}
+		}
 	},
 	"Exit": {
 		"type": "passive"
 	},
 	"Factor analysis": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "evaluations"]
+		"state_capture": ["configuration", "scores", "evaluations"],
+		"script_parameters": ["n_factors"],
+		"interactive_getters": {
+			"n_factors": {
+				"getter_type": "set_value_dialog",
+				"title": "Factor analysis",
+				"label": "Number of factors to extract:",
+				"min_val": 1,
+				"max_val": None,  # Dynamic: evaluations_active.nreferent
+				"is_integer": True,
+				"default": 2
+			}
+		}
 	},
 	"Factor analysis machine learning": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "evaluations"]
+		"state_capture": ["configuration", "scores", "evaluations"],
+		"script_parameters": ["n_components"],
+		"interactive_getters": {
+			"n_components": {
+				"getter_type": "set_value_dialog",
+				"title": "Factor Analysis",
+				"label": "Number of factors to extract:",
+				"min_val": 1,
+				"max_val": None,  # Dynamic: evaluations_active.nitem
+				"is_integer": True,
+				"default": 2
+			}
+		}
 	},
 	"First dimension": {
 		"type": "passive"
 	},
 	"Grouped data": {
 		"type": "active",
-		"state_capture": ["grouped_data"]
+		"state_capture": ["grouped_data"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open grouped data",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Help": {
 		"type": "passive"
@@ -103,11 +179,28 @@ command_dict = MappingProxyType({
 	},
 	"Individuals": {
 		"type": "active",
-		"state_capture": ["individuals"]
+		"state_capture": ["individuals"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open individuals",
+				"filter": "*.csv"
+			}
+		}
 	},
 	"Invert": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "rivalry"]
+		"state_capture": ["configuration", "scores", "rivalry"],
+		"script_parameters": ["dimensions"],
+		"interactive_getters": {
+			"dimensions": {
+				"getter_type": "modify_items_dialog",
+				"title": "Select dimensions to invert",
+				"items_source": "configuration_active.dim_names",
+				"default_values": None
+			}
+		}
 	},
 	"Joint": {
 		"type": "passive"
@@ -122,11 +215,25 @@ command_dict = MappingProxyType({
 	},
 	"MDS": {
 		"type": "active",
-		"state_capture": ["configuration", "rivalry"]
+		"state_capture": ["configuration", "rivalry"],
+		"script_parameters": ["n_components", "use_metric"],
+		"execute_parameters": ["use_metric"],
+		"interactive_getters": {
+			"n_components": {
+				"getter_type": "set_value_dialog",
+				"title": "Components to extract",
+				"label": "Set number of components to extract",
+				"min_val": 1,
+				"max_val": 10,
+				"is_integer": True,
+				"default": 2
+			}
+		}
 	},
 	"Move": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "rivalry"]
+		"state_capture": ["configuration", "scores", "rivalry"],
+		"script_parameters": ["dimension", "distance"]
 	},
 	"New grouped data": {
 		"type": "interactive_only",
@@ -134,19 +241,51 @@ command_dict = MappingProxyType({
 	},
 	"Open sample design": {
 		"type": "active",
-		"state_capture": ["uncertainty"]
+		"state_capture": ["uncertainty"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open sample design",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Open sample repetitions": {
 		"type": "active",
-		"state_capture": ["uncertainty"]
+		"state_capture": ["uncertainty"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open sample repetitions",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Open sample solutions": {
 		"type": "active",
-		"state_capture": ["uncertainty"]
+		"state_capture": ["uncertainty"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open sample solutions",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Open scores": {
 		"type": "active",
-		"state_capture": ["scores"]
+		"state_capture": ["scores"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open scores",
+				"filter": "*.csv"
+			}
+		}
 	},
 	"Open script": {
 		"type": "script"  # Meta-command for script operations
@@ -157,7 +296,18 @@ command_dict = MappingProxyType({
 	"Principal components": {
 		"type": "active",
 		"state_capture": ["configuration"],
-		"script_parameters": ["n_components"]
+		"script_parameters": ["n_components"],
+		"interactive_getters": {
+			"n_components": {
+				"getter_type": "set_value_dialog",
+				"title": "Principal components",
+				"label": "Number of components to extract:",
+				"min_val": 1,
+				"max_val": None,  # Dynamic: based on data
+				"is_integer": True,
+				"default": 2
+			}
+		}
 	},
 	"Print configuration": {
 		"type": "passive"
@@ -208,24 +358,78 @@ command_dict = MappingProxyType({
 	"Reference points": {
 		"type": "active",
 		"state_capture": ["rivalry"],
-		"script_params": ["contest"]
+		"script_parameters": ["contest"],
+		"interactive_getters": {
+			"contest": {
+				"getter_type": "pair_of_points_dialog",
+				"title": "Select a pair of reference points",
+				"items_source": "point_names"
+			}
+		}
 	},
 	"Rescale": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "rivalry"]
+		"state_capture": ["configuration", "scores", "rivalry"],
+		"script_parameters": ["factors"],
+		"interactive_getters": {
+			"factors": {
+				"getter_type": "modify_values_dialog",
+				"title": "Rescale configuration",
+				"items_source": "configuration_active.dim_names",
+				"label": "Amount by which to multiple every point \non selected dimensions",
+				"min_val": -9999.9,
+				"max_val": 9999.9,
+				"is_integer": False,
+				"default": 0.0
+			}
+		}
 	},
 	"Rotate": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "rivalry"]
+		"state_capture": ["configuration", "scores", "rivalry"],
+		"script_parameters": ["degrees"],
+		"interactive_getters": {
+			"degrees": {
+				"getter_type": "set_value_dialog",
+				"title": "Degree to rotate configuration",
+				"label": \
+					"Positive is counter-clockwise\nNegative is clockwise",
+				"min_val": -360,
+				"max_val": 360,
+				"default": 0,
+				"is_integer": True
+			}
+		}
 	},
 	"Sample designer": {
 		"type": "active",
 		"state_capture": ["uncertainty"],
-		"script_params": ["probability_of_inclusion", "nrepetitions"]
+		"script_parameters": ["probability_of_inclusion", "nrepetitions"],
+		"interactive_getters": {
+			"probability_of_inclusion": {
+				"getter_type": "set_value_dialog",
+				"title": "Set sample parameters",
+				"label": "Probability of inclusion",
+				"min_val": 1,
+				"max_val": 100,
+				"is_integer": True,
+				"default": 50
+			},
+			"nrepetitions": {
+				"getter_type": "set_value_dialog",
+				"title": "Set sample parameters",
+				"label": "Number of repetitions",
+				"min_val": 1,
+				"max_val": 1000,
+				"is_integer": True,
+				"default": 2
+			}
+		}
 	},
 	"Sample repetitions": {
 		"type": "active",
-		"state_capture": ["uncertainty"]
+		"state_capture": ["uncertainty"],
+		"script_parameters": []
 	},
 	"Save configuration": {
 		"type": "passive"
@@ -277,12 +481,70 @@ command_dict = MappingProxyType({
 	"Settings - display sizing": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["axis_extra", "displacement", "point_size"]
+		"script_parameters": ["axis_extra", "displacement", "point_size"],
+		"interactive_getters": {
+			"axis_extra": {
+				"getter_type": "set_value_dialog",
+				"title": "Display sizing settings",
+				"label": "Axis extra margin:",
+				"min_val": 0.0,
+				"max_val": 1.0,
+				"is_integer": False,
+				"default": 0.1
+			},
+			"displacement": {
+				"getter_type": "set_value_dialog",
+				"title": "Display sizing settings",
+				"label": "Label displacement:",
+				"min_val": 0.0,
+				"max_val": 1.0,
+				"is_integer": False,
+				"default": 0.04
+			},
+			"point_size": {
+				"getter_type": "set_value_dialog",
+				"title": "Display sizing settings",
+				"label": "Point size:",
+				"min_val": 1,
+				"max_val": 20,
+				"is_integer": True,
+				"default": 3
+			}
+		}
 	},
 	"Settings - layout options": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["max_cols", "width", "decimals"]
+		"script_parameters": ["max_cols", "width", "decimals"],
+		"interactive_getters": {
+			"max_cols": {
+				"getter_type": "set_value_dialog",
+				"title": "Layout options settings",
+				"label": "Maximum columns:",
+				"min_val": 1,
+				"max_val": 20,
+				"is_integer": True,
+				"default": 10
+			},
+			"width": {
+				"getter_type": "set_value_dialog",
+				"title": "Layout options settings",
+				"label": "Column width:",
+				"min_val": 1,
+				"max_val": 20,
+				"is_integer": True,
+				"default": 8
+			},
+			"decimals": {
+				"getter_type": "set_value_dialog",
+				"title": "Layout options settings",
+				"label": "Decimal places:",
+				"min_val": 0,
+				"max_val": 10,
+				"is_integer": True,
+				"default": 2
+			}
+		}
 	},
 	"Settings - plane": {
 		"type": "active",
@@ -292,29 +554,97 @@ command_dict = MappingProxyType({
 	"Settings - plot settings": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["show_bisector", "show_connector", "show_reference_points", "show_just_reference_points"]
+		"script_parameters": ["show_bisector",
+		"show_connector", "show_reference_points",
+		"show_just_reference_points"],
+		"interactive_getters": {
+			"show_bisector": {
+				"getter_type": "modify_items_dialog",
+				"title": "Plot settings",
+				"items": ["Show bisector", "Show connector", "Show reference points", "Show just reference points"],
+				"default_values": [False, False, False, False]
+			}
+		}
 	},
 	"Settings - presentation layer": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["layer"]
+		"script_parameters": ["layer"],
+		"execute_parameters": ["layer"],
+		"interactive_getters": {
+			"layer": {
+				"getter_type": "chose_option_dialog",
+				"title": "Presentation layer settings",
+				"options_title": "Select presentation layer:",
+				"options": ["matplotlib", "pyqtgraph"]
+			}
+		}
 	},
 	"Settings - segment sizing": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["battleground_size", "core_tolerance"]
+		"script_parameters": ["battleground_size", "core_tolerance"],
+		"interactive_getters": {
+			"battleground_size": {
+				"getter_type": "set_value_dialog",
+				"title": "Segment sizing settings",
+				"label": "Battleground size:",
+				"min_val": 0.0,
+				"max_val": 1.0,
+				"is_integer": False,
+				"default": 0.25
+			},
+			"core_tolerance": {
+				"getter_type": "set_value_dialog",
+				"title": "Segment sizing settings",
+				"label": "Core tolerance:",
+				"min_val": 0.0,
+				"max_val": 1.0,
+				"is_integer": False,
+				"default": 0.2
+			}
+		}
 	},
 	"Settings - vector sizing": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["vector_head_width", "vector_width"]
+		"script_parameters": ["vector_head_width", "vector_width"],
+		"interactive_getters": {
+			"vector_head_width": {
+				"getter_type": "set_value_dialog",
+				"title": "Vector sizing settings",
+				"label": "Vector head width:",
+				"min_val": 0.0,
+				"max_val": 1.0,
+				"is_integer": False,
+				"default": 0.05
+			},
+			"vector_width": {
+				"getter_type": "set_value_dialog",
+				"title": "Vector sizing settings",
+				"label": "Vector width:",
+				"min_val": 0.0,
+				"max_val": 1.0,
+				"is_integer": False,
+				"default": 0.01
+			}
+		}
 	},
 	"Shepard": {
 		"type": "passive"
 	},
 	"Similarities": {
 		"type": "active",
-		"state_capture": ["similarities"]
+		"state_capture": ["similarities"],
+		"script_parameters": ["file_name", "value_type"],
+		"execute_parameters": ["value_type"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open similarities",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Status": {
 		"type": "passive"
@@ -324,7 +654,15 @@ command_dict = MappingProxyType({
 	},
 	"Target": {
 		"type": "active",
-		"state_capture": ["target"]
+		"state_capture": ["target"],
+		"script_parameters": ["file_name"],
+		"interactive_getters": {
+			"file_name": {
+				"getter_type": "file_dialog",
+				"caption": "Open target",
+				"filter": "*.txt"
+			}
+		}
 	},
 	"Terse": {
 		"type": "passive"
@@ -335,7 +673,8 @@ command_dict = MappingProxyType({
 	},
 	"Uncertainty": {
 		"type": "active",
-		"state_capture": ["uncertainty"]
+		"state_capture": ["uncertainty"],
+		"script_parameters": []
 	},
 	"Undo": {
 		"type": "active",
@@ -343,7 +682,8 @@ command_dict = MappingProxyType({
 	},
 	"Varimax": {
 		"type": "active",
-		"state_capture": ["configuration", "scores", "rivalry"]
+		"state_capture": ["configuration", "scores", "rivalry"],
+		"script_parameters": []
 	},
 	"Vectors": {
 		"type": "passive"
