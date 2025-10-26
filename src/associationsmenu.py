@@ -409,12 +409,6 @@ class LineOfSightCommand:
 		self._director.similarities_active = (
 			self._director.similarities_candidate
 		)
-		self._director.similarities_original = (
-			self._director.similarities_candidate
-		)
-		self._director.similarities_last = (
-			self._director.similarities_candidate
-		)
 		self._director.similarities_active.print_the_similarities(
 			self._width, self._decimals, common
 		)

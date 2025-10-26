@@ -201,62 +201,25 @@ class CommandState:
 	def capture_similarities_state(self, director: Status) -> None:
 		"""Capture the current similarities feature state.
 
-		Captures similarities_active, similarities_original, and
-		similarities_last to ensure complete restoration on undo.
-
 		Args:
 			director: The director instance containing similarities_active
 		"""
 		sims = director.similarities_active
-		sims_orig = director.similarities_original
-		sims_last = director.similarities_last
 
 		self.state_snapshot["similarities"] = {
-			"active": {
-				"similarities": [row.copy() for row in sims.similarities]
-				if sims.similarities
-				else [],
-				"similarities_as_dataframe": (
-					sims.similarities_as_dataframe.copy()
-					if not sims.similarities_as_dataframe.empty
-					else pd.DataFrame()
-				),
-				"item_names": sims.item_names.copy(),
-				"item_labels": sims.item_labels.copy(),
-				"value_type": sims.value_type,
-				"nitem": sims.nitem,
-				"nsimilarities": sims.nsimilarities,
-			},
-			"original": {
-				"similarities": [
-					row.copy() for row in sims_orig.similarities
-				] if sims_orig.similarities else [],
-				"similarities_as_dataframe": (
-					sims_orig.similarities_as_dataframe.copy()
-					if not sims_orig.similarities_as_dataframe.empty
-					else pd.DataFrame()
-				),
-				"item_names": sims_orig.item_names.copy(),
-				"item_labels": sims_orig.item_labels.copy(),
-				"value_type": sims_orig.value_type,
-				"nitem": sims_orig.nitem,
-				"nsimilarities": sims_orig.nsimilarities,
-			},
-			"last": {
-				"similarities": [
-					row.copy() for row in sims_last.similarities
-				] if sims_last.similarities else [],
-				"similarities_as_dataframe": (
-					sims_last.similarities_as_dataframe.copy()
-					if not sims_last.similarities_as_dataframe.empty
-					else pd.DataFrame()
-				),
-				"item_names": sims_last.item_names.copy(),
-				"item_labels": sims_last.item_labels.copy(),
-				"value_type": sims_last.value_type,
-				"nitem": sims_last.nitem,
-				"nsimilarities": sims_last.nsimilarities,
-			}
+			"similarities": [row.copy() for row in sims.similarities]
+			if sims.similarities
+			else [],
+			"similarities_as_dataframe": (
+				sims.similarities_as_dataframe.copy()
+				if not sims.similarities_as_dataframe.empty
+				else pd.DataFrame()
+			),
+			"item_names": sims.item_names.copy(),
+			"item_labels": sims.item_labels.copy(),
+			"value_type": sims.value_type,
+			"nitem": sims.nitem,
+			"nsimilarities": sims.nsimilarities,
 		}
 
 	# ------------------------------------------------------------------------
@@ -567,9 +530,6 @@ class CommandState:
 	def restore_similarities_state(self, director: Status) -> None:
 		"""Restore similarities feature state from snapshot.
 
-		Restores similarities_active, similarities_original, and
-		similarities_last to ensure complete restoration on undo.
-
 		Args:
 			director: The director instance to restore state into
 		"""
@@ -577,51 +537,19 @@ class CommandState:
 			return
 
 		sims_snapshot = self.state_snapshot["similarities"]
-
-		# Restore similarities_active
 		sims = director.similarities_active
-		sims_active_data: dict[str, Any] = sims_snapshot["active"]
+
 		sims.similarities = [
-			row.copy() for row in sims_active_data["similarities"]
+			row.copy() for row in sims_snapshot["similarities"]
 		]
-		sims.similarities_as_dataframe: pd.DataFrame = sims_active_data[
+		sims.similarities_as_dataframe: pd.DataFrame = sims_snapshot[
 			"similarities_as_dataframe"
 		].copy()
-		sims.item_names = sims_active_data["item_names"].copy()
-		sims.item_labels = sims_active_data["item_labels"].copy()
-		sims.value_type = sims_active_data["value_type"]
-		sims.nitem = sims_active_data["nitem"]
-		sims.nsimilarities = sims_active_data["nsimilarities"]
-
-		# Restore similarities_original
-		sims_orig = director.similarities_original
-		sims_orig_data = sims_snapshot["original"]
-		sims_orig.similarities = [
-			row.copy() for row in sims_orig_data["similarities"]
-		]
-		sims_orig.similarities_as_dataframe = sims_orig_data[
-			"similarities_as_dataframe"
-		].copy()
-		sims_orig.item_names = sims_orig_data["item_names"].copy()
-		sims_orig.item_labels = sims_orig_data["item_labels"].copy()
-		sims_orig.value_type = sims_orig_data["value_type"]
-		sims_orig.nitem = sims_orig_data["nitem"]
-		sims_orig.nsimilarities = sims_orig_data["nsimilarities"]
-
-		# Restore similarities_last
-		sims_last = director.similarities_last
-		sims_last_data = sims_snapshot["last"]
-		sims_last.similarities = [
-			row.copy() for row in sims_last_data["similarities"]
-		]
-		sims_last.similarities_as_dataframe = sims_last_data[
-			"similarities_as_dataframe"
-		].copy()
-		sims_last.item_names = sims_last_data["item_names"].copy()
-		sims_last.item_labels = sims_last_data["item_labels"].copy()
-		sims_last.value_type = sims_last_data["value_type"]
-		sims_last.nitem = sims_last_data["nitem"]
-		sims_last.nsimilarities = sims_last_data["nsimilarities"]
+		sims.item_names = sims_snapshot["item_names"].copy()
+		sims.item_labels = sims_snapshot["item_labels"].copy()
+		sims.value_type = sims_snapshot["value_type"]
+		sims.nitem = sims_snapshot["nitem"]
+		sims.nsimilarities = sims_snapshot["nsimilarities"]
 
 	# ------------------------------------------------------------------------
 

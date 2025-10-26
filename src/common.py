@@ -2382,6 +2382,10 @@ class Spaces:
 					default = getter_info.get("default", 0)
 					is_integer = getter_info.get("is_integer", False)
 
+					# Resolve dynamic max_val if None
+					if max_val is None:
+						max_val = self._director.evaluations_active.nitem
+
 					dialog = SetValueDialog(
 						title, label, min_val, max_val, is_integer, default
 					)

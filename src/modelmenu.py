@@ -2121,7 +2121,6 @@ class UncertaintyCommand:
 		self.target_out = target_out
 		self.active_out = active_out
 
-		self.target_last = target_out
 		self.solutions.columns = solutions_columns
 		target_active = self._director.target_active
 

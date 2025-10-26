@@ -62,10 +62,6 @@ class ConfigurationCommand:
 		self._director.configuration_active = (
 			self._director.configuration_candidate
 		)
-		self._director.configuration_original = (
-			self._director.configuration_active
-		)
-		self._director.configuration_last = self._director.configuration_active
 		# Eliminate rivalry when new configuration is loaded
 		self._director.rivalry = Rivalry(self._director)
 		self._director.configuration_active.print_active_function()
@@ -131,10 +127,6 @@ class CorrelationsCommand:
 		self._director.correlations_active = (
 			self._director.correlations_candidate
 		)
-		self._director.correlations_original = (
-			self._director.correlations_active
-		)
-		self._director.correlations_last = self._director.correlations_active
 		self._director.correlations_active.print_the_correlations(
 			width=8,
 			decimals=3,
@@ -322,10 +314,6 @@ class CreateCommand:
 		self._director.configuration_active = (
 			self._director.configuration_candidate
 		)
-		self._director.configuration_original = (
-			self._director.configuration_active
-		)
-		self._director.configuration_last = self._director.configuration_active
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		self._director.title_for_table_widget = (
@@ -523,10 +511,6 @@ class EvaluationsCommand:
 		self._director.evaluations_active = (
 			self._director.evaluations_candidate
 		)
-		self._director.evaluations_original = (
-			self._director.evaluations_active
-		)
-		self._director.evaluations_last = self._director.evaluations_active
 		self._compute_correlations_from_evaluations(common)
 		self._director.evaluations_active.print_the_evaluations()
 		self._director.evaluations_active.summarize_evaluations()
@@ -615,10 +599,7 @@ class EvaluationsCommand:
 		self._director.correlations_active = (
 			self._director.correlations_candidate
 		)
-		self._director.correlations_original = (
-			self._director.correlations_active
-		)
-		self._director.correlations_last = self._director.correlations_active
+
 
 	# ------------------------------------------------------------------------
 
@@ -682,10 +663,6 @@ class GroupedDataCommand:
 		self._director.grouped_data_active = (
 			self._director.grouped_data_candidate
 		)
-		self._director.grouped_data_original = (
-			self._director.grouped_data_active
-		)
-		self._director.grouped_data_last = self._director.grouped_data_active
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
 		ndim = self._director.grouped_data_candidate.ndim
@@ -854,10 +831,6 @@ class IndividualsCommand:
 		self._director.individuals_active = (
 			self._director.individuals_candidate
 		)
-		self._director.individuals_original = (
-			self._director.individuals_active
-		)
-		self._director.individuals_last = self._director.individuals_active
 		self._director.individuals_active.print_individuals()
 		self._director.title_for_table_widget = (
 			f"Individuals data has been read "
@@ -1029,10 +1002,6 @@ class NewGroupedDataCommand:
 		self._director.grouped_data_active = (
 			self._director.grouped_data_candidate
 		)
-		self._director.grouped_data_original = (
-			self._director.grouped_data_active
-		)
-		self._director.grouped_data_last = self._director.grouped_data_active
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
 		self._director.title_for_table_widget = (
@@ -1266,8 +1235,6 @@ class OpenScoresCommand:
 		self._read_scores(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.scores_active = self._director.scores_candidate
-		self._director.scores_original = self._director.scores_active
-		self._director.scores_last = self._director.scores_active
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, common)
 		self._director.scores_active.summarize_scores()
@@ -3133,10 +3100,6 @@ class SimilaritiesCommand:
 		self._director.similarities_active = (
 			self._director.similarities_candidate
 		)
-		self._director.similarities_original = (
-			self._director.similarities_active
-		)
-		self._director.similarities_last = self._director.similarities_active
 		width = 8
 		decimals = 3
 		self._director.similarities_active.print_the_similarities(
@@ -3189,8 +3152,6 @@ class TargetCommand:
 		)
 
 		self._director.target_active = self._director.target_candidate
-		self._director.target_original = self._director.target_active
-		self._director.target_last = self._director.target_active
 		self._director.target_active.print_target()
 		self._director.common.create_plot_for_tabs("target")
 		ndim = self._director.target_candidate.ndim
