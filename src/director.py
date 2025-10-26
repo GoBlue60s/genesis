@@ -135,6 +135,11 @@ class Status(QMainWindow):
 		self.executing_script = False
 		self.script_parameters: dict | None = None
 
+		# Track parameters already obtained for current command
+		# Used to prevent re-prompting when get_command_parameters is called
+		# multiple times (e.g., when later parameters depend on earlier ones)
+		self.obtained_parameters: dict[str, any] = {}
+
 	# ------------------------------------------------------------------------
 
 	def directories_being_used_for_data(self) -> None:
@@ -166,7 +171,7 @@ class Status(QMainWindow):
 		self.create_tabs()
 		# Initialize Redo as disabled (no redo stack items on startup)
 		self.disable_redo()
-		self.check_consistency_of_dictionaries_and_arrays()
+		# self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
 
@@ -926,6 +931,9 @@ class Status(QMainWindow):
 		"""The start method is called at the beginning of each command to
 		indicate that the command is in process.
 		"""
+		# Clear obtained parameters from previous command
+		self.obtained_parameters.clear()
+
 		self.spaces_statusbar.showMessage(
 			f"Starting {self.command} command", 80000
 		)
@@ -1111,7 +1119,8 @@ class Status(QMainWindow):
 		directory: str | None = None
 	) -> str:
 		self.get_file_name_and_handle_nonexistent_file_names_init_variables()
-		dir_to_use = directory if directory is not None else os.fspath(self.filedir)
+		dir_to_use = \
+			directory if directory is not None else os.fspath(self.filedir)
 		ui_file = QFileDialog.getOpenFileName(
 			dir=dir_to_use,
 			caption=file_caption,
@@ -1206,7 +1215,8 @@ class Status(QMainWindow):
 		)
 		print(f"Unable to complete {command} command")
 		#
-		# eliminate last entry from undo stack ONLY if it belongs to this command
+		# eliminate last entry from undo stack ONLY if it
+		# belongs to this command
 		# (A command may fail before it pushes to the undo stack, in which case
 		# we shouldn't remove the previous command's state)
 		#
@@ -1217,6 +1227,9 @@ class Status(QMainWindow):
 		self.command_exit_code = command_exit_code
 		self.undo_stack = undo_stack
 		self.undo_stack_source = undo_stack_source
+
+		# Clear obtained parameters after command fails
+		self.obtained_parameters.clear()
 
 		return
 
@@ -1269,6 +1282,9 @@ class Status(QMainWindow):
 			command_exit_code[script_index] = 0
 		else:
 			command_exit_code[-1] = 0
+
+		# Clear obtained parameters after command completes
+		self.obtained_parameters.clear()
 
 		self.spaces_statusbar.showMessage(
 			f"Completed {command} command", 80000

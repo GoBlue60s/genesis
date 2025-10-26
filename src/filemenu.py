@@ -54,12 +54,11 @@ class ConfigurationCommand:
 		self.common.capture_and_push_undo_state(
 			"Configuration", "active", params
 		)
-
 		# Read and validate configuration file
 		self._director.configuration_candidate = common.read_configuration_type_file(
 			file_name, "Configuration"
 		)
-
+		self._director.dependency_checker.detect_consistency_issues()
 		self._director.configuration_active = (
 			self._director.configuration_candidate
 		)
@@ -67,10 +66,8 @@ class ConfigurationCommand:
 			self._director.configuration_active
 		)
 		self._director.configuration_last = self._director.configuration_active
-
 		# Eliminate rivalry when new configuration is loaded
 		self._director.rivalry = Rivalry(self._director)
-
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_candidate.ndim
@@ -112,12 +109,12 @@ class CorrelationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Correlations")
+		params = \
+			self.common.get_command_parameters("Correlations")
 		file_name: str = params["file_name"]
 		self.common.capture_and_push_undo_state(
 			"Correlations", "active", params
 		)
-
 		# Error handling
 		# If not a correlations file, then return an error message
 		try:
@@ -1258,22 +1255,16 @@ class OpenScoresCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		# ????? is this needed here?
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Open scores")
 		file_name: str = params["file_name"]
 		self.common.capture_and_push_undo_state(
 			"Open scores", "active", params
 		)
 
-		# Error handling
-		# If not a scores file, then return an error message
-		try:
-			self._read_scores(file_name)
-		except ValueError as e:
-			raise SpacesError(
-				self._scores_error_bad_input_title,
-				self._scores_error_bad_input_message,
-			) from e
-
+		self._read_scores(file_name)
+		self._director.dependency_checker.detect_consistency_issues()
 		self._director.scores_active = self._director.scores_candidate
 		self._director.scores_original = self._director.scores_active
 		self._director.scores_last = self._director.scores_active
@@ -1302,6 +1293,14 @@ class OpenScoresCommand:
 
 			self._director.scores_candidate.scores = scores
 			self._director.scores_candidate.file_handle = file_name
+			self._director.scores_candidate.nscores = scores.shape[1] - 1
+			self._director.scores_candidate.nscored_individ = scores.shape[0]
+			self._director.scores_candidate.n_individ = (
+				self._director.scores_candidate.nscored_individ
+			)
+			self._director.scores_candidate.range_scores = range(
+				self._director.scores_candidate.nscores
+			)
 
 			# Extract dimension names from column headers (skip first column)
 			columns = scores.columns.tolist()
@@ -1337,7 +1336,10 @@ class OpenScoresCommand:
 			pd.errors.EmptyDataError,
 			pd.errors.ParserError,
 		) as e:
-			raise ValueError(f"Unable to read scores file: {e}") from e
+			raise SpacesError(
+				self._scores_error_bad_input_title,
+				self._scores_error_bad_input_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 

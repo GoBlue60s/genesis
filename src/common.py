@@ -2304,11 +2304,15 @@ class Spaces:
 		cmd_info = command_dict.get(command_name, {})
 		expected_params = cmd_info.get("script_parameters", [])
 
-		if self._director.executing_script and self._director.script_parameters:
+		if (
+			self._director.executing_script
+			and self._director.script_parameters
+		):
 			# Get from script parameters
 			for param_name in expected_params:
 				if param_name in self._director.script_parameters:
-					params[param_name] = self._director.script_parameters[param_name]
+					script_params = self._director.script_parameters
+					params[param_name] = script_params[param_name]
 				else:
 					# Required parameter missing from script
 					title = f"{command_name} script parameter error"
@@ -2320,9 +2324,17 @@ class Spaces:
 			execute_parameters = cmd_info.get("execute_parameters", [])
 
 			for param_name in expected_params:
+				# Check if parameter was already obtained in previous call
+				obtained = self._director.obtained_parameters
+				if param_name in obtained:
+					params[param_name] = obtained[param_name]
+					continue
+
 				# Check if this parameter was passed as kwarg
 				if param_name in kwargs:
 					params[param_name] = kwargs[param_name]
+					# Store for potential future calls
+					obtained[param_name] = kwargs[param_name]
 					continue
 
 				# Check if this parameter comes from execute method
@@ -2339,8 +2351,10 @@ class Spaces:
 					# No interactive getter defined for this parameter
 					title = f"{command_name} metadata error"
 					message = (
-						f"No interactive getter defined for parameter: {param_name}\n"
-						f"Add '{param_name}' to interactive_getters in command_dict"
+						f"No interactive getter defined for "
+						f"parameter: {param_name}\n"
+						f"Add '{param_name}' to interactive_getters "
+						f"in command_dict"
 					)
 					raise SpacesError(title, message)
 
@@ -2356,6 +2370,8 @@ class Spaces:
 							caption, file_filter
 						)
 					)
+					# Store for potential future calls within same command
+					obtained[param_name] = params[param_name]
 
 				elif getter_type == "set_value_dialog":
 					# Use SetValueDialog for numeric input
@@ -2372,7 +2388,10 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						value = dialog.getValue()
-						params[param_name] = int(value) if is_integer else value
+						param_value = int(value) if is_integer else value
+						params[param_name] = param_value
+						# Store for potential future calls
+						obtained[param_name] = param_value
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2396,6 +2415,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.selected_items()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2405,13 +2426,18 @@ class Spaces:
 				elif getter_type == "chose_option_dialog":
 					# Use ChoseOptionDialog for radio button selection
 					title = getter_info.get("title", "Choose option")
-					options_title = getter_info.get("options_title", "Select one:")
+					options_title = getter_info.get(
+						"options_title", "Select one:"
+					)
 					options = getter_info.get("options", [])
 
 					dialog = ChoseOptionDialog(title, options_title, options)
 					result = dialog.exec()
 					if result == QDialog.Accepted:
-						params[param_name] = dialog.selected_option
+						# selected_option is an index, convert to option string
+						params[param_name] = options[dialog.selected_option]
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2419,7 +2445,7 @@ class Spaces:
 						raise SpacesError(title, message)
 
 				elif getter_type == "get_integer_dialog":
-					# Use GetIntegerDialog for single integer input (newer style)
+					# Use GetIntegerDialog for integer input (newer style)
 					title = getter_info.get("title", "Enter value")
 					message = getter_info.get("message", "")
 					min_value = getter_info.get("min_value", 1)
@@ -2432,6 +2458,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_value()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2451,6 +2479,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_value()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2467,6 +2497,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_coordinates()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2489,6 +2521,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.checked_items()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2510,6 +2544,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_selected_items()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2530,6 +2566,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_new_values()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2545,6 +2583,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_dimensions_and_distances()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2562,6 +2602,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_matrix()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2577,6 +2619,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.get_new_labels()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2592,6 +2636,8 @@ class Spaces:
 					result = dialog.exec()
 					if result == QDialog.Accepted:
 						params[param_name] = dialog.getNames()
+						# Store for potential future calls
+						obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"

@@ -413,17 +413,15 @@ class ReferencePointsCommand:
 		self._print_reference_points()
 
 		rivalry.create_or_revise_rivalry_attributes(self._director, common)
-
 		rivalry.use_reference_points_to_define_segments(self._director)
-
+		have_scores = self._director.common.have_scores()
+		have_segments = self._director.common.have_segments()
 		if (
 			self._director.common.have_scores()
 			and not self._director.common.have_segments()
 		):
 			rivalry.assign_to_segments()
-
 		self._director.common.create_plot_for_tabs("configuration")
-
 		self._director.title_for_table_widget = (
 			f"Reference points will be {rival_a.name} and {rival_b.name}"
 		)

@@ -1228,16 +1228,16 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	@staticmethod
-	def choose_a_side_function() -> tuple[str, str]:
+	def choose_a_side_function() -> tuple[bool, bool]:
 		"""The choose a side function - randomly chooses a side.
 		\nIf a line goes through a corner this randomly assigns it as going
 		through one side.
 		\nArguments -
 		\nNone
 		\nReturned variables -
-		\nside_1:  "Yes" or "No" indicating the line will be considered
+		\nside_1:  True or False indicating the line will be considered
 		as going through side_1
-		\nside_2: "Yes" or "No" indicating whether the line will be
+		\nside_2: True or False indicating whether the line will be
 		considered as going through side_2
 		"""
 		#
@@ -1246,11 +1246,11 @@ class Rivalry:
 		first = random.choice([True, False])
 		#
 		if first:
-			side_1 = "Yes"
-			side_2 = "No"
+			side_1 = True
+			side_2 = False
 		else:
-			side_1 = "No"
-			side_2 = "Yes"
+			side_1 = False
+			side_2 = True
 		return side_1, side_2
 
 		# --------------------------------------------------------------------
@@ -2871,13 +2871,16 @@ class Rivalry:
 				convertible_to_right_vertices_as_pairs
 			)
 		bisector_cases = [
-			"Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa", "IVb"
+			"0a", "0b", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa",
+			"IVb"
 		]
 		west_cases = [
-			"", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa", "IVb"
+			"", "0a", "0b", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb",
+			"IVa", "IVb"
 		]
 		east_cases = [
-			"", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb", "IVa", "IVb"
+			"", "0a", "0b", "Ia", "Ib", "IIa", "IIb", "IIIa", "IIIb",
+			"IVa", "IVb"
 		]
 
 		for bisector_case in bisector_cases:

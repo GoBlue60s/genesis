@@ -1,0 +1,105 @@
+Here is the original promtpt:
+
+> I want to go back to the EvaluationsCommand in filemenu, though this is a much larger situation, I am just using Evaluations as an example. We have a function which is located in common which captures the state for        
+undo.  I want to explore the possibility of having a function in common which would capture command parameters.  It would need to determine if we are in a script, obtain the parameters in the appropriate way, and return     
+the parameters so they could be used in the function. It may need to take an argument to tell it what command we are in.  This would eliminate the need for the helper function that currently does these things.  What do      
+you think? 
+
+
+Here is your response:
+
+● This is an excellent idea! Let me think through this systematically.
+
+  Current Pattern (in EvaluationsCommand and similar commands):
+  # Check if executing from script with parameters
+  if (
+      self._director.executing_script
+      and self._director.script_parameters
+      and "file_name" in self._director.script_parameters
+  ):
+      file_name = self._director.script_parameters["file_name"]
+  else:
+      file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
+          self._evaluations_caption, self._evaluations_filter
+      )
+
+  This pattern is repeated in dozens of commands - it's very repetitive.
+
+  Proposed New Pattern:
+  # Get parameters (from script or user dialog)
+  params = common.get_command_parameters(
+      command_name="Evaluations",
+      interactive_getters={
+          "file_name": lambda: self._director.get_file_name_and_handle_nonexistent_file_names(
+              self._evaluations_caption, self._evaluations_filter
+          )
+      }
+  )
+  file_name = params["file_name"]
+
+  Benefits:
+  1. Eliminates repetition - No more if/else blocks checking executing_script
+  2. Centralizes script parameter logic - One place to handle script vs interactive mode
+  3. Type safety - Could add validation in one place
+  4. Consistency - Harder to make mistakes when getting parameters
+  5. Pairs with existing helper - capture_and_push_undo_state() already exists, this would be get_command_parameters()
+
+  Design Considerations:
+
+  1. How to specify interactive getters?
+    - Dictionary of parameter_name -> getter function (as shown above)
+    - Or individual parameters: get_command_parameters("Evaluations", file_name=lambda: ...)
+  2. How to handle validation?
+    - The function could validate script parameters against expected types
+    - Could use metadata from command_dict if we add parameter specifications there
+  3. How to handle default values?
+    - Some parameters have defaults (like n_components=2 in PrincipalComponents)
+    - Could pass defaults as another argument
+
+  Potential Implementation:
+  def get_command_parameters(
+      self,
+      command_name: str,
+      interactive_getters: dict[str, callable],
+      defaults: dict[str, any] = None
+  ) -> dict[str, any]:
+      """Get command parameters from script or interactive dialogs.
+
+      Args:
+          command_name: Name of the command (for looking up script parameters)
+          interactive_getters: Dict mapping parameter names to functions that get them interactively
+          defaults: Optional default values for parameters
+
+      Returns:
+          Dictionary of parameter_name -> value
+      """
+      params = {}
+
+      if self.director.executing_script and self.director.script_parameters:
+          # Get from script parameters
+          for param_name in interactive_getters.keys():
+              if param_name in self.director.script_parameters:
+                  params[param_name] = self.director.script_parameters[param_name]
+              elif defaults and param_name in defaults:
+                  params[param_name] = defaults[param_name]
+              else:
+                  # Required parameter missing from script
+                  raise ScriptParameterError(f"Missing required parameter: {param_name}")
+      else:
+          # Get from interactive dialogs
+          for param_name, getter_func in interactive_getters.items():
+              params[param_name] = getter_func()
+
+      return params
+
+  Questions:
+  1. Should this be in common.py or director.py? (I'd say common.py to parallel capture_and_push_undo_state)
+  2. Should we validate parameter types?
+  3. Do we need to handle the case where some parameters are optional in scripts but required interactively?
+
+  What do you think about this approach? Should I implement it?
+
+Here is my suggestion:
+
+> Why not just have the argument be the command name? For example params = common.get_command_parameters("evaluations").  If you need more information how about putting it in a  dictionary, one of the exiting or a new       
+dict. 

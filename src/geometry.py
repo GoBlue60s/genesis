@@ -187,10 +187,10 @@ class LineInPlot:
 
 		self._goes_through = goes_through
 		self._intersects = intersects
-		self._right_side = right_side
-		self._left_side = left_side
-		self._top = top
-		self._bottom = bottom
+		self._right_side = intersects.right_side
+		self._left_side = intersects.left_side
+		self._top = intersects.top
+		self._bottom = intersects.bottom
 
 		return intersects
 
@@ -454,6 +454,8 @@ class LineInPlot:
 		point_on_line: Point,
 		potential_extremes: TheoreticalExtremes,
 	) -> tuple[Point, Point]:
+		from exceptions import SpacesError
+
 		start = Point()
 		end = Point()
 
@@ -481,6 +483,17 @@ class LineInPlot:
 			"IIIb": [x_at_vert_max, vert_max, hor_max, y_at_hor_max],
 			"IVb": [x_at_vert_max, vert_max, x_at_vert_min, vert_min],
 		}
+
+		if case not in end_dict:
+			raise SpacesError(
+				"Line Case Error",
+				f"Unhandled line case: '{case}'. "
+				f"Direction: {self._direction}, "
+				f"Intersects: left={self._left_side}, "
+				f"right={self._right_side}, top={self._top}, "
+				f"bottom={self._bottom}"
+			)
+
 		start.x = end_dict[case][0]
 		start.y = end_dict[case][1]
 		end.x = end_dict[case][2]
