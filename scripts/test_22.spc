@@ -1,9 +1,9 @@
 # Spaces Script
 # Created: 2025-10-17 10:25:41
 # Spaces Version: 2025
-Configuration file_name=C:/PythonProjects/genesis/data/Elections/1976/Post_1976_conf.txt
+Configuration file=C:/PythonProjects/genesis/data/Elections/1976/Post_1976_conf.txt
 Reference points contest=['Wallace', 'Goldwater']
-Similarities file_name=C:/PythonProjects/genesis/data/Elections/1976/post_1976_los.txt value_type=dissimilarities
+Similarities file=C:/PythonProjects/genesis/data/Elections/1976/post_1976_los.txt value_type=dissimilarities
 Contest
 Reference points contest=['Carter', 'Ford']
 Contest

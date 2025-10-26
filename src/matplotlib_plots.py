@@ -1092,6 +1092,7 @@ class MatplotlibMethods:
 	# ------------------------------------------------------------------------
 
 	def plot_a_heatmap_rank_diff_using_matplotlib(self) -> plt.Figure:
+
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		similarities_active = director.similarities_active

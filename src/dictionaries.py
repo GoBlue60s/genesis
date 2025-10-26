@@ -65,9 +65,9 @@ command_dict = MappingProxyType({
 	"Configuration": {
 		"type": "active",
 		"state_capture": ["configuration"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open configuration",
 				"filter": "*.txt"
@@ -86,9 +86,9 @@ command_dict = MappingProxyType({
 	"Correlations": {
 		"type": "active",
 		"state_capture": ["correlations"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open correlations",
 				"filter": "*.txt"
@@ -112,9 +112,9 @@ command_dict = MappingProxyType({
 	"Evaluations": {
 		"type": "active",
 		"state_capture": ["evaluations", "correlations"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open evaluations",
 				"filter": "*.csv"
@@ -162,9 +162,9 @@ command_dict = MappingProxyType({
 	"Grouped data": {
 		"type": "active",
 		"state_capture": ["grouped_data"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open grouped data",
 				"filter": "*.txt"
@@ -180,9 +180,9 @@ command_dict = MappingProxyType({
 	"Individuals": {
 		"type": "active",
 		"state_capture": ["individuals"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open individuals",
 				"filter": "*.csv"
@@ -242,9 +242,9 @@ command_dict = MappingProxyType({
 	"Open sample design": {
 		"type": "active",
 		"state_capture": ["uncertainty"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open sample design",
 				"filter": "*.txt"
@@ -254,9 +254,9 @@ command_dict = MappingProxyType({
 	"Open sample repetitions": {
 		"type": "active",
 		"state_capture": ["uncertainty"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open sample repetitions",
 				"filter": "*.txt"
@@ -266,9 +266,9 @@ command_dict = MappingProxyType({
 	"Open sample solutions": {
 		"type": "active",
 		"state_capture": ["uncertainty"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open sample solutions",
 				"filter": "*.txt"
@@ -278,9 +278,9 @@ command_dict = MappingProxyType({
 	"Open scores": {
 		"type": "active",
 		"state_capture": ["scores"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open scores",
 				"filter": "*.csv"
@@ -636,10 +636,10 @@ command_dict = MappingProxyType({
 	"Similarities": {
 		"type": "active",
 		"state_capture": ["similarities"],
-		"script_parameters": ["file_name", "value_type"],
+		"script_parameters": ["file", "value_type"],
 		"execute_parameters": ["value_type"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open similarities",
 				"filter": "*.txt"
@@ -655,9 +655,9 @@ command_dict = MappingProxyType({
 	"Target": {
 		"type": "active",
 		"state_capture": ["target"],
-		"script_parameters": ["file_name"],
+		"script_parameters": ["file"],
 		"interactive_getters": {
-			"file_name": {
+			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Open target",
 				"filter": "*.txt"

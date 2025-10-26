@@ -613,6 +613,7 @@ class RanksDifferencesCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
+		self._director.similarities_active.compute_differences_in_ranks()
 		# self._create_rank_plot_for_tabs()
 		# columns_to_print = \
 		# 	self._director.similarities_active.columns_for_ranks[self._columns]

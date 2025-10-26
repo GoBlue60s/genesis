@@ -54,23 +54,30 @@ class HistoryCommand:
 		commands_used = self._director.commands_used
 		command_exit_code = self._director.command_exit_code
 
-		line = "\n\t"
-		print("\n\tCommands used")
+		print("\n\tCommands used\n")
+
+		# Create header
+		header = f"\t{'Command':<40} {'Status':<25}"
+		print(header)
+		print("\t" + "-" * 65)
+
+		# Print each command with proper alignment
 		range_commands_used = range(1, len(commands_used))
 		for i in range_commands_used:
-			line = line + commands_used[i] + "\t"
+			command = commands_used[i]
 			status = command_exit_code[i]
 			match status:
 				case 1:
-					line = line + "Failed"
+					status_str = "Failed"
 				case 0:
-					line = line + "Completed successfully"
+					status_str = "Completed successfully"
 				case -1:
-					line = line + "In process"
+					status_str = "In process"
 				case _:
-					line = line + "Unknown status"
+					status_str = "Unknown status"
+
+			line = f"\t{command:<40} {status_str:<25}"
 			print(line)
-			line = "\t"
 		return
 
 	# ------------------------------------------------------------------------

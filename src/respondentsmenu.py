@@ -37,18 +37,18 @@ class BaseCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, groups_to_show: str) -> None:
+	def execute(self, common: Spaces, show: str) -> None:
 		director = self._director
 		common = director.common
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
-		director.current_command._base_groups_to_show = groups_to_show
+		director.current_command._base_groups_to_show = show
 
 		# Track passive command with parameters for script generation
 		common.push_passive_command_to_undo_stack(
 			director.command,
-			{"groups_to_show": groups_to_show}
+			{"show": show}
 		)
 
 		common.create_plot_for_tabs("base")
@@ -86,19 +86,19 @@ class BattlegroundCommand(ASupporterGrouping):
 	def execute(
 		self,
 		common: Spaces,  # noqa: ARG002
-		groups_to_show: str,
+		show: str,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command._battleground_groups_to_show = (
-			groups_to_show
+			show
 		)
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"groups_to_show": groups_to_show}
+			{"show": show}
 		)
 
 		self._director.common.create_plot_for_tabs("battleground")
@@ -163,19 +163,19 @@ class ConvertibleCommand(ASupporterGrouping):
 	def execute(
 		self,
 		common: Spaces,  # noqa: ARG002
-		groups_to_show: str,
+		show: str,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command._convertible_groups_to_show = (
-			groups_to_show
+			show
 		)
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"groups_to_show": groups_to_show}
+			{"show": show}
 		)
 
 		self._director.common.create_plot_for_tabs("convertible")
@@ -210,17 +210,17 @@ class CoreSupportersCommand(ASupporterGrouping):
 	def execute(
 		self,
 		common: Spaces,  # noqa: ARG002
-		groups_to_show: str,
+		show: str,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command.core_groups_to_show = groups_to_show
+		self._director.current_command.core_groups_to_show = show
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"groups_to_show": groups_to_show}
+			{"show": show}
 		)
 
 		self._director.common.create_plot_for_tabs("core")
@@ -256,18 +256,18 @@ class FirstDimensionCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, groups_to_show: str) -> None:
+	def execute(self, common: Spaces, show: str) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command._first_dim_groups_to_show = (
-			groups_to_show
+			show
 		)
 
 		# Track passive command with parameters for script generation
 		common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"groups_to_show": groups_to_show}
+			{"show": show}
 		)
 
 		common.create_plot_for_tabs("first")
@@ -334,17 +334,17 @@ class LikelySupportersCommand(ASupporterGrouping):
 	def execute(
 		self,
 		common: Spaces,  # noqa: ARG002
-		groups_to_show: str,
+		show: str,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command.likely_groups_to_show = groups_to_show
+		self._director.current_command.likely_groups_to_show = show
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"groups_to_show": groups_to_show}
+			{"show": show}
 		)
 
 		self._director.common.create_plot_for_tabs("likely")
@@ -878,19 +878,19 @@ class SecondDimensionCommand(ASupporterGrouping):
 	def execute(
 		self,
 		common: Spaces,  # noqa: ARG002
-		groups_to_show: str,
+		show: str,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command._second_dim_groups_to_show = (
-			groups_to_show
+			show
 		)
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"groups_to_show": groups_to_show}
+			{"show": show}
 		)
 
 		self._director.common.create_plot_for_tabs("second")

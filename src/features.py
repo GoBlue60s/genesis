@@ -1099,8 +1099,8 @@ class SimilaritiesFeature:
 		self.ranked_similarities_as_dict: dict = {}
 		self.ranked_similarities_as_dataframe: pd.DataFrame = pd.DataFrame()
 		self.sorted_ranked_similarities_w_pairs: list = []
-		self.differences_of_ranks_as_list: np.array = []
-		# self.differences_of_ranks_as_square
+		self.differences_of_ranks_as_list: list[int] = []
+		self.differences_of_ranks_as_square: list[list[int]] = []
 		self.differences_of_ranks_as_dataframe = pd.DataFrame()
 		# self.shepard_diagram_table_as_square
 		self.shepard_diagram_table_as_dataframe = pd.DataFrame()

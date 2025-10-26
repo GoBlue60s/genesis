@@ -50,7 +50,7 @@ class ConfigurationCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Configuration")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Configuration", "active", params
 		)
@@ -59,6 +59,7 @@ class ConfigurationCommand:
 			file_name, "Configuration"
 		)
 		self._director.dependency_checker.detect_consistency_issues()
+		self._director.configuration_candidate.inter_point_distances()
 		self._director.configuration_active = (
 			self._director.configuration_candidate
 		)
@@ -107,7 +108,7 @@ class CorrelationsCommand:
 		self._director.optionally_explain_what_command_does()
 		params = \
 			self.common.get_command_parameters("Correlations")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Correlations", "active", params
 		)
@@ -504,7 +505,7 @@ class EvaluationsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Evaluations")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state("Evaluations", "active", params)
 		self._read_evaluations(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
@@ -645,7 +646,7 @@ class GroupedDataCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Grouped data")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Grouped data", "active", params
 		)
@@ -811,7 +812,7 @@ class IndividualsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Individuals")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Individuals", "active", params
 		)
@@ -1071,7 +1072,7 @@ class OpenSampleDesignCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Open sample design")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Open sample design", "active", params
 		)
@@ -1123,7 +1124,7 @@ class OpenSampleRepetitionsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Open sample repetitions")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Open sample repetitions", "active", params
 		)
@@ -1175,7 +1176,7 @@ class OpenSampleSolutionsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Open sample solutions")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Open sample solutions", "active", params
 		)
@@ -1227,7 +1228,7 @@ class OpenScoresCommand:
 		# ????? is this needed here?
 		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Open scores")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Open scores", "active", params
 		)
@@ -1455,6 +1456,7 @@ class OpenScriptCommand:
 			QTextEdit widget showing script execution summary
 		"""
 		from PySide6.QtWidgets import QTextEdit  # noqa: PLC0415
+		from PySide6.QtGui import QFontMetrics  # noqa: PLC0415
 
 		# Create text widget with command list
 		widget = QTextEdit()
@@ -1469,6 +1471,17 @@ class OpenScriptCommand:
 			summary_lines.append(f"{idx}. {cmd_name}")
 
 		widget.setPlainText("\n".join(summary_lines))
+
+		# Calculate and set fixed height based on content
+		# This prevents scrolling in the log tab
+		font_metrics = QFontMetrics(widget.font())
+		line_height = font_metrics.lineSpacing()
+		num_lines = len(summary_lines)
+		content_height = num_lines * line_height
+		# Add padding for margins and frame
+		total_height = content_height + 40
+		widget.setFixedHeight(total_height)
+
 		self._director.output_widget_type = "Table"
 
 		return widget
@@ -3074,7 +3087,7 @@ class SimilaritiesCommand:
 		params = self.common.get_command_parameters(
 			"Similarities", value_type=value_type
 		)
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		value_type: str = params["value_type"]
 		self.common.capture_and_push_undo_state(
 			"Similarities", "active", params
@@ -3141,7 +3154,7 @@ class TargetCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Target")
-		file_name: str = params["file_name"]
+		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Target", "active", params
 		)
