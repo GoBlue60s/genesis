@@ -850,17 +850,29 @@ class ViewScriptCommand:
 				continue
 
 			# Skip script-type commands (OpenScript, SaveScript, ViewScript)
-			# These are meta-commands that should not appear in generated scripts
+			# These are meta-commands not appearing in generated scripts
 			if cmd_state.command_type == "script":
 				continue
 
 			# Build command line with parameters
 			cmd_line = cmd_state.command_name
 			if cmd_state.command_params:
-				params_str = " ".join(
-					f'{key}={value}'
-					for key, value in cmd_state.command_params.items()
+				formatted_params = self.common.format_parameters_for_display(
+					cmd_state.command_name, cmd_state.command_params
 				)
+				param_parts = []
+				for key, value in formatted_params.items():
+					if isinstance(value, str):
+						# String values - always add quotes for safety
+						# (names can contain spaces, making quotes necessary)
+						param_parts.append(f'{key}="{value}"')
+					elif isinstance(value, (list, dict)):
+						# Lists and dicts - write as Python literals
+						param_parts.append(f'{key}={value}')
+					else:
+						# Numbers, booleans, etc.
+						param_parts.append(f'{key}={value}')
+				params_str = " ".join(param_parts)
 				cmd_line = f"{cmd_line} {params_str}"
 
 			print(f"\t{cmd_line}")
@@ -895,17 +907,29 @@ class ViewScriptCommand:
 				continue
 
 			# Skip script-type commands (OpenScript, SaveScript, ViewScript)
-			# These are meta-commands that should not appear in generated scripts
+			# These are meta-commands not appearing in generated scripts
 			if cmd_state.command_type == "script":
 				continue
 
 			# Build command line with parameters
 			cmd_line = cmd_state.command_name
 			if cmd_state.command_params:
-				params_str = " ".join(
-					f'{key}={value}'
-					for key, value in cmd_state.command_params.items()
+				formatted_params = self.common.format_parameters_for_display(
+					cmd_state.command_name, cmd_state.command_params
 				)
+				param_parts = []
+				for key, value in formatted_params.items():
+					if isinstance(value, str):
+						# String values - always add quotes for safety
+						# (names can contain spaces, making quotes necessary)
+						param_parts.append(f'{key}="{value}"')
+					elif isinstance(value, (list, dict)):
+						# Lists and dicts - write as Python literals
+						param_parts.append(f'{key}={value}')
+					else:
+						# Numbers, booleans, etc.
+						param_parts.append(f'{key}={value}')
+				params_str = " ".join(param_parts)
 				cmd_line = f"{cmd_line} {params_str}"
 			script_lines.append(cmd_line)
 

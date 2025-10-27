@@ -311,32 +311,6 @@ class AlikeCommand:
 	# ------------------------------------------------------------------------
 
 
-class ClusterCommand:
-	"""The Cluster command - is not yet implemented"""
-
-	def __init__(self, director: Status, common: Spaces) -> None:
-		self._director = director
-		self.common = common
-		self._director.command = "Cluster"
-
-		return
-
-	# ------------------------------------------------------------------------
-
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.title_for_table_widget = (
-			"Cluster is under construction - stay tuned, please"
-		)
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
-		return
-
-	# ------------------------------------------------------------------------
-
-
 class DistancesCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
 		"""Distances command - displays a matrix of inter-point distances."""
@@ -468,13 +442,10 @@ class PairedCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		# self._get_pair_from_user(self._paired_title, self._paired_items)
-		focal_index: int = common.get_focal_item_from_user(
-			self._paired_title,
-			"Select point to view relationships with others",
-			self._paired_items,
-		)
-
+		params = common.get_command_parameters("Paired")
+		common.capture_and_push_undo_state("Paired", "passive", params)
+		point_names = self._director.configuration_active.point_names
+		focal_index: int = params["focus"]
 		self._focal_item_index: int = focal_index
 		self._create_paired_dataframe()
 		self._print_paired()

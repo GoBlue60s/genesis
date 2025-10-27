@@ -291,7 +291,17 @@ command_dict = MappingProxyType({
 		"type": "script"  # Meta-command for script operations
 	},
 	"Paired": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],  # Passive command - no state changes
+		"script_parameters": ["focus"],
+		"interactive_getters": {
+			"focus": {
+				"getter_type": "focal_item_dialog",
+				"title": "Point comparisons",
+				"label": "Select point to view relationships with others",
+				"items_source": "point_names"
+			}
+		}
 	},
 	"Principal components": {
 		"type": "active",

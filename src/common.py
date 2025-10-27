@@ -2309,10 +2309,35 @@ class Spaces:
 			and self._director.script_parameters
 		):
 			# Get from script parameters
+			interactive_getters = cmd_info.get("interactive_getters", {})
 			for param_name in expected_params:
 				if param_name in self._director.script_parameters:
 					script_params = self._director.script_parameters
-					params[param_name] = script_params[param_name]
+					param_value = script_params[param_name]
+
+					# Special handling for focal_item_dialog: convert name to index
+					getter_info = interactive_getters.get(param_name, {})
+					if getter_info.get("getter_type") == "focal_item_dialog":
+						items_source = getter_info.get("items_source", None)
+						if items_source:
+							items = getattr(
+								self._director.configuration_active, items_source
+							)
+						else:
+							items = getter_info.get("items", [])
+
+						# Convert name to index
+						if param_value in items:
+							params[param_name] = items.index(param_value)
+						else:
+							title = f"{command_name} script parameter error"
+							message = (
+								f"Invalid value for {param_name}: '{param_value}'\n"
+								f"Must be one of: {', '.join(items)}"
+							)
+							raise SpacesError(title, message)
+					else:
+						params[param_name] = param_value
 				else:
 					# Required parameter missing from script
 					title = f"{command_name} script parameter error"
@@ -2447,6 +2472,26 @@ class Spaces:
 						title = f"{command_name} cancelled"
 						message = "Operation cancelled by user"
 						raise SpacesError(title, message)
+
+				elif getter_type == "focal_item_dialog":
+					# Use QInputDialog for selecting a single focal item
+					title = getter_info.get("title", "Select item")
+					label = getter_info.get("label", "Select an item:")
+					items_source = getter_info.get("items_source", None)
+
+					# Get items from director attribute if items_source specified
+					if items_source:
+						items = getattr(
+							self._director.configuration_active, items_source
+						)
+					else:
+						items = getter_info.get("items", [])
+
+					# Call get_focal_item_from_user which returns index
+					focus_index = self.get_focal_item_from_user(title, label, items)
+					params[param_name] = focus_index
+					# Store for potential future calls
+					obtained[param_name] = focus_index
 
 				elif getter_type == "get_integer_dialog":
 					# Use GetIntegerDialog for integer input (newer style)
@@ -2657,6 +2702,207 @@ class Spaces:
 					raise SpacesError(title, message)
 
 		return params
+
+	# ------------------------------------------------------------------------
+
+	def format_parameters_for_display(
+		self, command_name: str, params: dict
+	) -> dict:
+		"""Convert parameter values from internal format to display format.
+
+		This method is used when displaying or saving command parameters
+		in scripts. It converts internal representations (like indices)
+		to user-friendly representations (like names).
+
+		For focal_item_dialog parameters, convert indices to names.
+		Other parameter types are returned unchanged.
+
+		Args:
+			command_name: Name of the command (e.g., "Paired")
+			params: Dictionary of parameter_name -> value
+
+		Returns:
+			Dictionary of parameter_name -> formatted_value
+		"""
+		from dictionaries import command_dict  # noqa: PLC0415
+
+		# Get metadata for this command
+		cmd_info = command_dict.get(command_name, {})
+		interactive_getters = cmd_info.get("interactive_getters", {})
+
+		# Format each parameter
+		formatted_params = {}
+		for param_name, param_value in params.items():
+			getter_info = interactive_getters.get(param_name, {})
+			getter_type = getter_info.get("getter_type")
+
+			# Convert index to name for focal_item_dialog parameters
+			if getter_type == "focal_item_dialog":
+				items_source = getter_info.get("items_source", None)
+				if items_source:
+					items = getattr(
+						self._director.configuration_active, items_source
+					)
+				else:
+					items = getter_info.get("items", [])
+
+				# If param_value is an integer index, convert to name
+				is_valid_index = (
+					isinstance(param_value, int) and
+					0 <= param_value < len(items)
+				)
+				if is_valid_index:
+					formatted_params[param_name] = items[param_value]
+				else:
+					formatted_params[param_name] = param_value
+			else:
+				# Keep other parameter types unchanged
+				formatted_params[param_name] = param_value
+
+		return formatted_params
+
+	# ------------------------------------------------------------------------
+
+	def parse_command_name_from_line(self, parts: list[str]) -> str:
+		"""Parse command name from line parts by matching against command_dict.
+
+		Finds the longest command name from command_dict that matches
+		the beginning of the line. This works for any command length
+		without arbitrary word limits.
+
+		Args:
+			parts: List of whitespace-separated tokens from script line
+
+		Returns:
+			The command name (may be multi-word like "Factor analysis
+			machine learning")
+		"""
+		from dictionaries import command_dict  # noqa: PLC0415
+
+		line_text = " ".join(parts)
+
+		# Find all commands that match the beginning of the line
+		matching_commands = [
+			cmd for cmd in command_dict.keys()
+			if line_text.startswith(cmd + " ") or line_text == cmd
+		]
+
+		# Return the longest match (most specific)
+		if matching_commands:
+			return max(matching_commands, key=len)
+
+		# No match found
+		return parts[0] if parts else ""
+
+	# ------------------------------------------------------------------------
+
+	def parse_script_line(self, line: str) -> tuple[str, dict]:
+		"""Parse a script line into command name and parameters.
+
+		Args:
+			line: Script line (e.g.,
+				"Reference points contest=['Carter', 'Ford']")
+
+		Returns:
+			Tuple of (command_name, params_dict)
+		"""
+		# Split into tokens, but preserve quoted strings and brackets
+		# For now, use simple split - parameters will be parsed separately
+		parts = line.split()
+
+		# Find command name (may be multi-word)
+		command_name = self.parse_command_name_from_line(parts)
+
+		# Parse parameters from remainder of line
+		param_start = len(command_name.split())
+		param_str = " ".join(parts[param_start:])
+		params_dict = self._parse_parameter_string(param_str)
+
+		return command_name, params_dict
+
+	# ------------------------------------------------------------------------
+
+	def _parse_parameter_string(self, param_str: str) -> dict:
+		"""Parse parameter string into key=value dictionary.
+
+		Args:
+			param_str: String containing key=value pairs
+				(e.g., "file='path.txt' contest=['A', 'B']")
+
+		Returns:
+			Dictionary of parameter_name -> value
+		"""
+		params_dict = {}
+		if not param_str:
+			return params_dict
+
+		# Parse key=value pairs
+		# Handle cases like: file_name=path or contest=['a', 'b']
+		current_key = None
+		current_value = ""
+		in_brackets = 0
+
+		i = 0
+		while i < len(param_str):
+			char = param_str[i]
+
+			if char == "=" and current_key is None and in_brackets == 0:
+				# Found key=value separator
+				current_key = current_value.strip()
+				current_value = ""
+			elif char in "[{(":
+				in_brackets += 1
+				current_value += char
+			elif char in "]})":
+				in_brackets -= 1
+				current_value += char
+			elif char == " " and in_brackets == 0:
+				# Space outside brackets - check if complete param
+				if current_key and current_value:
+					params_dict[current_key] = self._parse_parameter_value(
+						current_value.strip()
+					)
+					current_key = None
+					current_value = ""
+			else:
+				current_value += char
+
+			i += 1
+
+		# Handle last parameter
+		if current_key and current_value:
+			params_dict[current_key] = self._parse_parameter_value(
+				current_value.strip()
+			)
+
+		return params_dict
+
+	# ------------------------------------------------------------------------
+
+	def _parse_parameter_value(self, value_str: str) -> any:
+		"""Parse a parameter value string into appropriate Python type.
+
+		Args:
+			value_str: String representation of value
+				(e.g., "'text'", "[1, 2]", "42")
+
+		Returns:
+			Parsed value as appropriate Python type
+		"""
+		import ast  # noqa: PLC0415
+
+		# Try to evaluate Python literals (lists, dicts, numbers, etc.)
+		try:
+			return ast.literal_eval(value_str)
+		except (ValueError, SyntaxError):
+			# Not a Python literal, store as string
+			# Remove quotes if present
+			if (
+				(value_str.startswith('"') and value_str.endswith('"'))
+				or (value_str.startswith("'") and value_str.endswith("'"))
+			):
+				return value_str[1:-1]
+			return value_str
 
 	# ------------------------------------------------------------------------
 

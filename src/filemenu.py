@@ -52,26 +52,20 @@ class ConfigurationCommand:
 		params = self.common.get_command_parameters("Configuration")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
-			"Configuration", "active", params
-		)
-		# Read and validate configuration file
+			"Configuration", "active", params)
 		self._director.configuration_candidate = common.read_configuration_type_file(
-			file_name, "Configuration"
-		)
+			file_name, "Configuration")
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.configuration_candidate.inter_point_distances()
 		self._director.configuration_active = (
-			self._director.configuration_candidate
-		)
-		# Eliminate rivalry when new configuration is loaded
+			self._director.configuration_candidate)
 		self._director.rivalry = Rivalry(self._director)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_candidate.ndim
 		npoint = self._director.configuration_candidate.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points"
-		)
+			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1383,7 +1377,7 @@ class OpenScriptCommand:
 
 				# Parse command line: command_name param1=value1 param2=value2
 				try:
-					command_name, params_dict = self._parse_script_line(line)
+					command_name, params_dict = self.common.parse_script_line(line)
 
 					# Execute command with parameters
 					self._execute_script_command(
@@ -1485,129 +1479,6 @@ class OpenScriptCommand:
 		self._director.output_widget_type = "Table"
 
 		return widget
-
-	# ------------------------------------------------------------------------
-
-	def _parse_script_line(self, line: str) -> tuple[str, dict]:
-		"""Parse a script line into command name and parameters.
-
-		Args:
-			line: Script line (e.g., "Reference points contest=['Carter', 'Ford']")
-
-		Returns:
-			Tuple of (command_name, params_dict)
-		"""
-		import ast  # noqa: PLC0415
-		from dictionaries import command_dict  # noqa: PLC0415
-
-		# Split into tokens, but preserve quoted strings and brackets
-		# For now, use simple split - parameters will be parsed separately
-		parts = line.split()
-
-		# Find command name (may be multi-word)
-		command_name = self._parse_command_name_from_line(parts)
-
-		# Parse parameters
-		params_dict = {}
-		param_start = len(command_name.split())
-
-		# Rejoin remaining parts to handle values with spaces
-		param_str = " ".join(parts[param_start:])
-
-		if param_str:
-			# Parse key=value pairs
-			# Handle cases like: file_name=path or contest=['a', 'b']
-			current_key = None
-			current_value = ""
-			in_brackets = 0
-
-			i = 0
-			while i < len(param_str):
-				char = param_str[i]
-
-				if char == "=" and current_key is None and in_brackets == 0:
-					# Found key=value separator
-					current_key = current_value.strip()
-					current_value = ""
-				elif char in "[{(" :
-					in_brackets += 1
-					current_value += char
-				elif char in "]})":
-					in_brackets -= 1
-					current_value += char
-				elif char == " " and in_brackets == 0:
-					# Space outside brackets - check if we have a complete param
-					if current_key and current_value:
-						# Try to evaluate Python literals (lists, etc.)
-						try:
-							params_dict[current_key] = ast.literal_eval(
-								current_value.strip()
-							)
-						except (ValueError, SyntaxError):
-							# Not a Python literal, store as string
-							# Remove quotes if present
-							val = current_value.strip()
-							if (
-								(val.startswith('"') and val.endswith('"'))
-								or (val.startswith("'") and val.endswith("'"))
-							):
-								val = val[1:-1]
-							params_dict[current_key] = val
-						current_key = None
-						current_value = ""
-				else:
-					current_value += char
-
-				i += 1
-
-			# Handle last parameter
-			if current_key and current_value:
-				try:
-					params_dict[current_key] = ast.literal_eval(
-						current_value.strip()
-					)
-				except (ValueError, SyntaxError):
-					val = current_value.strip()
-					if (
-						(val.startswith('"') and val.endswith('"'))
-						or (val.startswith("'") and val.endswith("'"))
-					):
-						val = val[1:-1]
-					params_dict[current_key] = val
-
-		return command_name, params_dict
-
-	# ------------------------------------------------------------------------
-
-	def _parse_command_name_from_line(self, parts: list[str]) -> str:
-		"""Parse command name from line parts by matching against command_dict.
-
-		Finds the longest command name from command_dict that matches
-		the beginning of the line. This works for any command length
-		without arbitrary word limits.
-
-		Args:
-			parts: List of whitespace-separated tokens from script line
-
-		Returns:
-			The command name (may be multi-word like "Factor analysis machine learning")
-		"""
-		from dictionaries import command_dict  # noqa: PLC0415
-
-		line_text = " ".join(parts)
-
-		# Find all commands that match the beginning of the line
-		matching_commands = [
-			cmd for cmd in command_dict.keys()
-			if line_text.startswith(cmd + " ") or line_text == cmd
-		]
-
-		# Return the longest match (most specific)
-		if matching_commands:
-			return max(matching_commands, key=len)
-
-		# No match found
-		return parts[0] if parts else ""
 
 	# ------------------------------------------------------------------------
 
@@ -2581,16 +2452,18 @@ class SaveScriptCommand:
 			# Build command line with parameters
 			cmd_line = cmd_state.command_name
 			if cmd_state.command_params:
+				# Format parameters using common method
+				formatted_params = self.common.format_parameters_for_display(
+					cmd_state.command_name, cmd_state.command_params
+				)
 				# Add parameters as key=value pairs
 				# Format values appropriately: lists/dicts as-is, strings with quotes if needed
 				param_parts = []
-				for key, value in cmd_state.command_params.items():
+				for key, value in formatted_params.items():
 					if isinstance(value, str):
-						# String values - add quotes if they contain spaces or special chars
-						if ' ' in value or '/' in value or '\\' in value:
-							param_parts.append(f'{key}="{value}"')
-						else:
-							param_parts.append(f'{key}={value}')
+						# String values - always add quotes for safety
+						# (names can contain spaces, making quotes necessary)
+						param_parts.append(f'{key}="{value}"')
 					elif isinstance(value, (list, dict)):
 						# Lists and dicts - write as Python literals
 						param_parts.append(f'{key}={value}')
@@ -3155,9 +3028,7 @@ class TargetCommand:
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Target")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
-			"Target", "active", params
-		)
+		self.common.capture_and_push_undo_state("Target", "active", params)
 
 		# Read and validate target file
 		self._director.target_candidate = common.read_configuration_type_file(
