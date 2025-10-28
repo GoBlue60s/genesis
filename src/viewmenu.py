@@ -422,9 +422,9 @@ class ViewPointUncertaintyCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, plot_to_show: str) -> None:
+	def execute(self, common: Spaces, plot: str) -> None:
 
-		self.plot_to_show = plot_to_show
+		self.plot_to_show = plot
 
 		director = self._director
 		common = self.common
@@ -432,54 +432,52 @@ class ViewPointUncertaintyCommand:
 		point_names = uncertainty_active.point_names
 
 		# Store plot visualization mode for plotting functions
-		director.plot_to_show = plot_to_show
+		director.plot_to_show = plot
 
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
 
-		# Use multiple item selection dialog
-		dialog = ModifyItemsDialog(
-			"Select Points for Uncertainty Analysis",
-			point_names,
-			default_values=None,
-		)
+		# Get command parameters (will use dialog if interactive)
+		# Pass plot as kwarg since it comes from execute method
+		params = common.get_command_parameters("View point uncertainty", plot=plot)
+		selected_points: list[str] = params["points"]
 
-		if dialog.exec() == QDialog.Accepted:
-			selected_items = dialog.selected_items()
-			if not selected_items:
-				selection_required_title = "Selection required"
-				selection_required_message = (
-					"At least one point must be selected"
-				)
-				raise SpacesError(
-					selection_required_title, selection_required_message
-				)
-
-			# Convert selected item names to indices
-			selected_indices = [
-				point_names.index(item) for item in selected_items
-			]
-
-			# Store selected point indices for plotting functions
-			director.selected_point_indices = selected_indices
-
-			# Create the point uncertainty plot
-			common.create_plot_for_tabs("point_uncertainty")
-
-			director.title_for_table_widget = (
-				f"Point Uncertainty - "
-				f"{len(selected_indices)} points: {', '.join(selected_items)}"
-			)
-			director.create_widgets_for_output_and_log_tabs()
-			director.set_focus_on_tab("Plot")
-			director.record_command_as_successfully_completed()
-		else:
+		# Validate selection
+		if not selected_points:
 			selection_required_title = "Selection required"
-			selection_required_message = "At least one point must be selected"
+			selection_required_message = (
+				"At least one point must be selected"
+			)
 			raise SpacesError(
 				selection_required_title, selection_required_message
 			)
+
+		# Convert selected point names to indices
+		selected_indices = [
+			point_names.index(point) for point in selected_points
+		]
+
+		# Store selected point indices for plotting functions
+		director.selected_point_indices = selected_indices
+
+		# Record command for script generation
+		common.capture_and_push_undo_state(
+			"View point uncertainty",
+			"passive",
+			params
+		)
+
+		# Create the point uncertainty plot
+		common.create_plot_for_tabs("point_uncertainty")
+
+		director.title_for_table_widget = (
+			f"Point Uncertainty - "
+			f"{len(selected_indices)} points: {', '.join(selected_points)}"
+		)
+		director.create_widgets_for_output_and_log_tabs()
+		director.set_focus_on_tab("Plot")
+		director.record_command_as_successfully_completed()
 
 		return
 
@@ -723,7 +721,7 @@ class ViewSpatialUncertaintyCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, plot_to_show: str) -> None:
+	def execute(self, common: Spaces, plot: str) -> None:
 		director = self._director
 		uncertainty_active = director.uncertainty_active
 		sample_solutions = uncertainty_active.sample_solutions
@@ -731,11 +729,17 @@ class ViewSpatialUncertaintyCommand:
 		ndim = uncertainty_active.ndim
 		npoint = uncertainty_active.npoints
 
-		self.plot_to_show = plot_to_show
-		director.plot_to_show = plot_to_show  # Store for plotting functions
+		self.plot_to_show = plot
+		director.plot_to_show = plot  # Store for plotting functions
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
+
+		# Record command for script generation
+		self.common.push_passive_command_to_undo_stack(
+			"View spatial uncertainty",
+			{"plot": plot}
+		)
 
 		print(sample_solutions)
 

@@ -723,7 +723,17 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"View point uncertainty": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],  # Passive command - no state changes
+		"script_parameters": ["plot", "points"],
+		"execute_parameters": ["plot"],
+		"interactive_getters": {
+			"points": {
+				"getter_type": "modify_items_dialog",
+				"title": "Select Points for Uncertainty Analysis",
+				"items_source": "uncertainty_active.point_names"
+			}
+		}
 	},
 	"View sample design": {
 		"type": "passive"
@@ -744,7 +754,8 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"View spatial uncertainty": {
-		"type": "passive"
+		"type": "passive",
+		"script_parameters": ["plot"]
 	},
 	"View target": {
 		"type": "passive"

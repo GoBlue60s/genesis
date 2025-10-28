@@ -2562,14 +2562,18 @@ class Spaces:
 
 					# Get items from director attribute if items_source specified
 					if items_source:
-						items = getattr(self._director, items_source)
+						# Handle dotted attribute paths (e.g., "uncertainty_active.point_names")
+						obj = self._director
+						for attr_name in items_source.split("."):
+							obj = getattr(obj, attr_name)
+						items = obj
 					else:
 						items = getter_info.get("items", [])
 
 					dialog = ModifyItemsDialog(title, items, default_values)
 					result = dialog.exec()
 					if result == QDialog.Accepted:
-						params[param_name] = dialog.checked_items()
+						params[param_name] = dialog.selected_items()
 						# Store for potential future calls
 						obtained[param_name] = params[param_name]
 					else:
@@ -2585,7 +2589,11 @@ class Spaces:
 
 					# Get items from director attribute if items_source specified
 					if items_source:
-						items = getattr(self._director, items_source)
+						# Handle dotted attribute paths (e.g., "uncertainty_active.point_names")
+						obj = self._director
+						for attr_name in items_source.split("."):
+							obj = getattr(obj, attr_name)
+						items = obj
 					else:
 						items = getter_info.get("items", [])
 

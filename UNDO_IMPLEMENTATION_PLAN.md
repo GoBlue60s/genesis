@@ -1649,35 +1649,26 @@ def _parse_command_name_from_line(self, parts: list[str]) -> str:
 **Background:**
 During the refactoring to use centralized `get_command_parameters()` in common.py, 30 commands had their execute() methods updated to call this function. However, only 12 of these commands had the corresponding `interactive_getters` metadata added to command_dict. Without this metadata, commands will fail when run interactively because get_command_parameters() won't know how to prompt the user for values.
 
-**Progress: 12 of 15 commands completed (80%)**
+**Progress: 13 of 15 commands completed (87%)**
 
-**Completed Commands (12):**
+**Completed Commands (13):**
 1. ✅ Factor analysis - set_value_dialog for n_factors
 2. ✅ Factor analysis machine learning - set_value_dialog for n_components
 3. ✅ Invert - modify_items_dialog for dimensions
 4. ✅ MDS - set_value_dialog for n_components (use_metric is execute parameter)
-5. ✅ Principal components - set_value_dialog for n_components
-6. ✅ Rescale - modify_values_dialog for factors
-7. ✅ Sample designer - set_value_dialog for probability_of_inclusion and nrepetitions
-8. ✅ Settings - display sizing - set_value_dialog for axis_extra, displacement, point_size
-9. ✅ Settings - layout options - set_value_dialog for max_cols, width, decimals
-10. ✅ Settings - presentation layer - chose_option_dialog for layer (matplotlib/pyqtgraph)
-11. ✅ Settings - segment sizing - set_value_dialog for battleground_size, core_tolerance
-12. ✅ Settings - vector sizing - set_value_dialog for vector_head_width, vector_width
+5. ✅ Paired - focal_item_dialog for focus (selecting point to compare)
+6. ✅ Principal components - set_value_dialog for n_components
+7. ✅ Rescale - modify_values_dialog for factors
+8. ✅ Sample designer - set_value_dialog for probability_of_inclusion and nrepetitions
+9. ✅ Settings - display sizing - set_value_dialog for axis_extra, displacement, point_size
+10. ✅ Settings - layout options - set_value_dialog for max_cols, width, decimals
+11. ✅ Settings - presentation layer - chose_option_dialog for layer (matplotlib/pyqtgraph)
+12. ✅ Settings - segment sizing - set_value_dialog for battleground_size, core_tolerance
+13. ✅ Settings - vector sizing - set_value_dialog for vector_head_width, vector_width
 
-**Remaining Commands (3) - Special Cases:**
+**Remaining Commands (2) - Special Cases:**
 
-**1. Move command (transformmenu.py)**
-- **Issue:** Parameter name inconsistency
-  - command_dict has: `"script_parameters": ["dimensions", "distances"]` (plural)
-  - Code expects: `params["dimension"]` and `params["distance"]` (singular)
-- **Resolution needed:**
-  - Either fix command_dict to use singular names OR
-  - Fix code to use plural names OR
-  - Investigate if MoveDialog returns both together
-- **Interactive getter type:** Likely move_dialog (custom dialog for dimension/distance pairs)
-
-**2. Settings - plane (filemenu.py)**
+**1. Settings - plane (filemenu.py)**
 - **Issue:** Requires dynamic options based on configuration_active.dim_names
   - Options are dimension pair combinations like "Left-Right x Social", "Social x Left-Right", etc.
   - Number and names of dimensions vary by loaded configuration
@@ -1687,7 +1678,7 @@ During the refactoring to use centralized `get_command_parameters()` in common.p
   - Use special getter type that can build options at runtime
 - **Interactive getter type:** chose_option_dialog with dynamic options
 
-**3. Settings - plot settings (filemenu.py)**
+**2. Settings - plot settings (filemenu.py)**
 - **Issue:** Has 4 separate boolean parameters
   - Parameters: show_bisector, show_connector, show_reference_points, show_just_reference_points
   - Each needs independent true/false value
@@ -1700,11 +1691,17 @@ During the refactoring to use centralized `get_command_parameters()` in common.p
 - **Interactive getter type:** TBD - needs new approach
 
 **Next Steps:**
-1. Investigate Move command parameter inconsistency and fix
-2. Add dynamic option support for Settings - plane or use alternative approach
-3. Resolve Settings - plot settings boolean parameter handling
-4. Test all 15 commands interactively to verify dialogs work correctly
-5. Update this section once all commands are complete
+1. Add dynamic option support for Settings - plane or use alternative approach
+2. Resolve Settings - plot settings boolean parameter handling
+3. Test all 15 commands interactively to verify dialogs work correctly
+4. Update this section once all commands are complete
+
+**Recent Additions (2025-10-27):**
+- ✅ Added focal_item_dialog getter type to support commands that select a single item from a list
+- ✅ Implemented Paired command with focal_item_dialog (select point to compare)
+- ✅ Added format_parameters_for_display() to convert indices back to names for script export
+- ✅ Moved parse_script_line() and helpers from filemenu to common for reusability
+- ✅ Updated ViewScript and SaveScript to properly quote string parameters in scripts
 
 **Files Modified:**
 - src/dictionaries.py - Added interactive_getters for 12 commands
