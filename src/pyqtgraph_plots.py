@@ -250,8 +250,13 @@ class PyQtGraphMethods:
 		pyqtgraph_plotter = director.pyqtgraph_plotter
 		configuration_active = director.configuration_active
 		rivalry = director.rivalry
+		ndim = configuration_active.ndim
 		bisector_cross_x = rivalry.bisector._cross_x
 		bisector_cross_y = rivalry.bisector._cross_y
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Battleground")
@@ -582,9 +587,10 @@ class PyQtGraphMethods:
 
 		tab_plot_widget = self.plot_a_configuration_using_pyqtgraph()
 		tab_gallery_widget = self.plot_a_configuration_using_pyqtgraph()
-		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
-			tab_plot_widget, tab_gallery_widget
-		)
+		if tab_plot_widget is not None and tab_gallery_widget is not None:
+			pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+				tab_plot_widget, tab_gallery_widget
+			)
 
 		return
 
@@ -1908,6 +1914,7 @@ class PyQtGraphMethods:
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		scores_active = director.scores_active
+		ndim = scores_active.ndim
 		hor_axis_name = scores_active.hor_axis_name
 		vert_axis_name = scores_active.vert_axis_name
 		hor_dim = scores_active._hor_dim
@@ -1916,6 +1923,10 @@ class PyQtGraphMethods:
 		nscored = scores_active.nscored_individ
 		score_color = scores_active.score_color
 		point_size = common.point_size
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Scores")
@@ -2152,6 +2163,11 @@ class PyQtGraphMethods:
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
 		configuration_active = director.configuration_active
+		ndim = configuration_active.ndim
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
@@ -2327,9 +2343,14 @@ class PyQtGraphMethods:
 		director = self._director
 		common = director.common
 		uncertainty_active = director.uncertainty_active
+		ndim = uncertainty_active.ndim
 		range_points = uncertainty_active.range_points
 		npoint = uncertainty_active.npoints
 		solutions = uncertainty_active.solutions
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
 
 		result = self._initialize_uncertainty_plot()
 		if result is None:
@@ -2423,9 +2444,14 @@ class PyQtGraphMethods:
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		uncertainty_active = director.uncertainty_active
+		ndim = uncertainty_active.ndim
 		range_points = uncertainty_active.range_points
 		npoint = uncertainty_active.npoints
 		solutions = uncertainty_active.solutions
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
 
 		result = self._initialize_spatial_uncertainty_plot()
 		if result is None:

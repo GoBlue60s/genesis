@@ -552,7 +552,13 @@ command_dict = MappingProxyType({
 	"Settings - plane": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["plane"]
+		"script_parameters": ["horizontal", "vertical"],
+		"interactive_getters": {
+			"horizontal": {
+				"getter_type": "plane_dialog",
+				"title": "Settings - plane"
+			}
+		}
 	},
 	"Settings - plot settings": {
 		"type": "active",
@@ -564,7 +570,7 @@ command_dict = MappingProxyType({
 				"getter_type": "modify_items_dialog",
 				"title": "Plot settings",
 				"items": ["Show bisector", "Show connector", "Show reference points", "Show just reference points"],
-				"default_values": [False, False, False, False],
+				"defaults_source": ["show_bisector", "show_connector", "show_reference_points", "show_just_reference_points"],
 				"converts_to_booleans": True,
 				"boolean_params": ["bisector", "connector", "reference_points", "just_reference_points"]
 			}

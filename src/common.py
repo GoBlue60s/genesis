@@ -2475,6 +2475,20 @@ class Spaces:
 					)
 					options = getter_info.get("options", [])
 
+					# Support dynamic options building
+					options_builder = getter_info.get("options_builder", None)
+					if options_builder:
+						# Call the builder method to generate options
+						builder_method = getattr(self, options_builder, None)
+						if builder_method:
+							options_source = getter_info.get("options_source", None)
+							if options_source:
+								# Get source data (e.g., dim_names from configuration)
+								obj = self._director
+								for attr_name in options_source.split("."):
+									obj = getattr(obj, attr_name)
+								options = builder_method(obj)
+
 					dialog = ChoseOptionDialog(title, options_title, options)
 					result = dialog.exec()
 					if result == QDialog.Accepted:
@@ -2487,6 +2501,61 @@ class Spaces:
 						title = f"{command_name} cancelled"
 						message = "Operation cancelled by user"
 						raise SpacesError(title, message)
+
+				elif getter_type == "plane_dialog":
+					# Special handler for Settings - plane command
+					# For 2D: ask which dimension for horizontal axis
+					# For 3D+: ask for horizontal, then vertical axis
+					# Returns both "horizontal" and "vertical" parameters
+					title = getter_info.get("title", "Settings - plane")
+					dim_names = self._director.configuration_active.dim_names
+					ndim = len(dim_names)
+
+					# Ask for horizontal axis dimension
+					hor_dialog = ChoseOptionDialog(
+						title,
+						"Select dimension for horizontal axis:",
+						dim_names
+					)
+					result = hor_dialog.exec()
+					if result != QDialog.Accepted:
+						title = f"{command_name} cancelled"
+						message = "Operation cancelled by user"
+						raise SpacesError(title, message)
+
+					hor_axis_name = dim_names[hor_dialog.selected_option]
+
+					if ndim == 2:
+						# For 2D, vertical is automatic (the other dimension)
+						vert_axis_name = (
+							dim_names[1] if hor_dialog.selected_option == 0
+							else dim_names[0]
+						)
+					else:
+						# For 3D+, ask which dimension for vertical axis
+						# Exclude the horizontal dimension from choices
+						vert_options = [
+							d for d in dim_names if d != hor_axis_name
+						]
+						vert_dialog = ChoseOptionDialog(
+							title,
+							"Select dimension for vertical axis:",
+							vert_options
+						)
+						result = vert_dialog.exec()
+						if result != QDialog.Accepted:
+							title = f"{command_name} cancelled"
+							message = "Operation cancelled by user"
+							raise SpacesError(title, message)
+
+						vert_axis_name = vert_options[vert_dialog.selected_option]
+
+					# Return both horizontal and vertical as separate parameters
+					params["horizontal"] = hor_axis_name
+					params["vertical"] = vert_axis_name
+					# Store for potential future calls
+					obtained["horizontal"] = hor_axis_name
+					obtained["vertical"] = vert_axis_name
 
 				elif getter_type == "focal_item_dialog":
 					# Use QInputDialog for selecting a single focal item
@@ -2584,6 +2653,15 @@ class Spaces:
 						items = obj
 					else:
 						items = getter_info.get("items", [])
+
+					# Resolve dynamic defaults if defaults_source is specified
+					defaults_source = getter_info.get("defaults_source", None)
+					if defaults_source:
+						# Get current values from common instance
+						default_values = [
+							getattr(self, attr_name)
+							for attr_name in defaults_source
+						]
 
 					dialog = ModifyItemsDialog(title, items, default_values)
 					result = dialog.exec()

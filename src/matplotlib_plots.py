@@ -365,7 +365,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self.plot_a_configuration_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 

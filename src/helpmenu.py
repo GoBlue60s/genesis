@@ -376,20 +376,80 @@ class StatusCommand:
 			),
 		)
 		table_widget.setItem(
-			18, 0, QTableWidgetItem("Battleground size (%)")
+			18, 0, QTableWidgetItem("Show bisector")
 		)
 		table_widget.setItem(
 			18,
+			1,
+			QTableWidgetItem(
+				str(self._director.common.show_bisector)
+			),
+		)
+		table_widget.setItem(
+			19, 0, QTableWidgetItem("Show connector")
+		)
+		table_widget.setItem(
+			19,
+			1,
+			QTableWidgetItem(
+				str(self._director.common.show_connector)
+			),
+		)
+		table_widget.setItem(
+			20, 0, QTableWidgetItem("Show reference points")
+		)
+		table_widget.setItem(
+			20,
+			1,
+			QTableWidgetItem(
+				str(self._director.common.show_reference_points)
+			),
+		)
+		table_widget.setItem(
+			21, 0, QTableWidgetItem("Show just reference points")
+		)
+		table_widget.setItem(
+			21,
+			1,
+			QTableWidgetItem(
+				str(self._director.common.show_just_reference_points)
+			),
+		)
+		table_widget.setItem(
+			22, 0, QTableWidgetItem("Horizontal axis")
+		)
+		table_widget.setItem(
+			22,
+			1,
+			QTableWidgetItem(
+				str(self._director.configuration_active.hor_axis_name)
+			),
+		)
+		table_widget.setItem(
+			23, 0, QTableWidgetItem("Vertical axis")
+		)
+		table_widget.setItem(
+			23,
+			1,
+			QTableWidgetItem(
+				str(self._director.configuration_active.vert_axis_name)
+			),
+		)
+		table_widget.setItem(
+			24, 0, QTableWidgetItem("Battleground size (%)")
+		)
+		table_widget.setItem(
+			24,
 			1,
 			QTableWidgetItem(
 				f"{self._director.common.battleground_size * 100:.0f}"
 			),
 		)
 		table_widget.setItem(
-			19, 0, QTableWidgetItem("Core tolerance (%)")
+			25, 0, QTableWidgetItem("Core tolerance (%)")
 		)
 		table_widget.setItem(
-			19,
+			25,
 			1,
 			QTableWidgetItem(
 				f"{self._director.common.core_tolerance * 100:.0f}"

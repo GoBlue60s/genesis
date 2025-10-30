@@ -2730,11 +2730,18 @@ class SettingsPlaneCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, plane: str = None) -> None:
+	def execute(
+		self,
+		common: Spaces,
+		horizontal: str = None,
+		vertical: str = None,
+	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Settings - plane")
-		plane: str = params["plane"]
+		horizontal: str = params["horizontal"]
+		vertical: str = params["vertical"]
 		self.common.capture_and_push_undo_state(
 			"Settings - plane", "active", params
 		)
@@ -2742,34 +2749,58 @@ class SettingsPlaneCommand:
 		# Get dimension names from active configuration
 		dim_names = self._director.configuration_active.dim_names
 
-		# Parse the plane parameter to determine dimensions
-		if plane == f"{dim_names[0]} x {dim_names[1]}":
-			hor_axis_name = dim_names[0]
-			hor_dim = 0
-			vert_axis_name = dim_names[1]
-			vert_dim = 1
-		elif plane == f"{dim_names[1]} x {dim_names[0]}":
-			hor_axis_name = dim_names[1]
-			hor_dim = 1
-			vert_axis_name = dim_names[0]
-			vert_dim = 0
-		else:
+		# Find the dimension indices
+		try:
+			hor_dim = dim_names.index(horizontal)
+			vert_dim = dim_names.index(vertical)
+		except ValueError as e:
 			raise SpacesError(
-				"Invalid plane parameter",
-				f"Plane must be '{dim_names[0]} x {dim_names[1]}' or '{dim_names[1]} x {dim_names[0]}'",
+				"Invalid dimension name",
+				f"Dimension names must be from {dim_names}, "
+				f"got horizontal='{horizontal}', vertical='{vertical}'",
+			) from e
+
+		# Validate that horizontal and vertical are different
+		if hor_dim == vert_dim:
+			raise SpacesError(
+				"Invalid plane parameters",
+				"Horizontal and vertical axes must be different dimensions",
 			)
 
 		# Apply settings
 		common.hor_dim = hor_dim
 		common.vert_dim = vert_dim
-		self._director.configuration_active.hor_axis_name = hor_axis_name
-		self._director.configuration_active.vert_axis_name = vert_axis_name
+		self._director.configuration_active.hor_axis_name = horizontal
+		self._director.configuration_active.vert_axis_name = vertical
 
 		self._director.title_for_table_widget = "Plane settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> object:
+		"""Display widget for plane settings confirmation.
+
+		Returns:
+			QTextEdit widget showing updated plane settings
+		"""
+		from PySide6.QtWidgets import QTextEdit
+
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+		widget.setMinimumHeight(120)
+		settings_text = (
+			f"{self._director.title_for_table_widget}\n\n"
+			f"Horizontal axis: "
+			f"{self._director.configuration_active.hor_axis_name}\n"
+			f"Vertical axis: "
+			f"{self._director.configuration_active.vert_axis_name}"
+		)
+		widget.setPlainText(settings_text)
+		return widget
 
 	# ------------------------------------------------------------------------
 
