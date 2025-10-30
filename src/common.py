@@ -1590,7 +1590,7 @@ class Spaces:
 			f"{self._director.common.show_reference_points}"
 		)
 		print(
-			"\t In Joint plots show just reference points: "
+			"\tIn Joint plots show just reference points: "
 			f"{self._director.common.show_just_reference_points}"
 		)
 		print(" ")
@@ -1599,15 +1599,13 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def print_segment_sizing_settings(self) -> None:
-		print("    Segment sizing settings:")
+		print("    Percent of connector used to define segments:")
 		print(
-			f"\tPercent of connector used to define size of"
-			" battleground sector: "
+			"\tBattleground: "
 			f"{self._director.common.battleground_size * 100: 3.0f}"
 		)
 		print(
-			f"\tPercent of connector used to define size of"
-			f" core sector: "
+			"\tCore: "
 			f"{self._director.common.core_tolerance * 100: 3.0f}"
 		)
 		print(" ")
@@ -2372,18 +2370,35 @@ class Spaces:
 						continue
 					# If not set, fall through to error below
 
-				if param_name not in interactive_getters:
+				# Check if param_name is directly in interactive_getters
+				# or if it's in any getter's boolean_params list
+				getter_info = None
+				getter_param_name = None
+
+				if param_name in interactive_getters:
+					# Direct match
+					getter_info = interactive_getters[param_name]
+					getter_param_name = param_name
+				else:
+					# Check if any getter provides this param via boolean_params
+					for getter_name, getter_data in interactive_getters.items():
+						boolean_params = getter_data.get("boolean_params", [])
+						if param_name in boolean_params:
+							getter_info = getter_data
+							getter_param_name = getter_name
+							break
+
+				if getter_info is None:
 					# No interactive getter defined for this parameter
 					title = f"{command_name} metadata error"
 					message = (
 						f"No interactive getter defined for "
 						f"parameter: {param_name}\n"
 						f"Add '{param_name}' to interactive_getters "
-						f"in command_dict"
+						f"or boolean_params in command_dict"
 					)
 					raise SpacesError(title, message)
 
-				getter_info = interactive_getters[param_name]
 				getter_type = getter_info.get("getter_type")
 
 				if getter_type == "file_dialog":
@@ -2573,9 +2588,21 @@ class Spaces:
 					dialog = ModifyItemsDialog(title, items, default_values)
 					result = dialog.exec()
 					if result == QDialog.Accepted:
-						params[param_name] = dialog.selected_items()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
+						selected_list = dialog.selected_items()
+
+						# Special handling: convert list to individual boolean parameters
+						if getter_info.get("converts_to_booleans", False):
+							boolean_params = getter_info.get("boolean_params", [])
+							# Each checkbox becomes a boolean parameter
+							for idx, bool_param_name in enumerate(boolean_params):
+								# Check if this item was in the selected list
+								params[bool_param_name] = items[idx] in selected_list
+								obtained[bool_param_name] = params[bool_param_name]
+						else:
+							# Normal behavior: return the list
+							params[param_name] = selected_list
+							# Store for potential future calls
+							obtained[param_name] = params[param_name]
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"
@@ -2613,18 +2640,38 @@ class Spaces:
 					# Use ModifyValuesDialog for multiple numeric inputs
 					title = getter_info.get("title", "Modify values")
 					labels = getter_info.get("labels", [])
-					values = getter_info.get("values", [])
-					min_value = getter_info.get("min_value", -1000.0)
-					max_value = getter_info.get("max_value", 1000.0)
+					defaults = getter_info.get("defaults", [])
+					min_val = getter_info.get("min_val", -1000.0)
+					max_val = getter_info.get("max_val", 1000.0)
+					is_integer = getter_info.get("is_integer", False)
+
+					# Resolve dynamic defaults if defaults_source is specified
+					defaults_source = getter_info.get("defaults_source", None)
+					if defaults_source:
+						# Get current values from common instance
+						multiplier = getter_info.get("defaults_multiplier", 1)
+						defaults = [
+							getattr(self, attr_name) * multiplier
+							for attr_name in defaults_source
+						]
 
 					dialog = ModifyValuesDialog(
-						title, labels, values, min_value, max_value
+						title, labels, is_integer, defaults
 					)
 					result = dialog.exec()
 					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_new_values()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
+						values = dialog.selected_items()
+						# If boolean_params defined, unpack values to individual params
+						boolean_params = getter_info.get("boolean_params", [])
+						if boolean_params:
+							for each_param, (label, value) in zip(
+								boolean_params, values, strict=True
+							):
+								params[each_param] = value
+								obtained[each_param] = value
+						else:
+							params[param_name] = values
+							obtained[param_name] = values
 					else:
 						# User cancelled
 						title = f"{command_name} cancelled"

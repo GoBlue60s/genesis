@@ -2788,33 +2788,60 @@ class SettingsPlotCommand:
 	def execute(
 		self,
 		common: Spaces,
-		show_bisector: bool = None,
-		show_connector: bool = None,
-		show_reference_points: bool = None,
-		show_just_reference_points: bool = None,
+		bisector: bool = None,
+		connector: bool = None,
+		reference_points: bool = None,
+		just_reference_points: bool = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Settings - plot settings")
-		show_bisector: bool = params["show_bisector"]
-		show_connector: bool = params["show_connector"]
-		show_reference_points: bool = params["show_reference_points"]
-		show_just_reference_points: bool = params["show_just_reference_points"]
+		bisector: bool = params["bisector"]
+		connector: bool = params["connector"]
+		reference_points: bool = params["reference_points"]
+		just_reference_points: bool = params["just_reference_points"]
 		self.common.capture_and_push_undo_state(
 			"Settings - plot settings", "active", params
 		)
 
 		# Apply settings
-		common.show_bisector = show_bisector
-		common.show_connector = show_connector
-		common.show_reference_points = show_reference_points
-		common.show_just_reference_points = show_just_reference_points
+		common.show_bisector = bisector
+		common.show_connector = connector
+		common.show_reference_points = reference_points
+		common.show_just_reference_points = just_reference_points
 
 		self._director.title_for_table_widget = "Plot settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
+		common.print_plot_settings()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> object:
+		"""Display widget for plot settings confirmation.
+
+		Returns:
+			QTextEdit widget showing updated plot settings
+		"""
+		from PySide6.QtWidgets import QTextEdit
+
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+		settings_text = (
+			f"{self._director.title_for_table_widget}\n\n"
+			f"Show bisector if available: "
+			f"{self.common.show_bisector}\n"
+			f"Show connector if available: "
+			f"{self.common.show_connector}\n"
+			f"Show reference points if available: "
+			f"{self.common.show_reference_points}\n"
+			f"In Joint plots show just reference points: "
+			f"{self.common.show_just_reference_points}"
+		)
+		widget.setPlainText(settings_text)
+		return widget
 
 	# ------------------------------------------------------------------------
 
@@ -2867,27 +2894,48 @@ class SettingsSegmentCommand:
 	def execute(
 		self,
 		common: Spaces,
-		battleground_size: float = None,
-		core_tolerance: float = None,
+		battleground: int = None,
+		core: int = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Settings - segment sizing")
-		battleground_size: float = params["battleground_size"]
-		core_tolerance: float = params["core_tolerance"]
+		battleground: int = params["battleground"]
+		core: int = params["core"]
 		self.common.capture_and_push_undo_state(
 			"Settings - segment sizing", "active", params
 		)
 
-		# Apply settings
-		common.battleground_size = battleground_size
-		common.core_tolerance = core_tolerance
+		# Apply settings (convert from 0-100 to 0.0-1.0)
+		common.battleground_size = battleground / 100.0
+		common.core_tolerance = core / 100.0
 
 		self._director.title_for_table_widget = "Segment sizing settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
+		common.print_segment_sizing_settings()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> object:
+		"""Display widget for segment sizing settings confirmation.
+
+		Returns:
+			QTextEdit widget showing updated segment sizing settings
+		"""
+		from PySide6.QtWidgets import QTextEdit
+
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+		settings_text = (
+			f"{self._director.title_for_table_widget}\n\n"
+			f"Battleground size: {self.common.battleground_size}\n"
+			f"Core tolerance: {self.common.core_tolerance}"
+		)
+		widget.setPlainText(settings_text)
+		return widget
 
 	# ------------------------------------------------------------------------
 

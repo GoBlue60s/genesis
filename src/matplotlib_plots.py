@@ -449,7 +449,7 @@ class MatplotlibMethods:
 				point_coords.iloc[rival_a.index, hor_dim],
 				point_coords.iloc[rival_a.index, vert_dim],
 			),
-			radius=rivalry.connector.length * 0.2,
+			radius=rivalry.core_radius,
 			fill=False,
 			hatch="X",
 		)
@@ -458,7 +458,7 @@ class MatplotlibMethods:
 				point_coords.iloc[rival_b.index, hor_dim],
 				point_coords.iloc[rival_b.index, vert_dim],
 			),
-			radius=rivalry.connector.length * 0.2,
+			radius=rivalry.core_radius,
 			fill=False,
 			hatch="O",
 		)

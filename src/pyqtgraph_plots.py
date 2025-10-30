@@ -688,21 +688,20 @@ class PyQtGraphMethods:
 		x_coords.append(point_coords.iloc[rival_b.index, hor_dim])
 		y_coords.append(point_coords.iloc[rival_b.index, vert_dim])
 		plot.scatterPlot(x_coords, y_coords, symbolSize=5, symbol="o", pen=pen)
+		core_radius = rivalry.core_radius
 		core_a = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_a.index, hor_dim] - connector.length * 0.2,
-			point_coords.iloc[rival_a.index, vert_dim]
-			- connector.length * 0.2,
-			connector.length * 0.4,
-			connector.length * 0.4,
+			point_coords.iloc[rival_a.index, hor_dim] - core_radius,
+			point_coords.iloc[rival_a.index, vert_dim] - core_radius,
+			core_radius * 2,
+			core_radius * 2,
 		)
 		core_a.setPen(pen)
 		plot.addItem(core_a)
 		core_b = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_b.index, hor_dim] - connector.length * 0.2,
-			point_coords.iloc[rival_b.index, vert_dim]
-			- connector.length * 0.2,
-			connector.length * 0.4,
-			connector.length * 0.4,
+			point_coords.iloc[rival_b.index, hor_dim] - core_radius,
+			point_coords.iloc[rival_b.index, vert_dim] - core_radius,
+			core_radius * 2,
+			core_radius * 2,
 		)
 		core_b.setPen(pen)
 		plot.addItem(core_b)

@@ -416,23 +416,16 @@ command_dict = MappingProxyType({
 		"state_capture": ["uncertainty"],
 		"script_parameters": ["probability_of_inclusion", "nrepetitions"],
 		"interactive_getters": {
-			"probability_of_inclusion": {
-				"getter_type": "set_value_dialog",
+			"sample_parameters": {
+				"getter_type": "modify_values_dialog",
 				"title": "Set sample parameters",
-				"label": "Probability of inclusion",
-				"min_val": 1,
-				"max_val": 100,
+				"labels": [
+					"Probability of inclusion",
+					"Number of repetitions"
+				],
 				"is_integer": True,
-				"default": 50
-			},
-			"nrepetitions": {
-				"getter_type": "set_value_dialog",
-				"title": "Set sample parameters",
-				"label": "Number of repetitions",
-				"min_val": 1,
-				"max_val": 1000,
-				"is_integer": True,
-				"default": 2
+				"defaults": [50, 2],
+				"boolean_params": ["probability_of_inclusion", "nrepetitions"]
 			}
 		}
 	},
@@ -564,15 +557,16 @@ command_dict = MappingProxyType({
 	"Settings - plot settings": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["show_bisector",
-		"show_connector", "show_reference_points",
-		"show_just_reference_points"],
+		"script_parameters": ["bisector", "connector",
+		"reference_points", "just_reference_points"],
 		"interactive_getters": {
-			"show_bisector": {
+			"_plot_settings_checkboxes": {
 				"getter_type": "modify_items_dialog",
 				"title": "Plot settings",
 				"items": ["Show bisector", "Show connector", "Show reference points", "Show just reference points"],
-				"default_values": [False, False, False, False]
+				"default_values": [False, False, False, False],
+				"converts_to_booleans": True,
+				"boolean_params": ["bisector", "connector", "reference_points", "just_reference_points"]
 			}
 		}
 	},
@@ -593,25 +587,19 @@ command_dict = MappingProxyType({
 	"Settings - segment sizing": {
 		"type": "active",
 		"state_capture": ["settings"],
-		"script_parameters": ["battleground_size", "core_tolerance"],
+		"script_parameters": ["battleground", "core"],
 		"interactive_getters": {
-			"battleground_size": {
-				"getter_type": "set_value_dialog",
-				"title": "Segment sizing settings",
-				"label": "Battleground size:",
-				"min_val": 0.0,
-				"max_val": 1.0,
-				"is_integer": False,
-				"default": 0.25
-			},
-			"core_tolerance": {
-				"getter_type": "set_value_dialog",
-				"title": "Segment sizing settings",
-				"label": "Core tolerance:",
-				"min_val": 0.0,
-				"max_val": 1.0,
-				"is_integer": False,
-				"default": 0.2
+			"segments": {
+				"getter_type": "modify_values_dialog",
+				"title": "Setting percent of connector",
+				"labels": ["Battleground", "Core"],
+				"min_val": 0,
+				"max_val": 100,
+				"is_integer": True,
+				"defaults": [25, 20],
+				"defaults_source": ["battleground_size", "core_tolerance"],
+				"defaults_multiplier": 100,
+				"boolean_params": ["battleground", "core"]
 			}
 		}
 	},
@@ -1215,10 +1203,9 @@ explain_dict = MappingProxyType({
 	"Settings - segment sizing": \
 		"Settings - segment sizing is used to "
 	"set the size of the segments.\n"
-	"The user is asked for percentages of the connector size to "
-	"use to set the size of \n"
-	"the battleground and convertible segments as well as the core"
-	"supporter segments.",
+	"The user is asked for percentages of the connector length to "
+	"use to define the size of \n"
+	"the battleground region and core region.",
 	"Settings - vector sizing": "Settings - vector sizing is used to "
 	"set the length of the \n"
 	"vectors and the size of their heads.",

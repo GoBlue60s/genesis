@@ -1649,7 +1649,7 @@ def _parse_command_name_from_line(self, parts: list[str]) -> str:
 **Background:**
 During the refactoring to use centralized `get_command_parameters()` in common.py, 30 commands had their execute() methods updated to call this function. However, only 12 of these commands had the corresponding `interactive_getters` metadata added to command_dict. Without this metadata, commands will fail when run interactively because get_command_parameters() won't know how to prompt the user for values.
 
-**Progress: 13 of 15 commands completed (87%)**
+**Progress: 14 of 15 commands completed (93%)**
 
 **Completed Commands (13):**
 1. ✅ Factor analysis - set_value_dialog for n_factors
@@ -1666,35 +1666,24 @@ During the refactoring to use centralized `get_command_parameters()` in common.p
 12. ✅ Settings - segment sizing - set_value_dialog for battleground_size, core_tolerance
 13. ✅ Settings - vector sizing - set_value_dialog for vector_head_width, vector_width
 
-**Remaining Commands (2) - Special Cases:**
+**Completed Commands (15) - All interactive getters now implemented:**
+14. ✅ Settings - plot settings - modify_items_dialog with conversion to 4 boolean parameters
+   - Uses single dialog with 4 checkboxes (good UX)
+   - Converts to individual boolean parameters: bisector, connector, reference_points, just_reference_points
+   - Script syntax: `bisector=True connector=False reference_points=True just_reference_points=False`
+   - Implementation: Added "converts_to_booleans" flag in interactive_getters metadata
 
-**1. Settings - plane (filemenu.py)**
-- **Issue:** Requires dynamic options based on configuration_active.dim_names
-  - Options are dimension pair combinations like "Left-Right x Social", "Social x Left-Right", etc.
-  - Number and names of dimensions vary by loaded configuration
-- **Resolution needed:**
-  - Add support for dynamic option generation in get_command_parameters() OR
-  - Use items_source pattern to reference director attribute OR
-  - Use special getter type that can build options at runtime
-- **Interactive getter type:** chose_option_dialog with dynamic options
+15. ✅ Sample designer - modify_values_dialog for probability_of_inclusion and nrepetitions (2025-10-29)
+   - Changed from set_value_dialog to modify_values_dialog for better UX
+   - Shows both parameters in a single dialog instead of separately
+   - Parameters: probability_of_inclusion (float, 0-1), nrepetitions (int, >0)
+   - Works correctly both interactively and from scripts
+   - Tested with scripts/test_sample_designer.spc
+   - Changed in: `SampleDesignerCommand.execute()` in respondentsmenu.py and command_dict in dictionaries.py
 
-**2. Settings - plot settings (filemenu.py)**
-- **Issue:** Has 4 separate boolean parameters
-  - Parameters: show_bisector, show_connector, show_reference_points, show_just_reference_points
-  - Each needs independent true/false value
-  - No existing getter type for individual booleans
-- **Current workaround:** Added modify_items_dialog but it returns list, not 4 separate bools
-- **Resolution needed:**
-  - Add special handling to convert checkbox list to individual boolean parameters OR
-  - Create new getter type for boolean parameters OR
-  - Use 4 separate chose_option_dialog entries with Yes/No options
-- **Interactive getter type:** TBD - needs new approach
+**Step 8.5 Status: ✅ COMPLETE (2025-10-29)**
 
-**Next Steps:**
-1. Add dynamic option support for Settings - plane or use alternative approach
-2. Resolve Settings - plot settings boolean parameter handling
-3. Test all 15 commands interactively to verify dialogs work correctly
-4. Update this section once all commands are complete
+All 15 commands that needed interactive_getters metadata now have it. The centralized `get_command_parameters()` system can now handle all active commands that require user input, both interactively (via dialogs) and from scripts (via script_parameters).
 
 **Recent Additions (2025-10-27):**
 - ✅ Added focal_item_dialog getter type to support commands that select a single item from a list

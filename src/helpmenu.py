@@ -375,6 +375,26 @@ class StatusCommand:
 				)
 			),
 		)
+		table_widget.setItem(
+			18, 0, QTableWidgetItem("Battleground size (%)")
+		)
+		table_widget.setItem(
+			18,
+			1,
+			QTableWidgetItem(
+				f"{self._director.common.battleground_size * 100:.0f}"
+			),
+		)
+		table_widget.setItem(
+			19, 0, QTableWidgetItem("Core tolerance (%)")
+		)
+		table_widget.setItem(
+			19,
+			1,
+			QTableWidgetItem(
+				f"{self._director.common.core_tolerance * 100:.0f}"
+			),
+		)
 		return table_widget
 
 	# ------------------------------------------------------------------------
