@@ -416,6 +416,11 @@ class Spaces:
 		destination.point_labels = point_labels
 		destination.point_names = point_names
 		destination.point_coords = point_coords
+		# Initialize horizontal and vertical axis names to first two dimensions
+		if ndim >= 1:
+			destination.hor_axis_name = dim_names[0]
+		if ndim >= 2:
+			destination.vert_axis_name = dim_names[1]
 		# peek("Was Meghan right - did it get here?"
 		# 	" This is ok when no problem"
 		# 	" This is not ok when bad file name or file not found")
@@ -1412,12 +1417,12 @@ class Spaces:
 		print(
 			"\tPercent of axis maxima added to keep points from "
 			f"falling on edge of plots: "
-			f"{self._director.common.axis_extra * 100: 3.0f}"
+			f"{self._director.common.axis_extra * 100: 3.1f}%"
 		)
 		print(
 			"\tPercent of axis maxima used to displace labelling "
 			"off point to improve visibility: "
-			f"{self._director.common.displacement * 100: 3.0f}"
+			f"{self._director.common.displacement * 100: 3.1f}%"
 		)
 		print(
 			f"\tSize in points of the dots representing people in plots: "
@@ -1640,6 +1645,17 @@ class Spaces:
 		print(
 			f"\tVector thickness in inches: "
 			f"{self._director.common.vector_width}"
+		)
+		print(" ")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def print_presentation_layer_settings(self) -> None:
+		print("    Presentation layer settings:")
+		print(
+			f"\tPresentation layer: "
+			f"{self._director.common.presentation_layer}"
 		)
 		print(" ")
 		return
@@ -2511,11 +2527,17 @@ class Spaces:
 					dim_names = self._director.configuration_active.dim_names
 					ndim = len(dim_names)
 
+					# Get current axis names to use as defaults
+					current_hor = self._director.configuration_active.hor_axis_name
+					current_vert = self._director.configuration_active.vert_axis_name
+					hor_default_index = dim_names.index(current_hor)
+
 					# Ask for horizontal axis dimension
 					hor_dialog = ChoseOptionDialog(
 						title,
 						"Select dimension for horizontal axis:",
-						dim_names
+						dim_names,
+						default_index=hor_default_index
 					)
 					result = hor_dialog.exec()
 					if result != QDialog.Accepted:
@@ -2537,10 +2559,13 @@ class Spaces:
 						vert_options = [
 							d for d in dim_names if d != hor_axis_name
 						]
+						vert_default_index = vert_options.index(current_vert)
+
 						vert_dialog = ChoseOptionDialog(
 							title,
 							"Select dimension for vertical axis:",
-							vert_options
+							vert_options,
+							default_index=vert_default_index
 						)
 						result = vert_dialog.exec()
 						if result != QDialog.Accepted:
@@ -2728,10 +2753,17 @@ class Spaces:
 					if defaults_source:
 						# Get current values from common instance
 						multiplier = getter_info.get("defaults_multiplier", 1)
-						defaults = [
-							getattr(self, attr_name) * multiplier
-							for attr_name in defaults_source
-						]
+						# Support per-field multipliers
+						if isinstance(multiplier, list):
+							defaults = [
+								getattr(self, attr_name) * mult
+								for attr_name, mult in zip(defaults_source, multiplier, strict=True)
+							]
+						else:
+							defaults = [
+								getattr(self, attr_name) * multiplier
+								for attr_name in defaults_source
+							]
 
 					dialog = ModifyValuesDialog(
 						title, labels, is_integer, defaults

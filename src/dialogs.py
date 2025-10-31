@@ -33,6 +33,7 @@ class ChoseOptionDialog(QDialog):
 		options_title: str,
 		options: list[str],
 		parent: QWidget | None = None,
+		default_index: int | None = None,
 	) -> None:
 		super().__init__(parent)
 
@@ -41,13 +42,16 @@ class ChoseOptionDialog(QDialog):
 		self.group = QVBoxLayout()
 		self.button_group = QHBoxLayout()
 		self.main_layout = QVBoxLayout()
-		self.selected_option = None
+		self.selected_option = default_index
 		self.options = options
 		label = QLabel(options_title)
 		self.group.addWidget(label)
-		for option in options:
+		for each_option, option in enumerate(options):
 			rb = QRadioButton(option)
 			rb.toggled.connect(self._update_selected_option)
+			# Pre-select the default option if specified
+			if default_index is not None and each_option == default_index:
+				rb.setChecked(True)
 			self.group.addWidget(rb)
 		ok_button = QPushButton("OK")
 		ok_button.clicked.connect(self.accept)
@@ -279,6 +283,11 @@ class ModifyValuesDialog(QDialog):
 			spinbox = QSpinBox() if integers else QDoubleSpinBox()
 			spinbox.setMinimum(0)
 			spinbox.setMaximum(1000)
+			# Integer spinboxes need integer step, double spinboxes need decimal step
+			if integers:
+				spinbox.setSingleStep(1)
+			else:
+				spinbox.setSingleStep(0.01)
 			spinbox.setValue(default_value)
 			# spinbox.setGeometry(10,20,51,22)
 			spinbox.setAlignment(QtCore.Qt.AlignRight)
@@ -306,7 +315,7 @@ class ModifyValuesDialog(QDialog):
 
 	def selected_items(self) -> list[tuple[str, int]]:
 		selected = [
-			(self.items[i], self.spinboxes[i].value())
+			(self.items[i], round(self.spinboxes[i].value(), 2))
 			for i in range(len(self.items))
 		]
 		return selected

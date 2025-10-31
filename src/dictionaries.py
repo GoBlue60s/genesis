@@ -487,31 +487,15 @@ command_dict = MappingProxyType({
 		"script_parameters": ["axis_extra", "displacement", "point_size"],
 		"interactive_getters": {
 			"axis_extra": {
-				"getter_type": "set_value_dialog",
+				"getter_type": "modify_values_dialog",
 				"title": "Display sizing settings",
-				"label": "Axis extra margin:",
-				"min_val": 0.0,
-				"max_val": 1.0,
-				"is_integer": False,
-				"default": 0.1
-			},
-			"displacement": {
-				"getter_type": "set_value_dialog",
-				"title": "Display sizing settings",
-				"label": "Label displacement:",
-				"min_val": 0.0,
-				"max_val": 1.0,
-				"is_integer": False,
-				"default": 0.04
-			},
-			"point_size": {
-				"getter_type": "set_value_dialog",
-				"title": "Display sizing settings",
-				"label": "Point size:",
-				"min_val": 1,
-				"max_val": 20,
+				"labels": ["Axis extra margin (percent of axis):", "Label displacement (percent of axis):", "Point size:"],
+				"defaults_source": ["axis_extra", "displacement", "point_size"],
+				"defaults_multiplier": [100, 100, 1],
+				"min_val": 0,
+				"max_val": 50,
 				"is_integer": True,
-				"default": 3
+				"boolean_params": ["axis_extra", "displacement", "point_size"]
 			}
 		}
 	},
@@ -520,32 +504,17 @@ command_dict = MappingProxyType({
 		"state_capture": ["settings"],
 		"script_parameters": ["max_cols", "width", "decimals"],
 		"interactive_getters": {
-			"max_cols": {
-				"getter_type": "set_value_dialog",
+			"layout": {
+				"getter_type": "modify_values_dialog",
 				"title": "Layout options settings",
-				"label": "Maximum columns:",
-				"min_val": 1,
-				"max_val": 20,
-				"is_integer": True,
-				"default": 10
-			},
-			"width": {
-				"getter_type": "set_value_dialog",
-				"title": "Layout options settings",
-				"label": "Column width:",
-				"min_val": 1,
-				"max_val": 20,
-				"is_integer": True,
-				"default": 8
-			},
-			"decimals": {
-				"getter_type": "set_value_dialog",
-				"title": "Layout options settings",
-				"label": "Decimal places:",
+				"labels": ["Maximum columns:", "Column width:", "Decimal places:"],
 				"min_val": 0,
-				"max_val": 10,
+				"max_val": 20,
 				"is_integer": True,
-				"default": 2
+				"defaults": [10, 8, 2],
+				"defaults_source": ["max_cols", "width", "decimals"],
+				"defaults_multiplier": 1,
+				"boolean_params": ["max_cols", "width", "decimals"]
 			}
 		}
 	},
@@ -614,23 +583,18 @@ command_dict = MappingProxyType({
 		"state_capture": ["settings"],
 		"script_parameters": ["vector_head_width", "vector_width"],
 		"interactive_getters": {
-			"vector_head_width": {
-				"getter_type": "set_value_dialog",
+			"vectors": {
+				"getter_type": "modify_values_dialog",
 				"title": "Vector sizing settings",
-				"label": "Vector head width:",
+				"labels": ["Vector head width (in inches)", "Vector width (in inches)"],
 				"min_val": 0.0,
 				"max_val": 1.0,
 				"is_integer": False,
-				"default": 0.05
-			},
-			"vector_width": {
-				"getter_type": "set_value_dialog",
-				"title": "Vector sizing settings",
-				"label": "Vector width:",
-				"min_val": 0.0,
-				"max_val": 1.0,
-				"is_integer": False,
-				"default": 0.01
+				"step_size": 0.01,
+				"defaults": [0.05, 0.01],
+				"defaults_source": ["vector_head_width", "vector_width"],
+				"defaults_multiplier": 1,
+				"boolean_params": ["vector_head_width", "vector_width"]
 			}
 		}
 	},

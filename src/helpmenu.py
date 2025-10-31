@@ -221,6 +221,7 @@ class StatusCommand:
 		self._director.common.print_segment_sizing_settings()
 		self._director.common.print_display_settings()
 		self._director.common.print_vector_sizing_settings()
+		self._director.common.print_presentation_layer_settings()
 		self._director.common.print_layout_options_settings()
 		# self._print_status()
 		self._director.title_for_table_widget = "Status of current session"
@@ -236,7 +237,9 @@ class StatusCommand:
 		gui_output_as_widget = self._create_table_widget_for_status()
 		#
 		self._director.set_column_and_row_headers(
-			gui_output_as_widget, ["Have item", "Status"], []
+			gui_output_as_widget,
+			["Have item", "Status", "Setting", "Value"],
+			[]
 		)
 		#
 		self._director.resize_and_set_table_size(gui_output_as_widget, 4)
@@ -247,10 +250,22 @@ class StatusCommand:
 	# ------------------------------------------------------------------------
 
 	def _create_table_widget_for_status(self) -> QTableWidget:
-		#
+		# Calculate rows needed: max of data items (18) and settings (17)
 		nrows = N_ROWS_IN_STATUS_TABLE
-		table_widget = QTableWidget(nrows, 2)
-		#
+		table_widget = QTableWidget(nrows, 4)
+
+		# Populate left side (data availability) and right side (settings)
+		self._populate_data_availability_columns(table_widget)
+		self._populate_settings_columns(table_widget)
+
+		return table_widget
+
+	# ------------------------------------------------------------------------
+
+	def _populate_data_availability_columns(
+		self, table_widget: QTableWidget
+	) -> None:
+		"""Populate columns 0-1 with data availability indicators."""
 		table_widget.setItem(0, 0, QTableWidgetItem("Active configuration"))
 		table_widget.setItem(
 			0,
@@ -265,12 +280,6 @@ class StatusCommand:
 			1,
 			QTableWidgetItem(str(self._director.common.have_alike_coords())),
 		)
-		# table_widget.setItem(
-		# 	2, 0, QTableWidgetItem("Bisector information"))
-		# table_widget.setItem(
-		# 	2, 1, QTableWidgetItem(
-		# 		# str(self._director.common.have_bisector_info())))
-		# 		str(self._director.common.have_reference_points())))
 		table_widget.setItem(2, 0, QTableWidgetItem("Clusters"))
 		table_widget.setItem(
 			2, 1, QTableWidgetItem(str(self._director.common.have_clusters()))
@@ -375,87 +384,183 @@ class StatusCommand:
 				)
 			),
 		)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _populate_settings_columns(self, table_widget: QTableWidget) -> None:
+		"""Populate columns 2-3 with settings."""
 		table_widget.setItem(
-			18, 0, QTableWidgetItem("Show bisector")
+			0, 2, QTableWidgetItem("Show bisector")
 		)
 		table_widget.setItem(
-			18,
-			1,
+			0,
+			3,
 			QTableWidgetItem(
 				str(self._director.common.show_bisector)
 			),
 		)
 		table_widget.setItem(
-			19, 0, QTableWidgetItem("Show connector")
+			1, 2, QTableWidgetItem("Show connector")
 		)
 		table_widget.setItem(
-			19,
 			1,
+			3,
 			QTableWidgetItem(
 				str(self._director.common.show_connector)
 			),
 		)
 		table_widget.setItem(
-			20, 0, QTableWidgetItem("Show reference points")
+			2, 2, QTableWidgetItem("Show reference points")
 		)
 		table_widget.setItem(
-			20,
-			1,
+			2,
+			3,
 			QTableWidgetItem(
 				str(self._director.common.show_reference_points)
 			),
 		)
 		table_widget.setItem(
-			21, 0, QTableWidgetItem("Show just reference points")
+			3, 2, QTableWidgetItem("Show just reference points")
 		)
 		table_widget.setItem(
-			21,
-			1,
+			3,
+			3,
 			QTableWidgetItem(
 				str(self._director.common.show_just_reference_points)
 			),
 		)
 		table_widget.setItem(
-			22, 0, QTableWidgetItem("Horizontal axis")
+			4, 2, QTableWidgetItem("Horizontal axis")
 		)
 		table_widget.setItem(
-			22,
-			1,
+			4,
+			3,
 			QTableWidgetItem(
 				str(self._director.configuration_active.hor_axis_name)
 			),
 		)
 		table_widget.setItem(
-			23, 0, QTableWidgetItem("Vertical axis")
+			5, 2, QTableWidgetItem("Vertical axis")
 		)
 		table_widget.setItem(
-			23,
-			1,
+			5,
+			3,
 			QTableWidgetItem(
 				str(self._director.configuration_active.vert_axis_name)
 			),
 		)
 		table_widget.setItem(
-			24, 0, QTableWidgetItem("Battleground size (%)")
+			6, 2, QTableWidgetItem("Battleground size (%)")
 		)
 		table_widget.setItem(
-			24,
-			1,
+			6,
+			3,
 			QTableWidgetItem(
 				f"{self._director.common.battleground_size * 100:.0f}"
 			),
 		)
 		table_widget.setItem(
-			25, 0, QTableWidgetItem("Core tolerance (%)")
+			7, 2, QTableWidgetItem("Core tolerance (%)")
 		)
 		table_widget.setItem(
-			25,
-			1,
+			7,
+			3,
 			QTableWidgetItem(
 				f"{self._director.common.core_tolerance * 100:.0f}"
 			),
 		)
-		return table_widget
+		table_widget.setItem(
+			8, 2, QTableWidgetItem("Axis extra margin (%)")
+		)
+		table_widget.setItem(
+			8,
+			3,
+			QTableWidgetItem(
+				f"{self._director.common.axis_extra * 100:.1f}"
+			),
+		)
+		table_widget.setItem(
+			9, 2, QTableWidgetItem("Label displacement (%)")
+		)
+		table_widget.setItem(
+			9,
+			3,
+			QTableWidgetItem(
+				f"{self._director.common.displacement * 100:.1f}"
+			),
+		)
+		table_widget.setItem(
+			10, 2, QTableWidgetItem("Point size")
+		)
+		table_widget.setItem(
+			10,
+			3,
+			QTableWidgetItem(
+				str(self._director.common.point_size)
+			),
+		)
+		table_widget.setItem(
+			11, 2, QTableWidgetItem("Vector head width")
+		)
+		table_widget.setItem(
+			11,
+			3,
+			QTableWidgetItem(
+				str(self._director.common.vector_head_width)
+			),
+		)
+		table_widget.setItem(
+			12, 2, QTableWidgetItem("Vector width")
+		)
+		table_widget.setItem(
+			12,
+			3,
+			QTableWidgetItem(
+				str(self._director.common.vector_width)
+			),
+		)
+		table_widget.setItem(
+			13, 2, QTableWidgetItem("Presentation layer")
+		)
+		table_widget.setItem(
+			13,
+			3,
+			QTableWidgetItem(
+				str(self._director.common.presentation_layer)
+			),
+		)
+		table_widget.setItem(
+			14, 2, QTableWidgetItem("Maximum columns")
+		)
+		table_widget.setItem(
+			14,
+			3,
+			QTableWidgetItem(
+				str(self._director.common.max_cols)
+			),
+		)
+		table_widget.setItem(
+			15, 2, QTableWidgetItem("Column width")
+		)
+		table_widget.setItem(
+			15,
+			3,
+			QTableWidgetItem(
+				str(self._director.common.width)
+			),
+		)
+		table_widget.setItem(
+			16, 2, QTableWidgetItem("Decimal places")
+		)
+		table_widget.setItem(
+			16,
+			3,
+			QTableWidgetItem(
+				str(self._director.common.decimals)
+			),
+		)
+		return
 
 	# ------------------------------------------------------------------------
 

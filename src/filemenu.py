@@ -2649,23 +2649,23 @@ class SettingsDisplayCommand:
 	def execute(
 		self,
 		common: Spaces,
-		axis_extra: float = None,
-		displacement: float = None,
+		axis_extra: int = None,
+		displacement: int = None,
 		point_size: int = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Settings - display sizing")
-		axis_extra: float = params["axis_extra"]
-		displacement: float = params["displacement"]
+		axis_extra: int = params["axis_extra"]
+		displacement: int = params["displacement"]
 		point_size: int = params["point_size"]
 		self.common.capture_and_push_undo_state(
 			"Settings - display sizing", "active", params
 		)
 
-		# Apply settings
-		common.axis_extra = axis_extra
-		common.displacement = displacement
+		# Apply settings - convert percentages to floats
+		common.axis_extra = axis_extra / 100.0
+		common.displacement = displacement / 100.0
 		common.point_size = point_size
 
 		self._director.title_for_table_widget = "Display sizing settings updated"
@@ -2673,6 +2673,28 @@ class SettingsDisplayCommand:
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> object:
+		"""Display widget for display sizing settings confirmation.
+
+		Returns:
+			QTextEdit widget showing updated display sizing settings
+		"""
+		from PySide6.QtWidgets import QTextEdit
+
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+		widget.setMinimumHeight(150)
+		settings_text = (
+			f"{self._director.title_for_table_widget}\n\n"
+			f"Axis extra margin: {self.common.axis_extra * 100:.1f}%\n"
+			f"Label displacement: {self.common.displacement * 100:.1f}%\n"
+			f"Point size: {self.common.point_size}"
+		)
+		widget.setPlainText(settings_text)
+		return widget
 
 	# ------------------------------------------------------------------------
 
@@ -2715,6 +2737,28 @@ class SettingsLayoutCommand:
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> object:
+		"""Display widget for layout options confirmation.
+
+		Returns:
+			QTextEdit widget showing updated layout options
+		"""
+		from PySide6.QtWidgets import QTextEdit
+
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+		widget.setMinimumHeight(150)
+		settings_text = (
+			f"{self._director.title_for_table_widget}\n\n"
+			f"Maximum columns: {self.common.max_cols}\n"
+			f"Column width: {self.common.width}\n"
+			f"Decimal places: {self.common.decimals}"
+		)
+		widget.setPlainText(settings_text)
+		return widget
 
 	# ------------------------------------------------------------------------
 
@@ -2910,6 +2954,23 @@ class SettingsPresentationLayerCommand:
 
 	# ------------------------------------------------------------------------
 
+	def _display(self) -> object:
+		"""Display widget for presentation layer confirmation.
+
+		Returns:
+			QTextEdit widget showing updated presentation layer setting
+		"""
+		from PySide6.QtWidgets import QTextEdit
+
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+		widget.setMinimumHeight(100)
+		settings_text = f"{self._director.title_for_table_widget}"
+		widget.setPlainText(settings_text)
+		return widget
+
+	# ------------------------------------------------------------------------
+
 
 class SettingsSegmentCommand:
 	"""The Settings segment sizing command is used to set segment sizing options."""
@@ -3004,8 +3065,30 @@ class SettingsVectorSizeCommand:
 		self._director.title_for_table_widget = "Vector sizing settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
+		common.print_vector_sizing_settings()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> object:
+		"""Display widget for vector sizing settings confirmation.
+
+		Returns:
+			QTextEdit widget showing updated vector sizing settings
+		"""
+		from PySide6.QtWidgets import QTextEdit
+
+		widget = QTextEdit()
+		widget.setReadOnly(True)
+		widget.setMinimumHeight(120)
+		settings_text = (
+			f"{self._director.title_for_table_widget}\n\n"
+			f"Vector head width (in inches): {self.common.vector_head_width}\n"
+			f"Vector width (in inches): {self.common.vector_width}"
+		)
+		widget.setPlainText(settings_text)
+		return widget
 
 	# ------------------------------------------------------------------------
 
