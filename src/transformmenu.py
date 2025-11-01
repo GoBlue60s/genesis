@@ -370,6 +370,7 @@ class MoveCommand:
 				self._director
 			)
 		self._director.configuration_active.inter_point_distances()
+		self.common.rank_when_similarities_match_configuration()
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -440,6 +441,8 @@ class RescaleCommand:
 		#
 		self._rescale_selected_dimensions(selected_items, value)
 		self._director.scores_active.scores = pd.DataFrame()
+		self._director.configuration_active.inter_point_distances()
+		self.common.rank_when_similarities_match_configuration()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)

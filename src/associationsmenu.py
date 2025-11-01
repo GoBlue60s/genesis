@@ -820,13 +820,20 @@ class ShepardCommand:
 	def execute(
 		self,
 		common: Spaces,  # noqa: ARG002
-		axis: str,
+		Axis_for_similarities: str,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self.shepard_axis: str = axis
-		self._director.common.shepard_axis = axis
+		self.shepard_axis: str = Axis_for_similarities
+		self._director.common.shepard_axis = Axis_for_similarities
+
+		# Track passive command with parameters for script generation
+		self._director.common.push_passive_command_to_undo_stack(
+			self._director.command,
+			{"Axis_for_similarities": Axis_for_similarities}
+		)
+
 		self._director.common.create_plot_for_tabs("shepard")
 		self._director.title_for_table_widget = (
 			"Rank of similarity above diagonal, "

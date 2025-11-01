@@ -1525,9 +1525,7 @@ class MDSCommand:
 		npoint = self._director.configuration_active.npoint
 		best_stress = self._director.configuration_active.best_stress
 		self._director.configuration_active.inter_point_distances()
-		self._director.similarities_active.rank_when_similarities_match_configuration(
-			self._director, self.common
-		)
+		self.common.rank_when_similarities_match_configuration()
 		self._print_best_stress(ndim, best_stress)
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common

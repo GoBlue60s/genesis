@@ -183,11 +183,11 @@ class MatplotlibCommon:
 		use_metric = self._use_metric
 		min_stress = self._min_stress
 
-		fig, ax = self._director.common.begin_matplotlib_plot_with_title(
+		fig, ax = self.begin_matplotlib_plot_with_title(
 			"Scree Diagram"
 		)
 		if not use_metric:
-			ax = self._director.common.set_aspect_and_grid_in_matplotlib_plot(
+			ax = self.set_aspect_and_grid_in_matplotlib_plot(
 				ax
 			)
 		ax.set_xlabel("Number of Dimensions")
@@ -207,7 +207,7 @@ class MatplotlibCommon:
 	# --------------------------------------------------------------------
 
 	def plot_shep_using_matplotlib(self) -> plt.Figure:
-		shepard_axis = self.shepard_axis
+		shepard_axis = self._director.common.shepard_axis
 		distances_as_list = (
 			self._director.configuration_active.distances_as_list
 		)
@@ -221,7 +221,7 @@ class MatplotlibCommon:
 		ranks_df = self._director.similarities_active.ranks_df
 		command = self._director.command
 
-		fig, ax = self._director.common.begin_matplotlib_plot_with_title(
+		fig, ax = self.begin_matplotlib_plot_with_title(
 			"Shepard Diagram"
 		)
 		if shepard_axis == "Y":

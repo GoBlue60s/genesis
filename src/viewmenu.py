@@ -309,7 +309,6 @@ class ViewDistancesCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.configuration_active.inter_point_distances()
 		self._director.configuration_active.print_the_distances(
 			self._width, self._decimals, common
 		)

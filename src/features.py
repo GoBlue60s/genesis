@@ -29,6 +29,7 @@ from exceptions import DependencyError, SpacesError
 class ConfigurationFeature:
 	def __init__(self, director: Status) -> None:  # xxxxxxxxxx
 		self._director = director
+		self._director.title_for_table_widget = ""
 		self._hor_dim = director.common.hor_dim
 		self._vert_dim = director.common.vert_dim
 
@@ -392,10 +393,10 @@ class ConfigurationFeature:
 		nreferent = self.nreferent
 		range_points = self.range_points
 		range_dims = self.range_dims
-		distances = self.distances
-		distances_as_list = self.distances_as_list
-		distances_as_dict = self.distances_as_dict
-		distances_as_square = self.distances_as_square
+		distances = [] # self.distances
+		distances_as_list = [] #self.distances_as_list
+		distances_as_dict = {} # self.distances_as_dict
+		distances_as_square = [] # self.distances_as_square
 		# range_distances = self.range_distances
 		# sorted_distances = self.sorted_distances
 
@@ -453,7 +454,7 @@ class ConfigurationFeature:
 					)
 		#
 		self.distances_as_dataframe = pd.DataFrame(
-			self.distances_as_square, columns=point_names, index=point_names
+			distances_as_square, columns=point_names, index=point_names
 		)
 
 		self.distances_as_list = distances_as_list  # this is the fix
@@ -701,6 +702,7 @@ class ConfigurationFeature:
 class CorrelationsFeature:
 	def __init__(self, director: Status) -> None:
 		self._director = director
+		self.title_for_table_widget: str = ""
 		self.file_handle: str = ""
 		self.nreferent: int = 0
 		self.npoints: int = 0
@@ -1456,20 +1458,6 @@ class SimilaritiesFeature:
 		self.ranked_similarities_as_dataframe = (
 			ranked_similarities_as_dataframe
 		)
-
-		return
-
-	# ------------------------------------------------------------------------
-
-	def rank_when_similarities_match_configuration(
-		self, director: Status, common: Spaces
-	) -> None:
-
-		if common.have_similarities():
-			director.similarities_active.create_ranked_similarities_dataframe()
-
-			director.similarities_active.duplicate_ranked_similarities(common)
-			director.similarities_active.compute_differences_in_ranks()
 
 		return
 

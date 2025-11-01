@@ -304,42 +304,42 @@ class StatusCommand:
 				str(self._director.common.have_individual_data())
 			),
 		)
-		table_widget.setItem(6, 0, QTableWidgetItem("Distances"))
+		table_widget.setItem(6, 0, QTableWidgetItem("Difference of ranks"))
 		table_widget.setItem(
-			6, 1, QTableWidgetItem(str(self._director.common.have_distances()))
+			6,
+			1,
+			QTableWidgetItem(
+				str(self._director.common.have_ranks_differences())
+			),
 		)
-		table_widget.setItem(7, 0, QTableWidgetItem("Evaluations"))
+		table_widget.setItem(7, 0, QTableWidgetItem("Distances"))
 		table_widget.setItem(
-			7,
+			7, 1, QTableWidgetItem(str(self._director.common.have_distances()))
+		)
+		table_widget.setItem(8, 0, QTableWidgetItem("Evaluations"))
+		table_widget.setItem(
+			8,
 			1,
 			QTableWidgetItem(str(self._director.common.have_evaluations())),
 		)
-		table_widget.setItem(8, 0, QTableWidgetItem("Factors"))
+		table_widget.setItem(9, 0, QTableWidgetItem("Factors"))
 		table_widget.setItem(
-			8, 1, QTableWidgetItem(str(self._director.common.have_factors()))
+			9, 1, QTableWidgetItem(str(self._director.common.have_factors()))
 		)
-		table_widget.setItem(9, 0, QTableWidgetItem("MDS results"))
+		table_widget.setItem(10, 0, QTableWidgetItem("MDS results"))
 		table_widget.setItem(
-			9,
+			10,
 			1,
 			QTableWidgetItem(str(self._director.common.have_mds_results())),
 		)
 		table_widget.setItem(
-			10, 0, QTableWidgetItem("Previous active configuration")
+			11, 0, QTableWidgetItem("Previous active configuration")
 		)
-		table_widget.setItem(
-			10,
-			1,
-			QTableWidgetItem(
-				str(self._director.common.have_previous_active())
-			),
-		)
-		table_widget.setItem(11, 0, QTableWidgetItem("Ranks"))
 		table_widget.setItem(
 			11,
 			1,
 			QTableWidgetItem(
-				str(self._director.common.have_ranks_of_similarities())
+				str(self._director.common.have_previous_active())
 			),
 		)
 		table_widget.setItem(12, 0, QTableWidgetItem("Reference points"))

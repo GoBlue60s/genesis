@@ -680,22 +680,35 @@ class Spaces:
 	# ----------------------------------------------------------------------
 
 	def create_plot_for_tabs(self, plot_type: str) -> None:
+		common_plot_types = ["differences", "scree", "shepard"]
 		if self._director.common.presentation_layer == "PyQtGraph":
 			try:
-				getattr(
-					self._director.pyqtgraph_plotter,
-					f"request_{plot_type}_plot_for_tabs_using_pyqtgraph",
-				)()
+				if plot_type in common_plot_types:
+					getattr(
+						self._director.pyqtgraph_common,
+						f"request_{plot_type}_plot_for_tabs_using_pyqtgraph",
+					)()
+				else:
+					getattr(
+						self._director.pyqtgraph_plotter,
+						f"request_{plot_type}_plot_for_tabs_using_pyqtgraph",
+					)()
 			except UnknownTypeError:
 				getattr(
 					self._director.matplotlib_plotter,
 					f"request_{plot_type}_plot_for_tabs_using_matplotlib",
 				)()
 		elif self._director.common.presentation_layer == "Matplotlib":
-			getattr(
-				self._director.matplotlib_plotter,
-				f"request_{plot_type}_plot_for_tabs_using_matplotlib",
-			)()
+			if plot_type in common_plot_types:
+				getattr(
+					self._director.matplotlib_common,
+					f"request_{plot_type}_plot_for_tabs_using_matplotlib",
+				)()
+			else:
+				getattr(
+					self._director.matplotlib_plotter,
+					f"request_{plot_type}_plot_for_tabs_using_matplotlib",
+				)()
 
 	# ------------------------------------------------------------------------
 
@@ -899,11 +912,13 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def have_ranks_of_similarities(self) -> bool:
+	def have_ranks_differences(self) -> bool:
 		#
-		# Checks if ranks dataframe is empty
+		# Checks if ranks differences dataframe is empty
 		#
-		return not self._director.similarities_active.ranks_df.empty
+		return not (
+			self._director.similarities_active.differences_of_ranks_as_dataframe.empty
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -1297,10 +1312,12 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def needs_ranks(self, command: str) -> bool:
-		if not self.have_ranks_of_similarities():
-			title = "No ranks have been established."
-			message = f"Use Associations Ranks before using {command}."
+	def needs_ranks_differences(self, command: str) -> bool:
+		if not self.have_ranks_differences():
+			title = "No ranks differences have been established."
+			message = (
+				f"Use Associations Ranks differences before using {command}."
+			)
 			raise DependencyError(title, message)
 
 		return False
@@ -1446,6 +1463,10 @@ class Spaces:
 		print("\t Clusters: ", self._director.common.have_clusters())
 		print("\t Correlations: ", self._director.common.have_correlations())
 		print("\t Distances: ", self._director.common.have_distances())
+		print(
+			"\t Difference of ranks: ",
+			self._director.common.have_ranks_differences(),
+		)
 		print("\t Evaluations: ", self._director.common.have_evaluations())
 		print("\t Factors: ", self._director.common.have_factors())
 		print("\t Grouped data: ", self._director.common.have_grouped_data())
@@ -1458,7 +1479,6 @@ class Spaces:
 			"\t Previous active configuration: ",
 			self._director.common.have_previous_active(),
 		)
-		print("\t Ranks: ", self._director.common.have_ranks_of_similarities())
 		print(
 			"\t Reference_points: ",
 			self._director.common.have_reference_points(),
@@ -3182,4 +3202,25 @@ class Spaces:
 		self._director.clear_redo_stack()
 
 		self._director.push_undo_state(cmd_state)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def rank_when_similarities_match_configuration(self) -> None:
+		"""Create ranks_df when both similarities and configuration exist.
+
+		This function coordinates between similarities and configuration data
+		to create ranked dataframes used for Shepard diagrams and other
+		analyses. It should be called whenever similarities or configuration
+		are loaded or when transformations change distances.
+		"""
+		if self.have_similarities() and self.have_active_configuration():
+			self._director.similarities_active.\
+				create_ranked_similarities_dataframe()
+
+			self._director.similarities_active.\
+				duplicate_ranked_similarities(self)
+			self._director.similarities_active.\
+				compute_differences_in_ranks()
+
 		return

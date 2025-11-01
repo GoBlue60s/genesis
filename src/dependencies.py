@@ -28,7 +28,8 @@ class DependencyChecking:
 		self.commands_that_need_correlations: set = set()
 		self.commands_that_need_individual_data: set = set()
 		self.commands_that_need_distances: set = set()
-		self.commands_that_need_ranks: set = set()
+		self.commands_that_need_ranks_distances: set = set()
+		self.commands_that_need_ranks_similarities: set = set()
 		self.commands_that_need_scores: set = set()
 		self.commands_that_need_evaluations: set = set()
 		self.commands_that_need_target: set = set()
@@ -131,7 +132,6 @@ class DependencyChecking:
 			"shepard",
 			"view distances",
 		}
-		self.commands_that_need_ranks: set = {"shepard"}
 		self.commands_that_need_scores: set = {
 			"joint",
 			"print scores",
@@ -191,7 +191,8 @@ class DependencyChecking:
 			self.commands_that_need_correlations,
 			self.commands_that_need_individual_data,
 			self.commands_that_need_distances,
-			self.commands_that_need_ranks,
+			self.commands_that_need_ranks_distances,
+			self.commands_that_need_ranks_similarities,
 			self.commands_that_need_scores,
 			self.commands_that_need_evaluations,
 			self.commands_that_need_target,
@@ -208,7 +209,6 @@ class DependencyChecking:
 			self._director.common.needs_correlations,
 			self._director.common.needs_individual_data,
 			self._director.common.needs_distances,
-			self._director.common.needs_ranks,
 			self._director.common.needs_scores,
 			self._director.common.needs_evaluations,
 			self._director.common.needs_target,
@@ -890,7 +890,8 @@ class PrepareForDependencyTesting:
 		self.commands_that_need_correlations: set = set()
 		self.commands_that_need_individual_data: set = set()
 		self.commands_that_need_distances: set = set()
-		self.commands_that_need_ranks: set = set()
+		self.commands_that_need_ranks_distances: set = set()
+		self.commands_that_need_ranks_similarities: set = set()
 		self.commands_that_need_scores: set = set()
 		self.commands_that_need_evaluations: set = set()
 		self.commands_that_need_target: set = set()

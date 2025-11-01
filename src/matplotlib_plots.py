@@ -1778,28 +1778,6 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_scree_plot_for_tabs_using_matplotlib(self) -> None:
-		director = self._director
-		matplotlib_common = director.matplotlib_common
-		evaluations = director.evaluations_active.evaluations
-		eigen = director.configuration_active.eigen
-
-		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
-			"Scree Plot"
-		)
-		xvals = range(1, evaluations.shape[1] + 1)
-		ax.scatter(xvals, eigen)
-		ax.plot(xvals, eigen)
-		ax.set_xlabel("Factors")
-		ax.set_ylabel("Eigenvalue")
-		ax.grid()
-
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
-
-		return
-
-	# -------------------------------------------------------------------------
-
 	def request_second_plot_for_tabs_using_matplotlib(self) -> None:
 		director = self._director
 		common = director.common

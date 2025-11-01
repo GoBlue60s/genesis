@@ -2119,15 +2119,6 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def request_scree_plot_for_tabs_using_pyqtgraph(self) -> None:
-		title = "Request Scree Plot for Plot and Gallery using PyQtGraph"
-		message = "Must be created"
-		raise UnderDevelopmentError(title, message)
-
-		return
-
-	# ------------------------------------------------------------------------
-
 	def request_second_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
 		common = director.common

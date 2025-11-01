@@ -599,7 +599,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Shepard": {
-		"type": "passive"
+		"type": "passive",
+		"script_parameters": ["axis"],
+		"execute_parameters": ["axis"]
 	},
 	"Similarities": {
 		"type": "active",

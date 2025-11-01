@@ -82,6 +82,8 @@ from pyqtgraph_plots import PyQtGraphMethods
 class Status(QMainWindow):
 	"""Main Window."""
 
+	title_for_table_widget: str = ""
+
 	def __init__(self, parent: QWidget | None = None) -> None:
 		"""Initializer."""
 		super().__init__(parent)  # Call the base class constructor

@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 import pandas as pd
 
 if TYPE_CHECKING:
-	from director import Spaces
+	from common import Spaces
 	from director import Status
 
 from exceptions import SpacesError
@@ -29,6 +29,9 @@ if __name__ == "__main__":  # pragma: no cover
 
 class ConfigurationCommand:
 	"""The Configuration command is used to open a configuration file."""
+
+	_director: Status
+	common: Spaces
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -59,6 +62,7 @@ class ConfigurationCommand:
 		self._director.configuration_candidate.inter_point_distances()
 		self._director.configuration_active = (
 			self._director.configuration_candidate)
+		self.common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
@@ -104,33 +108,16 @@ class CorrelationsCommand:
 			self.common.get_command_parameters("Correlations")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
-			"Correlations", "active", params
-		)
-		# Error handling
-		# If not a correlations file, then return an error message
-		try:
-			self._read_correlations(file_name, common)
-		except ValueError as e:
-			raise SpacesError(
-				self._correlations_error_bad_input_title,
-				self._correlations_error_bad_input_message,
-			) from e
-
-		# Check for consistency between correlations and active configuration
+			"Correlations", "active", params)
+		self._read_correlations(file_name, common)
 		self._director.dependency_checker.detect_consistency_issues()
-
 		self._director.correlations_active = (
-			self._director.correlations_candidate
-		)
+			self._director.correlations_candidate)
 		self._director.correlations_active.print_the_correlations(
-			width=8,
-			decimals=3,
-			common=common,
-		)
+			width=8, decimals=3, common=common)
 		self._director.common.create_plot_for_tabs("heatmap_corr")
 		self._director.title_for_table_widget = (
-			"The correlations are shown as a square matrix"
-		)
+			"The correlations are shown as a square matrix")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -144,19 +131,14 @@ class CorrelationsCommand:
 		different from the rectangular format used for evaluations.
 		"""
 		try:
-			# Use the existing read_lower_triangular_matrix function
 			self._director.correlations_candidate = (
 				common.read_lower_triangular_matrix(file_name, "correlations")
 			)
-
-			# Duplicate correlations to create all required formats
 			self._director.correlations_candidate.duplicate_correlations(common)
-
-		except (
-			FileNotFoundError,
-			PermissionError,
-		) as e:
-			raise ValueError(f"Unable to read correlations file: {e}") from e
+		except (FileNotFoundError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._correlations_error_bad_input_title,
+				self._correlations_error_bad_input_message) from e
 
 	# ------------------------------------------------------------------------
 
@@ -3148,6 +3130,7 @@ class SimilaritiesCommand:
 		self._director.similarities_active = (
 			self._director.similarities_candidate
 		)
+		common.rank_when_similarities_match_configuration()
 		width = 8
 		decimals = 3
 		self._director.similarities_active.print_the_similarities(
