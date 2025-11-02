@@ -5,11 +5,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from typing import TYPE_CHECKING
-# from dialogs import (  # noqa: PLC0415
-# 	GetIntegerDialog,
-# 	GetStringDialog,
-# 	GetCoordinatesDialog,
-# )
+
 import pandas as pd
 
 if TYPE_CHECKING:
@@ -20,7 +16,8 @@ from exceptions import SpacesError
 from rivalry import Rivalry
 
 if __name__ == "__main__":  # pragma: no cover
-	print(f"This module is not designed to run as a script.  {Path(__file__).name}")
+	print("This module is not designed to run as a script.  "
+		f"{Path(__file__).name}")
 	sys.exit(1)
 
 
@@ -30,8 +27,8 @@ if __name__ == "__main__":  # pragma: no cover
 class ConfigurationCommand:
 	"""The Configuration command is used to open a configuration file."""
 
-	_director: Status
-	common: Spaces
+	# _director: Status
+	# common: Spaces
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -56,18 +53,20 @@ class ConfigurationCommand:
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Configuration", "active", params)
-		self._director.configuration_candidate = common.read_configuration_type_file(
+		self._director.configuration_candidate = \
+			common.read_configuration_type_file(
 			file_name, "Configuration")
 		self._director.dependency_checker.detect_consistency_issues()
-		self._director.configuration_candidate.inter_point_distances()
+		# self._director.configuration_candidate.inter_point_distances()
 		self._director.configuration_active = (
 			self._director.configuration_candidate)
+		self._director.configuration_candidate.inter_point_distances()
 		self.common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		ndim = self._director.configuration_candidate.ndim
-		npoint = self._director.configuration_candidate.npoint
+		ndim = self._director.configuration_active.ndim
+		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
 			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -89,14 +88,12 @@ class CorrelationsCommand:
 		self._correlations_error_bad_input_title = "Correlations problem"
 		self._correlations_error_bad_input_message = (
 			"Input is inconsistent with a correlations file.\nLook "
-			"at the contents of file and try again."
-		)
+			"at the contents of file and try again.")
 		self._correlations_error_title = "Correlations inconsistency"
 		self._correlations_error_message = (
 			"There are inconsistencies "
 			"with the correlations file.\n"
-			"Please check the file and try again."
-		)
+			"Please check the file and try again.")
 		return
 
 	# ------------------------------------------------------------------------
@@ -144,7 +141,7 @@ class CorrelationsCommand:
 
 
 class CreateCommand:
-	"""The Create command is used to create a new configuration interactively."""
+	"""The Create command creates a new configuration interactively."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -165,6 +162,8 @@ class CreateCommand:
 		self._names_message = "Enter a name for "
 		self._coordinates_title = "Specify the coordinates"
 		self._coordinates_message = "Enter coordinates for "
+		self._cancel_title = "Create cancelled"
+		self._cancel_message = "Configuration creation was cancelled"
 		return
 
 	# ------------------------------------------------------------------------
@@ -187,9 +186,7 @@ class CreateCommand:
 			max_value=100,
 		)
 		if not npoint_dialog.exec():
-			raise SpacesError(
-				"Create cancelled", "Configuration creation was cancelled"
-			)
+			raise SpacesError(self._cancel_title, self._cancel_message)
 		npoint = npoint_dialog.get_value()
 
 		# Get number of dimensions from user
@@ -200,9 +197,8 @@ class CreateCommand:
 			max_value=10,
 		)
 		if not ndim_dialog.exec():
-			raise SpacesError(
-				"Create cancelled", "Configuration creation was cancelled"
-			)
+			raise SpacesError(self._cancel_title, self._cancel_message)
+			
 		ndim = ndim_dialog.get_value()
 
 		# Get point labels and names
@@ -214,9 +210,8 @@ class CreateCommand:
 				f"{self._labels_message}point {each_point + 1}:",
 			)
 			if not label_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Configuration creation was cancelled"
-				)
+				raise SpacesError(self._cancel_title, self._cancel_message)
+
 			point_labels.append(label_dialog.get_value())
 
 			name_dialog = GetStringDialog(
@@ -224,9 +219,8 @@ class CreateCommand:
 				f"{self._names_message}point {each_point + 1}:",
 			)
 			if not name_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Configuration creation was cancelled"
-				)
+				raise SpacesError(self._cancel_title, self._cancel_message)
+
 			point_names.append(name_dialog.get_value())
 
 		# Get dimension labels and names
@@ -238,9 +232,8 @@ class CreateCommand:
 				f"{self._labels_message}dimension {each_dim + 1}:",
 			)
 			if not label_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Configuration creation was cancelled"
-				)
+				raise SpacesError(self._cancel_title, self._cancel_message)
+
 			dim_labels.append(label_dialog.get_value())
 
 			name_dialog = GetStringDialog(
@@ -248,9 +241,8 @@ class CreateCommand:
 				f"{self._names_message}dimension {each_dim + 1}:",
 			)
 			if not name_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Configuration creation was cancelled"
-				)
+				raise SpacesError(self._cancel_title, self._cancel_message)
+
 			dim_names.append(name_dialog.get_value())
 
 		# Get coordinates for each point
@@ -262,9 +254,8 @@ class CreateCommand:
 				ndim,
 			)
 			if not coords_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Configuration creation was cancelled"
-				)
+				raise SpacesError(self._cancel_title, self._cancel_message)
+
 			coords = coords_dialog.get_values()
 			coords_data.append(coords)
 
@@ -312,7 +303,8 @@ class DeactivateCommand:
 		self._director.command = "Deactivate"
 		self._director.title_for_table_widget = "Deactivate"
 		self._deactivate_items_title = "Select items to deactivate"
-		self._deactivate_items_message = "Select one or more items to deactivate:"
+		self._deactivate_items_message = \
+			"Select one or more items to deactivate:"
 		return
 
 	# ------------------------------------------------------------------------

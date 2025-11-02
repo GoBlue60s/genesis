@@ -478,6 +478,13 @@ class CommandState:
 		config_snapshot = self.state_snapshot["configuration"]
 		config = director.configuration_active
 
+		# Debug: Print what we're restoring
+		print(f"\tRestoring configuration state:")
+		print(f"\t  point_coords.empty: {config_snapshot['point_coords'].empty}")
+		print(f"\t  point_coords.shape: {config_snapshot['point_coords'].shape}")
+		print(f"\t  npoint: {config_snapshot['npoint']}")
+		print(f"\t  ndim: {config_snapshot['ndim']}")
+
 		# Restore core data
 		config.point_coords = config_snapshot["point_coords"].copy()
 		config.point_names = config_snapshot["point_names"].copy()
@@ -502,6 +509,11 @@ class CommandState:
 		config.ranked_distances_as_dataframe = config_snapshot[
 			"ranked_distances_as_dataframe"
 		].copy()
+
+		# Debug: Verify restoration
+		print(f"\tAfter restoration:")
+		print(f"\t  config.point_coords.empty: {config.point_coords.empty}")
+		print(f"\t  config.npoint: {config.npoint}")
 
 	# ------------------------------------------------------------------------
 

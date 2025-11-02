@@ -906,12 +906,6 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def have_previous_active(self) -> bool:
-		#
-		return len(self._director.undo_stack) != 1
-
-	# ------------------------------------------------------------------------
-
 	def have_ranks_differences(self) -> bool:
 		#
 		# Checks if ranks differences dataframe is empty
@@ -1475,10 +1469,6 @@ class Spaces:
 			self._director.common.have_individual_data(),
 		)
 		print("\t MDS results: ", self._director.common.have_mds_results())
-		print(
-			"\t Previous active configuration: ",
-			self._director.common.have_previous_active(),
-		)
 		print(
 			"\t Reference_points: ",
 			self._director.common.have_reference_points(),
