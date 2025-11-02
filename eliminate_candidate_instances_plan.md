@@ -220,18 +220,27 @@ self._director.dependency_checker.detect_consistency_issues_for_object(temp_conf
 self.configuration_active.copy_from(temp_config)  # Still need copy_from!
 ```
 
-**OR** (cleaner but requires more refactoring):
+**OR** (cleaner and simpler - Variant 3B):
 ```python
+# Capture state BEFORE making changes (already done in execute())
+self.common.capture_and_push_undo_state("Configuration", "active", params)
+
 # Read file directly into active
 self._director.configuration_active = common.read_configuration_type_file(
     file_name, "Configuration"
 )
 
-# Validate
-self._director.dependency_checker.detect_consistency_issues()
-# If validation fails, an exception is raised and active remains unchanged
-# due to how undo restoration works
+# Validate - if validation fails, restore state before raising exception
+try:
+    self._director.dependency_checker.detect_consistency_issues()
+except SpacesError as e:
+    # Restore previous state before re-raising
+    cmd_state = self._director.pop_undo_state()
+    cmd_state.restore_all_state(self._director)
+    raise e
 ```
+
+**Key insight**: The undo system captures state BEFORE file loading. If validation fails, we explicitly restore that state before raising the exception. This maintains atomicity without needing temporary objects or copy_from().
 
 ### Pros
 - **Eliminates redundancy** - only one object per feature instead of two
@@ -261,12 +270,14 @@ self._director.dependency_checker.detect_consistency_issues()
 - Still need `copy_from()` method (same as Option 1)
 - Very clean separation: temp object for validation, active for state
 
-#### Variant B: Read directly into active, rely on undo
-- Read directly into active object, validate, if validation fails raise exception
-- Undo system already captured previous state, so exception causes undo
-- **Riskiest approach** - active briefly in invalid state if validation fails
-- No need for `copy_from()`
-- Requires ensuring validation exceptions properly trigger undo
+#### Variant B: Read directly into active, restore on validation failure
+- Read directly into active object, validate, if validation fails restore then raise exception
+- Undo system already captured previous state before file load
+- Exception handler explicitly restores state before re-raising
+- **Simplest approach** - no `copy_from()` needed, no temporary objects
+- Requires intercepting exceptions at validation points to trigger restore
+- **Decision needed**: Where to intercept exceptions (in commands? in validation? wrapper function?)
+- **Decision needed**: Should user be given choice to accept invalid state vs. restore?
 
 ### Estimated Effort
 
@@ -399,11 +410,182 @@ While conceptually appealing (fewest lines of code), it's riskier because:
 
 ---
 
+---
+
+## Research Findings (Completed)
+
+### Undo System Investigation ✓
+- State capture happens BEFORE modifications via `capture_and_push_undo_state()`
+- State restore copies data INTO current `_active` object (not object reassignment)
+- Restore methods in `command_state.py` lines 469-921
+- **Key insight**: Undo doesn't care about object identity, only data
+
+### Consistency Checker Investigation ✓
+- **Purpose**: Compare newly loaded feature against OTHER existing features
+- **NOT**: Comparing new vs old of same feature
+- Example: New configuration checked against existing similarities for matching point names
+- Uses `new_feature_dict` (reads from `_candidate`) vs `existing_feature_dict` (reads from `_active`)
+- Determines "new" feature from command name via `_create_new_from_command_without_open()`
+
+### Candidate References Count ✓
+Total: 167 occurrences across 5 files
+- `director.py`: 8 (initialization)
+- `dependencies.py`: 38 (consistency checker)
+- `filemenu.py`: 102 (file loading commands)
+- `associationsmenu.py`: 17 (line of sight command)
+- `viewmenu.py`: 2 (**BUG** - should use `_active`)
+
+---
+
+## Design Decisions for Option 3B
+
+### Decision 1: Where to intercept exceptions for state restoration?
+
+**Option A: In each command's execute() method** - ❌ ELIMINATED
+- Wrap validation calls in try/except within execute()
+- **Reason for elimination**: We never raise exceptions in execute functions
+- This option is not viable
+
+**Option B: In validation methods themselves**
+- Modify `detect_consistency_issues()` and related methods to restore before raising
+- Add restore logic within the validation method itself
+
+```python
+def detect_consistency_issues(self):
+    try:
+        # ... validation logic ...
+        if not dimensions_match:
+            raise SpacesError(title, message)
+    except SpacesError as e:
+        cmd_state = self._director.pop_undo_state()
+        cmd_state.restore_all_state(self._director)
+        raise e
+```
+
+- **Pros**: Centralized in validation layer, no duplication across commands
+- **Cons**: Validation method needs access to undo stack, assumes all validation failures need restore
+
+**Option C: In central exception handler**
+- Modify `director.request_control()` exception handler (line 862)
+- Add logic to determine if restore is needed before showing error
+
+```python
+except SpacesError as e:
+    # Determine if we need to restore (was state captured? was it modified?)
+    if self._should_restore_on_failure():
+        cmd_state = self.pop_undo_state()
+        cmd_state.restore_all_state(self)
+    self.unable_to_complete_command_set_status_as_failed()
+    self.common.error(e.title, e.message)
+```
+
+- **Pros**: Single location handles all commands uniformly
+- **Cons**: Hard to determine when restore is appropriate, may restore when not needed or fail to restore when needed
+
+**Option D: At each specific exception raise point (after _active modified)** - ⭐ MOST FLEXIBLE
+- Add restore logic directly before each `raise` statement that occurs in the "danger zone"
+- **Danger zone** = code between `_active` assignment and successful command completion
+- Applies to ALL exception types (SpacesError, ValueError, KeyError, file errors, pandas errors, etc.)
+- Can use direct restore OR wrapper function for user choice
+
+Direct restore approach:
+```python
+# In dependencies.py, consistency checking:
+if not dimensions_match:
+    # Restore before raising
+    cmd_state = self._director.pop_undo_state()
+    cmd_state.restore_all_state(self._director)
+    raise SpacesError(title, message)
+
+# In file reading functions:
+if file_error:
+    cmd_state = self._director.pop_undo_state()
+    cmd_state.restore_all_state(self._director)
+    raise SpacesError(title, message)
+```
+
+Wrapper function approach (with user choice):
+```python
+if not dimensions_match:
+    self._handle_failure_with_user_choice(
+        title="Dimension mismatch",
+        message="Configuration has 3 dimensions but Similarities expects 2",
+        error_type=SpacesError
+    )
+    # Wrapper shows dialog asking user to choose:
+    #   - Restore previous state (undo the load)
+    #   - Keep new data (accept inconsistency)
+    #   - Cancel (don't raise exception, try to continue)
+    # Then raises exception based on user choice
+```
+
+- **Pros**:
+  - Most precise control - only affects exact failure points
+  - Enables user choice per failure (aligns with philosophy)
+  - Can combine direct restore AND user choice as appropriate
+  - Clear about what's in "danger zone"
+- **Cons**:
+  - More locations to modify
+  - Need to identify every raise point in danger zone (not just validation)
+- **Key insight**: Must handle ANY exception type, not just SpacesError
+
+**Recommendation**: Option D with wrapper function for user choice
+- Aligns with development philosophy: transparency and user agency
+- Most flexible - can use direct restore for critical errors, user choice for validation failures
+- Clear mapping to problem: "after this line, _active is modified"
+
+---
+
+### Decision 2: User control over restoration
+
+**Options:**
+- **A. Always restore automatically** - Validation failure = automatic rollback
+- **B. Ask user per failure** - Dialog: "Validation failed. Restore previous state or keep new data?"
+- **C. Restore but allow re-undo** - Automatic restore, but user can undo the restoration
+- **D. Never restore automatically** - User must manually Undo if they want previous state
+- **E. User preference/setting** - Let user configure default behavior
+
+**Considerations:**
+- User agency and transparency (per development philosophy)
+- When might user want to keep "invalid" state? (debugging, exploration, edge cases)
+- Some errors are critical (file not found), others are warnings (dimension mismatch)
+- Could categorize errors: critical (auto-restore) vs. recoverable (ask user)
+
+**Recommendation**: Option B (ask user) with Option E (make it configurable)
+- Default: Ask user for validation failures
+- Allow preference for "always restore" or "never restore"
+- Critical errors (file I/O, etc.) could auto-restore without asking
+
+---
+
+### Decision 3: Which exception raise points need restore?
+
+**Need to identify:**
+- All locations that `raise` any exception type
+- **After** `_active` has been assigned new data
+- **Before** command successfully completes
+
+**Categories of exceptions in danger zone:**
+1. **Consistency validation** - `detect_consistency_issues()` in dependencies.py
+2. **File reading errors** - in `read_configuration_type_file()` and similar
+3. **Data processing errors** - pandas operations, numpy calculations
+4. **Unexpected runtime errors** - any Python exception during command execution
+
+**Scope:**
+- File-loading commands: Configuration, Correlations, Evaluations, Grouped data, Individuals, Scores, Similarities, Target
+- Data generation commands: Line of sight, Create, New grouped data
+- Any other command that assigns to `_active`
+
+---
+
 ## Next Steps
 
-1. **Sleep on it** ✓
-2. **Search codebase** for all `*_candidate` references to understand full scope
-3. **Review dependency checker** to understand validation dependencies
-4. **Decide on approach** (likely Option 1 now, Option 3A later)
-5. **Implement chosen option**
-6. **Test thoroughly**
+1. ✓ **Sleep on it**
+2. ✓ **Search codebase** for all `*_candidate` references
+3. ✓ **Review dependency checker** to understand validation dependencies
+4. ✓ **Review undo/redo system** to understand state capture/restore
+5. **Decide on exception handling approach** - Recommendation: Option D with user choice wrapper
+6. **Decide on user control strategy** - Recommendation: Ask user (configurable)
+7. **Identify all exception raise points** in danger zones
+8. **Implement Option 3B** incrementally (start with one feature as proof of concept)
+9. **Test thoroughly**
