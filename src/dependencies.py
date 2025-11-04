@@ -774,6 +774,16 @@ class DependencyChecking:
 			"Individuals": self._director.abandon_individual_data,
 			"Scores": self._director.abandon_scores,
 		}
+		feature_name_map = {
+			"Configuration": "configuration",
+			"Target": "target",
+			"Grouped data": "grouped_data",
+			"Similarities": "similarities",
+			"Correlations": "correlations",
+			"Evaluations": "evaluations",
+			"Individuals": "individuals",
+			"Scores": "scores",
+		}
 		if no_common_information:
 			self._conflict_title: str = "Potential consistency problem"
 			self._conflict_options_title: str = "How to proceed"
@@ -807,7 +817,13 @@ class DependencyChecking:
 					abandon_dict[existing]()
 					existing_abandoned: bool = True
 				case 1:
-					abandon_dict[new]()
+					# Ask user to restore or clear the new feature
+					feature_name = feature_name_map.get(
+						new, new.lower().replace(" ", "_")
+					)
+					self._director.common.event_driven_optional_restoration(
+						feature_name
+					)
 					abandon_needed_error_title: str = self._director.command
 					abandon_needed_error_message: str = \
 						f"{new} has been abandoned"
@@ -818,7 +834,13 @@ class DependencyChecking:
 				case 2:
 					existing_abandoned: bool = False
 				case _:
-					abandon_dict[existing]()
+					# Unexpected case - ask user to restore or clear new
+					feature_name = feature_name_map.get(
+						new, new.lower().replace(" ", "_")
+					)
+					self._director.common.event_driven_optional_restoration(
+						feature_name
+					)
 					inconsistency_error_title: str = \
 						f"{new} has been abandoned"
 					inconsistency_error_message: str = (
@@ -829,7 +851,13 @@ class DependencyChecking:
 						inconsistency_error_title, inconsistency_error_message
 					)
 		else:
-			abandon_dict[existing]()
+			# Dialog cancelled or failed - ask user to restore or clear new
+			feature_name = feature_name_map.get(
+				new, new.lower().replace(" ", "_")
+			)
+			self._director.common.event_driven_optional_restoration(
+				feature_name
+			)
 			inconsistency_unresolved_error_title: str = \
 				f"{new} has been abandoned"
 			inconsistency_unresolved_error_message: str = (

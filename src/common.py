@@ -49,6 +49,7 @@ from typing import TextIO, TYPE_CHECKING
 
 if TYPE_CHECKING:
 	# from collections.abc import Callable
+	from command_state import CommandState
 	from spaces import Status
 	from features import (
 		ConfigurationFeature,
@@ -3276,10 +3277,59 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
+	def _was_feature_empty_in_state(
+		self,
+		cmd_state: CommandState,
+		feature_name: str
+	) -> bool:
+		"""Check if feature was empty in the captured state.
+
+		Args:
+			cmd_state: The CommandState to check
+			feature_name: Name of feature to check
+
+		Returns:
+			True if feature was empty, False otherwise
+		"""
+		if cmd_state.state_snapshot is None:
+			return True
+
+		if feature_name not in cmd_state.state_snapshot:
+			return True
+
+		snapshot = cmd_state.state_snapshot[feature_name]
+
+		# Check based on feature type
+		if feature_name == "correlations":
+			return (
+				snapshot.get("nitem", 0) == 0 or
+				snapshot.get("correlations_as_dataframe", pd.DataFrame()).empty
+			)
+		elif feature_name == "evaluations":
+			return snapshot.get("evaluations", pd.DataFrame()).empty
+		elif feature_name == "scores":
+			return len(snapshot.get("scores", pd.DataFrame())) == 0
+		elif feature_name == "configuration":
+			return snapshot.get("npoint", 0) == 0
+		elif feature_name == "similarities":
+			return snapshot.get("nreferent", 0) == 0
+		elif feature_name == "target":
+			return snapshot.get("npoint", 0) == 0
+		elif feature_name == "grouped_data":
+			return snapshot.get("ngroup", 0) == 0
+		elif feature_name == "individuals":
+			return snapshot.get("nindividual", 0) == 0
+
+		return False
+
+	# ------------------------------------------------------------------------
+
 	def event_driven_optional_restoration(self, feature_name: str) -> None:
 		"""Ask user whether to restore state, clean up if declined.
 
-		Shows dialog asking user to restore previous state.
+		If previous state was empty, automatically clears without asking.
+		Shows dialog asking user to restore previous state only when there's
+		actually something to restore.
 		- If user chooses Yes: Restore from undo stack
 		- If user chooses No: Empty/clear the feature data
 
@@ -3288,8 +3338,25 @@ class Spaces:
 
 		Args:
 			feature_name: Name of feature (e.g., "configuration")
-						 Used to derive dialog title/message and for cleanup
+				Used to derive dialog title/message and for cleanup
 		"""
+		# Peek at undo state to see if there's anything to restore
+		cmd_state = self._director.peek_undo_state()
+
+		if cmd_state is not None and self._was_feature_empty_in_state(
+			cmd_state, feature_name
+		):
+			# Previous state was empty - just clear and pop without asking
+			attr_name = f"{feature_name}_active"
+			current_feature = getattr(self._director, attr_name)
+			feature_class = type(current_feature)
+			setattr(
+				self._director,
+				attr_name,
+				feature_class(self._director)
+			)
+			self._director.pop_undo_state()
+			return
 		# Build dialog content based on feature
 		feature_display_names = {
 			"configuration": "Configuration",
