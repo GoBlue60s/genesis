@@ -194,9 +194,7 @@ class Status(QMainWindow):
 
 		self.configuration_candidate = ConfigurationFeature(self)
 		self.configuration_active = ConfigurationFeature(self)
-		self.correlations_candidate = CorrelationsFeature(self)
 		self.correlations_active = CorrelationsFeature(self)
-		self.evaluations_candidate = EvaluationsFeature(self)
 		self.evaluations_active = EvaluationsFeature(self)
 		self.grouped_data_candidate = GroupedDataFeature(self)
 		self.grouped_data_active = GroupedDataFeature(self)
@@ -206,7 +204,6 @@ class Status(QMainWindow):
 		self.similarities_active = SimilaritiesFeature(self)
 		self.target_candidate = TargetFeature(self)
 		self.target_active = TargetFeature(self)
-		self.scores_candidate = ScoresFeature(self)
 		self.scores_active = ScoresFeature(self)
 		self.uncertainty_active = UncertaintyAnalysis(self)
 		self.matplotlib_plotter = MatplotlibMethods(self)

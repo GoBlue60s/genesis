@@ -108,8 +108,6 @@ class CorrelationsCommand:
 			"Correlations", "active", params)
 		self._read_correlations(file_name, common)
 		self._director.dependency_checker.detect_consistency_issues()
-		self._director.correlations_active = (
-			self._director.correlations_candidate)
 		self._director.correlations_active.print_the_correlations(
 			width=8, decimals=3, common=common)
 		self._director.common.create_plot_for_tabs("heatmap_corr")
@@ -122,20 +120,29 @@ class CorrelationsCommand:
 	# ------------------------------------------------------------------------
 
 	def _read_correlations(self, file_name: str, common: Spaces) -> None:
-		"""Read correlations from lower triangular file and store in candidate.
+		"""Read correlations from lower triangular file and store in active.
 
 		Correlations are stored in a lower triangular matrix format, which is
 		different from the rectangular format used for evaluations.
 		"""
 		try:
-			self._director.correlations_candidate = (
+			self._director.correlations_active = (
 				common.read_lower_triangular_matrix(file_name, "correlations")
 			)
-			self._director.correlations_candidate.duplicate_correlations(common)
-		except (FileNotFoundError, PermissionError, ValueError) as e:
+			self._director.correlations_active.duplicate_correlations(common)
+		except (
+			FileNotFoundError,
+			PermissionError,
+			ValueError,
+			SpacesError
+		):
+			self.common.event_driven_optional_restoration("correlations")
+			# Raise exception to stop command execution
+			# (Restoration has already occurred if user chose Yes)
 			raise SpacesError(
 				self._correlations_error_bad_input_title,
-				self._correlations_error_bad_input_message) from e
+				self._correlations_error_bad_input_message
+			)
 
 	# ------------------------------------------------------------------------
 
@@ -477,9 +484,6 @@ class EvaluationsCommand:
 		self.common.capture_and_push_undo_state("Evaluations", "active", params)
 		self._read_evaluations(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
-		self._director.evaluations_active = (
-			self._director.evaluations_candidate
-		)
 		self._compute_correlations_from_evaluations(common)
 		self._director.evaluations_active.print_the_evaluations()
 		self._director.evaluations_active.summarize_evaluations()
@@ -494,6 +498,9 @@ class EvaluationsCommand:
 	# ------------------------------------------------------------------------
 
 	def _read_evaluations(self, file_name: str) -> None:
+		# Clear linked correlations if they exist and match current evaluations
+		self._clear_linked_correlations_if_needed()
+
 		try:
 			evaluations = pd.read_csv(file_name)
 			(nevaluators, nreferent) = evaluations.shape
@@ -505,14 +512,14 @@ class EvaluationsCommand:
 			if len(item_names) < 3:
 				raise ValueError("Evaluations file must have at least 3 items")
 
-			self._director.evaluations_candidate.evaluations = evaluations
-			self._director.evaluations_candidate.nevaluators = nevaluators
-			self._director.evaluations_candidate.nreferent = nreferent
-			self._director.evaluations_candidate.nitem = nitem
-			self._director.evaluations_candidate.range_items = range_items
-			self._director.evaluations_candidate.item_names = item_names
-			self._director.evaluations_candidate.item_labels = item_labels
-			self._director.evaluations_candidate.file_handle = file_name
+			self._director.evaluations_active.evaluations = evaluations
+			self._director.evaluations_active.nevaluators = nevaluators
+			self._director.evaluations_active.nreferent = nreferent
+			self._director.evaluations_active.nitem = nitem
+			self._director.evaluations_active.range_items = range_items
+			self._director.evaluations_active.item_names = item_names
+			self._director.evaluations_active.item_labels = item_labels
+			self._director.evaluations_active.file_handle = file_name
 
 		except (
 			FileNotFoundError,
@@ -521,10 +528,34 @@ class EvaluationsCommand:
 			pd.errors.ParserError,
 			ValueError,
 		) as e:
+			self.common.event_driven_optional_restoration("evaluations")
+			# Raise exception to stop command execution
+			# (Restoration has already occurred if user chose Yes)
 			raise SpacesError(
 				self._evaluations_error_bad_input_title,
 				self._evaluations_error_bad_input_message,
 			) from e
+
+	# ------------------------------------------------------------------------
+
+	def _clear_linked_correlations_if_needed(self) -> None:
+		"""Clear existing correlations if they match existing evaluations."""
+		# Check if both evaluations and correlations already exist
+		if (
+			self._director.evaluations_active.item_names
+			and self._director.correlations_active.item_names
+		):
+			# If item names match, correlations are linked to evaluations
+			if (
+				self._director.evaluations_active.item_names
+				== self._director.correlations_active.item_names
+			):
+				# Reinitialize correlations since they're linked to old evaluations
+				from features import CorrelationsFeature  # noqa: PLC0415
+				self._director.correlations_active = CorrelationsFeature(
+					self._director
+				)
+		return
 
 	# ------------------------------------------------------------------------
 
@@ -546,27 +577,23 @@ class EvaluationsCommand:
 				a_row.append(correlations_as_dataframe.iloc[each_row, each_col])
 			correlations.append(a_row)
 
-		self._director.correlations_candidate.nreferent = nreferent
-		self._director.correlations_candidate.nitem = nreferent
-		self._director.correlations_candidate.item_names = item_names
-		self._director.correlations_candidate.item_labels = item_labels
-		self._director.correlations_candidate.correlations = correlations
-		self._director.correlations_candidate.correlations_as_dataframe = (
+		self._director.correlations_active.nreferent = nreferent
+		self._director.correlations_active.nitem = nreferent
+		self._director.correlations_active.item_names = item_names
+		self._director.correlations_active.item_labels = item_labels
+		self._director.correlations_active.correlations = correlations
+		self._director.correlations_active.correlations_as_dataframe = (
 			correlations_as_dataframe
 		)
-		self._director.correlations_candidate.duplicate_correlations(common)
-		self._director.correlations_candidate.ndyad = len(
-			self._director.correlations_candidate.correlations_as_list
+		self._director.correlations_active.duplicate_correlations(common)
+		self._director.correlations_active.ndyad = len(
+			self._director.correlations_active.correlations_as_list
 		)
-		self._director.correlations_candidate.n_pairs = len(
-			self._director.correlations_candidate.correlations_as_list
+		self._director.correlations_active.n_pairs = len(
+			self._director.correlations_active.correlations_as_list
 		)
-		self._director.correlations_candidate.range_dyads = range(
-			self._director.correlations_candidate.ndyad
-		)
-
-		self._director.correlations_active = (
-			self._director.correlations_candidate
+		self._director.correlations_active.range_dyads = range(
+			self._director.correlations_active.ndyad
 		)
 
 
@@ -1203,7 +1230,6 @@ class OpenScoresCommand:
 
 		self._read_scores(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
-		self._director.scores_active = self._director.scores_candidate
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, common)
 		self._director.scores_active.summarize_scores()
@@ -1220,58 +1246,60 @@ class OpenScoresCommand:
 	# ------------------------------------------------------------------------
 
 	def _read_scores(self, file_name: str) -> None:
-		"""Read scores from CSV file and store in candidate."""
+		"""Read scores from CSV file and store in active."""
 		try:
 			scores = pd.read_csv(file_name)
 
 			if scores.empty:
 				raise ValueError("Scores file is empty")
 
-			self._director.scores_candidate.scores = scores
-			self._director.scores_candidate.file_handle = file_name
-			self._director.scores_candidate.nscores = scores.shape[1] - 1
-			self._director.scores_candidate.nscored_individ = scores.shape[0]
-			self._director.scores_candidate.n_individ = (
-				self._director.scores_candidate.nscored_individ
+			self._director.scores_active.scores = scores
+			self._director.scores_active.file_handle = file_name
+			self._director.scores_active.nscores = scores.shape[1] - 1
+			self._director.scores_active.nscored_individ = scores.shape[0]
+			self._director.scores_active.n_individ = (
+				self._director.scores_active.nscored_individ
 			)
-			self._director.scores_candidate.range_scores = range(
-				self._director.scores_candidate.nscores
+			self._director.scores_active.range_scores = range(
+				self._director.scores_active.nscores
 			)
 
 			# Extract dimension names from column headers (skip first column)
 			columns = scores.columns.tolist()
 			if len(columns) > 1:
 				dim_names = columns[1:]  # Skip first column (index column)
-				self._director.scores_candidate.dim_names = dim_names
+				self._director.scores_active.dim_names = dim_names
 
 				# Set horizontal and vertical axis names
 				if len(dim_names) >= 2:
-					self._director.scores_candidate.hor_axis_name = dim_names[0]
-					self._director.scores_candidate.vert_axis_name = dim_names[1]
+					self._director.scores_active.hor_axis_name = dim_names[0]
+					self._director.scores_active.vert_axis_name = dim_names[1]
 				elif len(dim_names) == 1:
-					self._director.scores_candidate.hor_axis_name = dim_names[0]
-					self._director.scores_candidate.vert_axis_name = "Dimension 2"
+					self._director.scores_active.hor_axis_name = dim_names[0]
+					self._director.scores_active.vert_axis_name = "Dimension 2"
 
 				# Set ndim based on number of score columns
-				self._director.scores_candidate.ndim = len(dim_names)
+				self._director.scores_active.ndim = len(dim_names)
 
 				# Extract score_1 and score_2 for plotting
 				if len(dim_names) >= 1:
-					hor_axis_name = self._director.scores_candidate.hor_axis_name
-					self._director.scores_candidate.score_1 = scores[hor_axis_name]
-					self._director.scores_candidate.score_1_name = dim_names[0]
+					hor_axis_name = self._director.scores_active.hor_axis_name
+					self._director.scores_active.score_1 = scores[hor_axis_name]
+					self._director.scores_active.score_1_name = dim_names[0]
 
 				if len(dim_names) >= 2:
-					vert_axis_name = self._director.scores_candidate.vert_axis_name
-					self._director.scores_candidate.score_2 = scores[vert_axis_name]
-					self._director.scores_candidate.score_2_name = dim_names[1]
+					vert_axis_name = self._director.scores_active.vert_axis_name
+					self._director.scores_active.score_2 = scores[vert_axis_name]
+					self._director.scores_active.score_2_name = dim_names[1]
 
 		except (
 			FileNotFoundError,
 			PermissionError,
 			pd.errors.EmptyDataError,
 			pd.errors.ParserError,
+			ValueError,
 		) as e:
+			self.common.event_driven_optional_restoration("scores")
 			raise SpacesError(
 				self._scores_error_bad_input_title,
 				self._scores_error_bad_input_message,

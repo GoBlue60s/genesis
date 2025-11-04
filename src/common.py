@@ -870,6 +870,26 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
+	def have_ranks_distances(self) -> bool:
+		#
+		# Checks if ranked_distances is empty
+		#
+		return len(
+			self._director.configuration_active.ranked_distances
+		) != 0
+
+	# ------------------------------------------------------------------------
+
+	def have_ranks_similarities(self) -> bool:
+		#
+		# Checks if ranked_similarities is empty
+		#
+		return len(
+			self._director.similarities_active.ranked_similarities
+		) != 0
+
+	# ------------------------------------------------------------------------
+
 	def have_evaluations(self) -> bool:
 		#
 		# Checks if evaluations data is empty
@@ -1264,6 +1284,32 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
+	def needs_ranks_distances(self, command: str) -> bool:
+		if not self.have_ranks_distances():
+			title = "No Ranks of distances have been established."
+			message = (
+				"Use Associations Ranks distances before using "
+				f"{command}."
+			)
+			raise DependencyError(title, message)
+
+		return False
+
+	# ------------------------------------------------------------------------
+
+	def needs_ranks_similarities(self, command: str) -> bool:
+		if not self.have_ranks_similarities():
+			title = "No Ranks of similarities have been established."
+			message = (
+				"Use Associations Ranks similarities before using "
+				f"{command}."
+			)
+			raise DependencyError(title, message)
+
+		return False
+
+	# ------------------------------------------------------------------------
+
 	def needs_evaluations(self, command: str) -> bool:
 		if not self.have_evaluations():
 			title = "No Evaluations have been established."
@@ -1473,12 +1519,23 @@ class Spaces:
 			"\t Reference_points: ",
 			self._director.common.have_reference_points(),
 		)
+		print(
+			"\t Sample design: ", self._director.common.have_sample_design()
+		)
+		print(
+			"\t Sample repetitions: ",
+			self._director.common.have_sample_repetitions(),
+		)
 		print("\t Scores: ", self._director.common.have_scores())
 		print("\t Segments: ", self._director.common.have_segments())
 		print("\t Similarities: ", self._director.common.have_similarities())
 		print(
 			"\t Target configuration: ",
 			self._director.common.have_target_configuration(),
+		)
+		print(
+			"\t Uncertainty solutions: ",
+			self._director.common.have_sample_solutions(),
 		)
 		print(
 			"\t Verbosity setting: ",
@@ -1730,16 +1787,19 @@ class Spaces:
 					)
 
 		except EOFError:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.unexpected_eof_lower_triangular_error_title,
 				self.unexpected_eof_lower_triangular_error_message,
 			) from None
 		except OSError:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.problem_reading_lower_triangular_error_title,
 				self.problem_reading_lower_triangular_error_message,
 			) from None
 		except ValueError:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.unexpected_input_lower_triangular_error_title,
 				self.unexpected_input_lower_triangular_error_message,
@@ -1805,12 +1865,14 @@ class Spaces:
 		flower = line.lower()
 		file_type = flower.strip()
 		if len(file_type) == 0:
+			self.event_driven_automatic_restoration()
 			raise MissingInformationError(
 				self.missing_info_lower_triangle_error_title,
 				self.missing_info_lower_triangle_error_message,
 			)
 
 		if file_type.lower().strip() != "lower triangular":
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.not_lower_triangular_error_title,
 				self.not_lower_triangular_error_message,
@@ -1818,6 +1880,7 @@ class Spaces:
 
 		nite = file_handle.readline().strip("\n")
 		if len(nite) == 0:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.size_info_lower_triangular_error_title,
 				self.size_info_lower_triangular_error_message,
@@ -1825,6 +1888,7 @@ class Spaces:
 
 		nreferent = int(nite)
 		if nreferent < 1:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.unreasonable_number_of_stimuli_error_title,
 				self.unreasonable_number_of_stimuli_error_message,
@@ -1854,6 +1918,7 @@ class Spaces:
 		for each_item in range_items:
 			it = file_handle.readline()
 			if len(it) == 0:
+				self.event_driven_automatic_restoration()
 				raise SpacesError(
 					self.dict_problem_lower_triangle_error_title,
 					self.dict_problem_lower_triangle_error_message,
@@ -1894,6 +1959,7 @@ class Spaces:
 			aitem = file_handle.readline()
 			aitem = aitem.rstrip()
 			if len(aitem) == 0:
+				self.event_driven_automatic_restoration()
 				raise SpacesError(
 					self.problematic_values_in_lower_triangle_error_title,
 					self.problematic_values_in_lower_triangle_error_message,
@@ -3192,6 +3258,102 @@ class Spaces:
 		self._director.clear_redo_stack()
 
 		self._director.push_undo_state(cmd_state)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def event_driven_automatic_restoration(self) -> None:
+		"""Automatically restore previous state from undo stack.
+
+		Used after critical errors where restoration is always appropriate.
+		Pops undo state and restores it without user interaction.
+		Caller should raise exception after this returns.
+		"""
+		cmd_state = self._director.pop_undo_state()
+		if cmd_state is not None:
+			cmd_state.restore_all_state(self._director)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def event_driven_optional_restoration(self, feature_name: str) -> None:
+		"""Ask user whether to restore state, clean up if declined.
+
+		Shows dialog asking user to restore previous state.
+		- If user chooses Yes: Restore from undo stack
+		- If user chooses No: Empty/clear the feature data
+
+		Either way, data will be consistent (restored or empty).
+		Caller should raise exception after this returns.
+
+		Args:
+			feature_name: Name of feature (e.g., "configuration")
+						 Used to derive dialog title/message and for cleanup
+		"""
+		# Build dialog content based on feature
+		feature_display_names = {
+			"configuration": "Configuration",
+			"similarities": "Similarities",
+			"correlations": "Correlations",
+			"evaluations": "Evaluations",
+			"grouped_data": "Grouped Data",
+			"individuals": "Individuals",
+			"scores": "Scores",
+			"target": "Target",
+		}
+
+		display_name = feature_display_names.get(
+			feature_name,
+			feature_name.title()
+		)
+
+		title = f"{display_name} Validation Failed"
+		message = (
+			f"The {display_name.lower()} data failed validation.\n\n"
+			f"Restore previous {display_name.lower()} state?\n\n"
+			f"Choosing 'No' will clear the {display_name.lower()} data."
+		)
+
+		# Show Yes/No dialog - if dialog fails, restore to be safe
+		try:
+			reply = QMessageBox.question(
+				None,
+				title,
+				message,
+				QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+				QMessageBox.StandardButton.Yes
+			)
+
+			if reply == QMessageBox.StandardButton.Yes:
+				# Restore from undo stack
+				cmd_state = self._director.pop_undo_state()
+				if cmd_state is not None:
+					cmd_state.restore_all_state(self._director)
+			else:
+				# User chose No - clear the feature by reinitializing it
+				# The caller is expected to have the appropriate Feature class
+				# imported and will pass the feature_name that corresponds to
+				# an attribute like "{feature_name}_active" on director
+				attr_name = f"{feature_name}_active"
+
+				# Get the current feature's class and reinitialize
+				current_feature = getattr(self._director, attr_name)
+				feature_class = type(current_feature)
+				setattr(
+					self._director,
+					attr_name,
+					feature_class(self._director)
+				)
+
+				# Pop the undo state to keep the stack consistent
+				self._director.pop_undo_state()
+
+		except Exception:
+			# Dialog failed - automatically restore to be safe
+			cmd_state = self._director.pop_undo_state()
+			if cmd_state is not None:
+				cmd_state.restore_all_state(self._director)
+
 		return
 
 	# ------------------------------------------------------------------------

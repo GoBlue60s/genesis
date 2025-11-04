@@ -132,6 +132,14 @@ class DependencyChecking:
 			"shepard",
 			"view distances",
 		}
+		self.commands_that_need_ranks_distances: set = {
+			"ranks differences",
+			"shepard",
+		}
+		self.commands_that_need_ranks_similarities: set = {
+			"ranks differences",
+			"shepard",
+		}
 		self.commands_that_need_scores: set = {
 			"joint",
 			"print scores",
@@ -209,6 +217,8 @@ class DependencyChecking:
 			self._director.common.needs_correlations,
 			self._director.common.needs_individual_data,
 			self._director.common.needs_distances,
+			self._director.common.needs_ranks_distances,
+			self._director.common.needs_ranks_similarities,
 			self._director.common.needs_scores,
 			self._director.common.needs_evaluations,
 			self._director.common.needs_target,
@@ -260,10 +270,7 @@ class DependencyChecking:
 		target_candidate = self._director.target_candidate
 		grouped_data_candidate = self._director.grouped_data_candidate
 		similarities_candidate = self._director.similarities_candidate
-		correlations_candidate = self._director.correlations_candidate
-		evaluations_candidate = self._director.evaluations_candidate
 		individuals_candidate = self._director.individuals_candidate
-		scores_candidate = self._director.scores_candidate
 		configuration_active = self._director.configuration_active
 		target_active = self._director.target_active
 		grouped_data_active = self._director.grouped_data_active
@@ -345,9 +352,9 @@ class DependencyChecking:
 				"Correlations",
 				"Points",
 				None,
-				correlations_candidate.nitem,
-				correlations_candidate.item_names,
-				correlations_candidate.item_labels,
+				correlations_active.nitem,
+				correlations_active.item_names,
+				correlations_active.item_labels,
 				None,
 				None,
 				None,
@@ -356,9 +363,9 @@ class DependencyChecking:
 				"Evaluations",
 				"Points",
 				None,
-				evaluations_candidate.nitem,
-				evaluations_candidate.item_names,
-				evaluations_candidate.item_labels,
+				evaluations_active.nitem,
+				evaluations_active.item_names,
+				evaluations_active.item_labels,
 				None,
 				None,
 				None,
@@ -381,9 +388,9 @@ class DependencyChecking:
 				None,
 				None,
 				None,
-				scores_candidate.nscores,
-				scores_candidate.dim_names,
-				scores_candidate.dim_labels,
+				scores_active.nscores,
+				scores_active.dim_names,
+				scores_active.dim_labels,
 			),
 		}
 

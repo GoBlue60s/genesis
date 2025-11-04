@@ -345,26 +345,32 @@ While conceptually appealing (fewest lines of code), it's riskier because:
 
 ---
 
-## Implementation Phases
+## Standard Steps for Converting Each Feature
 
-### Phase 1: Fix the Bug (Option 1)
-1. Add `copy_from()` method to `ConfigurationFeature`
-2. Update `ConfigurationCommand` to use `copy_from()`
-3. Test thoroughly with configuration files
-4. Remove debug print statements from `command_state.py`
+For each feature (correlations, evaluations, configuration, grouped_data, individuals, similarities, target, scores), follow these steps:
 
-### Phase 2: Extend to All Features (Option 1)
-1. Add `copy_from()` to remaining 7 feature classes
-2. Update all file-loading commands to use `copy_from()`
-3. Comprehensive testing across all features
+### Step 1: Remove Candidate Initialization
+1. Remove `*_candidate` initialization from director.py
 
-### Phase 3: Evaluate Option 3A (Future)
-1. Analyze all references to `*_candidate` objects
-2. Document current validation patterns
-3. Design temp object + copy_from pattern
-4. Create detailed refactoring plan
-5. Implement incrementally, one feature at a time
-6. Extensive testing after each feature conversion
+### Step 2: Update File-Loading Commands
+1. Update commands to read directly into `*_active` instead of `*_candidate`
+2. Remove any `*_active = *_candidate` assignments
+
+### Step 3: Identify and Fix Read Functions
+1. Determine which read function(s) the feature uses (e.g., `read_lower_triangular_matrix()`, `read_configuration_type_file()`, etc.)
+2. Examine the read function and ALL helper functions it calls
+3. Find EVERY location where an exception can be raised
+4. Before EACH exception, add code to restore previous state if undo was captured
+5. Test with malformed files to verify each exception path works correctly
+
+### Step 4: Update Dependencies
+1. Update dependencies.py to use `*_active` in new_feature_dict instead of `*_candidate`
+
+### Step 5: Test Thoroughly
+1. Test with valid files
+2. Test with various malformed files to trigger different exception paths
+3. Verify undo/redo works correctly after successful loads
+4. Verify state is restored correctly when loads fail
 
 ---
 
@@ -578,14 +584,103 @@ if not dimensions_match:
 
 ---
 
+## Implementation Progress
+
+### Approach Selected: Option 3B (Direct Load into Active)
+
+We are eliminating candidate instances by reading directly into `_active` instances. The undo system handles rollback if validation fails.
+
+### Features In Progress
+
+#### correlations_candidate - READY FOR TESTING
+- ✓ Step 1: Removed `correlations_candidate` initialization from director.py
+- ✓ Step 2: Updated filemenu.py to use `correlations_active` directly
+- ✓ Step 3: Added restore calls to all read function exceptions (9 total)
+- ✓ Step 4: Updated dependencies.py to use `correlations_active` in new_feature_dict
+- ⏳ Step 5: Testing in progress - need to test with malformed files
+
+**Read functions used**: `read_lower_triangular_matrix()` and its helpers:
+- ✓ `read_lower_triangle_size()` - added restore before 4 exception points (lines 1865, 1872, 1880, 1888)
+- ✓ `read_lower_triangle_dictionary()` - added restore before 1 exception point (line 1918)
+- ✓ `read_lower_triangle_values()` - added restore before 1 exception point (line 1959)
+- ✓ Catch blocks - added restore before 3 exception points (lines 1790, 1796, 1802)
+
+#### evaluations_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `evaluations_candidate` initialization from director.py
+- ✓ Step 2: Updated filemenu.py to use `evaluations_active` directly
+- ✓ Step 3: Reviewed read functions - all exception points already covered
+- ✓ Step 4: Updated dependencies.py to use `evaluations_active` in new_feature_dict
+- ✓ Step 5: Ready for testing with malformed files
+
+**Read approach**: Evaluations uses `pd.read_csv()` and directly populates `evaluations_active` fields.
+- Exception handling in `_read_evaluations()` (lines 504-537) already covers all exception points
+- Catches: FileNotFoundError, PermissionError, EmptyDataError, ParserError, ValueError
+- Calls `event_driven_optional_restoration()` on any exception (line 531)
+- **No changes needed** - exception handling was already complete
+
+**Known Issue**: CSV files that are like Evaluations (e.g., score files, sample design files) will currently work when they should be caught as invalid. The proper solution is to add file typing (first line of file), but this is deferred for now since it's not straightforward for CSV files.
+
+### Remaining Features
+
+#### configuration_candidate
+**Steps needed:**
+1. Remove `configuration_candidate` initialization from director.py
+2. Update filemenu.py ConfigurationCommand to read directly into `configuration_active`
+3. Update dependencies.py to use `configuration_active` in new_feature_dict
+4. Test configuration file loading
+
+#### grouped_data_candidate
+**Steps needed:**
+1. Remove `grouped_data_candidate` initialization from director.py
+2. Update file loading commands to read directly into `grouped_data_active`
+3. Update dependencies.py to use `grouped_data_active` in new_feature_dict
+4. Test grouped data file loading
+
+#### individuals_candidate
+**Steps needed:**
+1. Remove `individuals_candidate` initialization from director.py
+2. Update file loading commands to read directly into `individuals_active`
+3. Update dependencies.py to use `individuals_active` in new_feature_dict
+4. Test individuals file loading
+
+#### similarities_candidate
+**Steps needed:**
+1. Remove `similarities_candidate` initialization from director.py
+2. Update filemenu.py SimilaritiesCommand to read directly into `similarities_active`
+3. Update dependencies.py to use `similarities_active` in new_feature_dict
+4. Test similarities file loading
+
+#### target_candidate
+**Steps needed:**
+1. Remove `target_candidate` initialization from director.py
+2. Update file loading commands to read directly into `target_active`
+3. Update dependencies.py to use `target_active` in new_feature_dict
+4. Test target file loading
+
+#### scores_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `scores_candidate` initialization from director.py
+- ✓ Step 2: Updated OpenScoresCommand to use `scores_active` directly
+- ✓ Step 3: Added restore calls - exception handling already complete
+- ✓ Step 4: Updated dependencies.py to use `scores_active` in new_feature_dict
+- ✓ Step 5: Ready for testing with valid and malformed files
+
+**Read approach**: Scores uses `pd.read_csv()` and directly populates `scores_active` fields (similar to evaluations).
+- Exception handling in `_read_scores()` (lines 1251-1307) covers all exception points
+- Catches: FileNotFoundError, PermissionError, EmptyDataError, ParserError, ValueError
+- Calls `event_driven_optional_restoration()` on any exception (line 1303)
+- **Restore call added** during this conversion
+
+**Other commands that create scores**: ScoreIndividualsCommand, FactorAnalysisCommand, and FactorAnalysisMachineLearningCommand also create scores but don't read from files. These commands create scores computationally and will be reviewed separately as needed.
+
+---
+
 ## Next Steps
 
 1. ✓ **Sleep on it**
 2. ✓ **Search codebase** for all `*_candidate` references
 3. ✓ **Review dependency checker** to understand validation dependencies
 4. ✓ **Review undo/redo system** to understand state capture/restore
-5. **Decide on exception handling approach** - Recommendation: Option D with user choice wrapper
-6. **Decide on user control strategy** - Recommendation: Ask user (configurable)
-7. **Identify all exception raise points** in danger zones
-8. **Implement Option 3B** incrementally (start with one feature as proof of concept)
-9. **Test thoroughly**
+5. ✓ **Implement direct load pattern** - Started with correlations and evaluations
+6. **Continue implementing remaining features** - One at a time with testing
+7. **Complete all 8 features**
+8. **Final comprehensive testing**

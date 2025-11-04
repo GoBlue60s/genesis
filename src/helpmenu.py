@@ -340,33 +340,55 @@ class StatusCommand:
 				str(self._director.common.have_reference_points())
 			),
 		)
-		table_widget.setItem(12, 0, QTableWidgetItem("Scores"))
+		table_widget.setItem(12, 0, QTableWidgetItem("Sample design"))
 		table_widget.setItem(
-			12, 1, QTableWidgetItem(str(self._director.common.have_scores()))
+			12,
+			1,
+			QTableWidgetItem(str(self._director.common.have_sample_design())),
 		)
-		table_widget.setItem(13, 0, QTableWidgetItem("Segments"))
+		table_widget.setItem(13, 0, QTableWidgetItem("Sample repetitions"))
 		table_widget.setItem(
-			13, 1, QTableWidgetItem(str(self._director.common.have_segments()))
+			13,
+			1,
+			QTableWidgetItem(
+				str(self._director.common.have_sample_repetitions())
+			),
 		)
-		table_widget.setItem(14, 0, QTableWidgetItem("Similarities"))
+		table_widget.setItem(14, 0, QTableWidgetItem("Scores"))
 		table_widget.setItem(
-			14,
+			14, 1, QTableWidgetItem(str(self._director.common.have_scores()))
+		)
+		table_widget.setItem(15, 0, QTableWidgetItem("Segments"))
+		table_widget.setItem(
+			15, 1, QTableWidgetItem(str(self._director.common.have_segments()))
+		)
+		table_widget.setItem(16, 0, QTableWidgetItem("Similarities"))
+		table_widget.setItem(
+			16,
 			1,
 			QTableWidgetItem(str(self._director.common.have_similarities())),
 		)
-		table_widget.setItem(15, 0, QTableWidgetItem("Target configuration"))
+		table_widget.setItem(17, 0, QTableWidgetItem("Target configuration"))
 		table_widget.setItem(
-			15,
+			17,
 			1,
 			QTableWidgetItem(
 				str(self._director.common.have_target_configuration())
 			),
 		)
+		table_widget.setItem(18, 0, QTableWidgetItem("Uncertainty solutions"))
 		table_widget.setItem(
-			16, 0, QTableWidgetItem("Commands include explanations")
+			18,
+			1,
+			QTableWidgetItem(
+				str(self._director.common.have_sample_solutions())
+			),
 		)
 		table_widget.setItem(
-			16,
+			19, 0, QTableWidgetItem("Commands include explanations")
+		)
+		table_widget.setItem(
+			19,
 			1,
 			QTableWidgetItem(
 				str(

@@ -6,6 +6,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Python GUI application called "Spaces" for multidimensional scaling (MDS) and statistical analysis. The application uses PySide6 for the GUI framework and provides various data visualization and analysis capabilities.
 
+## Project Context and Development Philosophy
+
+**Important Context for Decision-Making:**
+
+- **Personal Project**: Spaces is a personal project and is not, and likely will never be, in production anywhere
+- **No Time Pressure**: The developer is retired with no deadlines or time constraints
+- **Continuous Improvement**: The codebase is constantly evolving as better approaches are discovered
+- **Solo Development**: Single developer with full control over standards and architecture
+- **Polishing Focus**: Changes are driven by learning and improvement, not operational necessity
+
+**Implications for Development:**
+
+- **Favor Long-term Solutions**: Prefer cleaner, more maintainable architectures over quick fixes
+- **Accept Higher Risk**: Riskier refactoring options are acceptable since there's no production deployment
+- **Avoid Temporary Workarounds**: Skip temporary solutions unless they genuinely make the path to the long-term solution easier
+- **Prioritize Learning**: Focus on implementing better patterns even if they require more extensive refactoring
+- **No External Constraints**: No need to coordinate with teams or conform to external standards
+
 ## Development Commands
 
 ### Linting and Code Quality

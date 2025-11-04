@@ -103,7 +103,7 @@ class MyApplication:
 		welcome_dialog.show()
 		welcome_dialog.exec() # ty: ignore[unresolved-attribute]
 
-	def start_event_loop(self) -> intc:
+	def start_event_loop(self) -> int:
 		return self.spaces_app.exec()
 
 	def print_debug_logs(self) -> None:
