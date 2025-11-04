@@ -136,13 +136,19 @@ class CorrelationsCommand:
 			ValueError,
 			SpacesError
 		):
-			self.common.event_driven_optional_restoration("correlations")
-			# Raise exception to stop command execution
-			# (Restoration has already occurred if user chose Yes)
-			raise SpacesError(
-				self._correlations_error_bad_input_title,
-				self._correlations_error_bad_input_message
+			restored = self.common.event_driven_optional_restoration(
+				"correlations"
 			)
+			# Only raise exception if restoration failed
+			# If restored, just return - restoration message already
+			# informed user
+			if not restored:
+				raise SpacesError(
+					self._correlations_error_bad_input_title,
+					self._correlations_error_bad_input_message
+				)
+			# If restored successfully, just return without error
+			return
 
 	# ------------------------------------------------------------------------
 

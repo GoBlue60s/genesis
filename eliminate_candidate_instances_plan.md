@@ -674,6 +674,94 @@ We are eliminating candidate instances by reading directly into `_active` instan
 
 ---
 
+## Consistency Checking Restoration Enhancement - ✓ COMPLETE
+
+### Problem Identified
+When consistency checking fails and the user chooses to abandon the new feature, the system needs to decide whether to restore the previous state or leave the feature empty. The original code had two issues:
+
+1. **No restoration at all**: Consistency checking called `abandon_dict[new]()` which manually cleared fields, but never used the undo system
+2. **Nonsensical question**: Even when using restoration, asking "Do you want to restore previous state?" when there was no previous state (feature was empty) is meaningless
+
+### Solution Implemented
+
+#### 1. Added Helper Method: `_was_feature_empty_in_state()` (common.py:3280)
+- Checks if a feature was empty in the captured undo state
+- Supports all 8 features: configuration, correlations, evaluations, grouped_data, individuals, scores, similarities, target
+- Returns `True` if feature was empty (nothing to restore), `False` otherwise
+- Implementation checks feature-specific emptiness indicators:
+  - correlations: `nitem == 0` or `correlations_as_dataframe.empty`
+  - evaluations: `evaluations.empty`
+  - scores: `len(scores) == 0`
+  - configuration: `npoint == 0`
+  - similarities: `nreferent == 0`
+  - target: `npoint == 0`
+  - grouped_data: `ngroup == 0`
+  - individuals: `nindividual == 0`
+
+#### 2. Enhanced `event_driven_optional_restoration()` (common.py:3327)
+- Now peeks at undo stack before showing dialog
+- If previous state was empty: automatically clears feature without asking user
+- If previous state had data: shows "Restore or Clear?" dialog
+- Updated docstring to reflect new behavior
+- **Key insight**: Only asks questions that make sense
+
+#### 3. Updated Consistency Checking (dependencies.py:763)
+- Modified `resolve_conflict_w_existing_data()` to use restoration system
+- Added `feature_name_map` to translate display names ("Correlations") to internal names ("correlations")
+- Updated 3 code paths to call `event_driven_optional_restoration()`:
+  - **Case 1**: User chooses to abandon new feature (keep existing)
+  - **Case _**: Unexpected/default case
+  - **Else**: Dialog cancelled or failed
+- Replaced direct `abandon_dict[new]()` calls with proper restoration
+
+### Why Not Check in `event_driven_automatic_restoration()`?
+
+Decision: **Leave automatic restoration as-is** (no emptiness check needed)
+
+**Reasoning**:
+- Used for critical errors where restoration is always appropriate
+- Restoring empty to empty is harmless and correct (no-op)
+- No user question involved, so no "nonsensical question" issue
+- Simpler code is more robust for critical error paths
+- Performance overhead is negligible
+
+### Benefits
+
+1. **Smarter UX**: Never asks users to restore nothing
+2. **Consistent with undo system**: Consistency checking now properly uses undo/restore
+3. **Single source of truth**: All restoration logic centralized in `event_driven_optional_restoration()`
+4. **Handles both cases**: Works correctly whether previous state was empty or populated
+5. **No breaking changes**: Existing calls continue to work unchanged
+6. **Better error recovery**: User gets appropriate choices based on actual state
+
+### Testing Scenarios
+
+**Test 1: Empty previous state + consistency error**
+- Setup: No correlations exist
+- Action: Load correlations that fail consistency check, choose to abandon new
+- Expected: Automatically clears, no restoration dialog
+
+**Test 2: Non-empty previous state + consistency error**
+- Setup: Correlations A exists
+- Action: Load correlations that fail consistency check, choose to abandon new
+- Expected: Dialog asks "Restore A or clear?", restores if Yes
+
+**Test 3: Empty previous state + file error**
+- Setup: No correlations exist
+- Action: Try to read malformed correlations file
+- Expected: Automatically clears, no restoration dialog
+
+**Test 4: Non-empty previous state + file error**
+- Setup: Correlations A exists
+- Action: Try to read malformed correlations file
+- Expected: Dialog asks "Restore A or clear?"
+
+### Files Modified
+- `src/common.py`: Added `_was_feature_empty_in_state()`, enhanced `event_driven_optional_restoration()`
+- `src/dependencies.py`: Updated `resolve_conflict_w_existing_data()` to use restoration system
+
+---
+
 ## Next Steps
 
 1. ✓ **Sleep on it**
@@ -681,6 +769,7 @@ We are eliminating candidate instances by reading directly into `_active` instan
 3. ✓ **Review dependency checker** to understand validation dependencies
 4. ✓ **Review undo/redo system** to understand state capture/restore
 5. ✓ **Implement direct load pattern** - Started with correlations and evaluations
-6. **Continue implementing remaining features** - One at a time with testing
-7. **Complete all 8 features**
-8. **Final comprehensive testing**
+6. ✓ **Fix consistency checking restoration** - Completed
+7. **Continue implementing remaining features** - One at a time with testing
+8. **Complete all 8 features**
+9. **Final comprehensive testing**

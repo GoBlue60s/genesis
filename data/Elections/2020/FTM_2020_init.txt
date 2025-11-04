@@ -5,7 +5,7 @@ Dim2;Dimension 2
 BLM;Black Lives Matter
 Fund;Christian fundamentalists
 Harp;Kamala Harris (post)
-Penp;Mike Pence	(post)
+Penp;Mike Pence (post)
 Cons;Conservatives
 Libs;Liberals
 Dems;Democratic Party

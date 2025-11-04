@@ -3303,7 +3303,7 @@ class Spaces:
 		if feature_name == "correlations":
 			return (
 				snapshot.get("nitem", 0) == 0 or
-				snapshot.get("correlations_as_dataframe", pd.DataFrame()).empty
+				not snapshot.get("correlations", [])
 			)
 		elif feature_name == "evaluations":
 			return snapshot.get("evaluations", pd.DataFrame()).empty
@@ -3324,7 +3324,7 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def event_driven_optional_restoration(self, feature_name: str) -> None:
+	def event_driven_optional_restoration(self, feature_name: str) -> bool:
 		"""Ask user whether to restore state, clean up if declined.
 
 		If previous state was empty, automatically clears without asking.
@@ -3334,11 +3334,14 @@ class Spaces:
 		- If user chooses No: Empty/clear the feature data
 
 		Either way, data will be consistent (restored or empty).
-		Caller should raise exception after this returns.
 
 		Args:
 			feature_name: Name of feature (e.g., "configuration")
 				Used to derive dialog title/message and for cleanup
+
+		Returns:
+			bool: True if state was RESTORED (has data from previous state),
+				False if state was CLEARED (feature is now empty)
 		"""
 		# Peek at undo state to see if there's anything to restore
 		cmd_state = self._director.peek_undo_state()
@@ -3356,7 +3359,7 @@ class Spaces:
 				feature_class(self._director)
 			)
 			self._director.pop_undo_state()
-			return
+			return False  # Feature was cleared, not restored
 		# Build dialog content based on feature
 		feature_display_names = {
 			"configuration": "Configuration",
@@ -3396,6 +3399,7 @@ class Spaces:
 				cmd_state = self._director.pop_undo_state()
 				if cmd_state is not None:
 					cmd_state.restore_all_state(self._director)
+				return True  # Feature was restored
 			else:
 				# User chose No - clear the feature by reinitializing it
 				# The caller is expected to have the appropriate Feature class
@@ -3414,14 +3418,16 @@ class Spaces:
 
 				# Pop the undo state to keep the stack consistent
 				self._director.pop_undo_state()
+				return False  # Feature was cleared, not restored
 
 		except Exception:
 			# Dialog failed - automatically restore to be safe
 			cmd_state = self._director.pop_undo_state()
 			if cmd_state is not None:
 				cmd_state.restore_all_state(self._director)
+			return True
 
-		return
+		return True
 
 	# ------------------------------------------------------------------------
 

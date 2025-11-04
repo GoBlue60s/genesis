@@ -764,6 +764,7 @@ class DependencyChecking:
 		self, existing: str, new: str, *, no_common_information: bool
 	) -> bool:
 
+		existing_abandoned: bool = False
 		abandon_dict = {
 			"Configuration": self._director.abandon_configuration,
 			"Target": self._director.abandon_target,
@@ -821,16 +822,27 @@ class DependencyChecking:
 					feature_name = feature_name_map.get(
 						new, new.lower().replace(" ", "_")
 					)
-					self._director.common.event_driven_optional_restoration(
-						feature_name
+					restored = (
+						self._director.common.event_driven_optional_restoration(
+							feature_name
+						)
 					)
-					abandon_needed_error_title: str = self._director.command
-					abandon_needed_error_message: str = \
-						f"{new} has been abandoned"
-					raise SpacesError(
-						abandon_needed_error_title,
-						abandon_needed_error_message,
-					)
+					# Raise appropriate error based on what happened
+					if restored:
+						# Feature was restored - don't say "abandoned"
+						# Just stop command execution silently
+						return existing_abandoned
+					else:
+						# Feature was cleared - inform user it's abandoned
+						abandon_needed_error_title: str = (
+							self._director.command
+						)
+						abandon_needed_error_message: str = \
+							f"{new} has been abandoned"
+						raise SpacesError(
+							abandon_needed_error_title,
+							abandon_needed_error_message,
+						)
 				case 2:
 					existing_abandoned: bool = False
 				case _:
@@ -838,36 +850,55 @@ class DependencyChecking:
 					feature_name = feature_name_map.get(
 						new, new.lower().replace(" ", "_")
 					)
-					self._director.common.event_driven_optional_restoration(
-						feature_name
+					restored = (
+						self._director.common.event_driven_optional_restoration(
+							feature_name
+						)
 					)
-					inconsistency_error_title: str = \
-						f"{new} has been abandoned"
-					inconsistency_error_message: str = (
-						f"Inconsistency between {new.lower()} "
-						f"and {existing.lower()} was not resolved"
-					)
-					raise SpacesError(
-						inconsistency_error_title, inconsistency_error_message
-					)
+					# Raise appropriate error based on what happened
+					if restored:
+						# Feature was restored - don't say "abandoned"
+						# Just stop command execution silently
+						return existing_abandoned
+					else:
+						# Feature was cleared - inform user
+						inconsistency_error_title: str = \
+							f"{new} has been abandoned"
+						inconsistency_error_message: str = (
+							f"Inconsistency between {new.lower()} "
+							f"and {existing.lower()} was not resolved"
+						)
+						raise SpacesError(
+							inconsistency_error_title,
+							inconsistency_error_message
+						)
 		else:
 			# Dialog cancelled or failed - ask user to restore or clear new
 			feature_name = feature_name_map.get(
 				new, new.lower().replace(" ", "_")
 			)
-			self._director.common.event_driven_optional_restoration(
-				feature_name
+			restored = (
+				self._director.common.event_driven_optional_restoration(
+					feature_name
+				)
 			)
-			inconsistency_unresolved_error_title: str = \
-				f"{new} has been abandoned"
-			inconsistency_unresolved_error_message: str = (
-				f"Inconsistency between {new.lower()} "
-				f"and {existing.lower()} was not resolved"
-			)
-			raise SpacesError(
-				inconsistency_unresolved_error_title,
-				inconsistency_unresolved_error_message,
-			)
+			# Raise appropriate error based on what happened
+			if restored:
+				# Feature was restored - don't say "abandoned"
+				# Just stop command execution silently
+				return existing_abandoned
+			else:
+				# Feature was cleared - inform user
+				inconsistency_unresolved_error_title: str = \
+					f"{new} has been abandoned"
+				inconsistency_unresolved_error_message: str = (
+					f"Inconsistency between {new.lower()} "
+					f"and {existing.lower()} was not resolved"
+				)
+				raise SpacesError(
+					inconsistency_unresolved_error_title,
+					inconsistency_unresolved_error_message,
+				)
 
 		return existing_abandoned
 
