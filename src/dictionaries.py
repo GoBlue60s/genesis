@@ -2364,14 +2364,14 @@ edit_menu_dict = MappingProxyType({
 	"Undo": {
 		"icon": "spaces_undo_icon.jpg",
 		"command": "undo",
-		"enabled": True,
+		"enabled": False,
 		"shortcut": "Ctrl+Z",
 		"tooltip": "Undo the last action",
 	},
 	"Redo": {
 		"icon": "spaces_redo_icon.jpg",
 		"command": "redo",
-		"enabled": True,
+		"enabled": False,
 		"shortcut": "Ctrl+Y",
 		"tooltip": "Redo the last undone action",
 	},

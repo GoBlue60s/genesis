@@ -372,16 +372,13 @@ class LineOfSightCommand:
 		#
 		# Now perform the line of sight calculation
 		#
-		self._director.similarities_candidate = self.common.los(
+		self._director.similarities_active = self.common.los(
 			self._director.evaluations_active
 		)
 		self._duplicate_similarities(common)
-		self._director.similarities_candidate.rank_similarities()
-		self._director.similarities_candidate.duplicate_ranked_similarities(
+		self._director.similarities_active.rank_similarities()
+		self._director.similarities_active.duplicate_ranked_similarities(
 			common
-		)
-		self._director.similarities_active = (
-			self._director.similarities_candidate
 		)
 		self._director.similarities_active.print_the_similarities(
 			self._width, self._decimals, common
@@ -402,20 +399,20 @@ class LineOfSightCommand:
 
 	def _duplicate_similarities(self, common: Spaces) -> None:
 		(
-			self._director.similarities_candidate.similarities_as_dataframe,
-			self._director.similarities_candidate.similarities_as_dict,
-			self._director.similarities_candidate.similarities_as_list,
-			self._director.similarities_candidate.similarities_as_square,
-			self._director.similarities_candidate.sorted_similarities_w_pairs,
-			self._director.similarities_candidate.ndyad,
-			self._director.similarities_candidate.range_dyads,
-			self._director.similarities_candidate.range_items,
+			self._director.similarities_active.similarities_as_dataframe,
+			self._director.similarities_active.similarities_as_dict,
+			self._director.similarities_active.similarities_as_list,
+			self._director.similarities_active.similarities_as_square,
+			self._director.similarities_active.sorted_similarities_w_pairs,
+			self._director.similarities_active.ndyad,
+			self._director.similarities_active.range_dyads,
+			self._director.similarities_active.range_items,
 		) = common.duplicate_in_different_structures(
-			self._director.similarities_candidate.similarities,
-			self._director.similarities_candidate.item_names,
-			self._director.similarities_candidate.item_labels,
-			self._director.similarities_candidate.nreferent,
-			self._director.similarities_candidate.value_type,
+			self._director.similarities_active.similarities,
+			self._director.similarities_active.item_names,
+			self._director.similarities_active.item_labels,
+			self._director.similarities_active.nreferent,
+			self._director.similarities_active.value_type,
 		)
 
 	# ------------------------------------------------------------------------

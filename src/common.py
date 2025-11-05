@@ -3224,7 +3224,8 @@ class Spaces:
 				cmd_state.capture_settings_state(self._director)
 
 		# Clear redo stack when a new command executes (not undo/redo)
-		self._director.clear_redo_stack()
+		if command_name not in ["Undo", "Redo"]:
+			self._director.clear_redo_stack()
 
 		self._director.push_undo_state(cmd_state)
 		return
@@ -3300,13 +3301,11 @@ class Spaces:
 		snapshot = cmd_state.state_snapshot[feature_name]
 
 		# Check based on feature type
+		# correlations and evaluations store entire objects
 		if feature_name == "correlations":
-			return (
-				snapshot.get("nitem", 0) == 0 or
-				not snapshot.get("correlations", [])
-			)
+			return snapshot.nitem == 0 or not snapshot.correlations
 		elif feature_name == "evaluations":
-			return snapshot.get("evaluations", pd.DataFrame()).empty
+			return snapshot.evaluations.empty
 		elif feature_name == "scores":
 			return len(snapshot.get("scores", pd.DataFrame())) == 0
 		elif feature_name == "configuration":
@@ -3346,9 +3345,11 @@ class Spaces:
 		# Peek at undo state to see if there's anything to restore
 		cmd_state = self._director.peek_undo_state()
 
-		if cmd_state is not None and self._was_feature_empty_in_state(
-			cmd_state, feature_name
-		):
+		# If no undo state exists, nothing to restore
+		if cmd_state is None:
+			return False
+
+		if self._was_feature_empty_in_state(cmd_state, feature_name):
 			# Previous state was empty - just clear and pop without asking
 			attr_name = f"{feature_name}_active"
 			current_feature = getattr(self._director, attr_name)

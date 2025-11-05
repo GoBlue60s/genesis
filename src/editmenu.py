@@ -228,6 +228,10 @@ class UndoCommand:
 		# Enable Redo now that redo stack has an item
 		self._director.enable_redo()
 
+		# Disable Undo if the undo stack is now empty
+		if not self._director.undo_stack:
+			self._director.disable_undo()
+
 		# Restore all captured state
 		cmd_state.restore_all_state(self._director)
 
@@ -389,8 +393,8 @@ class UndoCommand:
 	) -> None:
 		"""Add data-related details (correlations, individuals, etc.)."""
 		if "correlations" in snapshot:
-			corr: dict = snapshot["correlations"]
-			nitem: int = corr.get("nitem", 0)
+			corr = snapshot["correlations"]
+			nitem: int = corr.nitem
 			details.append(["Correlations", f"{nitem} items"])
 
 		if "individuals" in snapshot:
@@ -402,15 +406,15 @@ class UndoCommand:
 			)
 
 		if "similarities" in snapshot:
-			sims: dict = snapshot["similarities"]["active"]
-			nitem: int = sims.get("nitem", 0)
-			value_type: str = sims.get("value_type", "unknown")
+			sims = snapshot["similarities"]
+			nitem: int = sims.nitem
+			value_type: str = sims.value_type
 			details.append(["Similarities", f"{nitem} items, {value_type}"])
 
 		if "evaluations" in snapshot:
-			evals: dict = snapshot["evaluations"]
-			nitem: int = evals.get("nitem", 0)
-			nevaluators: int = evals.get("nevaluators", 0)
+			evals = snapshot["evaluations"]
+			nitem: int = evals.nitem
+			nevaluators: int = evals.nevaluators
 			text: str = f"{nitem} items, {nevaluators} evaluators"
 			details.append(["Evaluations", text])
 

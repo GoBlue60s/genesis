@@ -518,6 +518,13 @@ class EvaluationsCommand:
 			if len(item_names) < 3:
 				raise ValueError("Evaluations file must have at least 3 items")
 
+			# Create a new EvaluationsFeature object (matching Correlations pattern)
+			from features import EvaluationsFeature  # noqa: PLC0415
+			self._director.evaluations_active = EvaluationsFeature(
+				self._director
+			)
+
+			# Now set the attributes on the new object
 			self._director.evaluations_active.evaluations = evaluations
 			self._director.evaluations_active.nevaluators = nevaluators
 			self._director.evaluations_active.nreferent = nreferent
@@ -3135,28 +3142,8 @@ class SimilaritiesCommand:
 		self.common.capture_and_push_undo_state(
 			"Similarities", "active", params
 		)
-
-		# Read and validate similarities file
-		self._director.similarities_candidate = common.read_lower_triangular_matrix(
-			file_name,
-			value_type,
-		)
-
-		# Check for consistency between similarities and active configuration
+		self._read_similarities(file_name, value_type, common)
 		self._director.dependency_checker.detect_consistency_issues()
-
-		# Convert similarities into different data structures
-		self._director.similarities_candidate.duplicate_similarities(common)
-		# inserted missing lines here
-		self._director.similarities_candidate.range_similarities = \
-			range(len(
-				self._director.similarities_candidate.similarities_as_list))
-		self._director.similarities_candidate.rank_similarities()
-		# end of insertion
-		self._director.similarities_active = (
-			self._director.similarities_candidate
-		)
-		common.rank_when_similarities_match_configuration()
 		width = 8
 		decimals = 3
 		self._director.similarities_active.print_the_similarities(
@@ -3172,6 +3159,46 @@ class SimilaritiesCommand:
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_similarities(
+		self, file_name: str, value_type: str, common: Spaces
+	) -> None:
+		"""Read similarities from lower triangular file and store in active.
+
+		Similarities are stored in a lower triangular matrix format and can
+		be either "similarities" or "dissimilarities" based on value_type.
+		"""
+		try:
+			self._director.similarities_active = (
+				common.read_lower_triangular_matrix(file_name, value_type)
+			)
+			self._director.similarities_active.duplicate_similarities(common)
+			self._director.similarities_active.range_similarities = \
+				range(len(
+					self._director.similarities_active.similarities_as_list))
+			self._director.similarities_active.rank_similarities()
+			common.rank_when_similarities_match_configuration()
+		except (
+			FileNotFoundError,
+			PermissionError,
+			ValueError,
+			SpacesError
+		):
+			restored = self.common.event_driven_optional_restoration(
+				"similarities"
+			)
+			# Only raise exception if restoration failed
+			# If restored, just return - restoration message already
+			# informed user
+			if not restored:
+				raise SpacesError(
+					self._similarities_error_bad_input_title,
+					self._similarities_error_bad_input_message
+				)
+			# If restored successfully, just return without error
+			return
 
 	# ------------------------------------------------------------------------
 

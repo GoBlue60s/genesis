@@ -171,7 +171,8 @@ class Status(QMainWindow):
 		self.create_explanations()
 		self.create_tool_bar()
 		self.create_tabs()
-		# Initialize Redo as disabled (no redo stack items on startup)
+		# Initialize Undo and Redo as disabled (no stack items on startup)
+		self.disable_undo()
 		self.disable_redo()
 		# self.check_consistency_of_dictionaries_and_arrays()
 
@@ -200,7 +201,6 @@ class Status(QMainWindow):
 		self.grouped_data_active = GroupedDataFeature(self)
 		self.individuals_candidate = IndividualsFeature(self)
 		self.individuals_active = IndividualsFeature(self)
-		self.similarities_candidate = SimilaritiesFeature(self)
 		self.similarities_active = SimilaritiesFeature(self)
 		self.target_candidate = TargetFeature(self)
 		self.target_active = TargetFeature(self)
@@ -622,6 +622,10 @@ class Status(QMainWindow):
 		if name == "Redo":
 			self.redo_action = action
 
+		# Store reference to Undo action for enable/disable control
+		if name == "Undo":
+			self.undo_action = action
+
 	def _create_submenu_from_dict(
 		self, menu: QMenu, name: str, properties: dict
 	) -> None:
@@ -894,7 +898,9 @@ class Status(QMainWindow):
 			# Set the tool button as an attribute of the class
 			setattr(self, f"{key}_tool_button", tool_button)
 
-			# Store reference to redo toolbar button action for enable/disable
+			# Store reference to undo/redo toolbar actions
+			if key == "undo":
+				self.undo_toolbar_action = button_action
 			if key == "redo":
 				self.redo_toolbar_action = button_action
 
@@ -1289,6 +1295,7 @@ class Status(QMainWindow):
 
 		When a new active command executes (not Undo/Redo), clear the redo
 		stack and disable Redo, matching Microsoft Word behavior.
+		Passive commands (read-only) don't clear the redo stack.
 
 		Args:
 			cmd_state: The CommandState to push onto the stack
@@ -1296,9 +1303,16 @@ class Status(QMainWindow):
 		self.undo_stack.append(cmd_state)
 		self.undo_stack_source.append(cmd_state.command_name)
 
-		# Clear redo stack when a new command executes (not Undo/Redo)
-		# This matches Microsoft Word behavior
-		if cmd_state.command_name not in ["Undo", "Redo"]:
+		# Enable Undo now that there's something to undo
+		self.enable_undo()
+
+		# Clear redo stack when a new ACTIVE command executes
+		# (not Undo/Redo/passive). This matches Microsoft Word behavior.
+		# Passive commands are read-only and shouldn't affect undo/redo.
+		if (
+			cmd_state.command_name not in ["Undo", "Redo"]
+			and cmd_state.command_type == "active"
+		):
 			self.clear_redo_stack()
 			self.disable_redo()
 
@@ -1384,22 +1398,34 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
+	def enable_undo(self) -> None:
+		"""Enable the Undo command in menu and toolbar."""
+		self.undo_action.setEnabled(True)
+		self.undo_toolbar_action.setEnabled(True)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def disable_undo(self) -> None:
+		"""Disable the Undo command in menu and toolbar."""
+		self.undo_action.setEnabled(False)
+		self.undo_toolbar_action.setEnabled(False)
+		return
+
+	# ------------------------------------------------------------------------
+
 	def enable_redo(self) -> None:
 		"""Enable the Redo command in menu and toolbar."""
-		if hasattr(self, "redo_action"):
-			self.redo_action.setEnabled(True)
-		if hasattr(self, "redo_toolbar_action"):
-			self.redo_toolbar_action.setEnabled(True)
+		self.redo_action.setEnabled(True)
+		self.redo_toolbar_action.setEnabled(True)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def disable_redo(self) -> None:
 		"""Disable the Redo command in menu and toolbar."""
-		if hasattr(self, "redo_action"):
-			self.redo_action.setEnabled(False)
-		if hasattr(self, "redo_toolbar_action"):
-			self.redo_toolbar_action.setEnabled(False)
+		self.redo_action.setEnabled(False)
+		self.redo_toolbar_action.setEnabled(False)
 		return
 
 	# ------------------------------------------------------------------------

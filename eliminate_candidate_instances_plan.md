@@ -356,12 +356,21 @@ For each feature (correlations, evaluations, configuration, grouped_data, indivi
 1. Update commands to read directly into `*_active` instead of `*_candidate`
 2. Remove any `*_active = *_candidate` assignments
 
-### Step 3: Identify and Fix Read Functions
+### Step 3: Add Exception Handling with Restoration
+
+#### Step 3A: Add Restore Calls in Read Functions (common.py)
 1. Determine which read function(s) the feature uses (e.g., `read_lower_triangular_matrix()`, `read_configuration_type_file()`, etc.)
 2. Examine the read function and ALL helper functions it calls
 3. Find EVERY location where an exception can be raised
-4. Before EACH exception, add code to restore previous state if undo was captured
-5. Test with malformed files to verify each exception path works correctly
+4. Before EACH exception, add `event_driven_automatic_restoration()` call
+
+#### Step 3B: Add Try/Except Wrapper in Command Class (filemenu.py)
+1. Create a helper method `_read_X()` in the Command class if it doesn't exist
+2. Wrap the read operation in a try/except block
+3. Catch relevant exceptions (FileNotFoundError, PermissionError, ValueError, SpacesError, etc.)
+4. In except block, call `event_driven_optional_restoration("feature_name")`
+5. Only re-raise exception if restoration failed
+6. Test with malformed files to verify each exception path works correctly
 
 ### Step 4: Update Dependencies
 1. Update dependencies.py to use `*_active` in new_feature_dict instead of `*_candidate`
@@ -592,12 +601,12 @@ We are eliminating candidate instances by reading directly into `_active` instan
 
 ### Features In Progress
 
-#### correlations_candidate - READY FOR TESTING
+#### correlations_candidate - ✓ COMPLETE
 - ✓ Step 1: Removed `correlations_candidate` initialization from director.py
 - ✓ Step 2: Updated filemenu.py to use `correlations_active` directly
 - ✓ Step 3: Added restore calls to all read function exceptions (9 total)
 - ✓ Step 4: Updated dependencies.py to use `correlations_active` in new_feature_dict
-- ⏳ Step 5: Testing in progress - need to test with malformed files
+- ✓ Step 5: Testing complete - verified working correctly
 
 **Read functions used**: `read_lower_triangular_matrix()` and its helpers:
 - ✓ `read_lower_triangle_size()` - added restore before 4 exception points (lines 1865, 1872, 1880, 1888)
@@ -610,7 +619,7 @@ We are eliminating candidate instances by reading directly into `_active` instan
 - ✓ Step 2: Updated filemenu.py to use `evaluations_active` directly
 - ✓ Step 3: Reviewed read functions - all exception points already covered
 - ✓ Step 4: Updated dependencies.py to use `evaluations_active` in new_feature_dict
-- ✓ Step 5: Ready for testing with malformed files
+- ✓ Step 5: Testing complete - verified working correctly
 
 **Read approach**: Evaluations uses `pd.read_csv()` and directly populates `evaluations_active` fields.
 - Exception handling in `_read_evaluations()` (lines 504-537) already covers all exception points
@@ -643,12 +652,16 @@ We are eliminating candidate instances by reading directly into `_active` instan
 3. Update dependencies.py to use `individuals_active` in new_feature_dict
 4. Test individuals file loading
 
-#### similarities_candidate
-**Steps needed:**
-1. Remove `similarities_candidate` initialization from director.py
-2. Update filemenu.py SimilaritiesCommand to read directly into `similarities_active`
-3. Update dependencies.py to use `similarities_active` in new_feature_dict
-4. Test similarities file loading
+#### similarities_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `similarities_candidate` initialization from director.py
+- ✓ Step 2: Updated filemenu.py SimilaritiesCommand to use `similarities_active` directly
+- ✓ Step 3: Added restore calls to all read function exceptions
+- ✓ Step 4: Updated dependencies.py to use `similarities_active` in new_feature_dict
+- ✓ Step 5: Testing complete - verified working correctly
+
+**Read functions used**: `read_lower_triangular_matrix()` (same as correlations)
+- Uses the same helper functions that were already updated for correlations
+- All exception points already have restore calls from correlations work
 
 #### target_candidate
 **Steps needed:**
@@ -657,18 +670,17 @@ We are eliminating candidate instances by reading directly into `_active` instan
 3. Update dependencies.py to use `target_active` in new_feature_dict
 4. Test target file loading
 
-#### scores_candidate - ✓ COMPLETE
-- ✓ Step 1: Removed `scores_candidate` initialization from director.py
-- ✓ Step 2: Updated OpenScoresCommand to use `scores_active` directly
-- ✓ Step 3: Added restore calls - exception handling already complete
-- ✓ Step 4: Updated dependencies.py to use `scores_active` in new_feature_dict
-- ✓ Step 5: Ready for testing with valid and malformed files
+#### scores_candidate - NOT STARTED
+**Steps needed:**
+1. Remove `scores_candidate` initialization from director.py
+2. Update OpenScoresCommand to use `scores_active` directly
+3. Add restore calls to exception points in `_read_scores()`
+4. Update dependencies.py to use `scores_active` in new_feature_dict
+5. Test with valid and malformed score files
 
 **Read approach**: Scores uses `pd.read_csv()` and directly populates `scores_active` fields (similar to evaluations).
-- Exception handling in `_read_scores()` (lines 1251-1307) covers all exception points
-- Catches: FileNotFoundError, PermissionError, EmptyDataError, ParserError, ValueError
-- Calls `event_driven_optional_restoration()` on any exception (line 1303)
-- **Restore call added** during this conversion
+- Exception handling in `_read_scores()` (lines 1251-1307) likely needs restore calls added
+- Should catch: FileNotFoundError, PermissionError, EmptyDataError, ParserError, ValueError
 
 **Other commands that create scores**: ScoreIndividualsCommand, FactorAnalysisCommand, and FactorAnalysisMachineLearningCommand also create scores but don't read from files. These commands create scores computationally and will be reviewed separately as needed.
 

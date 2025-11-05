@@ -265,11 +265,12 @@ class DependencyChecking:
 		"""Establishes what information is needed to determine
 		whether new	data is consistent with existing data.
 		"""
+		# Enable label consistency checking to ensure dictionary keys match
+		self.check_label_consistency = True
 
 		configuration_candidate = self._director.configuration_candidate
 		target_candidate = self._director.target_candidate
 		grouped_data_candidate = self._director.grouped_data_candidate
-		similarities_candidate = self._director.similarities_candidate
 		individuals_candidate = self._director.individuals_candidate
 		configuration_active = self._director.configuration_active
 		target_active = self._director.target_active
@@ -341,9 +342,9 @@ class DependencyChecking:
 				"Similarity",
 				"Points",
 				None,
-				similarities_candidate.nitem,
-				similarities_candidate.item_names,
-				similarities_candidate.item_labels,
+				similarities_active.nitem,
+				similarities_active.item_names,
+				similarities_active.item_labels,
 				None,
 				None,
 				None,
@@ -747,7 +748,7 @@ class DependencyChecking:
 		points_match: bool = False
 		if self.check_label_consistency:
 			if existing_point_labels == new_point_labels:
-				pass
+				points_match: bool = True
 			else:
 				points_match: bool = False
 			return points_match
