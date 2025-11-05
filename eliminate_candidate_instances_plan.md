@@ -670,17 +670,19 @@ We are eliminating candidate instances by reading directly into `_active` instan
 3. Update dependencies.py to use `target_active` in new_feature_dict
 4. Test target file loading
 
-#### scores_candidate - NOT STARTED
-**Steps needed:**
-1. Remove `scores_candidate` initialization from director.py
-2. Update OpenScoresCommand to use `scores_active` directly
-3. Add restore calls to exception points in `_read_scores()`
-4. Update dependencies.py to use `scores_active` in new_feature_dict
-5. Test with valid and malformed score files
+#### scores_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `scores_candidate` initialization from director.py
+- ✓ Step 2: Updated OpenScoresCommand to use `scores_active` directly
+- ✓ Step 3: Added restore calls to exception points in `_read_scores()`
+- ✓ Step 4: Updated dependencies.py to use `scores_active` in new_feature_dict
+- ✓ Step 5: Testing complete - verified working correctly
 
 **Read approach**: Scores uses `pd.read_csv()` and directly populates `scores_active` fields (similar to evaluations).
-- Exception handling in `_read_scores()` (lines 1251-1307) likely needs restore calls added
-- Should catch: FileNotFoundError, PermissionError, EmptyDataError, ParserError, ValueError
+- Exception handling in `_read_scores()` already had comprehensive coverage
+- Catches: FileNotFoundError, PermissionError, EmptyDataError, ParserError, ValueError
+- All exception paths now call restoration appropriately
+
+**Debugging statements removed**: Cleaned up all debugging print statements from consistency checking functions (`do_dimensions_match()` and `do_points_match()` in dependencies.py).
 
 **Other commands that create scores**: ScoreIndividualsCommand, FactorAnalysisCommand, and FactorAnalysisMachineLearningCommand also create scores but don't read from files. These commands create scores computationally and will be reviewed separately as needed.
 

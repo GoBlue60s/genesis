@@ -419,9 +419,9 @@ class UndoCommand:
 			details.append(["Evaluations", text])
 
 		if "scores" in snapshot:
-			scores: dict = snapshot["scores"]
-			nscored_individ: int = scores.get("nscored_individ", 0)
-			ndim: int = scores.get("ndim", 0)
+			scores = snapshot["scores"]
+			nscored_individ: int = scores.nscored_individ
+			ndim: int = scores.ndim
 			text: str = f"{ndim} dimensions, {nscored_individ} individuals"
 			details.append(["Scores", text])
 

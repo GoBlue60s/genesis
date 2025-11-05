@@ -513,7 +513,7 @@ class EvaluationsCommand:
 			nitem = nreferent
 			range_items = range(nreferent)
 			item_names = evaluations.columns.tolist()
-			item_labels = [label[0:4] for label in item_names]
+			item_labels = [name[:4] for name in item_names]
 
 			if len(item_names) < 3:
 				raise ValueError("Evaluations file must have at least 3 items")
@@ -1266,6 +1266,11 @@ class OpenScoresCommand:
 			if scores.empty:
 				raise ValueError("Scores file is empty")
 
+			# Create a new ScoresFeature object (matching Evaluations pattern)
+			from features import ScoresFeature  # noqa: PLC0415
+			self._director.scores_active = ScoresFeature(self._director)
+
+			# Now set the attributes on the new object
 			self._director.scores_active.scores = scores
 			self._director.scores_active.file_handle = file_name
 			self._director.scores_active.nscores = scores.shape[1] - 1
@@ -1313,6 +1318,8 @@ class OpenScoresCommand:
 			ValueError,
 		) as e:
 			self.common.event_driven_optional_restoration("scores")
+			# Raise exception to stop command execution
+			# (Restoration has already occurred if user chose Yes)
 			raise SpacesError(
 				self._scores_error_bad_input_title,
 				self._scores_error_bad_input_message,

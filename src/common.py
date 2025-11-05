@@ -843,7 +843,10 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def have_alike_coords(self) -> bool:
-		return len(self._director.similarities_active.a_x_alike) != 0
+		return (
+			self._director.similarities_active is not None
+			and len(self._director.similarities_active.a_x_alike) != 0
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -885,9 +888,10 @@ class Spaces:
 		#
 		# Checks if ranked_similarities is empty
 		#
-		return len(
-			self._director.similarities_active.ranked_similarities
-		) != 0
+		return (
+			self._director.similarities_active is not None
+			and len(self._director.similarities_active.ranked_similarities) != 0
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -931,8 +935,9 @@ class Spaces:
 		#
 		# Checks if ranks differences dataframe is empty
 		#
-		return not (
-			self._director.similarities_active.differences_of_ranks_as_dataframe.empty
+		return (
+			self._director.similarities_active is not None
+			and not self._director.similarities_active.differences_of_ranks_as_dataframe.empty
 		)
 
 	# ------------------------------------------------------------------------
@@ -968,7 +973,10 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def have_scores(self) -> bool:
-		return not self._director.scores_active.scores.empty
+		return (
+			self._director.scores_active is not None
+			and not self._director.scores_active.scores.empty
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -981,7 +989,10 @@ class Spaces:
 		#
 		# Checks if similarities data is empty
 		#
-		return len(self._director.similarities_active.similarities) != 0
+		return (
+			self._director.similarities_active is not None
+			and len(self._director.similarities_active.similarities) != 0
+		)
 
 	# ------------------------------------------------------------------------
 

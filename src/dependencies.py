@@ -515,6 +515,7 @@ class DependencyChecking:
 		# if n_exist == 0:
 		# 	return
 		new: str = self._create_new_from_command_without_open()
+
 		for each_feature in features:
 			if self._skip_when_new_and_existing_are_same_type_of_feature(
 				new, each_feature
@@ -725,11 +726,20 @@ class DependencyChecking:
 		dimensions_match: bool = False
 
 		if self.check_label_consistency:
+			# Fall back to name matching if either label list is empty
+			if not existing_dim_labels or not new_dim_labels:
+				if existing_ndim == new_ndim and existing_dim_names == new_dim_names:
+					dimensions_match = True
+				else:
+					dimensions_match = False
+				return dimensions_match
+
 			if existing_dim_labels == new_dim_labels:
-				pass
+				dimensions_match = True
 			else:
 				dimensions_match = False
 			return dimensions_match
+
 		if existing_ndim == new_ndim and existing_dim_names == new_dim_names:
 			dimensions_match = True
 		return dimensions_match
@@ -746,12 +756,25 @@ class DependencyChecking:
 		new_point_labels: list[str],
 	) -> bool:
 		points_match: bool = False
+
 		if self.check_label_consistency:
+			# Fall back to name matching if either label list is empty
+			if not existing_point_labels or not new_point_labels:
+				if (
+					existing_npoint == new_npoint
+					and existing_point_names == new_point_names
+				):
+					points_match = True
+				else:
+					points_match = False
+				return points_match
+
 			if existing_point_labels == new_point_labels:
 				points_match: bool = True
 			else:
 				points_match: bool = False
 			return points_match
+
 		if (
 			existing_npoint == new_npoint
 			and existing_point_names == new_point_names
