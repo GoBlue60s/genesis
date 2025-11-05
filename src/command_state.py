@@ -446,7 +446,8 @@ class CommandState:
 	def restore_configuration_state(self, director: Status) -> None:
 		"""Restore configuration feature state from snapshot.
 
-		Restores by reassigning the entire configuration_active object.
+		Restores configuration data from the captured dictionary snapshot
+		into the configuration_active object.
 
 		Args:
 			director: The director instance to restore state into
@@ -454,8 +455,33 @@ class CommandState:
 		if "configuration" not in self.state_snapshot:
 			return
 
-		# Restore the entire object - no attribute copying needed!
-		director.configuration_active = self.state_snapshot["configuration"]
+		config_snapshot: dict[str, Any] = self.state_snapshot["configuration"]
+		config = director.configuration_active
+
+		# Restore core data
+		config.point_coords = config_snapshot["point_coords"].copy()
+		config.point_names = config_snapshot["point_names"].copy()
+		config.point_labels = config_snapshot["point_labels"].copy()
+		config.dim_names = config_snapshot["dim_names"].copy()
+		config.dim_labels = config_snapshot["dim_labels"].copy()
+
+		# Restore dimensions
+		config.ndim = config_snapshot["ndim"]
+		config.npoint = config_snapshot["npoint"]
+		config.range_dims = config_snapshot["range_dims"]
+		config.range_points = config_snapshot["range_points"]
+
+		# Restore axis names
+		config.hor_axis_name = config_snapshot["hor_axis_name"]
+		config.vert_axis_name = config_snapshot["vert_axis_name"]
+
+		# Restore computed data
+		config.distances_as_dataframe = (
+			config_snapshot["distances_as_dataframe"].copy()
+		)
+		config.ranked_distances_as_dataframe = (
+			config_snapshot["ranked_distances_as_dataframe"].copy()
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -516,7 +542,8 @@ class CommandState:
 	def restore_individuals_state(self, director: Status) -> None:
 		"""Restore individuals feature state from snapshot.
 
-		Restores by reassigning the entire individuals_active object.
+		Restores individuals data from the captured dictionary snapshot
+		into the individuals_active object.
 
 		Args:
 			director: The director instance to restore state into
@@ -524,8 +551,14 @@ class CommandState:
 		if "individuals" not in self.state_snapshot:
 			return
 
-		# Restore the entire object - no attribute copying needed!
-		director.individuals_active = self.state_snapshot["individuals"]
+		inds_snapshot: dict[str, Any] = self.state_snapshot["individuals"]
+		inds = director.individuals_active
+
+		# Restore all attributes
+		inds.ind_vars = inds_snapshot["ind_vars"].copy()
+		inds.var_names = inds_snapshot["var_names"].copy()
+		inds.n_individ = inds_snapshot["n_individ"]
+		inds.nvar = inds_snapshot["nvar"]
 
 	# ------------------------------------------------------------------------
 
@@ -548,7 +581,8 @@ class CommandState:
 	def restore_grouped_data_state(self, director: Status) -> None:
 		"""Restore grouped data feature state from snapshot.
 
-		Restores by reassigning the entire grouped_data_active object.
+		Restores grouped data from the captured dictionary snapshot
+		into the grouped_data_active object.
 
 		Args:
 			director: The director instance to restore state into
@@ -556,15 +590,26 @@ class CommandState:
 		if "grouped_data" not in self.state_snapshot:
 			return
 
-		# Restore the entire object - no attribute copying needed!
-		director.grouped_data_active = self.state_snapshot["grouped_data"]
+		grouped_snapshot: dict[str, Any] = self.state_snapshot["grouped_data"]
+		grouped = director.grouped_data_active
+
+		# Restore all attributes
+		grouped.group_coords = grouped_snapshot["group_coords"].copy()
+		grouped.group_names = grouped_snapshot["group_names"].copy()
+		grouped.group_labels = grouped_snapshot["group_labels"].copy()
+		grouped.dim_names = grouped_snapshot["dim_names"].copy()
+		grouped.dim_labels = grouped_snapshot["dim_labels"].copy()
+		grouped.grouping_var = grouped_snapshot["grouping_var"]
+		grouped.ngroups = grouped_snapshot["ngroups"]
+		grouped.ndim = grouped_snapshot["ndim"]
 
 	# ------------------------------------------------------------------------
 
 	def restore_target_state(self, director: Status) -> None:
 		"""Restore target feature state from snapshot.
 
-		Restores by reassigning the entire target_active object.
+		Restores target data from the captured dictionary snapshot
+		into the target_active object.
 
 		Args:
 			director: The director instance to restore state into
@@ -572,15 +617,25 @@ class CommandState:
 		if "target" not in self.state_snapshot:
 			return
 
-		# Restore the entire object - no attribute copying needed!
-		director.target_active = self.state_snapshot["target"]
+		target_snapshot: dict[str, Any] = self.state_snapshot["target"]
+		target = director.target_active
+
+		# Restore all attributes
+		target.point_coords = target_snapshot["point_coords"].copy()
+		target.point_names = target_snapshot["point_names"].copy()
+		target.point_labels = target_snapshot["point_labels"].copy()
+		target.dim_names = target_snapshot["dim_names"].copy()
+		target.dim_labels = target_snapshot["dim_labels"].copy()
+		target.ndim = target_snapshot["ndim"]
+		target.npoint = target_snapshot["npoint"]
 
 	# ------------------------------------------------------------------------
 
 	def restore_uncertainty_state(self, director: Status) -> None:
 		"""Restore uncertainty feature state from snapshot.
 
-		Restores by reassigning the entire uncertainty_active object.
+		Restores uncertainty data from the captured dictionary snapshot
+		into the uncertainty_active object.
 
 		Args:
 			director: The director instance to restore state into
@@ -588,8 +643,38 @@ class CommandState:
 		if "uncertainty" not in self.state_snapshot:
 			return
 
-		# Restore the entire object - no attribute copying needed!
-		director.uncertainty_active = self.state_snapshot["uncertainty"]
+		unc_snapshot: dict[str, Any] = self.state_snapshot["uncertainty"]
+		uncertainty = director.uncertainty_active
+
+		# Restore scalar attributes
+		uncertainty.universe_size = unc_snapshot["universe_size"]
+		uncertainty.nrepetitions = unc_snapshot["nrepetitions"]
+		uncertainty.probability_of_inclusion = (
+			unc_snapshot["probability_of_inclusion"]
+		)
+		uncertainty.ndim = unc_snapshot["ndim"]
+		uncertainty.npoint = unc_snapshot["npoint"]
+		uncertainty.npoints = unc_snapshot["npoints"]
+		uncertainty.nsolutions = unc_snapshot["nsolutions"]
+
+		# Restore dataframes
+		uncertainty.sample_design = unc_snapshot["sample_design"].copy()
+		uncertainty.sample_design_frequencies = (
+			unc_snapshot["sample_design_frequencies"].copy()
+		)
+		uncertainty.sample_repetitions = (
+			unc_snapshot["sample_repetitions"].copy()
+		)
+		uncertainty.solutions_stress_df = (
+			unc_snapshot["solutions_stress_df"].copy()
+		)
+		uncertainty.sample_solutions = unc_snapshot["sample_solutions"].copy()
+
+		# Restore arrays
+		uncertainty.dim_names = unc_snapshot["dim_names"].copy()
+		uncertainty.dim_labels = unc_snapshot["dim_labels"].copy()
+		uncertainty.point_names = unc_snapshot["point_names"].copy()
+		uncertainty.point_labels = unc_snapshot["point_labels"].copy()
 
 	# ------------------------------------------------------------------------
 
