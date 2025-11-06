@@ -46,6 +46,10 @@ class RedoCommand:
 			)
 			raise SpacesError(title_msg, detail_msg)
 
+		# Skip passive commands - only active commands have state to restore
+		if cmd_state.command_type == "passive":
+			return self._redo_last_undone_command()
+
 		print(f"\n\tRedoing {cmd_state.command_name} command")
 
 		# Push the current state to undo stack before redoing
@@ -206,6 +210,10 @@ class UndoCommand:
 				"Execute an active command before using Undo."
 			)
 			raise SpacesError(title_msg, detail_msg)
+
+		# Skip passive commands - only active commands have state to restore
+		if cmd_state.command_type == "passive":
+			return self._undo_last_command()
 
 		print(f"\n\tUndoing {cmd_state.command_name} command")
 

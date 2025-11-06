@@ -877,9 +877,6 @@ class GroupedDataFeature:
 		group_coords = self.group_coords
 		print(f" Configuration is based on {grouping_var} \n")
 		print(group_coords)
-		print(f"\nDEBUG: dim_labels right after printing grouped data: {self.dim_labels}")
-		print(f"DEBUG: dim_names right after printing grouped data: {self.dim_names}")
-		print(f"DEBUG: ndim = {self.ndim}")
 		return
 
 	# ------------------------------------------------------------------------

@@ -53,14 +53,11 @@ class ConfigurationCommand:
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Configuration", "active", params)
-		self._director.configuration_candidate = \
+		self._director.configuration_active = \
 			common.read_configuration_type_file(
 			file_name, "Configuration")
 		self._director.dependency_checker.detect_consistency_issues()
-		# self._director.configuration_candidate.inter_point_distances()
-		self._director.configuration_active = (
-			self._director.configuration_candidate)
-		self._director.configuration_candidate.inter_point_distances()
+		self._director.configuration_active.inter_point_distances()
 		self.common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
 		self._director.configuration_active.print_active_function()
@@ -183,117 +180,30 @@ class CreateCommand:
 
 	def execute(self, common: Spaces) -> None:
 
-		from dialogs import (  # noqa: PLC0415
-			GetIntegerDialog,
-			GetStringDialog,
-			GetCoordinatesDialog,
-		)
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		# Get number of points from user
-		npoint_dialog = GetIntegerDialog(
-			self._number_of_points_title,
-			self._number_of_points_message,
-			min_value=2,
-			max_value=100,
-		)
-		if not npoint_dialog.exec():
-			raise SpacesError(self._cancel_title, self._cancel_message)
-		npoint = npoint_dialog.get_value()
+		(
+			npoint,
+			ndim,
+			point_labels,
+			point_names,
+			dim_labels,
+			dim_names,
+			point_coords,
+		) = self._get_configuration_information_from_user()
 
-		# Get number of dimensions from user
-		ndim_dialog = GetIntegerDialog(
-			self._number_of_dimensions_title,
-			self._number_of_dimensions_message,
-			min_value=2,
-			max_value=10,
-		)
-		if not ndim_dialog.exec():
-			raise SpacesError(self._cancel_title, self._cancel_message)
-			
-		ndim = ndim_dialog.get_value()
-
-		# Get point labels and names
-		point_labels = []
-		point_names = []
-		for each_point in range(npoint):
-			label_dialog = GetStringDialog(
-				self._labels_title,
-				f"{self._labels_message}point {each_point + 1}:",
-			)
-			if not label_dialog.exec():
-				raise SpacesError(self._cancel_title, self._cancel_message)
-
-			point_labels.append(label_dialog.get_value())
-
-			name_dialog = GetStringDialog(
-				self._names_title,
-				f"{self._names_message}point {each_point + 1}:",
-			)
-			if not name_dialog.exec():
-				raise SpacesError(self._cancel_title, self._cancel_message)
-
-			point_names.append(name_dialog.get_value())
-
-		# Get dimension labels and names
-		dim_labels = []
-		dim_names = []
-		for each_dim in range(ndim):
-			label_dialog = GetStringDialog(
-				self._labels_title,
-				f"{self._labels_message}dimension {each_dim + 1}:",
-			)
-			if not label_dialog.exec():
-				raise SpacesError(self._cancel_title, self._cancel_message)
-
-			dim_labels.append(label_dialog.get_value())
-
-			name_dialog = GetStringDialog(
-				self._names_title,
-				f"{self._names_message}dimension {each_dim + 1}:",
-			)
-			if not name_dialog.exec():
-				raise SpacesError(self._cancel_title, self._cancel_message)
-
-			dim_names.append(name_dialog.get_value())
-
-		# Get coordinates for each point
-		coords_data = []
-		for each_point in range(npoint):
-			coords_dialog = GetCoordinatesDialog(
-				self._coordinates_title,
-				f"{self._coordinates_message}{point_names[each_point]}:",
-				ndim,
-			)
-			if not coords_dialog.exec():
-				raise SpacesError(self._cancel_title, self._cancel_message)
-
-			coords = coords_dialog.get_values()
-			coords_data.append(coords)
-
-		# Create DataFrame with proper labels
-		point_coords = pd.DataFrame(
-			coords_data, index=point_labels, columns=dim_labels
-		)
-
-		# Capture state for undo BEFORE modifications
 		params = {"npoint": npoint, "ndim": ndim}
 		self.common.capture_and_push_undo_state("Create", "active", params)
 
-		# Store the new configuration
-		self._director.configuration_candidate.ndim = ndim
-		self._director.configuration_candidate.npoint = npoint
-		self._director.configuration_candidate.range_dims = range(ndim)
-		self._director.configuration_candidate.range_points = range(npoint)
-		self._director.configuration_candidate.dim_labels = dim_labels
-		self._director.configuration_candidate.dim_names = dim_names
-		self._director.configuration_candidate.point_labels = point_labels
-		self._director.configuration_candidate.point_names = point_names
-		self._director.configuration_candidate.point_coords = point_coords
-
-		self._director.configuration_active = (
-			self._director.configuration_candidate
+		self._create_active_configuration(
+			npoint,
+			ndim,
+			point_labels,
+			point_names,
+			dim_labels,
+			dim_names,
+			point_coords,
 		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
@@ -303,6 +213,171 @@ class CreateCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _get_configuration_information_from_user(
+		self,
+	) -> tuple[
+		int, int, list[str], list[str], list[str], list[str], pd.DataFrame
+	]:
+
+		npoint = self._get_number_of_points()
+		ndim = self._get_number_of_dimensions()
+		point_labels, point_names = self._get_point_labels_and_names(npoint)
+		dim_labels, dim_names = self._get_dimension_labels_and_names(ndim)
+		coords_data = self._get_coordinates_for_points(
+			npoint, ndim, point_names
+		)
+
+		point_coords = pd.DataFrame(
+			coords_data, index=point_labels, columns=dim_labels
+		)
+
+		return (
+			npoint,
+			ndim,
+			point_labels,
+			point_names,
+			dim_labels,
+			dim_names,
+			point_coords,
+		)
+
+	# ------------------------------------------------------------------------
+
+	def _create_active_configuration(
+		self,
+		npoint: int,
+		ndim: int,
+		point_labels: list[str],
+		point_names: list[str],
+		dim_labels: list[str],
+		dim_names: list[str],
+		point_coords: pd.DataFrame,
+	) -> None:
+		"""Set up the active configuration with all necessary data."""
+		self._director.configuration_active.ndim = ndim
+		self._director.configuration_active.npoint = npoint
+		self._director.configuration_active.range_dims = range(ndim)
+		self._director.configuration_active.range_points = range(npoint)
+		self._director.configuration_active.dim_labels = dim_labels
+		self._director.configuration_active.dim_names = dim_names
+		self._director.configuration_active.point_labels = point_labels
+		self._director.configuration_active.point_names = point_names
+		self._director.configuration_active.point_coords = point_coords
+		self._director.dependency_checker.detect_consistency_issues()
+		self._director.configuration_active.inter_point_distances()
+		self.common.rank_when_similarities_match_configuration()
+		self._director.rivalry = Rivalry(self._director)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _get_number_of_points(self) -> int:
+		from dialogs import GetIntegerDialog  # noqa: PLC0415
+
+		npoint_dialog = GetIntegerDialog(
+			self._number_of_points_title,
+			self._number_of_points_message,
+			min_value=2,
+			max_value=100,
+		)
+		if not npoint_dialog.exec():
+			raise SpacesError(self._cancel_title, self._cancel_message)
+		return npoint_dialog.get_value()
+
+	# ------------------------------------------------------------------------
+
+	def _get_number_of_dimensions(self) -> int:
+		from dialogs import GetIntegerDialog  # noqa: PLC0415
+
+		ndim_dialog = GetIntegerDialog(
+			self._number_of_dimensions_title,
+			self._number_of_dimensions_message,
+			min_value=2,
+			max_value=10,
+		)
+		if not ndim_dialog.exec():
+			raise SpacesError(self._cancel_title, self._cancel_message)
+		return ndim_dialog.get_value()
+
+	# ------------------------------------------------------------------------
+
+	def _get_point_labels_and_names(
+		self, npoint: int
+	) -> tuple[list[str], list[str]]:
+		from dialogs import GetStringDialog  # noqa: PLC0415
+
+		point_labels = []
+		point_names = []
+		for each_point in range(npoint):
+			label_dialog = GetStringDialog(
+				self._labels_title,
+				f"{self._labels_message}point {each_point + 1}:",
+			)
+			if not label_dialog.exec():
+				raise SpacesError(self._cancel_title, self._cancel_message)
+			point_labels.append(label_dialog.get_value())
+
+			name_dialog = GetStringDialog(
+				self._names_title,
+				f"{self._names_message}point {each_point + 1}:",
+			)
+			if not name_dialog.exec():
+				raise SpacesError(self._cancel_title, self._cancel_message)
+			point_names.append(name_dialog.get_value())
+
+		return point_labels, point_names
+
+	# ------------------------------------------------------------------------
+
+	def _get_dimension_labels_and_names(
+		self, ndim: int
+	) -> tuple[list[str], list[str]]:
+		from dialogs import GetStringDialog  # noqa: PLC0415
+
+		dim_labels = []
+		dim_names = []
+		for each_dim in range(ndim):
+			label_dialog = GetStringDialog(
+				self._labels_title,
+				f"{self._labels_message}dimension {each_dim + 1}:",
+			)
+			if not label_dialog.exec():
+				raise SpacesError(self._cancel_title, self._cancel_message)
+			dim_labels.append(label_dialog.get_value())
+
+			name_dialog = GetStringDialog(
+				self._names_title,
+				f"{self._names_message}dimension {each_dim + 1}:",
+			)
+			if not name_dialog.exec():
+				raise SpacesError(self._cancel_title, self._cancel_message)
+			dim_names.append(name_dialog.get_value())
+
+		return dim_labels, dim_names
+
+	# ------------------------------------------------------------------------
+
+	def _get_coordinates_for_points(
+		self, npoint: int, ndim: int, point_names: list[str]
+	) -> list[list[float]]:
+		from dialogs import GetCoordinatesDialog  # noqa: PLC0415
+
+		coords_data = []
+		for each_point in range(npoint):
+			coords_dialog = GetCoordinatesDialog(
+				self._coordinates_title,
+				f"{self._coordinates_message}{point_names[each_point]}:",
+				ndim,
+			)
+			if not coords_dialog.exec():
+				raise SpacesError(self._cancel_title, self._cancel_message)
+			coords = coords_dialog.get_values()
+			coords_data.append(coords)
+
+		return coords_data
 
 	# ------------------------------------------------------------------------
 
@@ -669,13 +744,10 @@ class GroupedDataCommand:
 				self._grouped_data_error_bad_input_message,
 			) from e
 
-		self._director.grouped_data_active = (
-			self._director.grouped_data_candidate
-		)
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
-		ndim = self._director.grouped_data_candidate.ndim
-		ngroups = self._director.grouped_data_candidate.ngroups
+		ndim = self._director.grouped_data_active.ndim
+		ngroups = self._director.grouped_data_active.ngroups
 		self._director.title_for_table_widget = (
 			f"Grouped data has {ndim} dimensions and {ngroups} groups"
 		)
@@ -715,7 +787,7 @@ class GroupedDataCommand:
 		"""Read groups - is used by group command needing to read
 		a group configuration from a file.
 		"""
-		file_handle = self._director.grouped_data_candidate.file_handle
+		file_handle = self._director.grouped_data_active.file_handle
 
 		self._read_grouped_data_initialized_variables(file_name, file_handle)
 
@@ -728,12 +800,14 @@ class GroupedDataCommand:
 			with Path(file_name).open() as file_handle:
 				header = file_handle.readline()
 				if len(header) == 0:
+					self.common.event_driven_automatic_restoration()
 					raise SpacesError(
 						self.grouped_data_file_not_found_error_title,
 						self.grouped_data_file_not_found_error_message,
 					) from None
 
 				if header.lower().strip() != "grouped":
+					self.common.event_driven_automatic_restoration()
 					raise SpacesError(
 						self.grouped_data_file_not_grouped_error_title,
 						self.grouped_data_file_not_grouped_error_message,
@@ -741,6 +815,7 @@ class GroupedDataCommand:
 
 				grouping_var = file_handle.readline()
 				if len(grouping_var) == 0:
+					self.common.event_driven_automatic_restoration()
 					raise SpacesError(
 						self.missing_grouping_var_error_title,
 						self.missing_grouping_var_error_message,
@@ -775,23 +850,24 @@ class GroupedDataCommand:
 					columns=dim_labels,
 				)
 		except FileNotFoundError:
+			self.common.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.group_data_file_not_found_error_title,
 				self.group_data_file_not_found_error_message,
 			) from None
 
-		self._director.grouped_data_candidate.grouping_var = grouping_var
-		self._director.grouped_data_candidate.ndim = expected_dim
-		self._director.grouped_data_candidate.dim_names = dim_names
-		self._director.grouped_data_candidate.dim_labels = dim_labels
-		self._director.grouped_data_candidate.npoint = expected_groups
-		self._director.grouped_data_candidate.ngroups = expected_groups
-		self._director.grouped_data_candidate.range_groups = range_groups
-		self._director.grouped_data_candidate.group_names = group_names
-		self._director.grouped_data_candidate.group_labels = group_labels
-		self._director.grouped_data_candidate.group_codes = group_codes
-		self._director.grouped_data_candidate.group_coords = group_coords
-		self._director.grouped_data_candidate.range_dims = range_dims
+		self._director.grouped_data_active.grouping_var = grouping_var
+		self._director.grouped_data_active.ndim = expected_dim
+		self._director.grouped_data_active.dim_names = dim_names
+		self._director.grouped_data_active.dim_labels = dim_labels
+		self._director.grouped_data_active.npoint = expected_groups
+		self._director.grouped_data_active.ngroups = expected_groups
+		self._director.grouped_data_active.range_groups = range_groups
+		self._director.grouped_data_active.group_names = group_names
+		self._director.grouped_data_active.group_labels = group_labels
+		self._director.grouped_data_active.group_codes = group_codes
+		self._director.grouped_data_active.group_coords = group_coords
+		self._director.grouped_data_active.range_dims = range_dims
 
 		return
 
@@ -828,18 +904,18 @@ class IndividualsCommand:
 		# Error handling
 		# If not an individuals file, then return an error message
 		try:
-			common.read_individuals_file_check_for_errors_store_as_candidate(
-				file_name, self._director.individuals_candidate
+			common.read_individuals_file(
+				file_name, self._director.individuals_active
 			)
 		except ValueError as e:
+			# Restore previous state before raising exception
+			cmd_state = self._director.pop_undo_state()
+			if cmd_state:
+				cmd_state.restore_all_state(self._director)
 			raise SpacesError(
 				self._individuals_error_bad_input_title,
 				self._individuals_error_bad_input_message,
 			) from e
-
-		self._director.individuals_active = (
-			self._director.individuals_candidate
-		)
 		self._director.individuals_active.print_individuals()
 		self._director.title_for_table_widget = (
 			f"Individuals data has been read "
@@ -996,21 +1072,18 @@ class NewGroupedDataCommand:
 			"New grouped data", "active", params
 		)
 
-		# Store the new grouped data
-		self._director.grouped_data_candidate.ndim = ndim
-		self._director.grouped_data_candidate.ngroups = ngroups
-		self._director.grouped_data_candidate.range_dims = range(ndim)
-		self._director.grouped_data_candidate.range_groups = range(ngroups)
-		self._director.grouped_data_candidate.dim_labels = dim_labels
-		self._director.grouped_data_candidate.dim_names = dim_names
-		self._director.grouped_data_candidate.group_labels = group_labels
-		self._director.grouped_data_candidate.group_names = group_names
-		self._director.grouped_data_candidate.group_codes = group_codes
-		self._director.grouped_data_candidate.group_coords = group_coords
+		# Store the new grouped data directly in active
+		self._director.grouped_data_active.ndim = ndim
+		self._director.grouped_data_active.ngroups = ngroups
+		self._director.grouped_data_active.range_dims = range(ndim)
+		self._director.grouped_data_active.range_groups = range(ngroups)
+		self._director.grouped_data_active.dim_labels = dim_labels
+		self._director.grouped_data_active.dim_names = dim_names
+		self._director.grouped_data_active.group_labels = group_labels
+		self._director.grouped_data_active.group_names = group_names
+		self._director.grouped_data_active.group_codes = group_codes
+		self._director.grouped_data_active.group_coords = group_coords
 
-		self._director.grouped_data_active = (
-			self._director.grouped_data_candidate
-		)
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
 		self._director.title_for_table_widget = (
@@ -1052,7 +1125,7 @@ class NewGroupedDataCommand:
 				self.missing_grouping_var_error_message,
 			)
 
-		self._director.grouped_data_candidate.grouping_var = grouping_var
+		self._director.grouped_data_active.grouping_var = grouping_var
 		return
 
 	# ------------------------------------------------------------------------
@@ -3236,15 +3309,14 @@ class TargetCommand:
 		self.common.capture_and_push_undo_state("Target", "active", params)
 
 		# Read and validate target file
-		self._director.target_candidate = common.read_configuration_type_file(
+		self._director.target_active = common.read_configuration_type_file(
 			file_name, "Target"
 		)
 
-		self._director.target_active = self._director.target_candidate
 		self._director.target_active.print_target()
 		self._director.common.create_plot_for_tabs("target")
-		ndim = self._director.target_candidate.ndim
-		npoint = self._director.target_candidate.npoint
+		ndim = self._director.target_active.ndim
+		npoint = self._director.target_active.npoint
 		self._director.title_for_table_widget = (
 			f"Target configuration has {ndim} dimensions and {npoint} points"
 		)

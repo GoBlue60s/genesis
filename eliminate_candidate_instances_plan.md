@@ -631,26 +631,50 @@ We are eliminating candidate instances by reading directly into `_active` instan
 
 ### Remaining Features
 
-#### configuration_candidate
-**Steps needed:**
-1. Remove `configuration_candidate` initialization from director.py
-2. Update filemenu.py ConfigurationCommand to read directly into `configuration_active`
-3. Update dependencies.py to use `configuration_active` in new_feature_dict
-4. Test configuration file loading
+#### configuration_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `configuration_candidate` initialization from director.py
+- ✓ Step 2: Updated filemenu.py ConfigurationCommand to use `configuration_active` directly
+- ✓ Step 3: Updated filemenu.py CreateCommand to use `configuration_active` directly
+- ✓ Step 4: Read functions already had exception handling from common.py
+- ✓ Step 5: Updated dependencies.py to use `configuration_active` in new_feature_dict
+- ✓ Step 6: Testing complete - verified working correctly with multiple test scenarios
 
-#### grouped_data_candidate
-**Steps needed:**
-1. Remove `grouped_data_candidate` initialization from director.py
-2. Update file loading commands to read directly into `grouped_data_active`
-3. Update dependencies.py to use `grouped_data_active` in new_feature_dict
-4. Test grouped data file loading
+**Read functions used**: `read_configuration_type_file()` which uses:
+- `read_first_integer()` - exception handling already in place
+- `read_identifiers()` - exception handling already in place
+- Direct file reading with pandas - exception handling in command class
+- All restoration paths working correctly for both empty and populated states
 
-#### individuals_candidate
-**Steps needed:**
-1. Remove `individuals_candidate` initialization from director.py
-2. Update file loading commands to read directly into `individuals_active`
-3. Update dependencies.py to use `individuals_active` in new_feature_dict
-4. Test individuals file loading
+**CreateCommand pattern**: Gathers all input into local variables before capturing state and modifying `configuration_active`, so all cancellation exceptions occur safely before any state modification. No additional exception handling needed.
+
+**CreateCommand refactoring completed**: Removed all if statements and exceptions from execute() method by extracting logic into helper methods:
+- `_get_configuration_information_from_user()` - Orchestrates gathering all user input
+- `_get_number_of_points()` - Gets npoint with validation
+- `_get_number_of_dimensions()` - Gets ndim with validation
+- `_get_point_labels_and_names()` - Gets point labels and names with validation
+- `_get_dimension_labels_and_names()` - Gets dimension labels and names with validation
+- `_get_coordinates_for_points()` - Gets coordinates with validation
+
+The execute() method is now flat with no if statements or exceptions, following the project standard that exceptions should be raised in helper functions at the point of failure.
+
+#### grouped_data_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `grouped_data_candidate` initialization from director.py
+- ✓ Step 2: Updated file loading commands to use `grouped_data_active` directly
+- ✓ Step 3: Updated NewGroupedDataCommand to use `grouped_data_active` directly
+- ✓ Step 4: Updated dependencies.py to use `grouped_data_active` in new_feature_dict
+- ✓ Step 5: Testing complete - verified working correctly
+
+#### individuals_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `individuals_candidate` initialization from director.py
+- ✓ Step 2: Updated IndividualsCommand to use `individuals_active` directly
+- ✓ Step 3: Updated dependencies.py to use `individuals_active` in new_feature_dict
+- ✓ Step 4: Testing complete - verified working correctly
+
+**Read approach**: Individuals uses `pd.read_csv()` and directly populates `individuals_active` fields (similar to evaluations and scores).
+- Exception handling in `_read_individuals()` (lines 591-619) already covers all exception points
+- Catches: FileNotFoundError, PermissionError, EmptyDataError, ParserError, ValueError
+- Calls `event_driven_optional_restoration()` on any exception
+- All restoration paths working correctly
 
 #### similarities_candidate - ✓ COMPLETE
 - ✓ Step 1: Removed `similarities_candidate` initialization from director.py
@@ -663,12 +687,11 @@ We are eliminating candidate instances by reading directly into `_active` instan
 - Uses the same helper functions that were already updated for correlations
 - All exception points already have restore calls from correlations work
 
-#### target_candidate
-**Steps needed:**
-1. Remove `target_candidate` initialization from director.py
-2. Update file loading commands to read directly into `target_active`
-3. Update dependencies.py to use `target_active` in new_feature_dict
-4. Test target file loading
+#### target_candidate - ✓ COMPLETE
+- ✓ Step 1: Removed `target_candidate` initialization from director.py
+- ✓ Step 2: Updated file loading commands to use `target_active` directly
+- ✓ Step 3: Updated dependencies.py to use `target_active` in new_feature_dict
+- ✓ Step 4: Testing complete - verified working correctly
 
 #### scores_candidate - ✓ COMPLETE
 - ✓ Step 1: Removed `scores_candidate` initialization from director.py
@@ -787,3 +810,182 @@ Decision: **Leave automatic restoration as-is** (no emptiness check needed)
 7. **Continue implementing remaining features** - One at a time with testing
 8. **Complete all 8 features**
 9. **Final comprehensive testing**
+10. **Execute Cleanup Phase** - See below
+
+---
+
+## Phase 4: Cleanup
+
+After completing the elimination of candidate instances for all 8 features, the following cleanup tasks should be performed:
+
+### 1. Individuals Feature Completion
+- Complete conversion of `individuals_candidate` to direct `individuals_active` usage
+- Test individuals file loading and validation
+
+### 2. File Typing for CSV Files
+Currently CSV files (scores, evaluations, uncertainty, individuals) lack file type identification, which causes the system to accept invalid files that happen to match the CSV format.
+
+**Tasks:**
+- Design file typing approach for CSV files (e.g., first line metadata/comment)
+- Implement file type checking in save commands for:
+  - Scores
+  - Evaluations
+  - Uncertainty
+  - Individuals
+- Implement file type checking in read commands/functions for:
+  - Scores
+  - Evaluations
+  - Uncertainty
+  - Individuals
+- May require new exceptions for file type mismatches
+- Review and update scripts in `scripts/` directory to use new file typing format
+
+**Considerations:**
+- CSV format doesn't have a standard metadata section like other file formats
+- Could use comment line (e.g., `# TYPE: SCORES`) as first line
+- Need to maintain backward compatibility or provide migration path for existing files
+- Should be consistent across all CSV-based features
+
+### 3. Uncertainty, Sample Design, Sample Repetitions, and Sample Solutions
+Resolve architectural and implementation decisions for these related features:
+- Determine how uncertainty should be handled in the undo/redo system
+- Decide on candidate/active pattern (if applicable)
+- Review sample design, repetitions, and solutions features
+- Ensure consistent patterns across these related features
+
+### 4. Refactor `get_command_parameters()` to Use Dictionary-Based Helper
+Current implementation uses multiple `if/elif` statements to handle different getter types. Consider refactoring for better maintainability.
+
+**Proposal:**
+- Create `getter_type_dict` mapping getter types to handler functions
+- Extract handler logic into helper function `create_getter_type_dict()`
+- Simplify main `get_command_parameters()` function to use dictionary lookup
+
+**Current getter types used:**
+- `file_dialog` - File selection dialogs
+- `set_value_dialog` - Numeric value input (SetValueDialog)
+- `pair_of_points_dialog` - Select exactly two items (PairofPointsDialog)
+- `chose_option_dialog` - Radio button selection (ChoseOptionDialog)
+- `focal_item_dialog` - Select single item from list
+- `select_items_dialog` - Multiple item selection (SelectItemsDialog)
+- `get_string_dialog` - Text input (GetStringDialog)
+- `get_integer_dialog` - Integer input (GetIntegerDialog)
+- `get_coordinates_dialog` - Coordinate input (GetCoordinatesDialog)
+- `modify_items_dialog` - Modify list of items (ModifyItemsDialog)
+- `modify_values_dialog` - Modify numeric values (ModifyValuesDialog)
+- `modify_text_dialog` - Modify text fields (ModifyTextDialog)
+- `move_dialog` - Reorder items (MoveDialog)
+- `matrix_dialog` - Matrix input (MatrixDialog)
+- `set_names_dialog` - Set names for items (SetNamesDialog)
+
+**Benefits:**
+- Easier to add new getter types
+- More maintainable and readable
+- Follows same dictionary-driven pattern used elsewhere in Spaces
+
+### 5. Investigate Undo/Redo Enable/Disable for Toolbar and Menu Items
+Currently unclear how toolbar and menu items for Undo and Redo are enabled/disabled based on stack state.
+
+**Tasks:**
+- Search for Undo/Redo enable/disable logic
+- Verify proper enabling when undo stack has items
+- Verify proper disabling when undo stack is empty
+- Verify proper enabling when redo stack has items
+- Verify proper disabling when redo stack is empty
+- Test that toolbar and menu items stay synchronized
+- Consider if this needs enhancement or is working correctly
+
+### 6. Scan for Remaining `_candidate` References
+Perform comprehensive search for any remaining references to candidate instances:
+
+**Tasks:**
+- Search for all `*_candidate` patterns in codebase
+- Verify each reference has been properly updated or removed
+- Check for:
+  - Direct attribute access (`self._director.configuration_candidate`)
+  - String references in error messages or logs
+  - Comments that still reference old architecture
+  - Documentation that needs updating
+
+**Known locations to check:**
+- `director.py` - Initialization and attributes
+- `dependencies.py` - Consistency checking
+- `filemenu.py` - File loading commands
+- `associationsmenu.py` - Line of sight and other commands
+- `viewmenu.py` - Status and other view commands
+- Any other menu files that might reference features
+
+### 7. Consider Renaming All `_active` References
+Now that candidate instances are eliminated, the `_active` suffix is no longer necessary (there's no candidate/active distinction).
+
+**Decision needed:**
+- Should we rename `configuration_active` → `configuration`?
+- Should we rename `correlations_active` → `correlations`?
+- And so on for all 8 features?
+
+**Considerations:**
+- **Pro**: Simpler, cleaner names without unnecessary suffix
+- **Pro**: Matches new architecture (single instance per feature)
+- **Pro**: More consistent with naming elsewhere in codebase
+- **Con**: Very large refactoring across entire codebase
+- **Con**: May introduce bugs if any references are missed
+- **Con**: Git history becomes harder to follow (major rename)
+- **Con**: Not strictly necessary - current names are functional
+
+**Recommendation**: Defer this decision until after all other cleanup is complete. The `_active` suffix is not harmful and can remain indefinitely if the refactoring effort is deemed too risky or time-consuming.
+
+### 8. Review Parameter Names and Consider Standardizing
+Review parameter names used throughout the codebase for consistency:
+
+**Tasks:**
+- Identify common parameter patterns
+- Look for inconsistencies in naming conventions
+- Consider standardizing names like:
+  - `file_name` vs `filename` vs `file_path`
+  - `value_type` vs `type` vs `data_type`
+  - `item_name` vs `name` vs `label`
+  - Dimension-related parameters
+  - Point-related parameters
+
+**Goal**: Improve consistency and readability across the codebase
+
+**Approach:**
+- Document current parameter naming patterns
+- Propose standard naming conventions
+- Assess impact of changes (how many files affected?)
+- Decide if standardization is worth the effort
+- If proceeding, create phased plan for parameter renaming
+
+### 9. Review Execute Functions in filemenu.py
+Review all execute methods in filemenu.py to ensure adherence to standards and completeness:
+
+**Tasks:**
+- Review each execute function in current filemenu.py for adherence to project standards:
+  - Execute methods should be flat with minimal nesting
+  - No if statements or exceptions in execute() - all should be in helper methods
+  - Proper use of helper methods for complex logic
+  - Consistent error handling patterns
+  - Proper documentation and type hints
+- Compare each execute function to its archived version to verify functionality:
+  - Locate corresponding archived versions in `archive/` directory
+  - Verify all functionality from archived versions is preserved
+  - Check that no features or edge cases were lost during refactoring
+  - Document any intentional differences or improvements
+- Identify any commands that need refactoring to meet standards
+- Create list of any missing functionality that needs to be restored
+
+**Commands to review:**
+- ConfigurationCommand
+- CreateCommand
+- CorrelationsCommand
+- EvaluationsCommand
+- GroupedDataCommand
+- IndividualsCommand
+- ScoresCommand
+- SimilaritiesCommand
+- TargetCommand
+- All other file-loading and data-creation commands in filemenu.py
+
+**Goal**: Ensure all execute methods follow consistent patterns and retain full functionality from previous implementations
+
+---

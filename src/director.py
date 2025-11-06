@@ -192,17 +192,12 @@ class Status(QMainWindow):
 			SimilaritiesFeature,
 			TargetFeature,
 		)
-
-		self.configuration_candidate = ConfigurationFeature(self)
 		self.configuration_active = ConfigurationFeature(self)
 		self.correlations_active = CorrelationsFeature(self)
 		self.evaluations_active = EvaluationsFeature(self)
-		self.grouped_data_candidate = GroupedDataFeature(self)
 		self.grouped_data_active = GroupedDataFeature(self)
-		self.individuals_candidate = IndividualsFeature(self)
 		self.individuals_active = IndividualsFeature(self)
 		self.similarities_active = SimilaritiesFeature(self)
-		self.target_candidate = TargetFeature(self)
 		self.target_active = TargetFeature(self)
 		self.scores_active = ScoresFeature(self)
 		self.uncertainty_active = UncertaintyAnalysis(self)

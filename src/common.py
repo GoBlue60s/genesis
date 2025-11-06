@@ -54,6 +54,7 @@ if TYPE_CHECKING:
 	from features import (
 		ConfigurationFeature,
 		CorrelationsFeature,
+		IndividualsFeature,
 		SimilaritiesFeature,
 		TargetFeature,
 	)
@@ -399,6 +400,7 @@ class Spaces:
 					file_handle, npoint, point_names, ndim, dim_labels
 				)
 		except FileNotFoundError:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.conf_file_not_found_title,
 				self.conf_file_not_found_message,
@@ -457,11 +459,13 @@ class Spaces:
 		try:
 			header = file_handle.readline()
 			if len(header) == 0:
+				self.event_driven_automatic_restoration()
 				raise SpacesError(
 					self.empty_header_error_title,
 					self.empty_header_error_message,
 				) from None
 			if header.lower().strip() != "configuration":
+				self.event_driven_automatic_restoration()
 				raise SpacesError(
 					self.not_configuration_file_error_title,
 					self.not_configuration_file_error_message,
@@ -473,6 +477,7 @@ class Spaces:
 			ndim = expected_dim
 			npoint = expected_points
 		except FileNotFoundError as err:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.not_found_error_title, self.not_found_error_message
 			) from err
@@ -519,6 +524,7 @@ class Spaces:
 		for i in range(ndim):  # noqa: B007
 			line = file_handle.readline().rstrip("\n")
 			if not line:
+				self.event_driven_automatic_restoration()
 				raise SpacesError(
 					self.shape_error_title, self.shape_error_message
 				)
@@ -527,6 +533,7 @@ class Spaces:
 				len(parts)
 				!= REQUIRED_NUMBER_OF_FIELDS_IN_CONFIGURATION_FILE_LINE
 			):
+				self.event_driven_automatic_restoration()
 				raise SpacesError(
 					self.shape_error_title, self.shape_error_message
 				)
@@ -538,12 +545,14 @@ class Spaces:
 		for i in range(npoint):  # noqa: B007
 			line = file_handle.readline().rstrip("\n")
 			if not line:
+				self.event_driven_automatic_restoration()
 				raise InconsistentInformationError(
 					self.inconsistency_error_title,
 					self.inconsistency_error_message,
 				)
 			parts = line.split(";")
 			if len(parts) != MUST_HAVE_TWO_FIELDS:
+				self.event_driven_automatic_restoration()
 				raise InconsistentInformationError(
 					self.needs_two_fields_error_title,
 					self.needs_two_fields_error_message,
@@ -556,6 +565,7 @@ class Spaces:
 		pos_before_extra = file_handle.tell()
 		extra = file_handle.readline().strip()
 		if extra and not any(c.isdigit() for c in extra):
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.unexpected_line_error_title,
 				self.unexpected_line_error_message,
@@ -611,6 +621,7 @@ class Spaces:
 			for i in range(npoint):  # noqa: B007
 				line = file_handle.readline().strip()
 				if not line:
+					self.event_driven_automatic_restoration()
 					raise InconsistentInformationError(  # noqa: TRY301
 						self.unexpected_number_of_lines_error_title,
 						self.unexpected_number_of_lines_error_message,
@@ -620,6 +631,7 @@ class Spaces:
 
 				# Verify we have the expected number of values
 				if len(values) != ndim:
+					self.event_driven_automatic_restoration()
 					raise InconsistentInformationError(  # noqa: TRY301
 						self.unexpected_number_of_coordinates_error_title,
 						self.unexpected_number_of_coordinates_error_message,
@@ -629,6 +641,7 @@ class Spaces:
 				try:
 					coords = [float(val) for val in values]
 				except ValueError as err:
+					self.event_driven_automatic_restoration()
 					raise SpacesError(
 						self.invalid_coordinate_error_title,
 						self.invalid_coordinate_error_message,
@@ -638,6 +651,7 @@ class Spaces:
 			# Check if there's unexpected content after coordinates
 			extra = file_handle.readline().strip()
 			if extra:
+				self.event_driven_automatic_restoration()
 				raise SpacesError(  # noqa: TRY301
 					self.unexpected_extra_error_title,
 					self.unexpected_extra_error_message,
@@ -660,6 +674,7 @@ class Spaces:
 					coords_data, index=point_names, columns=dim_labels
 				)
 		except Exception as e:
+			self.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.unable_to_read_coordinates_error_title,
 				self.unable_to_read_coordinates_error_message,
@@ -3267,8 +3282,8 @@ class Spaces:
 		cmd_state = CommandState(command_name, "passive", parameters or {})
 		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-		# Clear redo stack when a new command executes
-		self._director.clear_redo_stack()
+		# Passive commands don't clear redo stack - they're read-only
+		# and shouldn't affect undo/redo navigation
 
 		self._director.push_undo_state(cmd_state)
 		return
@@ -3326,9 +3341,9 @@ class Spaces:
 		elif feature_name == "target":
 			return snapshot.get("npoint", 0) == 0
 		elif feature_name == "grouped_data":
-			return snapshot.get("ngroup", 0) == 0
+			return snapshot.get("ngroups", 0) == 0
 		elif feature_name == "individuals":
-			return snapshot.get("nindividual", 0) == 0
+			return snapshot.get("n_individ", 0) == 0
 
 		return False
 
@@ -3459,5 +3474,36 @@ class Spaces:
 				duplicate_ranked_similarities(self)
 			self._director.similarities_active.\
 				compute_differences_in_ranks()
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def read_individuals_file(
+		self,
+		file_name: str,
+		individuals_active: IndividualsFeature
+	) -> None:
+		"""Read individuals data from CSV file into individuals_active.
+
+		This is a placeholder function that needs full implementation.
+		Currently just reads the CSV to avoid traceback.
+
+		Args:
+			file_name: Path to the individuals CSV file
+			individuals_active: IndividualsFeature instance to populate
+
+		Raises:
+			ValueError: If file format is invalid
+		"""
+		try:
+			# TODO: Implement full individuals file reading logic
+			# For now, just read the CSV to avoid traceback
+			df = pd.read_csv(file_name)
+			individuals_active.ind_vars = df
+			individuals_active.n_individ = len(df)
+		except Exception as e:
+			self.event_driven_automatic_restoration()
+			raise ValueError(f"Error reading individuals file: {e}") from e
 
 		return

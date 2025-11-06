@@ -359,8 +359,8 @@ class ViewGroupedDataCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		ndim = self._director.grouped_data_candidate.ndim
-		ngroups = self._director.grouped_data_candidate.ngroups
+		ndim = self._director.grouped_data_active.ndim
+		ngroups = self._director.grouped_data_active.ngroups
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
