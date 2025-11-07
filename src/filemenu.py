@@ -583,7 +583,10 @@ class EvaluationsCommand:
 		self._clear_linked_correlations_if_needed()
 
 		try:
-			evaluations = pd.read_csv(file_name)
+			# Read CSV with type validation
+			evaluations = self.common.read_csv_with_type_check(
+				file_name, "EVALUATIONS"
+			)
 			(nevaluators, nreferent) = evaluations.shape
 			nitem = nreferent
 			range_items = range(nreferent)
@@ -591,6 +594,7 @@ class EvaluationsCommand:
 			item_labels = [name[:4] for name in item_names]
 
 			if len(item_names) < 3:
+				self.common.event_driven_automatic_restoration()
 				raise ValueError("Evaluations file must have at least 3 items")
 
 			# Create a new EvaluationsFeature object (matching Correlations pattern)
@@ -609,16 +613,12 @@ class EvaluationsCommand:
 			self._director.evaluations_active.item_labels = item_labels
 			self._director.evaluations_active.file_handle = file_name
 
-		except (
-			FileNotFoundError,
-			PermissionError,
-			pd.errors.EmptyDataError,
-			pd.errors.ParserError,
-			ValueError,
-		) as e:
-			self.common.event_driven_optional_restoration("evaluations")
+		except (ValueError, SpacesError) as e:
+			# read_csv_with_type_check already handles restoration
+			# for SpacesError. Handle restoration for ValueError here.
+			if isinstance(e, ValueError):
+				self.common.event_driven_optional_restoration("evaluations")
 			# Raise exception to stop command execution
-			# (Restoration has already occurred if user chose Yes)
 			raise SpacesError(
 				self._evaluations_error_bad_input_title,
 				self._evaluations_error_bad_input_message,
@@ -907,11 +907,9 @@ class IndividualsCommand:
 			common.read_individuals_file(
 				file_name, self._director.individuals_active
 			)
-		except ValueError as e:
-			# Restore previous state before raising exception
-			cmd_state = self._director.pop_undo_state()
-			if cmd_state:
-				cmd_state.restore_all_state(self._director)
+		except SpacesError as e:
+			# read_individuals_file already handled restoration via
+			# read_csv_with_type_check
 			raise SpacesError(
 				self._individuals_error_bad_input_title,
 				self._individuals_error_bad_input_message,
@@ -1334,9 +1332,11 @@ class OpenScoresCommand:
 	def _read_scores(self, file_name: str) -> None:
 		"""Read scores from CSV file and store in active."""
 		try:
-			scores = pd.read_csv(file_name)
+			# Read CSV with type validation
+			scores = self.common.read_csv_with_type_check(file_name, "SCORES")
 
 			if scores.empty:
+				self.common.event_driven_automatic_restoration()
 				raise ValueError("Scores file is empty")
 
 			# Create a new ScoresFeature object (matching Evaluations pattern)
@@ -1383,16 +1383,12 @@ class OpenScoresCommand:
 					self._director.scores_active.score_2 = scores[vert_axis_name]
 					self._director.scores_active.score_2_name = dim_names[1]
 
-		except (
-			FileNotFoundError,
-			PermissionError,
-			pd.errors.EmptyDataError,
-			pd.errors.ParserError,
-			ValueError,
-		) as e:
-			self.common.event_driven_optional_restoration("scores")
+		except (ValueError, SpacesError) as e:
+			# read_csv_with_type_check already handles restoration
+			# for SpacesError. Handle restoration for ValueError here.
+			if isinstance(e, ValueError):
+				self.common.event_driven_optional_restoration("scores")
 			# Raise exception to stop command execution
-			# (Restoration has already occurred if user chose Yes)
 			raise SpacesError(
 				self._scores_error_bad_input_title,
 				self._scores_error_bad_input_message,
@@ -2125,7 +2121,7 @@ class SaveIndividualsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
 		self._director.record_command_as_selected_and_in_process()
@@ -2134,7 +2130,13 @@ class SaveIndividualsCommand:
 		file_name = self._director.get_file_name_to_store_file(
 			self._save_individuals_title, self._save_individuals_filter, directory="data"
 		)
-		self._director.individuals_active.ind_vars.to_csv(file_name)
+		# Write with type header for file validation
+		common.write_csv_with_type_header(
+			self._director.individuals_active.ind_vars,
+			file_name,
+			"INDIVIDUALS",
+			index=False
+		)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_individuals_confirmation(file_name)
 		self._director.title_for_table_widget = (
@@ -2464,7 +2466,7 @@ class SaveScoresCommand:
 
 	# -----------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
 		score_1_name = self._director.scores_active.score_1_name
@@ -2476,8 +2478,12 @@ class SaveScoresCommand:
 		file_name = self._director.get_file_name_to_store_file(
 			self._save_scores_title, self._save_scores_filter, directory="data"
 		)
-		self._director.scores_active.scores.to_csv(
-			file_name, columns=[score_1_name, score_2_name]
+		# Write with type header for file validation
+		common.write_csv_with_type_header(
+			self._director.scores_active.scores,
+			file_name,
+			"SCORES",
+			index=False
 		)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_scores_confirmation(file_name)

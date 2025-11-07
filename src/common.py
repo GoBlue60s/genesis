@@ -3486,24 +3486,138 @@ class Spaces:
 	) -> None:
 		"""Read individuals data from CSV file into individuals_active.
 
-		This is a placeholder function that needs full implementation.
-		Currently just reads the CSV to avoid traceback.
+		Reads a CSV file with type validation and populates the
+		individuals_active feature.
 
 		Args:
 			file_name: Path to the individuals CSV file
 			individuals_active: IndividualsFeature instance to populate
 
 		Raises:
-			ValueError: If file format is invalid
+			SpacesError: If file format is invalid or type check fails
 		"""
 		try:
-			# TODO: Implement full individuals file reading logic
-			# For now, just read the CSV to avoid traceback
-			df = pd.read_csv(file_name)
+			# Read CSV with type validation
+			df = self.read_csv_with_type_check(file_name, "INDIVIDUALS")
 			individuals_active.ind_vars = df
 			individuals_active.n_individ = len(df)
-		except Exception as e:
-			self.event_driven_automatic_restoration()
-			raise ValueError(f"Error reading individuals file: {e}") from e
+
+			# Extract additional metadata from the dataframe
+			if not df.empty:
+				individuals_active.nitem = len(df)
+				individuals_active.item_names = df.columns.tolist()
+				individuals_active.item_labels = [
+					name[:4] for name in individuals_active.item_names
+				]
+		except SpacesError:
+			# read_csv_with_type_check already handled restoration
+			raise
 
 		return
+
+	# ------------------------------------------------------------------------
+
+	def write_csv_with_type_header(
+		self,
+		df: pd.DataFrame,
+		file_name: str,
+		file_type: str,
+		**kwargs
+	) -> None:
+		"""Write CSV file with type identification header.
+
+		Writes a comment line identifying the file type as the first line,
+		followed by the CSV data. This allows validation when reading.
+
+		Args:
+			df: DataFrame to write
+			file_name: Path to output file
+			file_type: Type identifier (e.g., 'SCORES', 'EVALUATIONS',
+				'INDIVIDUALS')
+			**kwargs: Additional arguments passed to DataFrame.to_csv()
+
+		Example:
+			File will start with:
+			# TYPE: SCORES
+			label1,label2,label3
+			1.0,2.0,3.0
+		"""
+		with open(file_name, 'w', encoding='utf-8') as f:
+			f.write(f"# TYPE: {file_type.upper()}\n")
+		df.to_csv(file_name, mode='a', **kwargs)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def read_csv_with_type_check(
+		self,
+		file_name: str,
+		expected_type: str
+	) -> pd.DataFrame:
+		"""Read CSV file and verify type header.
+
+		Reads a CSV file that was written with write_csv_with_type_header(),
+		verifying that the type identifier matches expectations.
+
+		Args:
+			file_name: Path to input file
+			expected_type: Expected file type (e.g., 'SCORES', 'EVALUATIONS')
+
+		Returns:
+			DataFrame with data (comment lines automatically skipped)
+
+		Raises:
+			SpacesError: If file not found, permission denied, type header
+				missing, or type mismatch
+		"""
+		try:
+			# Check type header
+			with open(file_name, 'r', encoding='utf-8') as f:
+				first_line = f.readline().strip()
+				if not first_line.startswith("# TYPE:"):
+					self.event_driven_automatic_restoration()
+					raise SpacesError(
+						"Missing File Type",
+						f"This file does not have a type identifier.\n"
+						f"Expected '# TYPE: {expected_type.upper()}' as first line."
+					)
+
+				file_type = first_line.split(":", 1)[1].strip()
+				if file_type != expected_type.upper():
+					self.event_driven_automatic_restoration()
+					raise SpacesError(
+						"Wrong File Type",
+						f"This file is type '{file_type}' but expected "
+						f"'{expected_type.upper()}'."
+					)
+
+			# Read the data (comments are automatically skipped)
+			return pd.read_csv(file_name, comment='#')
+
+		except FileNotFoundError:
+			self.event_driven_automatic_restoration()
+			raise SpacesError(
+				"File Not Found",
+				f"Could not find file: {file_name}"
+			) from None
+		except PermissionError:
+			self.event_driven_automatic_restoration()
+			raise SpacesError(
+				"Permission Denied",
+				f"Cannot read file: {file_name}"
+			) from None
+		except pd.errors.EmptyDataError:
+			self.event_driven_automatic_restoration()
+			raise SpacesError(
+				"Empty File",
+				f"The file is empty or contains only the type header: "
+				f"{file_name}"
+			) from None
+		except pd.errors.ParserError as e:
+			self.event_driven_automatic_restoration()
+			raise SpacesError(
+				"CSV Parse Error",
+				f"Unable to parse CSV file: {file_name}\n{e}"
+			) from e
+
+	# ------------------------------------------------------------------------
