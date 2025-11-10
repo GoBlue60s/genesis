@@ -859,7 +859,7 @@ Resolve architectural and implementation decisions for these related features:
 - Review sample design, repetitions, and solutions features
 - Ensure consistent patterns across these related features
 
-### 4. Refactor `get_command_parameters()` to Use Dictionary-Based Helper
+### 4. Refactor `get_command_parameters()` to Use Dictionary-Based Helper - ✓ COMPLETE
 Current implementation uses multiple `if/elif` statements to handle different getter types. Consider refactoring for better maintainability.
 
 **Proposal:**
@@ -888,6 +888,135 @@ Current implementation uses multiple `if/elif` statements to handle different ge
 - Easier to add new getter types
 - More maintainable and readable
 - Follows same dictionary-driven pattern used elsewhere in Spaces
+
+### 4.5. Refactor Capture/Restore Methods to Use Whole-Object Approach (Option 3B)
+During the design phase, we rejected Option 1 (listing attributes to capture) as "too fragile" and chose Option 3B (capture entire object as an object). However, several capture/restore method pairs are inconsistent with this decision and use attribute lists instead of storing the entire object.
+
+**Important**: For each feature, refactor BOTH the capture and restore methods together as a pair. They are tightly coupled and must work together, so it's most efficient to:
+1. Refactor the capture method for a feature
+2. Refactor the restore method for the same feature
+3. Test the capture/restore cycle for that feature
+4. Move to the next feature
+
+**Features currently using whole-object approach (✓ consistent with Option 3B):**
+- **correlations**: `capture_correlations_state()` (command_state.py:186-198) and `restore_correlations_state()` (command_state.py:511-525)
+- **similarities**: `capture_similarities_state()` (command_state.py:201-213) and `restore_similarities_state()` (command_state.py:528-545)
+- **evaluations**: `capture_evaluations_state()` (command_state.py:216-228) and `restore_evaluations_state()` (command_state.py:548-562)
+- **scores**: `capture_scores_state()` (command_state.py:250-262) and `restore_scores_state()` (command_state.py:588-601)
+
+**Features refactored to use whole-object approach (✓ COMPLETE):**
+
+1. **configuration** - ✓ COMPLETE
+   - ✓ Refactored `capture_configuration_state()` to store entire object
+   - ✓ Refactored `restore_configuration_state()` to restore entire object
+   - ✓ Tested with ConfigurationCommand and CreateCommand
+
+2. **individuals** - ✓ COMPLETE
+   - ✓ Refactored `capture_individuals_state()` to store entire object
+   - ✓ Refactored `restore_individuals_state()` to restore entire object
+   - ✓ Tested with IndividualsCommand
+
+**Features needing refactoring (✗ inconsistent with Option 3B):**
+
+Each feature below needs BOTH its capture and restore methods refactored together:
+
+3. **grouped_data**:
+   - `capture_grouped_data_state()` (command_state.py:265-285) - captures 8 individual attributes
+   - `restore_grouped_data_state()` (command_state.py:604-628) - restores 8 individual attributes
+
+4. **target**:
+   - `capture_target_state()` (command_state.py:288-307) - captures 7 individual attributes
+   - `restore_target_state()` (command_state.py:631-654) - restores 7 individual attributes
+
+5. **uncertainty**:
+   - `capture_uncertainty_state()` (command_state.py:310-348) - captures 17 individual attributes
+   - `restore_uncertainty_state()` (command_state.py:657-701) - restores 17 individual attributes
+   - **Special consideration**: Has many DataFrame and list attributes. Verify object reassignment works correctly
+
+6. **rivalry**:
+   - `capture_rivalry_state()` (command_state.py:351-449) - captures many individual attributes
+   - `restore_rivalry_state()` (command_state.py:704-751) - restores many individual attributes with complex helper methods
+   - **Special consideration**: Has complex `LineInPlot` objects with helper methods `_restore_line()` and `_create_line_object()`. Need to verify if whole-object approach works or if rivalry has special requirements
+
+7. **settings**:
+   - `capture_settings_state()` (command_state.py:452-466) - captures 3 individual attributes
+   - `restore_settings_state()` (command_state.py:871-886) - restores 3 individual attributes
+   - **Special consideration**: This is not a feature object but attributes on `director.common`. May need different approach
+
+**Why this matters:**
+- **Fragility**: When attributes are added/removed from these features, both capture AND restore methods must be manually updated
+- **Maintenance burden**: Two different patterns in the same codebase increases cognitive load
+- **Architectural inconsistency**: Violates the design decision made during Option 3B selection
+- **Bug risk**: Easy to forget to update restore when adding new attributes
+
+**Refactoring approach for capture methods:**
+Change from:
+```python
+def capture_X_state(self, director: Status) -> None:
+    obj = director.X_active
+    self.state_snapshot["X"] = {
+        "attr1": obj.attr1.copy(),
+        "attr2": obj.attr2.copy(),
+        # ... many more attributes
+    }
+```
+
+To:
+```python
+def capture_X_state(self, director: Status) -> None:
+    """Capture the current X feature state.
+
+    Stores a reference to the entire X_active object.
+    When restored, the object reference is reassigned, eliminating
+    the need for manual attribute lists.
+
+    Args:
+        director: The director instance containing X_active
+    """
+    # Store the entire object - no attribute copying needed!
+    self.state_snapshot["X"] = director.X_active
+```
+
+**Refactoring approach for restore methods:**
+Change from:
+```python
+def restore_X_state(self, director: Status) -> None:
+    if "X" not in self.state_snapshot:
+        return
+
+    X_snapshot: dict[str, Any] = self.state_snapshot["X"]
+    obj = director.X_active
+
+    obj.attr1 = X_snapshot["attr1"].copy()
+    obj.attr2 = X_snapshot["attr2"].copy()
+    # ... many more attributes
+```
+
+To:
+```python
+def restore_X_state(self, director: Status) -> None:
+    """Restore X feature state from snapshot.
+
+    Restores by reassigning the entire X_active object.
+    No attribute copying or regeneration needed.
+
+    Args:
+        director: The director instance to restore state into
+    """
+    if "X" not in self.state_snapshot:
+        return
+
+    # Restore the entire object - no attribute copying needed!
+    director.X_active = self.state_snapshot["X"]
+```
+
+**Benefits:**
+- Eliminates fragile attribute lists and restoration code
+- Automatic handling of all attributes (no manual maintenance)
+- Consistent with the Option 3B design decision
+- Matches the pattern already used successfully by 4 features
+- Significantly reduces code complexity
+- Testing is more straightforward (capture then restore should be identity operation)
 
 ### 5. Investigate Undo/Redo Enable/Disable for Toolbar and Menu Items
 Currently unclear how toolbar and menu items for Undo and Redo are enabled/disabled based on stack state.
@@ -999,16 +1128,22 @@ Review all execute methods in all commands to ensure adherence to standards and 
 
 - Active commands
   - configuration
-  
+
 - Passive commands
   - compare
 
 - Other commands
+  - Print individuals (filemenu.py) - already 3B compliant
+  - Save individuals (filemenu.py) - already 3B compliant
+  - View individuals (viewmenu.py) - already 3B compliant
+  - Score individuals (respondentsmenu.py) - already 3B compliant
 
 ---
 ### 10. Reduce command/function compexity
-- get_command_parameters
-- capture_and_push_undo_state
-- Deactivate command
-- SaveScript command
-  - read_grouped_data
+- get_command_parameters - completed
+- capture_and_push_undo_state - completed
+- Deactivate command - completed
+- SaveScript command - completed
+- NewGroupedData command - completed
+- GroupedData command - completed
+  - read_grouped_data function - completed

@@ -358,16 +358,17 @@ class UndoCommand:
 	) -> None:
 		"""Add configuration details to restoration list."""
 		if "configuration" in snapshot:
-			config: dict = snapshot["configuration"]
-			ndim: int = config.get("ndim", 0)
-			npoint: int = config.get("npoint", 0)
+			config = snapshot["configuration"]
+			ndim: int = config.ndim
+			npoint: int = config.npoint
 			# Show coordinates info - this is what most commands modify
-			point_coords = config.get("point_coords")
+			point_coords = config.point_coords
 			if point_coords is not None and not point_coords.empty:
 				coords_text: str = f"{ndim} dimensions, {npoint} points"
 				details.append(["Coordinates", coords_text])
 			# Only show metadata if dimensions actually changed
-			details.append(["Configuration", f"{ndim} dimensions, {npoint} points"])
+			details.append(
+				["Configuration", f"{ndim} dimensions, {npoint} points"])
 
 	# ------------------------------------------------------------------------
 
@@ -388,8 +389,8 @@ class UndoCommand:
 	) -> None:
 		"""Add distance matrix details to restoration list."""
 		if "configuration" in snapshot:
-			config: dict = snapshot["configuration"]
-			dist_df: pd.DataFrame = config.get("distances_as_dataframe")
+			config = snapshot["configuration"]
+			dist_df: pd.DataFrame = config.distances_as_dataframe
 			if dist_df is not None and not dist_df.empty:
 				nrows, ncols = dist_df.shape
 				details.append(["Distances", f"{nrows}x{ncols} matrix"])
@@ -438,7 +439,8 @@ class UndoCommand:
 			ngroups: int = grouped.get("ngroups", 0)
 			ndim: int = grouped.get("ndim", 0)
 			grouping_var: str = grouped.get("grouping_var", "unknown")
-			text: str = f"{ndim} dimensions, {ngroups} groups, var={grouping_var}"
+			text: str = \
+				f"{ndim} dimensions, {ngroups} groups, var={grouping_var}"
 			details.append(["Grouped data", text])
 
 		if "uncertainty" in snapshot:
@@ -460,7 +462,8 @@ class UndoCommand:
 			hor_dim: int = settings.get("hor_dim", 0)
 			vert_dim: int = settings.get("vert_dim", 0)
 			layer: str = settings.get("presentation_layer", "unknown")
-			text: str = f"hor_dim={hor_dim}, vert_dim={vert_dim}, layer={layer}"
+			text: str = \
+				f"hor_dim={hor_dim}, vert_dim={vert_dim}, layer={layer}"
 			details.append(["Settings", text])
 
 	# ------------------------------------------------------------------------

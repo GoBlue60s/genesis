@@ -1,12 +1,43 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+import copy
 import pandas as pd
 
 if TYPE_CHECKING:
 	from director import Status
 
 from geometry import Point
+
+# ----------------------------------------------------------------------------
+
+
+def _copy_feature_state[T](feature_obj: T) -> T:
+	"""Create a deep copy of a feature object, excluding _director.
+
+	Feature objects contain a _director reference to the Status (QMainWindow)
+	instance, which cannot be pickled/deepcopied. This function creates a new
+	instance of the feature class and copies all attributes except _director.
+
+	Args:
+		feature_obj: The feature object to copy
+
+	Returns:
+		A new instance with all attributes copied except _director
+	"""
+	# Create new instance without calling __init__
+	new_obj = object.__new__(type(feature_obj))
+
+	# Copy all attributes except _director
+	for attr_name, attr_value in feature_obj.__dict__.items():
+		if attr_name == "_director":
+			# Store None instead of the director reference
+			setattr(new_obj, attr_name, None)
+		else:
+			# Deep copy all other attributes
+			setattr(new_obj, attr_name, copy.deepcopy(attr_value))
+
+	return new_obj
 
 # ----------------------------------------------------------------------------
 
@@ -150,81 +181,64 @@ class CommandState:
 	def capture_configuration_state(self, director: Status) -> None:
 		"""Capture the current configuration feature state.
 
+		Stores a deep copy of the entire configuration_active object to
+		prevent mutations from affecting the captured state.
+
 		Args:
 			director: The director instance containing configuration_active
 		"""
-		config = director.configuration_active
-
-		self.state_snapshot["configuration"] = {
-			# Core data
-			"point_coords": config.point_coords.copy(),
-			"point_names": config.point_names.copy(),
-			"point_labels": config.point_labels.copy(),
-			"dim_names": config.dim_names.copy(),
-			"dim_labels": config.dim_labels.copy(),
-			# Dimensions
-			"ndim": config.ndim,
-			"npoint": config.npoint,
-			"range_dims": config.range_dims,
-			"range_points": config.range_points,
-			# Axis names
-			"hor_axis_name": config.hor_axis_name,
-			"vert_axis_name": config.vert_axis_name,
-			# Computed data (distances, ranks, etc.)
-			"distances_as_dataframe": config.distances_as_dataframe.copy()
-			if not config.distances_as_dataframe.empty
-			else pd.DataFrame(),
-			"ranked_distances_as_dataframe": (
-				config.ranked_distances_as_dataframe.copy()
-				if not config.ranked_distances_as_dataframe.empty
-				else pd.DataFrame()
-			),
-		}
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["configuration"] = _copy_feature_state(
+			director.configuration_active
+		)
 
 	# ------------------------------------------------------------------------
 
 	def capture_correlations_state(self, director: Status) -> None:
 		"""Capture the current correlations feature state.
 
-		Stores a reference to the entire correlations_active object.
-		When restored, the object reference is reassigned, eliminating
-		the need for manual attribute lists.
+		Stores a deep copy of the entire correlations_active object to
+		prevent mutations from affecting the captured state.
 
 		Args:
 			director: The director instance containing correlations_active
 		"""
-		# Store the entire object - no attribute copying needed!
-		self.state_snapshot["correlations"] = director.correlations_active
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["correlations"] = _copy_feature_state(
+			director.correlations_active
+		)
 
 	# ------------------------------------------------------------------------
 
 	def capture_similarities_state(self, director: Status) -> None:
 		"""Capture the current similarities feature state.
 
-		Stores a reference to the entire similarities_active object.
-		When restored, the object reference is reassigned, eliminating
-		the need for manual attribute lists.
+		Stores a deep copy of the entire similarities_active object to
+		prevent mutations from affecting the captured state.
 
 		Args:
 			director: The director instance containing similarities_active
 		"""
-		# Store the entire object - no attribute copying needed!
-		self.state_snapshot["similarities"] = director.similarities_active
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["similarities"] = _copy_feature_state(
+			director.similarities_active
+		)
 
 	# ------------------------------------------------------------------------
 
 	def capture_evaluations_state(self, director: Status) -> None:
 		"""Capture the current evaluations feature state.
 
-		Stores a reference to the entire evaluations_active object.
-		When restored, the object reference is reassigned, eliminating
-		the need for manual attribute lists.
+		Stores a deep copy of the entire evaluations_active object to
+		prevent mutations from affecting the captured state.
 
 		Args:
 			director: The director instance containing evaluations_active
 		"""
-		# Store the entire object - no attribute copying needed!
-		self.state_snapshot["evaluations"] = director.evaluations_active
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["evaluations"] = _copy_feature_state(
+			director.evaluations_active
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -250,15 +264,16 @@ class CommandState:
 	def capture_scores_state(self, director: Status) -> None:
 		"""Capture the current scores feature state.
 
-		Stores a reference to the entire scores_active object.
-		When restored, the object reference is reassigned, eliminating
-		the need for manual attribute lists.
+		Stores a deep copy of the entire scores_active object to prevent
+		mutations from affecting the captured state.
 
 		Args:
 			director: The director instance containing scores_active
 		"""
-		# Store the entire object - no attribute copying needed!
-		self.state_snapshot["scores"] = director.scores_active
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["scores"] = _copy_feature_state(
+			director.scores_active
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -469,8 +484,8 @@ class CommandState:
 	def restore_configuration_state(self, director: Status) -> None:
 		"""Restore configuration feature state from snapshot.
 
-		Restores configuration data from the captured dictionary snapshot
-		into the configuration_active object.
+		Restores by reassigning the entire configuration_active object.
+		No attribute copying or regeneration needed.
 
 		Args:
 			director: The director instance to restore state into
@@ -478,33 +493,10 @@ class CommandState:
 		if "configuration" not in self.state_snapshot:
 			return
 
-		config_snapshot: dict[str, Any] = self.state_snapshot["configuration"]
-		config = director.configuration_active
-
-		# Restore core data
-		config.point_coords = config_snapshot["point_coords"].copy()
-		config.point_names = config_snapshot["point_names"].copy()
-		config.point_labels = config_snapshot["point_labels"].copy()
-		config.dim_names = config_snapshot["dim_names"].copy()
-		config.dim_labels = config_snapshot["dim_labels"].copy()
-
-		# Restore dimensions
-		config.ndim = config_snapshot["ndim"]
-		config.npoint = config_snapshot["npoint"]
-		config.range_dims = config_snapshot["range_dims"]
-		config.range_points = config_snapshot["range_points"]
-
-		# Restore axis names
-		config.hor_axis_name = config_snapshot["hor_axis_name"]
-		config.vert_axis_name = config_snapshot["vert_axis_name"]
-
-		# Restore computed data
-		config.distances_as_dataframe = (
-			config_snapshot["distances_as_dataframe"].copy()
-		)
-		config.ranked_distances_as_dataframe = (
-			config_snapshot["ranked_distances_as_dataframe"].copy()
-		)
+		# Restore the entire object
+		director.configuration_active = self.state_snapshot["configuration"]
+		# Reconnect the director reference (was set to None during copy)
+		director.configuration_active._director = director
 
 	# ------------------------------------------------------------------------
 
@@ -520,8 +512,10 @@ class CommandState:
 		if "correlations" not in self.state_snapshot:
 			return
 
-		# Restore the entire object - no attribute copying needed!
+		# Restore the entire object
 		director.correlations_active = self.state_snapshot["correlations"]
+		# Reconnect the director reference (was set to None during copy)
+		director.correlations_active._director = director
 
 	# ------------------------------------------------------------------------
 
@@ -540,8 +534,10 @@ class CommandState:
 			director.similarities_active = None
 			return
 
-		# Restore the entire object - no attribute copying needed!
+		# Restore the entire object
 		director.similarities_active = self.state_snapshot["similarities"]
+		# Reconnect the director reference (was set to None during copy)
+		director.similarities_active._director = director
 
 	# ------------------------------------------------------------------------
 
@@ -559,6 +555,8 @@ class CommandState:
 
 		# Restore the entire object
 		director.evaluations_active = self.state_snapshot["evaluations"]
+		# Reconnect the director reference (was set to None during copy)
+		director.evaluations_active._director = director
 
 	# ------------------------------------------------------------------------
 
@@ -596,8 +594,10 @@ class CommandState:
 		if "scores" not in self.state_snapshot:
 			return
 
-		# Restore the entire object - no attribute copying needed!
+		# Restore the entire object
 		director.scores_active = self.state_snapshot["scores"]
+		# Reconnect the director reference (was set to None during copy)
+		director.scores_active._director = director
 
 	# ------------------------------------------------------------------------
 

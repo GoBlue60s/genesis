@@ -145,7 +145,7 @@ class CorrelationsCommand:
 				raise SpacesError(
 					self._correlations_error_bad_input_title,
 					self._correlations_error_bad_input_message
-				)
+				) from None
 			# If restored successfully, just return without error
 			return
 
@@ -399,7 +399,7 @@ class DeactivateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		available_items, descriptions = self._build_available_items_list()
@@ -1122,7 +1122,7 @@ class NewGroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._get_grouping_var()
@@ -1305,8 +1305,10 @@ class NewGroupedDataCommand:
 	def _validate_dialog_executed(self, dialog: object) -> None:
 		"""Validate that dialog was not cancelled."""
 		if not dialog.exec():
+			cancelled_title = "Create cancelled"
+			cancelled_message = "Grouped data creation was cancelled"
 			raise SpacesError(
-				"Create cancelled", "Grouped data creation was cancelled")
+				cancelled_title, cancelled_message) from None
 		return
 
 	# ------------------------------------------------------------------------
@@ -1674,6 +1676,31 @@ class OpenScriptCommand:
 		open_script_index = len(self._director.command_exit_code) - 1
 		self.index_of_script_in_command_used = open_script_index
 
+		# Note: OpenScript doesn't create its own undo state because it
+		# executes other commands that will create their own undo states.
+		# The individual commands in the script are undoable, not the
+		# script execution itself.
+
+		# Get file name and read script lines
+		file_name, script_lines = self._read_script_file()
+
+		# Execute the script
+		commands_executed = self._execute_script_lines(script_lines)
+
+		# Handle completion
+		self._handle_script_completion(
+			commands_executed, file_name, open_script_index
+		)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_script_file(self) -> tuple[str, list[str]]:
+		"""Get script file name and read its contents.
+
+		Returns:
+			Tuple of (file_name, script_lines)
+		"""
 		# Default to scripts directory if it exists
 		scripts_dir = Path.cwd() / "scripts"
 		if scripts_dir.exists():
@@ -1689,12 +1716,7 @@ class OpenScriptCommand:
 					self._script_caption, self._script_filter
 				))
 
-		# Note: OpenScript doesn't create its own undo state because it
-		# executes other commands that will create their own undo states.
-		# The individual commands in the script are undoable, not the
-		# script execution itself.
-
-		# Read and parse script file
+		# Read script file
 		try:
 			with Path(file_name).open("r", encoding="utf-8") as f:
 				script_lines = f.readlines()
@@ -1704,10 +1726,22 @@ class OpenScriptCommand:
 				f"Unable to read script file: {e}",
 			) from e
 
+		return file_name, script_lines
+
+	# ------------------------------------------------------------------------
+
+	def _execute_script_lines(self, script_lines: list[str]) -> int:
+		"""Execute all commands in the script.
+
+		Args:
+			script_lines: Lines from the script file
+
+		Returns:
+			Number of commands executed
+		"""
 		# Set flag to indicate script execution (no user dialogs)
 		self._director.executing_script = True
 		commands_executed = 0
-		commands_failed = 0
 
 		try:
 			# Parse and execute commands
@@ -1717,7 +1751,7 @@ class OpenScriptCommand:
 				if not line or line.startswith("#"):
 					continue
 
-				# Parse command line: command_name param1=value1 param2=value2
+				# Parse and execute command line
 				try:
 					command_name, params_dict = (
 						self.common.parse_script_line(line))
@@ -1731,7 +1765,6 @@ class OpenScriptCommand:
 
 				except SpacesError as e:
 					# Script command failed - stop execution
-					commands_failed += 1
 					error_msg = (
 						f"Script stopped at line {line_num}: {line}\n"
 						f"Error: {e.message}"
@@ -1741,9 +1774,8 @@ class OpenScriptCommand:
 						error_msg,
 					) from e
 
-				except Exception as e:  # noqa: BLE001
+				except Exception as e:
 					# Unexpected error - stop execution
-					commands_failed += 1
 					error_msg = (
 						f"Script stopped at line {line_num}: {line}\n"
 						f"Unexpected error: {e}"
@@ -1757,6 +1789,23 @@ class OpenScriptCommand:
 			# Always clear script execution flag
 			self._director.executing_script = False
 
+		return commands_executed
+
+	# ------------------------------------------------------------------------
+
+	def _handle_script_completion(
+		self,
+		commands_executed: int,
+		file_name: str,
+		open_script_index: int,
+	) -> None:
+		"""Handle completion of script execution.
+
+		Args:
+			commands_executed: Number of commands executed
+			file_name: Name of the script file
+			open_script_index: Index in command_exit_code array
+		"""
 		# Reset command name to "Open script" before recording completion
 		# (otherwise it will print success message for the last script command)
 		self._director.command = "Open script"
@@ -1849,10 +1898,10 @@ class OpenScriptCommand:
 		widget_dict = self._director.widget_dict
 
 		if command_name not in widget_dict:
-			raise SpacesError(
-				"Unknown command",
-				f"Command '{command_name}' not found in line {line_num}",
-			)
+			unknown_command_title = "Unknown command"
+			unknown_command_message = \
+				f"Command '{command_name}' not found in line {line_num}"
+			raise SpacesError(unknown_command_title, unknown_command_message)
 
 		# Skip interactive_only commands (they cannot be scripted)
 		if command_name in command_dict:
@@ -1897,12 +1946,14 @@ class OpenScriptCommand:
 						command_instance.execute(self.common)
 					else:
 						# Required but not provided
-						raise SpacesError(
-							"Missing parameter",
+						missing_param_title = "Missing parameter"
+						missing_param_message = (
 							f"Command '{command_name}' requires "
 							f"parameter '{param_name}' but it was not "
 							f"provided in line {line_num}"
 						)
+						raise SpacesError(missing_param_title,
+						missing_param_message)
 			else:
 				# Standard execute(self, common) signature
 				command_instance.execute(self.common)
@@ -2478,10 +2529,7 @@ class SaveSampleDesignCommand:
 
 		with Path(file_name).open("w", encoding="utf-8") as f:
 			# Line 1: Comment line
-			f.write(
-				f"# Sample design file created: "
-				f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-			)
+			f.write("# Sample design file created: ")
 
 			# Line 2: Basic dimensions (I4 format)
 			f.write(f"{ndim:4d}{npoint:4d}{nfacets:4d}\n")
@@ -2668,9 +2716,7 @@ class SaveSampleSolutionsCommand:
 		with Path(file_name).open("w", encoding="utf-8") as f:
 			# Line 1: Comment line
 			f.write(
-				f"# Sample solutions file created: "
-				f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-			)
+				f"# Sample solutions file created: ")
 
 			# Line 2: Basic dimensions (I4 format)
 			f.write(f"{ndim:4d}{npoint:4d}{nsolutions:4d}\n")
@@ -2734,8 +2780,8 @@ class SaveScoresCommand:
 	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
-		score_1_name = self._director.scores_active.score_1_name
-		score_2_name = self._director.scores_active.score_2_name
+		# score_1_name = self._director.scores_active.score_1_name
+		# score_2_name = self._director.scores_active.score_2_name
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -2900,10 +2946,9 @@ class SaveScriptCommand:
 		try:
 			self._write_file_with_header(file_name, script_lines)
 		except (OSError, UnicodeEncodeError) as e:
-			raise SpacesError(
-				"Save script failed",
-				f"Unable to write script file: {e}",
-			) from e
+			script_fail_title = "Save script failed"
+			script_fail_message = f"Unable to write script file: {e}"
+			raise SpacesError(script_fail_title, script_fail_message) from e
 		return
 
 	# ------------------------------------------------------------------------
@@ -3098,9 +3143,9 @@ class SettingsDisplayCommand:
 	def execute(
 		self,
 		common: Spaces,
-		axis_extra: int = None,
-		displacement: int = None,
-		point_size: int = None,
+		axis_extra: int | None = None,
+		displacement: int | None = None,
+		point_size: int | None = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -3162,9 +3207,9 @@ class SettingsLayoutCommand:
 	def execute(
 		self,
 		common: Spaces,
-		max_cols: int = None,
-		width: int = None,
-		decimals: int = None,
+		max_cols: int | None = None,
+		width: int | None = None,
+		decimals: int | None = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -3227,8 +3272,8 @@ class SettingsPlaneCommand:
 	def execute(
 		self,
 		common: Spaces,
-		horizontal: str = None,
-		vertical: str = None,
+		horizontal: str | None = None,
+		vertical: str | None = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -3248,18 +3293,23 @@ class SettingsPlaneCommand:
 			hor_dim = dim_names.index(horizontal)
 			vert_dim = dim_names.index(vertical)
 		except ValueError as e:
-			raise SpacesError(
-				"Invalid dimension name",
+			invalid_dimension_title = "Invalid dimension name"
+			invalid_dimension_message = (
 				f"Dimension names must be from {dim_names}, "
-				f"got horizontal='{horizontal}', vertical='{vertical}'",
+				f"got horizontal='{horizontal}', vertical='{vertical}'"
+			)
+			raise SpacesError(invalid_dimension_title,
+				invalid_dimension_message,
 			) from e
 
 		# Validate that horizontal and vertical are different
 		if hor_dim == vert_dim:
-			raise SpacesError(
-				"Invalid plane parameters",
-				"Horizontal and vertical axes must be different dimensions",
+			invalid_pland_title = "Invalid plane parameters"
+			invalid_plane_message = (
+				"Horizontal and vertical axes must be different dimensions"
 			)
+			raise SpacesError(invalid_pland_title, invalid_plane_message)
+
 
 		# Apply settings
 		common.hor_dim = hor_dim
@@ -3313,10 +3363,10 @@ class SettingsPlotCommand:
 	def execute(
 		self,
 		common: Spaces,
-		bisector: bool = None,
-		connector: bool = None,
-		reference_points: bool = None,
-		just_reference_points: bool = None,
+		bisector: bool | None = None,
+		connector: bool | None = None,
+		reference_points: bool | None = None,
+		just_reference_points: bool | None = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -3382,7 +3432,7 @@ class SettingsPresentationLayerCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, layer: str = None) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces, layer: str | None = None) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters(
@@ -3437,8 +3487,8 @@ class SettingsSegmentCommand:
 	def execute(
 		self,
 		common: Spaces,
-		battleground: int = None,
-		core: int = None,
+		battleground: int | None = None,
+		core: int | None = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -3499,8 +3549,8 @@ class SettingsVectorSizeCommand:
 	def execute(
 		self,
 		common: Spaces,
-		vector_head_width: float = None,
-		vector_width: float = None,
+		vector_head_width: float | None = None,
+		vector_width: float | None = None,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -3632,10 +3682,11 @@ class SimilaritiesCommand:
 			# If restored, just return - restoration message already
 			# informed user
 			if not restored:
+				restore_title =self._similarities_error_bad_input_title
+				restore_message = self._similarities_error_bad_input_message
 				raise SpacesError(
-					self._similarities_error_bad_input_title,
-					self._similarities_error_bad_input_message
-				)
+					restore_title, restore_message) from None
+
 			# If restored successfully, just return without error
 			return
 
