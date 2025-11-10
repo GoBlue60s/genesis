@@ -659,7 +659,8 @@ class EvaluationsCommand:
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Evaluations")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state("Evaluations", "active", params)
+		self.common.capture_and_push_undo_state(
+			"Evaluations", "active", params)
 		self._read_evaluations(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._compute_correlations_from_evaluations(common)
@@ -736,7 +737,8 @@ class EvaluationsCommand:
 				self._director.evaluations_active.item_names
 				== self._director.correlations_active.item_names
 			):
-				# Reinitialize correlations since they're linked to old evaluations
+				# Reinitialize correlations since they're linked to
+				# old evaluations
 				from features import CorrelationsFeature  # noqa: PLC0415
 				self._director.correlations_active = CorrelationsFeature(
 					self._director
@@ -760,7 +762,8 @@ class EvaluationsCommand:
 		for each_col in range(1, nreferent):
 			a_row = []
 			for each_row in range(each_col):
-				a_row.append(correlations_as_dataframe.iloc[each_row, each_col])
+				value = correlations_as_dataframe.iloc[each_row, each_col]
+				a_row.append(value)
 			correlations.append(a_row)
 
 		self._director.correlations_active.nreferent = nreferent
@@ -860,7 +863,8 @@ class GroupedDataCommand:
 		)
 		self.missing_grouping_var_error_title = "Grouped data"
 		self.missing_grouping_var_error_message = (
-			f"Line for grouping variable name is empty in file: \n{file_handle}"
+			f"Line for grouping variable name is empty in file: "
+			f"\n{file_handle}"
 		)
 		self.group_data_file_not_found_error_title = "Grouped data"
 		self.group_data_file_not_found_error_message = (
@@ -1089,7 +1093,7 @@ class IndividualsCommand:
 
 
 class NewGroupedDataCommand:
-	"""The New grouped data command is used to create a new grouped data file."""
+	"""The New grouped data command is used to create grouped data."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -1334,7 +1338,8 @@ class NewGroupedDataCommand:
 	# ------------------------------------------------------------------------
 
 	def _get_grouping_var_initialize_variables(self) -> None:
-		self.missing_grouping_var_error_title = "New grouped data configuration"
+		self.missing_grouping_var_error_title = (
+			"New grouped data configuration")
 		self.missing_grouping_var_error_message = (
 			"Need name of grouping variable for "
 			"new grouped data configuration"
@@ -1420,7 +1425,7 @@ class OpenSampleDesignCommand:
 
 
 class OpenSampleRepetitionsCommand:
-	"""The Open sample repetitions command is used to read sample repetitions."""
+	"""The Open sample repetitions command reads sample repetitions."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -1614,13 +1619,17 @@ class OpenScoresCommand:
 
 				# Extract score_1 and score_2 for plotting
 				if len(dim_names) >= 1:
-					hor_axis_name = self._director.scores_active.hor_axis_name
-					self._director.scores_active.score_1 = scores[hor_axis_name]
+					hor_axis_name = (
+						self._director.scores_active.hor_axis_name)
+					self._director.scores_active.score_1 = (
+						scores[hor_axis_name])
 					self._director.scores_active.score_1_name = dim_names[0]
 
 				if len(dim_names) >= 2:
-					vert_axis_name = self._director.scores_active.vert_axis_name
-					self._director.scores_active.score_2 = scores[vert_axis_name]
+					vert_axis_name = (
+						self._director.scores_active.vert_axis_name)
+					self._director.scores_active.score_2 = (
+						scores[vert_axis_name])
 					self._director.scores_active.score_2_name = dim_names[1]
 
 		except (ValueError, SpacesError) as e:
@@ -1650,8 +1659,8 @@ class OpenScriptCommand:
 		self._script_error_bad_input_message = (
 			"Unable to execute script file.\nCheck file format and try again."
 		)
-		self._executed_commands = []  # Track commands executed in script
-		self.index_of_script_in_command_used = None  # Track index for completion
+		self._executed_commands = []  # Track executed commands
+		self.index_of_script_in_command_used = None  # Track index
 		return
 
 	# ------------------------------------------------------------------------
@@ -1668,15 +1677,17 @@ class OpenScriptCommand:
 		# Default to scripts directory if it exists
 		scripts_dir = Path.cwd() / "scripts"
 		if scripts_dir.exists():
-			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-				self._script_caption,
-				self._script_filter,
-				str(scripts_dir)
-			)
+			file_name = (
+				self._director.get_file_name_and_handle_nonexistent_file_names(
+					self._script_caption,
+					self._script_filter,
+					str(scripts_dir)
+				))
 		else:
-			file_name = self._director.get_file_name_and_handle_nonexistent_file_names(
-				self._script_caption, self._script_filter
-			)
+			file_name = (
+				self._director.get_file_name_and_handle_nonexistent_file_names(
+					self._script_caption, self._script_filter
+				))
 
 		# Note: OpenScript doesn't create its own undo state because it
 		# executes other commands that will create their own undo states.
@@ -1708,7 +1719,8 @@ class OpenScriptCommand:
 
 				# Parse command line: command_name param1=value1 param2=value2
 				try:
-					command_name, params_dict = self.common.parse_script_line(line)
+					command_name, params_dict = (
+						self.common.parse_script_line(line))
 
 					# Execute command with parameters
 					self._execute_script_command(
@@ -1749,7 +1761,8 @@ class OpenScriptCommand:
 		# (otherwise it will print success message for the last script command)
 		self._director.command = "Open script"
 
-		# Set current_command to self so widget_control calls this command's _display
+		# Set current_command to self so widget_control calls
+		# this command's _display
 		# (not the last executed command's _display)
 		self._director.current_command = self
 
@@ -1831,7 +1844,8 @@ class OpenScriptCommand:
 		import inspect  # noqa: PLC0415
 		from dictionaries import command_dict  # noqa: PLC0415
 
-		# Get command class from widget_dict (which maps command names to classes)
+		# Get command class from widget_dict
+		# (which maps command names to classes)
 		widget_dict = self._director.widget_dict
 
 		if command_name not in widget_dict:
