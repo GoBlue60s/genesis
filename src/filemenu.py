@@ -1899,8 +1899,9 @@ class OpenScriptCommand:
 						# Required but not provided
 						raise SpacesError(
 							"Missing parameter",
-							f"Command '{command_name}' requires parameter '{param_name}' "
-							f"but it was not provided in line {line_num}"
+							f"Command '{command_name}' requires "
+							f"parameter '{param_name}' but it was not "
+							f"provided in line {line_num}"
 						)
 			else:
 				# Standard execute(self, common) signature
@@ -2062,7 +2063,7 @@ class PrintSampleDesignCommand:
 
 
 class PrintSampleRepetitionsCommand:
-	"""The Print sample repetitions command is used to print sample repetitions."""
+	"""The Print sample repetitions command prints repetitions."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
@@ -2102,7 +2103,8 @@ class PrintSampleSolutionsCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		# Implementation for printing sample solutions
 		# TODO: Add actual implementation
-		self._director.title_for_table_widget = "Sample solutions printing not yet implemented"
+		self._director.title_for_table_widget = (
+			"Sample solutions printing not yet implemented")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2269,7 +2271,9 @@ class SaveGroupedDataCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_grouped_caption, self._save_grouped_filter, directory="data"
+			self._save_grouped_caption,
+			self._save_grouped_filter,
+			directory="data"
 		)
 		self._director.grouped_data_active.write_a_grouped_data_file(
 			file_name, self._director.grouped_data_active
@@ -2324,7 +2328,9 @@ class SaveCorrelationsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_correlations_caption, self._save_correlations_filter, directory="data"
+			self._save_correlations_caption,
+			self._save_correlations_filter,
+			directory="data"
 		)
 		# Write correlations to CSV
 		correlations_df = pd.DataFrame(
@@ -2382,7 +2388,9 @@ class SaveIndividualsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_individuals_title, self._save_individuals_filter, directory="data"
+			self._save_individuals_title,
+			self._save_individuals_filter,
+			directory="data"
 		)
 		# Write with type header for file validation
 		common.write_csv_with_type_header(
@@ -2435,7 +2443,9 @@ class SaveSampleDesignCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_sample_design_caption, self._save_sample_design_filter, directory="data"
+			self._save_sample_design_caption,
+			self._save_sample_design_filter,
+			directory="data"
 		)
 		self._write_sample_design_file(file_name)
 		self._director.name_of_file_written_to = file_name
@@ -2507,8 +2517,8 @@ class SaveSampleDesignCommand:
 
 
 class SaveSampleRepetitionsCommand:
-	"""The Save sample repetitions command is used to write a copy of the active
-	sample repetitions to a file.
+	"""The Save sample repetitions command writes active repetitions
+	to a file.
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
@@ -2537,7 +2547,8 @@ class SaveSampleRepetitionsCommand:
 		self._director.name_of_file_written_to = file_name
 		self._print_save_sample_repetitions_confirmation(file_name)
 		self._director.title_for_table_widget = (
-			f"The active sample repetitions have been written to:\n {file_name}"
+			f"The active sample repetitions have been written to:\n "
+			f"{file_name}"
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2762,7 +2773,7 @@ class SaveScoresCommand:
 
 
 class SaveScriptCommand:
-	"""The Save script command is used to export command history to a script file."""
+	"""The Save script command exports command history to file."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -2985,7 +2996,9 @@ class SaveSimilaritiesCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_similarities_caption, self._save_similarities_filter, directory="data"
+			self._save_similarities_caption,
+			self._save_similarities_filter,
+			directory="data"
 		)
 		# Write similarities to CSV
 		similarities_df = pd.DataFrame(
@@ -3040,7 +3053,9 @@ class SaveTargetCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		file_name = self._director.get_file_name_to_store_file(
-			self._save_target_caption, self._save_target_filter, directory="data"
+			self._save_target_caption,
+			self._save_target_filter,
+			directory="data"
 		)
 		self._director.target_active.write_a_configuration_type_file(
 			file_name, self._director.target_active
@@ -3070,7 +3085,7 @@ class SaveTargetCommand:
 
 
 class SettingsDisplayCommand:
-	"""The Settings display sizing command is used to set display sizing options."""
+	"""The Settings display sizing command sets display options."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -3089,7 +3104,8 @@ class SettingsDisplayCommand:
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Settings - display sizing")
+		params = self.common.get_command_parameters(
+			"Settings - display sizing")
 		axis_extra: int = params["axis_extra"]
 		displacement: int = params["displacement"]
 		point_size: int = params["point_size"]
@@ -3100,7 +3116,8 @@ class SettingsDisplayCommand:
 		common.displacement = displacement / 100.0
 		common.point_size = point_size
 
-		self._director.title_for_table_widget = "Display sizing settings updated"
+		self._director.title_for_table_widget = (
+			"Display sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3151,7 +3168,8 @@ class SettingsLayoutCommand:
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Settings - layout options")
+		params = self.common.get_command_parameters(
+			"Settings - layout options")
 		max_cols: int = params["max_cols"]
 		width: int = params["width"]
 		decimals: int = params["decimals"]
@@ -3354,7 +3372,7 @@ class SettingsPlotCommand:
 
 
 class SettingsPresentationLayerCommand:
-	"""The Settings presentation layer command is used to set the presentation layer."""
+	"""The Settings presentation layer command sets the layer."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -3367,7 +3385,8 @@ class SettingsPresentationLayerCommand:
 	def execute(self, common: Spaces, layer: str = None) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Settings - presentation layer", layer=layer)
+		params = self.common.get_command_parameters(
+			"Settings - presentation layer", layer=layer)
 		layer: str = params["layer"]
 		self.common.capture_and_push_undo_state(
 			"Settings - presentation layer", "active", params
@@ -3405,7 +3424,7 @@ class SettingsPresentationLayerCommand:
 
 
 class SettingsSegmentCommand:
-	"""The Settings segment sizing command is used to set segment sizing options."""
+	"""The Settings segment sizing command sets segment options."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -3423,7 +3442,8 @@ class SettingsSegmentCommand:
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Settings - segment sizing")
+		params = self.common.get_command_parameters(
+			"Settings - segment sizing")
 		battleground: int = params["battleground"]
 		core: int = params["core"]
 		self.common.capture_and_push_undo_state(
@@ -3434,7 +3454,8 @@ class SettingsSegmentCommand:
 		common.battleground_size = battleground / 100.0
 		common.core_tolerance = core / 100.0
 
-		self._director.title_for_table_widget = "Segment sizing settings updated"
+		self._director.title_for_table_widget = (
+			"Segment sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		common.print_segment_sizing_settings()
@@ -3465,7 +3486,7 @@ class SettingsSegmentCommand:
 
 
 class SettingsVectorSizeCommand:
-	"""The Settings vector sizing command is used to set vector sizing options."""
+	"""The Settings vector sizing command sets vector options."""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -3494,7 +3515,8 @@ class SettingsVectorSizeCommand:
 		common.vector_head_width = vector_head_width
 		common.vector_width = vector_width
 
-		self._director.title_for_table_widget = "Vector sizing settings updated"
+		self._director.title_for_table_widget = (
+			"Vector sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		common.print_vector_sizing_settings()
