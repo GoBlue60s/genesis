@@ -44,7 +44,6 @@ from exceptions import (
 )
 
 from geometry import PlotExtremes
-from dialogs import PairofPointsDialog, SetValueDialog
 from typing import TextIO, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -2399,23 +2398,6 @@ class Spaces:
 			value_type = params["value_type"]
 		"""
 		from dictionaries import command_dict  # noqa: PLC0415
-		from dialogs import (  # noqa: PLC0415
-			ChoseOptionDialog,
-			GetCoordinatesDialog,
-			GetIntegerDialog,
-			GetStringDialog,
-			MatrixDialog,
-			ModifyItemsDialog,
-			ModifyTextDialog,
-			ModifyValuesDialog,
-			MoveDialog,
-			SelectItemsDialog,
-			SetNamesDialog,
-			SetValueDialog,
-		)
-		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
-
-		params = {}
 
 		# Get metadata from command_dict
 		cmd_info = command_dict.get(command_name, {})
@@ -2426,550 +2408,935 @@ class Spaces:
 			and self._director.script_parameters
 		):
 			# Get from script parameters
-			interactive_getters = cmd_info.get("interactive_getters", {})
-			for param_name in expected_params:
-				if param_name in self._director.script_parameters:
-					script_params = self._director.script_parameters
-					param_value = script_params[param_name]
-
-					# Special handling for focal_item_dialog: convert name to index
-					getter_info = interactive_getters.get(param_name, {})
-					if getter_info.get("getter_type") == "focal_item_dialog":
-						items_source = getter_info.get("items_source", None)
-						if items_source:
-							items = getattr(
-								self._director.configuration_active, items_source
-							)
-						else:
-							items = getter_info.get("items", [])
-
-						# Convert name to index
-						if param_value in items:
-							params[param_name] = items.index(param_value)
-						else:
-							title = f"{command_name} script parameter error"
-							message = (
-								f"Invalid value for {param_name}: '{param_value}'\n"
-								f"Must be one of: {', '.join(items)}"
-							)
-							raise SpacesError(title, message)
-					else:
-						params[param_name] = param_value
-				else:
-					# Required parameter missing from script
-					title = f"{command_name} script parameter error"
-					message = f"Missing required parameter: {param_name}"
-					raise SpacesError(title, message)
+			return self._get_script_parameters(
+				command_name, cmd_info, expected_params
+			)
 		else:
 			# Get from interactive dialogs using metadata
-			interactive_getters = cmd_info.get("interactive_getters", {})
-			execute_parameters = cmd_info.get("execute_parameters", [])
+			return self._get_interactive_parameters(
+				command_name, cmd_info, expected_params, kwargs
+			)
 
-			for param_name in expected_params:
-				# Check if parameter was already obtained in previous call
-				obtained = self._director.obtained_parameters
-				if param_name in obtained:
-					params[param_name] = obtained[param_name]
-					continue
+	# ------------------------------------------------------------------------
 
-				# Check if this parameter was passed as kwarg
-				if param_name in kwargs:
-					params[param_name] = kwargs[param_name]
-					# Store for potential future calls
-					obtained[param_name] = kwargs[param_name]
-					continue
+	def _get_script_parameters(
+		self,
+		command_name: str,
+		cmd_info: dict,
+		expected_params: list[str]
+	) -> dict[str, any]:
+		"""Extract parameters from script execution context.
 
-				# Check if this parameter comes from execute method
-				if param_name in execute_parameters:
-					param_value = getattr(
-						self._director.current_command, param_name, None
-					)
-					if param_value is not None:
-						params[param_name] = param_value
-						continue
-					# If not set, fall through to error below
+		Args:
+			command_name: Name of the command being executed
+			cmd_info: Command metadata from command_dict
+			expected_params: List of expected parameter names
 
-				# Check if param_name is directly in interactive_getters
-				# or if it's in any getter's boolean_params list
-				getter_info = None
-				getter_param_name = None
+		Returns:
+			Dictionary of parameter_name -> value
 
-				if param_name in interactive_getters:
-					# Direct match
-					getter_info = interactive_getters[param_name]
-					getter_param_name = param_name
-				else:
-					# Check if any getter provides this param via boolean_params
-					for getter_name, getter_data in interactive_getters.items():
-						boolean_params = getter_data.get("boolean_params", [])
-						if param_name in boolean_params:
-							getter_info = getter_data
-							getter_param_name = getter_name
-							break
+		Raises:
+			SpacesError: If required parameter missing or invalid
+		"""
+		params = {}
+		interactive_getters = cmd_info.get("interactive_getters", {})
 
-				if getter_info is None:
-					# No interactive getter defined for this parameter
-					title = f"{command_name} metadata error"
-					message = (
-						f"No interactive getter defined for "
-						f"parameter: {param_name}\n"
-						f"Add '{param_name}' to interactive_getters "
-						f"or boolean_params in command_dict"
-					)
-					raise SpacesError(title, message)
+		for param_name in expected_params:
+			if param_name not in self._director.script_parameters:
+				# Required parameter missing from script
+				title = f"{command_name} script parameter error"
+				message = f"Missing required parameter: {param_name}"
+				raise SpacesError(title, message)
 
-				getter_type = getter_info.get("getter_type")
+			script_params = self._director.script_parameters
+			param_value = script_params[param_name]
 
-				if getter_type == "file_dialog":
-					# Use file dialog
-					caption = getter_info.get("caption", "Open file")
-					file_filter = getter_info.get("filter", "*.*")
-					params[param_name] = (
-						self._director.get_file_name_and_handle_nonexistent_file_names(
-							caption, file_filter
-						)
-					)
-					# Store for potential future calls within same command
-					obtained[param_name] = params[param_name]
+			# Special handling for focal_item_dialog: convert name to index
+			getter_info = interactive_getters.get(param_name, {})
+			if getter_info.get("getter_type") == "focal_item_dialog":
+				param_value = self._convert_focal_item_name_to_index(
+					command_name, param_name, param_value, getter_info
+				)
 
-				elif getter_type == "set_value_dialog":
-					# Use SetValueDialog for numeric input
-					title = getter_info.get("title", "Enter value")
-					label = getter_info.get("label", "")
-					min_val = getter_info.get("min_val", 0)
-					max_val = getter_info.get("max_val", 100)
-					default = getter_info.get("default", 0)
-					is_integer = getter_info.get("is_integer", False)
-
-					# Resolve dynamic max_val if None
-					if max_val is None:
-						max_val = self._director.evaluations_active.nitem
-
-					dialog = SetValueDialog(
-						title, label, min_val, max_val, is_integer, default
-					)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						value = dialog.getValue()
-						param_value = int(value) if is_integer else value
-						params[param_name] = param_value
-						# Store for potential future calls
-						obtained[param_name] = param_value
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "pair_of_points_dialog":
-					# Use PairofPointsDialog for selecting exactly two items
-					title = getter_info.get("title", "Select two points")
-					items_source = getter_info.get("items_source", None)
-
-					# Get items from director attribute if items_source specified
-					if items_source:
-						items = getattr(
-							self._director.configuration_active, items_source
-						)
-					else:
-						items = getter_info.get("items", [])
-
-					dialog = PairofPointsDialog(title, items)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.selected_items()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "chose_option_dialog":
-					# Use ChoseOptionDialog for radio button selection
-					title = getter_info.get("title", "Choose option")
-					options_title = getter_info.get(
-						"options_title", "Select one:"
-					)
-					options = getter_info.get("options", [])
-
-					# Support dynamic options building
-					options_builder = getter_info.get("options_builder", None)
-					if options_builder:
-						# Call the builder method to generate options
-						builder_method = getattr(self, options_builder, None)
-						if builder_method:
-							options_source = getter_info.get("options_source", None)
-							if options_source:
-								# Get source data (e.g., dim_names from configuration)
-								obj = self._director
-								for attr_name in options_source.split("."):
-									obj = getattr(obj, attr_name)
-								options = builder_method(obj)
-
-					dialog = ChoseOptionDialog(title, options_title, options)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						# selected_option is an index, convert to option string
-						params[param_name] = options[dialog.selected_option]
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "plane_dialog":
-					# Special handler for Settings - plane command
-					# For 2D: ask which dimension for horizontal axis
-					# For 3D+: ask for horizontal, then vertical axis
-					# Returns both "horizontal" and "vertical" parameters
-					title = getter_info.get("title", "Settings - plane")
-					dim_names = self._director.configuration_active.dim_names
-					ndim = len(dim_names)
-
-					# Get current axis names to use as defaults
-					current_hor = self._director.configuration_active.hor_axis_name
-					current_vert = self._director.configuration_active.vert_axis_name
-					hor_default_index = dim_names.index(current_hor)
-
-					# Ask for horizontal axis dimension
-					hor_dialog = ChoseOptionDialog(
-						title,
-						"Select dimension for horizontal axis:",
-						dim_names,
-						default_index=hor_default_index
-					)
-					result = hor_dialog.exec()
-					if result != QDialog.Accepted:
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-					hor_axis_name = dim_names[hor_dialog.selected_option]
-
-					if ndim == 2:
-						# For 2D, vertical is automatic (the other dimension)
-						vert_axis_name = (
-							dim_names[1] if hor_dialog.selected_option == 0
-							else dim_names[0]
-						)
-					else:
-						# For 3D+, ask which dimension for vertical axis
-						# Exclude the horizontal dimension from choices
-						vert_options = [
-							d for d in dim_names if d != hor_axis_name
-						]
-						vert_default_index = vert_options.index(current_vert)
-
-						vert_dialog = ChoseOptionDialog(
-							title,
-							"Select dimension for vertical axis:",
-							vert_options,
-							default_index=vert_default_index
-						)
-						result = vert_dialog.exec()
-						if result != QDialog.Accepted:
-							title = f"{command_name} cancelled"
-							message = "Operation cancelled by user"
-							raise SpacesError(title, message)
-
-						vert_axis_name = vert_options[vert_dialog.selected_option]
-
-					# Return both horizontal and vertical as separate parameters
-					params["horizontal"] = hor_axis_name
-					params["vertical"] = vert_axis_name
-					# Store for potential future calls
-					obtained["horizontal"] = hor_axis_name
-					obtained["vertical"] = vert_axis_name
-
-				elif getter_type == "focal_item_dialog":
-					# Use QInputDialog for selecting a single focal item
-					title = getter_info.get("title", "Select item")
-					label = getter_info.get("label", "Select an item:")
-					items_source = getter_info.get("items_source", None)
-
-					# Get items from director attribute if items_source specified
-					if items_source:
-						items = getattr(
-							self._director.configuration_active, items_source
-						)
-					else:
-						items = getter_info.get("items", [])
-
-					# Call get_focal_item_from_user which returns index
-					focus_index = self.get_focal_item_from_user(title, label, items)
-					params[param_name] = focus_index
-					# Store for potential future calls
-					obtained[param_name] = focus_index
-
-				elif getter_type == "get_integer_dialog":
-					# Use GetIntegerDialog for integer input (newer style)
-					title = getter_info.get("title", "Enter value")
-					message = getter_info.get("message", "")
-					min_value = getter_info.get("min_value", 1)
-					max_value = getter_info.get("max_value", 100)
-					default_value = getter_info.get("default_value", None)
-
-					dialog = GetIntegerDialog(
-						title, message, min_value, max_value, default_value
-					)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_value()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "get_string_dialog":
-					# Use GetStringDialog for single string input (newer style)
-					title = getter_info.get("title", "Enter text")
-					message = getter_info.get("message", "")
-					max_length = getter_info.get("max_length", 32)
-					default_value = getter_info.get("default_value", "")
-
-					dialog = GetStringDialog(
-						title, message, max_length, default_value
-					)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_value()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "get_coordinates_dialog":
-					# Use GetCoordinatesDialog for N-dimensional coordinates
-					title = getter_info.get("title", "Enter coordinates")
-					message = getter_info.get("message", "")
-					ndim = getter_info.get("ndim", 2)
-
-					dialog = GetCoordinatesDialog(title, message, ndim)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_coordinates()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "modify_items_dialog":
-					# Use ModifyItemsDialog for checkbox list selection
-					title = getter_info.get("title", "Select items")
-					items_source = getter_info.get("items_source", None)
-					default_values = getter_info.get("default_values", None)
-
-					# Get items from director attribute if items_source specified
-					if items_source:
-						# Handle dotted attribute paths (e.g., "uncertainty_active.point_names")
-						obj = self._director
-						for attr_name in items_source.split("."):
-							obj = getattr(obj, attr_name)
-						items = obj
-					else:
-						items = getter_info.get("items", [])
-
-					# Resolve dynamic defaults if defaults_source is specified
-					defaults_source = getter_info.get("defaults_source", None)
-					if defaults_source:
-						# Get current values from common instance
-						default_values = [
-							getattr(self, attr_name)
-							for attr_name in defaults_source
-						]
-
-					dialog = ModifyItemsDialog(title, items, default_values)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						selected_list = dialog.selected_items()
-
-						# Special handling: convert list to individual boolean parameters
-						if getter_info.get("converts_to_booleans", False):
-							boolean_params = getter_info.get("boolean_params", [])
-							# Each checkbox becomes a boolean parameter
-							for idx, bool_param_name in enumerate(boolean_params):
-								# Check if this item was in the selected list
-								params[bool_param_name] = items[idx] in selected_list
-								obtained[bool_param_name] = params[bool_param_name]
-						else:
-							# Normal behavior: return the list
-							params[param_name] = selected_list
-							# Store for potential future calls
-							obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "select_items_dialog":
-					# Use SelectItemsDialog for checkbox selection returning strings
-					title = getter_info.get("title", "Select items")
-					items_source = getter_info.get("items_source", None)
-
-					# Get items from director attribute if items_source specified
-					if items_source:
-						# Handle dotted attribute paths (e.g., "uncertainty_active.point_names")
-						obj = self._director
-						for attr_name in items_source.split("."):
-							obj = getattr(obj, attr_name)
-						items = obj
-					else:
-						items = getter_info.get("items", [])
-
-					dialog = SelectItemsDialog(title, items)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_selected_items()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "modify_values_dialog":
-					# Use ModifyValuesDialog for multiple numeric inputs
-					title = getter_info.get("title", "Modify values")
-					labels = getter_info.get("labels", [])
-					defaults = getter_info.get("defaults", [])
-					min_val = getter_info.get("min_val", -1000.0)
-					max_val = getter_info.get("max_val", 1000.0)
-					is_integer = getter_info.get("is_integer", False)
-
-					# Resolve dynamic defaults if defaults_source is specified
-					defaults_source = getter_info.get("defaults_source", None)
-					if defaults_source:
-						# Get current values from common instance
-						multiplier = getter_info.get("defaults_multiplier", 1)
-						# Support per-field multipliers
-						if isinstance(multiplier, list):
-							defaults = [
-								getattr(self, attr_name) * mult
-								for attr_name, mult in zip(defaults_source, multiplier, strict=True)
-							]
-						else:
-							defaults = [
-								getattr(self, attr_name) * multiplier
-								for attr_name in defaults_source
-							]
-
-					dialog = ModifyValuesDialog(
-						title, labels, is_integer, defaults
-					)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						values = dialog.selected_items()
-						# If boolean_params defined, unpack values to individual params
-						boolean_params = getter_info.get("boolean_params", [])
-						if boolean_params:
-							for each_param, (label, value) in zip(
-								boolean_params, values, strict=True
-							):
-								params[each_param] = value
-								obtained[each_param] = value
-						else:
-							params[param_name] = values
-							obtained[param_name] = values
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "move_dialog":
-					# Use MoveDialog for dimension/distance pairs
-					title = getter_info.get("title", "Move points")
-					n_dimensions = getter_info.get("n_dimensions", 2)
-
-					dialog = MoveDialog(title, n_dimensions)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_dimensions_and_distances()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "matrix_dialog":
-					# Use MatrixDialog for grid of numeric inputs
-					title = getter_info.get("title", "Enter matrix")
-					label = getter_info.get("label", "")
-					column_labels = getter_info.get("column_labels", [])
-					row_labels = getter_info.get("row_labels", [])
-
-					dialog = MatrixDialog(title, label, column_labels, row_labels)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_matrix()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "modify_text_dialog":
-					# Use ModifyTextDialog for multiple text inputs
-					title = getter_info.get("title", "Modify text")
-					labels = getter_info.get("labels", [])
-
-					dialog = ModifyTextDialog(title, labels)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.get_new_labels()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				elif getter_type == "set_names_dialog":
-					# Use SetNamesDialog for name/label table editing
-					title = getter_info.get("title", "Set names")
-					names = getter_info.get("names", [])
-
-					dialog = SetNamesDialog(title, names)
-					result = dialog.exec()
-					if result == QDialog.Accepted:
-						params[param_name] = dialog.getNames()
-						# Store for potential future calls
-						obtained[param_name] = params[param_name]
-					else:
-						# User cancelled
-						title = f"{command_name} cancelled"
-						message = "Operation cancelled by user"
-						raise SpacesError(title, message)
-
-				else:
-					# Unknown getter type
-					title = f"{command_name} metadata error"
-					message = (
-						f"Unknown getter_type '{getter_type}' for parameter: {param_name}"
-					)
-					raise SpacesError(title, message)
+			params[param_name] = param_value
 
 		return params
+
+	# ------------
+
+	def _convert_focal_item_name_to_index(
+		self,
+		command_name: str,
+		param_name: str,
+		param_value: str,
+		getter_info: dict
+	) -> int:
+		"""Convert focal item name to index for script parameters.
+
+		Args:
+			command_name: Name of the command being executed
+			param_name: Name of the parameter
+			param_value: The value from script (item name)
+			getter_info: Getter metadata dictionary
+
+		Returns:
+			Index of the item in the items list
+
+		Raises:
+			SpacesError: If param_value not found in items list
+		"""
+		items_source = getter_info.get("items_source", None)
+		if items_source:
+			items = getattr(
+				self._director.configuration_active, items_source
+			)
+		else:
+			items = getter_info.get("items", [])
+
+		# Convert name to index
+		if param_value in items:
+			return items.index(param_value)
+		else:
+			title = f"{command_name} script parameter error"
+			message = (
+				f"Invalid value for {param_name}: '{param_value}'\n"
+				f"Must be one of: {', '.join(items)}"
+			)
+			raise SpacesError(title, message)
+
+	# ------------
+
+	def _get_interactive_parameters(
+		self,
+		command_name: str,
+		cmd_info: dict,
+		expected_params: list[str],
+		kwargs: dict
+	) -> dict[str, any]:
+		"""Get parameters interactively from dialogs.
+
+		Args:
+			command_name: Name of the command being executed
+			cmd_info: Command metadata from command_dict
+			expected_params: List of expected parameter names
+			kwargs: Keyword arguments passed to get_command_parameters
+
+		Returns:
+			Dictionary of parameter_name -> value
+
+		Raises:
+			SpacesError: If parameter cannot be obtained
+		"""
+		params = {}
+		interactive_getters = cmd_info.get("interactive_getters", {})
+		execute_parameters = cmd_info.get("execute_parameters", [])
+
+		for param_name in expected_params:
+			# Try various sources for the parameter value
+			param_value = self._try_get_cached_or_kwarg_parameter(
+				param_name, kwargs, execute_parameters
+			)
+
+			if param_value is not None:
+				params[param_name] = param_value
+				continue
+
+			# Need to get from interactive dialog
+			getter_info, getter_param_name = self._find_getter_info(
+				command_name, param_name, interactive_getters
+			)
+
+			# Get parameter via dialog
+			dialog_params = self._get_parameter_via_dialog(
+				command_name, param_name, getter_info, getter_param_name
+			)
+			params.update(dialog_params)
+
+		return params
+
+	# ------------
+
+	def _try_get_cached_or_kwarg_parameter(
+		self,
+		param_name: str,
+		kwargs: dict,
+		execute_parameters: list[str]
+	) -> any:
+		"""Try to get parameter from cache, kwargs, or execute parameters.
+
+		Args:
+			param_name: Name of the parameter to get
+			kwargs: Keyword arguments passed to get_command_parameters
+			execute_parameters: List of parameter names from execute method
+
+		Returns:
+			Parameter value if found, None otherwise
+		"""
+		obtained = self._director.obtained_parameters
+
+		# Check if parameter was already obtained in previous call
+		if param_name in obtained:
+			return obtained[param_name]
+
+		# Check if this parameter was passed as kwarg
+		if param_name in kwargs:
+			param_value = kwargs[param_name]
+			# Store for potential future calls
+			obtained[param_name] = param_value
+			return param_value
+
+		# Check if this parameter comes from execute method
+		if param_name in execute_parameters:
+			param_value = getattr(
+				self._director.current_command, param_name, None
+			)
+			if param_value is not None:
+				return param_value
+
+		return None
+
+	# ------------
+
+	def _find_getter_info(
+		self,
+		command_name: str,
+		param_name: str,
+		interactive_getters: dict
+	) -> tuple[dict, str]:
+		"""Find getter info for a parameter.
+
+		Args:
+			command_name: Name of the command being executed
+			param_name: Name of the parameter to find getter for
+			interactive_getters: Dictionary of getter metadata
+
+		Returns:
+			Tuple of (getter_info dict, getter_param_name)
+
+		Raises:
+			SpacesError: If no getter found for parameter
+		"""
+		# Check if param_name is directly in interactive_getters
+		if param_name in interactive_getters:
+			return interactive_getters[param_name], param_name
+
+		# Check if any getter provides this param via boolean_params
+		for getter_name, getter_data in interactive_getters.items():
+			boolean_params = getter_data.get("boolean_params", [])
+			if param_name in boolean_params:
+				return getter_data, getter_name
+
+		# No interactive getter defined for this parameter
+		title = f"{command_name} metadata error"
+		message = (
+			f"No interactive getter defined for "
+			f"parameter: {param_name}\n"
+			f"Add '{param_name}' to interactive_getters "
+			f"or boolean_params in command_dict"
+		)
+		raise SpacesError(title, message)
+
+	# ------------
+
+	def _get_parameter_via_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict,
+		getter_param_name: str
+	) -> dict[str, any]:
+		"""Get parameter value via interactive dialog.
+
+		Args:
+			command_name: Name of the command being executed
+			param_name: Name of the parameter to get
+			getter_info: Getter metadata dictionary
+			getter_param_name: The key name in interactive_getters
+
+		Returns:
+			Dictionary with parameter(s) obtained from dialog
+
+		Raises:
+			SpacesError: If dialog cancelled or unknown getter type
+		"""
+		getter_type = getter_info.get("getter_type")
+
+		# Map getter types to handler methods
+		dialog_handlers = {
+			"file_dialog": self._handle_file_dialog,
+			"set_value_dialog": self._handle_set_value_dialog,
+			"pair_of_points_dialog": self._handle_pair_of_points_dialog,
+			"chose_option_dialog": self._handle_chose_option_dialog,
+			"plane_dialog": self._handle_plane_dialog,
+			"focal_item_dialog": self._handle_focal_item_dialog,
+			"get_integer_dialog": self._handle_get_integer_dialog,
+			"get_string_dialog": self._handle_get_string_dialog,
+			"get_coordinates_dialog": self._handle_get_coordinates_dialog,
+			"modify_items_dialog": self._handle_modify_items_dialog,
+			"select_items_dialog": self._handle_select_items_dialog,
+			"modify_values_dialog": self._handle_modify_values_dialog,
+			"move_dialog": self._handle_move_dialog,
+			"matrix_dialog": self._handle_matrix_dialog,
+			"modify_text_dialog": self._handle_modify_text_dialog,
+			"set_names_dialog": self._handle_set_names_dialog,
+		}
+
+		handler = dialog_handlers.get(getter_type)
+		if handler is None:
+			title = f"{command_name} metadata error"
+			message = (
+				f"Unknown getter_type '{getter_type}' for "
+				f"parameter: {param_name}"
+			)
+			raise SpacesError(title, message)
+
+		return handler(command_name, param_name, getter_info)
+
+	# ------------
+
+	def _handle_file_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle file dialog parameter getter."""
+		caption = getter_info.get("caption", "Open file")
+		file_filter = getter_info.get("filter", "*.*")
+		file_name = (
+			self._director.get_file_name_and_handle_nonexistent_file_names(
+				caption, file_filter
+			)
+		)
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = file_name
+		return {param_name: file_name}
+
+	# ------------
+
+	def _handle_set_value_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle SetValueDialog parameter getter."""
+		from dialogs import SetValueDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Enter value")
+		label = getter_info.get("label", "")
+		min_val = getter_info.get("min_val", 0)
+		max_val = getter_info.get("max_val", 100)
+		default = getter_info.get("default", 0)
+		is_integer = getter_info.get("is_integer", False)
+
+		# Resolve dynamic max_val if None
+		if max_val is None:
+			max_val = self._director.evaluations_active.nitem
+
+		dialog = SetValueDialog(
+			title, label, min_val, max_val, is_integer, default
+		)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		value = dialog.getValue()
+		param_value = int(value) if is_integer else value
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = param_value
+		return {param_name: param_value}
+
+	# ------------
+
+	def _handle_pair_of_points_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle PairofPointsDialog parameter getter."""
+		from dialogs import PairofPointsDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Select two points")
+		items = self._get_items_from_source(getter_info)
+
+		dialog = PairofPointsDialog(title, items)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		selected = dialog.selected_items()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = selected
+		return {param_name: selected}
+
+	# ------------
+
+	def _handle_chose_option_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle ChoseOptionDialog parameter getter."""
+		from dialogs import ChoseOptionDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Choose option")
+		options_title = getter_info.get("options_title", "Select one:")
+		options = getter_info.get("options", [])
+
+		# Support dynamic options building
+		options_builder = getter_info.get("options_builder", None)
+		if options_builder:
+			options = self._build_dynamic_options(
+				options_builder, getter_info
+			)
+
+		dialog = ChoseOptionDialog(title, options_title, options)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		selected_option = options[dialog.selected_option]
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = selected_option
+		return {param_name: selected_option}
+
+	# ------------
+
+	def _handle_plane_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle plane dialog parameter getter for Settings - plane."""
+		from dialogs import ChoseOptionDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Settings - plane")
+		dim_names = self._director.configuration_active.dim_names
+		ndim = len(dim_names)
+
+		# Get current axis names to use as defaults
+		current_hor = self._director.configuration_active.hor_axis_name
+		current_vert = self._director.configuration_active.vert_axis_name
+		hor_default_index = dim_names.index(current_hor)
+
+		# Ask for horizontal axis dimension
+		hor_dialog = ChoseOptionDialog(
+			title,
+			"Select dimension for horizontal axis:",
+			dim_names,
+			default_index=hor_default_index
+		)
+		result = hor_dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		hor_axis_name = dim_names[hor_dialog.selected_option]
+
+		if ndim == 2:
+			# For 2D, vertical is automatic (the other dimension)
+			vert_axis_name = (
+				dim_names[1] if hor_dialog.selected_option == 0
+				else dim_names[0]
+			)
+		else:
+			# For 3D+, ask which dimension for vertical axis
+			vert_options = [d for d in dim_names if d != hor_axis_name]
+			vert_default_index = vert_options.index(current_vert)
+
+			vert_dialog = ChoseOptionDialog(
+				title,
+				"Select dimension for vertical axis:",
+				vert_options,
+				default_index=vert_default_index
+			)
+			result = vert_dialog.exec()
+			if result != QDialog.Accepted:
+				self._raise_cancelled_error(command_name)
+
+			vert_axis_name = vert_options[vert_dialog.selected_option]
+
+		# Store and return both parameters
+		obtained = self._director.obtained_parameters
+		obtained["horizontal"] = hor_axis_name
+		obtained["vertical"] = vert_axis_name
+		return {"horizontal": hor_axis_name, "vertical": vert_axis_name}
+
+	# ------------
+
+	def _handle_focal_item_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle focal item dialog parameter getter."""
+		title = getter_info.get("title", "Select item")
+		label = getter_info.get("label", "Select an item:")
+		items = self._get_items_from_source(getter_info)
+
+		# Call get_focal_item_from_user which returns index
+		focus_index = self.get_focal_item_from_user(title, label, items)
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = focus_index
+		return {param_name: focus_index}
+
+	# ------------
+
+	def _handle_get_integer_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle GetIntegerDialog parameter getter."""
+		from dialogs import GetIntegerDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Enter value")
+		message = getter_info.get("message", "")
+		min_value = getter_info.get("min_value", 1)
+		max_value = getter_info.get("max_value", 100)
+		default_value = getter_info.get("default_value", None)
+
+		dialog = GetIntegerDialog(
+			title, message, min_value, max_value, default_value
+		)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		value = dialog.get_value()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = value
+		return {param_name: value}
+
+	# ------------
+
+	def _handle_get_string_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle GetStringDialog parameter getter."""
+		from dialogs import GetStringDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Enter text")
+		message = getter_info.get("message", "")
+		max_length = getter_info.get("max_length", 32)
+		default_value = getter_info.get("default_value", "")
+
+		dialog = GetStringDialog(
+			title, message, max_length, default_value
+		)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		value = dialog.get_value()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = value
+		return {param_name: value}
+
+	# ------------
+
+	def _handle_get_coordinates_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle GetCoordinatesDialog parameter getter."""
+		from dialogs import GetCoordinatesDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Enter coordinates")
+		message = getter_info.get("message", "")
+		ndim = getter_info.get("ndim", 2)
+
+		dialog = GetCoordinatesDialog(title, message, ndim)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		coordinates = dialog.get_coordinates()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = coordinates
+		return {param_name: coordinates}
+
+	# ------------
+
+	def _handle_modify_items_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle ModifyItemsDialog parameter getter."""
+		from dialogs import ModifyItemsDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Select items")
+		items = self._get_items_from_source(getter_info)
+		default_values = self._get_default_values(getter_info)
+
+		dialog = ModifyItemsDialog(title, items, default_values)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		selected_list = dialog.selected_items()
+
+		# Special handling: convert list to individual boolean parameters
+		if getter_info.get("converts_to_booleans", False):
+			return self._convert_to_boolean_params(
+				getter_info, items, selected_list
+			)
+		else:
+			# Normal behavior: return the list
+			self._director.obtained_parameters[param_name] = selected_list
+			return {param_name: selected_list}
+
+	# ------------
+
+	def _handle_select_items_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle SelectItemsDialog parameter getter."""
+		from dialogs import SelectItemsDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Select items")
+		items = self._get_items_from_source(getter_info)
+
+		dialog = SelectItemsDialog(title, items)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		selected_items = dialog.get_selected_items()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = selected_items
+		return {param_name: selected_items}
+
+	# ------------
+
+	def _handle_modify_values_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle ModifyValuesDialog parameter getter."""
+		from dialogs import ModifyValuesDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Modify values")
+		labels = getter_info.get("labels", [])
+		defaults = self._get_numeric_defaults(getter_info)
+		is_integer = getter_info.get("is_integer", False)
+
+		dialog = ModifyValuesDialog(title, labels, is_integer, defaults)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		values = dialog.selected_items()
+
+		# If boolean_params defined, unpack values to individual params
+		boolean_params = getter_info.get("boolean_params", [])
+		if boolean_params:
+			params = {}
+			obtained = self._director.obtained_parameters
+			for each_param, (label, value) in zip(
+				boolean_params, values, strict=True
+			):
+				params[each_param] = value
+				obtained[each_param] = value
+			return params
+		else:
+			self._director.obtained_parameters[param_name] = values
+			return {param_name: values}
+
+	# ------------
+
+	def _handle_move_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle MoveDialog parameter getter."""
+		from dialogs import MoveDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Move points")
+		n_dimensions = getter_info.get("n_dimensions", 2)
+
+		dialog = MoveDialog(title, n_dimensions)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		dims_and_dists = dialog.get_dimensions_and_distances()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = dims_and_dists
+		return {param_name: dims_and_dists}
+
+	# ------------
+
+	def _handle_matrix_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle MatrixDialog parameter getter."""
+		from dialogs import MatrixDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Enter matrix")
+		label = getter_info.get("label", "")
+		column_labels = getter_info.get("column_labels", [])
+		row_labels = getter_info.get("row_labels", [])
+
+		dialog = MatrixDialog(title, label, column_labels, row_labels)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		matrix = dialog.get_matrix()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = matrix
+		return {param_name: matrix}
+
+	# ------------
+
+	def _handle_modify_text_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle ModifyTextDialog parameter getter."""
+		from dialogs import ModifyTextDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Modify text")
+		labels = getter_info.get("labels", [])
+
+		dialog = ModifyTextDialog(title, labels)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		new_labels = dialog.get_new_labels()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = new_labels
+		return {param_name: new_labels}
+
+	# ------------
+
+	def _handle_set_names_dialog(
+		self,
+		command_name: str,
+		param_name: str,
+		getter_info: dict
+	) -> dict[str, any]:
+		"""Handle SetNamesDialog parameter getter."""
+		from dialogs import SetNamesDialog  # noqa: PLC0415
+		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
+
+		title = getter_info.get("title", "Set names")
+		names = getter_info.get("names", [])
+
+		dialog = SetNamesDialog(title, names)
+		result = dialog.exec()
+		if result != QDialog.Accepted:
+			self._raise_cancelled_error(command_name)
+
+		new_names = dialog.getNames()
+
+		# Store and return
+		self._director.obtained_parameters[param_name] = new_names
+		return {param_name: new_names}
+
+	# ------------
+
+	def _get_items_from_source(self, getter_info: dict) -> list:
+		"""Get items list from items_source attribute or items key.
+
+		Args:
+			getter_info: Getter metadata dictionary
+
+		Returns:
+			List of items
+		"""
+		items_source = getter_info.get("items_source", None)
+		if items_source:
+			# Handle dotted attribute paths
+			obj = self._director
+			for attr_name in items_source.split("."):
+				obj = getattr(obj, attr_name)
+			return obj
+		else:
+			return getter_info.get("items", [])
+
+	# ------------
+
+	def _get_default_values(self, getter_info: dict) -> list | None:
+		"""Get default values for dialog.
+
+		Args:
+			getter_info: Getter metadata dictionary
+
+		Returns:
+			List of default values or None
+		"""
+		default_values = getter_info.get("default_values", None)
+
+		# Resolve dynamic defaults if defaults_source is specified
+		defaults_source = getter_info.get("defaults_source", None)
+		if defaults_source:
+			# Get current values from common instance
+			default_values = [
+				getattr(self, attr_name)
+				for attr_name in defaults_source
+			]
+
+		return default_values
+
+	# ------------
+
+	def _get_numeric_defaults(self, getter_info: dict) -> list:
+		"""Get numeric default values for ModifyValuesDialog.
+
+		Args:
+			getter_info: Getter metadata dictionary
+
+		Returns:
+			List of default numeric values
+		"""
+		defaults = getter_info.get("defaults", [])
+
+		# Resolve dynamic defaults if defaults_source is specified
+		defaults_source = getter_info.get("defaults_source", None)
+		if defaults_source:
+			# Get current values from common instance
+			multiplier = getter_info.get("defaults_multiplier", 1)
+			# Support per-field multipliers
+			if isinstance(multiplier, list):
+				defaults = [
+					getattr(self, attr_name) * mult
+					for attr_name, mult in zip(
+						defaults_source, multiplier, strict=True
+					)
+				]
+			else:
+				defaults = [
+					getattr(self, attr_name) * multiplier
+					for attr_name in defaults_source
+				]
+
+		return defaults
+
+	# ------------
+
+	def _build_dynamic_options(
+		self,
+		options_builder: str,
+		getter_info: dict
+	) -> list:
+		"""Build dynamic options list using builder method.
+
+		Args:
+			options_builder: Name of builder method
+			getter_info: Getter metadata dictionary
+
+		Returns:
+			List of options
+		"""
+		builder_method = getattr(self, options_builder, None)
+		if builder_method:
+			options_source = getter_info.get("options_source", None)
+			if options_source:
+				# Get source data (e.g., dim_names from configuration)
+				obj = self._director
+				for attr_name in options_source.split("."):
+					obj = getattr(obj, attr_name)
+				return builder_method(obj)
+
+		return getter_info.get("options", [])
+
+	# ------------
+
+	def _convert_to_boolean_params(
+		self,
+		getter_info: dict,
+		items: list,
+		selected_list: list
+	) -> dict[str, bool]:
+		"""Convert selected items list to individual boolean parameters.
+
+		Args:
+			getter_info: Getter metadata dictionary
+			items: Full list of items
+			selected_list: List of selected items
+
+		Returns:
+			Dictionary of boolean parameter names to values
+		"""
+		params = {}
+		obtained = self._director.obtained_parameters
+		boolean_params = getter_info.get("boolean_params", [])
+
+		# Each checkbox becomes a boolean parameter
+		for idx, bool_param_name in enumerate(boolean_params):
+			# Check if this item was in the selected list
+			is_selected = items[idx] in selected_list
+			params[bool_param_name] = is_selected
+			obtained[bool_param_name] = is_selected
+
+		return params
+
+	# ------------
+
+	def _raise_cancelled_error(self, command_name: str) -> None:
+		"""Raise a standardized error for cancelled dialogs.
+
+		Args:
+			command_name: Name of the command being executed
+
+		Raises:
+			SpacesError: Always raises with cancellation message
+		"""
+		title = f"{command_name} cancelled"
+		message = "Operation cancelled by user"
+		raise SpacesError(title, message)
 
 	# ------------------------------------------------------------------------
 
@@ -3202,52 +3569,9 @@ class Spaces:
 		cmd_state = CommandState(command_name, command_type, parameters)
 		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-		supported_features = {
-			"configuration",
-			"target",
-			"scores",
-			"similarities",
-			"uncertainty",
-			"rivalry",
-			"correlations",
-			"evaluations",
-			"individuals",
-			"grouped_data",
-			"settings",
-		}
-
-		for item in command_dict[command_name]["state_capture"]:
-			if item not in supported_features:
-				title = f"Unsupported item in state_capture for {command_name}"
-				message = (
-					f"Item '{item}' is not supported by "
-					"capture_and_push_undo_state().\n"
-					f"Supported items: {', '.join(sorted(supported_features))}"
-				)
-				raise SpacesError(title, message)
-
-			if item == "configuration":
-				cmd_state.capture_configuration_state(self._director)
-			elif item == "target":
-				cmd_state.capture_target_state(self._director)
-			elif item == "scores":
-				cmd_state.capture_scores_state(self._director)
-			elif item == "similarities":
-				cmd_state.capture_similarities_state(self._director)
-			elif item == "uncertainty":
-				cmd_state.capture_uncertainty_state(self._director)
-			elif item == "rivalry":
-				cmd_state.capture_rivalry_state(self._director)
-			elif item == "correlations":
-				cmd_state.capture_correlations_state(self._director)
-			elif item == "evaluations":
-				cmd_state.capture_evaluations_state(self._director)
-			elif item == "individuals":
-				cmd_state.capture_individuals_state(self._director)
-			elif item == "grouped_data":
-				cmd_state.capture_grouped_data_state(self._director)
-			elif item == "settings":
-				cmd_state.capture_settings_state(self._director)
+		# Capture all required feature states
+		state_capture_list = command_dict[command_name]["state_capture"]
+		self._capture_feature_states(cmd_state, state_capture_list, command_name)
 
 		# Clear redo stack when a new command executes (not undo/redo)
 		if command_name not in ["Undo", "Redo"]:
@@ -3255,6 +3579,52 @@ class Spaces:
 
 		self._director.push_undo_state(cmd_state)
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _capture_feature_states(
+		self,
+		cmd_state,
+		state_capture_list: list[str],
+		command_name: str
+	) -> None:
+		"""Capture all required feature states for a command.
+
+		Args:
+			cmd_state: CommandState object to capture states into
+			state_capture_list: List of feature names to capture
+			command_name: Name of the command (for error messages)
+
+		Raises:
+			SpacesError: If a feature in state_capture is not supported
+		"""
+		# Map feature names to their capture methods
+		capture_methods = {
+			"configuration": cmd_state.capture_configuration_state,
+			"target": cmd_state.capture_target_state,
+			"scores": cmd_state.capture_scores_state,
+			"similarities": cmd_state.capture_similarities_state,
+			"uncertainty": cmd_state.capture_uncertainty_state,
+			"rivalry": cmd_state.capture_rivalry_state,
+			"correlations": cmd_state.capture_correlations_state,
+			"evaluations": cmd_state.capture_evaluations_state,
+			"individuals": cmd_state.capture_individuals_state,
+			"grouped_data": cmd_state.capture_grouped_data_state,
+			"settings": cmd_state.capture_settings_state,
+		}
+
+		for feature_name in state_capture_list:
+			capture_method = capture_methods.get(feature_name)
+			if capture_method is None:
+				title = f"Unsupported item in state_capture for {command_name}"
+				message = (
+					f"Item '{feature_name}' is not supported by "
+					"capture_and_push_undo_state().\n"
+					f"Supported items: {', '.join(sorted(capture_methods.keys()))}"
+				)
+				raise SpacesError(title, message)
+
+			capture_method(self._director)
 
 	# ------------------------------------------------------------------------
 
@@ -3326,26 +3696,24 @@ class Spaces:
 
 		snapshot = cmd_state.state_snapshot[feature_name]
 
-		# Check based on feature type
-		# correlations and evaluations store entire objects
-		if feature_name == "correlations":
-			return snapshot.nitem == 0 or not snapshot.correlations
-		elif feature_name == "evaluations":
-			return snapshot.evaluations.empty
-		elif feature_name == "scores":
-			return len(snapshot.get("scores", pd.DataFrame())) == 0
-		elif feature_name == "configuration":
-			return snapshot.get("npoint", 0) == 0
-		elif feature_name == "similarities":
-			return snapshot.get("nreferent", 0) == 0
-		elif feature_name == "target":
-			return snapshot.get("npoint", 0) == 0
-		elif feature_name == "grouped_data":
-			return snapshot.get("ngroups", 0) == 0
-		elif feature_name == "individuals":
-			return snapshot.get("n_individ", 0) == 0
+		# Map feature names to their emptiness check functions
+		# Each function takes the snapshot and returns True if empty
+		emptiness_checks = {
+			"correlations": lambda s: s.nitem == 0 or not s.correlations,
+			"evaluations": lambda s: s.evaluations.empty,
+			"scores": lambda s: len(s.get("scores", pd.DataFrame())) == 0,
+			"configuration": lambda s: s.get("npoint", 0) == 0,
+			"similarities": lambda s: s.get("nreferent", 0) == 0,
+			"target": lambda s: s.get("npoint", 0) == 0,
+			"grouped_data": lambda s: s.get("ngroups", 0) == 0,
+			"individuals": lambda s: s.get("n_individ", 0) == 0,
+		}
 
-		return False
+		check_function = emptiness_checks.get(feature_name)
+		if check_function is None:
+			return False
+
+		return check_function(snapshot)
 
 	# ------------------------------------------------------------------------
 
