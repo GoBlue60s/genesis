@@ -400,135 +400,233 @@ class DeactivateCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		from dialogs import GetCheckboxListDialog  # noqa: PLC0415
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		available_items, descriptions = self._build_available_items_list()
+		selected_items = self._get_user_selection(
+			available_items, descriptions)
+		params = {"items": selected_items}
+		self.common.capture_and_push_undo_state("Deactivate", "active", params)
+		deactivated_list = self._deactivate_selected_items(selected_items)
+		self._director.deactivated_items = deactivated_list
+		self._director.deactivated_descriptions = descriptions
+		deactivated_items_str = ", ".join(deactivated_list)
+		self._director.title_for_table_widget = (
+			f"Deactivated: {deactivated_items_str}")
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		return
 
-		# Build list of active features
+	# ------------------------------------------------------------------------
+
+	def _build_available_items_list(self) -> tuple[list[str], list[str]]:
+		"""Build list of active features with descriptions."""
 		available_items = []
 		descriptions = []
+		self._add_configuration_if_active(available_items, descriptions)
+		self._add_correlations_if_active(available_items, descriptions)
+		self._add_evaluations_if_active(available_items, descriptions)
+		self._add_grouped_data_if_active(available_items, descriptions)
+		self._add_individuals_if_active(available_items, descriptions)
+		self._add_scores_if_active(available_items, descriptions)
+		self._add_similarities_if_active(available_items, descriptions)
+		self._add_target_if_active(available_items, descriptions)
+		self._validate_items_available(available_items)
+		return available_items, descriptions
 
+	# ------------------------------------------------------------------------
+
+	def _add_configuration_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add configuration to available items if active."""
 		if self._director.configuration_active.ndim > 0:
 			available_items.append("Configuration")
 			descriptions.append(
 				f"ndim={self._director.configuration_active.ndim}, "
-				f"npoint={self._director.configuration_active.npoint}"
-			)
+				f"npoint={self._director.configuration_active.npoint}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _add_correlations_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add correlations to available items if active."""
 		if len(self._director.correlations_active.correlations) > 0:
 			available_items.append("Correlations")
 			descriptions.append(
-				f"nvar={self._director.correlations_active.nvar}"
-			)
+				f"nvar={self._director.correlations_active.nvar}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _add_evaluations_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add evaluations to available items if active."""
 		if not self._director.evaluations_active.evaluations.empty:
 			available_items.append("Evaluations")
 			descriptions.append(
-				f"rows={len(self._director.evaluations_active.evaluations)}"
-			)
+				f"rows={len(self._director.evaluations_active.evaluations)}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _add_grouped_data_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add grouped data to available items if active."""
 		if self._director.grouped_data_active.ngroups > 0:
 			available_items.append("Grouped data")
 			descriptions.append(
-				f"ngroups={self._director.grouped_data_active.ngroups}"
-			)
+				f"ngroups={self._director.grouped_data_active.ngroups}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _add_individuals_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add individuals to available items if active."""
 		if not self._director.individuals_active.ind_vars.empty:
 			available_items.append("Individuals")
 			descriptions.append(
-				f"rows={len(self._director.individuals_active.ind_vars)}"
-			)
+				f"rows={len(self._director.individuals_active.ind_vars)}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _add_scores_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add scores to available items if active."""
 		if not self._director.scores_active.scores.empty:
 			available_items.append("Scores")
 			descriptions.append(
-				f"rows={len(self._director.scores_active.scores)}"
-			)
+				f"rows={len(self._director.scores_active.scores)}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _add_similarities_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add similarities to available items if active."""
 		if len(self._director.similarities_active.similarities) > 0:
 			available_items.append("Similarities")
 			descriptions.append(
-				f"nvar={self._director.similarities_active.nvar}"
-			)
+				f"nvar={self._director.similarities_active.nvar}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _add_target_if_active(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> None:
+		"""Add target to available items if active."""
 		if self._director.target_active.ndim > 0:
 			available_items.append("Target")
 			descriptions.append(
 				f"ndim={self._director.target_active.ndim}, "
 				f"npoint={self._director.target_active.npoint}")
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _validate_items_available(self, available_items: list[str]) -> None:
+		"""Validate that items are available to deactivate."""
 		if len(available_items) == 0:
 			selection_title = "Nothing to deactivate"
 			selection_message = (
 				"There are no active features to deactivate.")
 			raise SpacesError(selection_title, selection_message)
+		return
 
-		# Get user selection
+	# ------------------------------------------------------------------------
+
+	def _get_user_selection(
+		self,
+		available_items: list[str],
+		descriptions: list[str]
+	) -> list[str]:
+		"""Get user selection of items to deactivate."""
+		from dialogs import GetCheckboxListDialog  # noqa: PLC0415
+
 		dialog = GetCheckboxListDialog(
 			self._deactivate_items_title,
 			self._deactivate_items_message,
 			available_items,
 			descriptions)
+		self._validate_dialog_executed(dialog)
+		selected_items = dialog.get_selected_items()
+		self._validate_items_selected(selected_items)
+		return selected_items
 
+	# ------------------------------------------------------------------------
+
+	def _validate_dialog_executed(
+		self,
+		dialog: object
+	) -> None:
+		"""Validate that dialog was not cancelled."""
 		if not dialog.exec():
 			msg_title = "Deactivate cancelled"
 			msg = "Deactivation was cancelled"
 			raise SpacesError(msg_title, msg)
+		return
 
-		selected_items = dialog.get_selected_items()
+	# ------------------------------------------------------------------------
 
+	def _validate_items_selected(self, selected_items: list[str]) -> None:
+		"""Validate that items were selected."""
 		if len(selected_items) == 0:
 			nothing_title = "Nothing selected"
 			nothing_message = "No items were selected for deactivation."
 			raise SpacesError(nothing_title, nothing_message)
-
-		# Capture state for undo BEFORE modifications
-		# Conditional: captures state for each item user selects to deactivate
-		params = {"items": selected_items}
-		self.common.capture_and_push_undo_state("Deactivate", "active", params)
-
-		# Deactivate selected items
-		deactivated_list = []
-		for item in selected_items:
-			if item == "Configuration":
-				self._director.abandon_configuration()
-				deactivated_list.append("Configuration")
-			elif item == "Correlations":
-				self._director.abandon_correlations()
-				deactivated_list.append("Correlations")
-			elif item == "Evaluations":
-				self._director.abandon_evaluations()
-				deactivated_list.append("Evaluations")
-			elif item == "Grouped data":
-				self._director.abandon_grouped_data()
-				deactivated_list.append("Grouped data")
-			elif item == "Individuals":
-				self._director.abandon_individual_data()
-				deactivated_list.append("Individuals")
-			elif item == "Scores":
-				self._director.abandon_scores()
-				deactivated_list.append("Scores")
-			elif item == "Similarities":
-				self._director.abandon_similarities()
-				deactivated_list.append("Similarities")
-			elif item == "Target":
-				self._director.abandon_target()
-				deactivated_list.append("Target")
-
-		# Store deactivated items for potential undo
-		self._director.deactivated_items = deactivated_list
-		self._director.deactivated_descriptions = descriptions
-
-		# Display confirmation
-		deactivated_items_str = ", ".join(deactivated_list)
-		self._director.title_for_table_widget = (
-			f"Deactivated: {deactivated_items_str}"
-		)
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Output")
-		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _deactivate_selected_items(
+		self,
+		selected_items: list[str]
+	) -> list[str]:
+		"""Deactivate the selected items."""
+		deactivation_actions = {
+			"Configuration": self._director.abandon_configuration,
+			"Correlations": self._director.abandon_correlations,
+			"Evaluations": self._director.abandon_evaluations,
+			"Grouped data": self._director.abandon_grouped_data,
+			"Individuals": self._director.abandon_individual_data,
+			"Scores": self._director.abandon_scores,
+			"Similarities": self._director.abandon_similarities,
+			"Target": self._director.abandon_target,
+		}
+		deactivated_list = []
+		for each_item in selected_items:
+			action = deactivation_actions.get(each_item)
+			if action:
+				action()
+				deactivated_list.append(each_item)
+		return deactivated_list
 
 	# ------------------------------------------------------------------------
 
@@ -731,26 +829,14 @@ class GroupedDataCommand:
 		params = self.common.get_command_parameters("Grouped data")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
-			"Grouped data", "active", params
-		)
-
-		# Error handling
-		# If not a grouped data file, then return an error message
-		try:
-			self._read_grouped_data(file_name)
-		except ValueError as e:
-			raise SpacesError(
-				self._grouped_data_error_bad_input_title,
-				self._grouped_data_error_bad_input_message,
-			) from e
-
+			"Grouped data", "active", params)
+		self._read_grouped_data(file_name)
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
 		ndim = self._director.grouped_data_active.ndim
 		ngroups = self._director.grouped_data_active.ngroups
 		self._director.title_for_table_widget = (
-			f"Grouped data has {ndim} dimensions and {ngroups} groups"
-		)
+			f"Grouped data has {ndim} dimensions and {ngroups} groups")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -788,74 +874,151 @@ class GroupedDataCommand:
 		a group configuration from a file.
 		"""
 		file_handle = self._director.grouped_data_active.file_handle
-
 		self._read_grouped_data_initialized_variables(file_name, file_handle)
-
-		dim_names = []
-		dim_labels = []
-		group_names = []
-		group_labels = []
-		group_codes = []
 		try:
 			with Path(file_name).open() as file_handle:
-				header = file_handle.readline()
-				if len(header) == 0:
-					self.common.event_driven_automatic_restoration()
-					raise SpacesError(
-						self.grouped_data_file_not_found_error_title,
-						self.grouped_data_file_not_found_error_message,
-					) from None
-
-				if header.lower().strip() != "grouped":
-					self.common.event_driven_automatic_restoration()
-					raise SpacesError(
-						self.grouped_data_file_not_grouped_error_title,
-						self.grouped_data_file_not_grouped_error_message,
-					) from None
-
-				grouping_var = file_handle.readline()
-				if len(grouping_var) == 0:
-					self.common.event_driven_automatic_restoration()
-					raise SpacesError(
-						self.missing_grouping_var_error_title,
-						self.missing_grouping_var_error_message,
-					) from None
-				grouping_var = grouping_var.strip("\n")
-				dim = file_handle.readline()
-				dim_list = dim.strip("\n").split()
-				expected_dim = int(dim_list[0])
-				expected_groups = int(dim_list[1])
+				self._validate_header(file_handle)
+				grouping_var = self._read_grouping_var(file_handle)
+				expected_dim, expected_groups = self._read_dimensions(
+					file_handle)
+				dim_labels, dim_names = self._read_dimension_data(
+					file_handle, expected_dim)
+				group_labels, group_codes, group_names = (
+					self._read_group_data(file_handle, expected_groups))
+				group_coords = self._read_group_coordinates(
+					file_handle, expected_groups, group_names, dim_labels)
 				range_groups = range(expected_groups)
 				range_dims = range(expected_dim)
-				for _ in range(expected_dim):
-					(dim_label, dim_name) = file_handle.readline().split(";")
-					dim_labels.append(dim_label)
-					dim_name = dim_name.strip("\n")
-					dim_names.append(dim_name)
-				for i in range(expected_groups):
-					(group_label, group_code, group_name) = (
-						file_handle.readline().split(";")
-					)
-					group_names.append(group_name)
-					group_labels.append(group_label)
-					group_codes.append(group_code)
-
-					group_names[i] = group_names[i].strip()
-				group_coords = pd.DataFrame(
-					[
-						[float(g) for g in file_handle.readline().split()]
-						for i in range(expected_groups)
-					],
-					index=group_names,
-					columns=dim_labels,
-				)
 		except FileNotFoundError:
 			self.common.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.group_data_file_not_found_error_title,
 				self.group_data_file_not_found_error_message,
 			) from None
+		except ValueError as e:
+			raise SpacesError(
+				self._grouped_data_error_bad_input_title,
+				self._grouped_data_error_bad_input_message,
+			) from e
+		self._store_grouped_data_to_active(
+			grouping_var, expected_dim, expected_groups,
+			dim_names, dim_labels, group_names, group_labels,
+			group_codes, group_coords, range_groups, range_dims)
+		return
 
+	# ------------------------------------------------------------------------
+
+	def _validate_header(self, file_handle: object) -> None:
+		"""Validate the file header is 'grouped'."""
+		header = file_handle.readline()
+		if len(header) == 0:
+			self.common.event_driven_automatic_restoration()
+			raise SpacesError(
+				self.grouped_data_file_not_found_error_title,
+				self.grouped_data_file_not_found_error_message,
+			) from None
+		if header.lower().strip() != "grouped":
+			self.common.event_driven_automatic_restoration()
+			raise SpacesError(
+				self.grouped_data_file_not_grouped_error_title,
+				self.grouped_data_file_not_grouped_error_message,
+			) from None
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_grouping_var(self, file_handle: object) -> str:
+		"""Read and validate the grouping variable name."""
+		grouping_var = file_handle.readline()
+		if len(grouping_var) == 0:
+			self.common.event_driven_automatic_restoration()
+			raise SpacesError(
+				self.missing_grouping_var_error_title,
+				self.missing_grouping_var_error_message,
+			) from None
+		return grouping_var.strip("\n")
+
+	# ------------------------------------------------------------------------
+
+	def _read_dimensions(self, file_handle: object) -> tuple[int, int]:
+		"""Read the number of dimensions and groups."""
+		dim = file_handle.readline()
+		dim_list = dim.strip("\n").split()
+		expected_dim = int(dim_list[0])
+		expected_groups = int(dim_list[1])
+		return expected_dim, expected_groups
+
+	# ------------------------------------------------------------------------
+
+	def _read_dimension_data(
+		self,
+		file_handle: object,
+		expected_dim: int
+	) -> tuple[list[str], list[str]]:
+		"""Read dimension labels and names."""
+		dim_labels = []
+		dim_names = []
+		for _ in range(expected_dim):
+			dim_label, dim_name = file_handle.readline().split(";")
+			dim_labels.append(dim_label)
+			dim_names.append(dim_name.strip("\n"))
+		return dim_labels, dim_names
+
+	# ------------------------------------------------------------------------
+
+	def _read_group_data(
+		self,
+		file_handle: object,
+		expected_groups: int
+	) -> tuple[list[str], list[str], list[str]]:
+		"""Read group labels, codes, and names."""
+		group_labels = []
+		group_codes = []
+		group_names = []
+		for _ in range(expected_groups):
+			group_label, group_code, group_name = (
+				file_handle.readline().split(";"))
+			group_labels.append(group_label)
+			group_codes.append(group_code)
+			group_names.append(group_name.strip())
+		return group_labels, group_codes, group_names
+
+	# ------------------------------------------------------------------------
+
+	def _read_group_coordinates(
+		self,
+		file_handle: object,
+		expected_groups: int,
+		group_names: list[str],
+		dim_labels: list[str]
+	) -> pd.DataFrame:
+		"""Read group coordinates and create DataFrame."""
+		coords_data = [
+			[float(coord) for coord in file_handle.readline().split()]
+			for _ in range(expected_groups)
+		]
+		return pd.DataFrame(
+			coords_data,
+			index=group_names,
+			columns=dim_labels)
+
+	# ------------------------------------------------------------------------
+
+	def _store_grouped_data_to_active(
+		self,
+		grouping_var: str,
+		expected_dim: int,
+		expected_groups: int,
+		dim_names: list[str],
+		dim_labels: list[str],
+		group_names: list[str],
+		group_labels: list[str],
+		group_codes: list[str],
+		group_coords: pd.DataFrame,
+		range_groups: range,
+		range_dims: range
+	) -> None:
+		"""Store all grouped data to the active feature."""
 		self._director.grouped_data_active.grouping_var = grouping_var
 		self._director.grouped_data_active.ndim = expected_dim
 		self._director.grouped_data_active.dim_names = dim_names
@@ -868,7 +1031,6 @@ class GroupedDataCommand:
 		self._director.grouped_data_active.group_codes = group_codes
 		self._director.grouped_data_active.group_coords = group_coords
 		self._director.grouped_data_active.range_dims = range_dims
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -957,120 +1119,206 @@ class NewGroupedDataCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		from dialogs import (  # noqa: PLC0415
-			GetIntegerDialog,
-			GetStringDialog,
-			GetCoordinatesDialog,
-		)
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._get_grouping_var()
+		ngroups = self._get_number_of_groups()
+		ndim = self._get_number_of_dimensions()
+		group_labels, group_names, group_codes = (
+			self._get_group_labels_and_names(ngroups))
+		dim_labels, dim_names = self._get_dimension_labels_and_names(ndim)
+		coords_data = self._get_coordinates_for_groups(
+			ngroups, ndim, group_names)
+		group_coords = pd.DataFrame(
+			coords_data, index=group_names, columns=dim_labels)
+		params = {"ngroups": ngroups, "ndim": ndim}
+		self.common.capture_and_push_undo_state(
+			"New grouped data", "active", params)
+		self._store_grouped_data(
+			ndim, ngroups, dim_labels, dim_names,
+			group_labels, group_names, group_codes, group_coords)
+		self._director.grouped_data_active.print_grouped_data()
+		self._director.common.create_plot_for_tabs("grouped_data")
+		self._director.title_for_table_widget = (
+			f"Grouped data has {ndim} dimensions and {ngroups} groups")
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.record_command_as_successfully_completed()
+		return
 
-		# Get number of groups from user
+	# ------------------------------------------------------------------------
+
+	def _get_number_of_groups(self) -> int:
+		"""Get number of groups from user via dialog."""
+		from dialogs import GetIntegerDialog  # noqa: PLC0415
+
 		ngroups_dialog = GetIntegerDialog(
 			self._number_of_groups_title,
 			self._number_of_groups_message,
 			min_value=2,
 			max_value=100,
 		)
-		if not ngroups_dialog.exec():
-			raise SpacesError(
-				"Create cancelled", "Grouped data creation was cancelled"
-			)
-		ngroups = ngroups_dialog.get_value()
+		self._validate_dialog_executed(ngroups_dialog)
+		return ngroups_dialog.get_value()
 
-		# Get number of dimensions from user
+	# ------------------------------------------------------------------------
+
+	def _get_number_of_dimensions(self) -> int:
+		"""Get number of dimensions from user via dialog."""
+		from dialogs import GetIntegerDialog  # noqa: PLC0415
+
 		ndim_dialog = GetIntegerDialog(
 			self._number_of_dimensions_title,
 			self._number_of_dimensions_message,
 			min_value=2,
 			max_value=10,
 		)
-		if not ndim_dialog.exec():
-			raise SpacesError(
-				"Create cancelled", "Grouped data creation was cancelled"
-			)
-		ndim = ndim_dialog.get_value()
+		self._validate_dialog_executed(ndim_dialog)
+		return ndim_dialog.get_value()
 
-		# Get group labels and names
+	# ------------------------------------------------------------------------
+
+	def _get_group_labels_and_names(
+		self,
+		ngroups: int
+	) -> tuple[list[str], list[str], list[str]]:
+		"""Get group labels, names, and codes from user via dialogs."""
 		group_labels = []
 		group_names = []
 		group_codes = []
 		for each_group in range(ngroups):
-			label_dialog = GetStringDialog(
-				self._labels_title,
-				f"{self._labels_message}group {each_group + 1}:",
-			)
-			if not label_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Grouped data creation was cancelled"
-				)
-			group_labels.append(label_dialog.get_value())
-
-			name_dialog = GetStringDialog(
-				self._names_title,
-				f"{self._names_message}group {each_group + 1}:",
-			)
-			if not name_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Grouped data creation was cancelled"
-				)
-			group_names.append(name_dialog.get_value())
-			# Generate sequential group codes starting from 1
+			label = self._get_label_for_group(each_group)
+			group_labels.append(label)
+			name = self._get_name_for_group(each_group)
+			group_names.append(name)
 			group_codes.append(str(each_group + 1))
+		return group_labels, group_names, group_codes
 
-		# Get dimension labels and names
+	# ------------------------------------------------------------------------
+
+	def _get_label_for_group(self, group_index: int) -> str:
+		"""Get label for a single group from user via dialog."""
+		from dialogs import GetStringDialog  # noqa: PLC0415
+
+		label_dialog = GetStringDialog(
+			self._labels_title,
+			f"{self._labels_message}group {group_index + 1}:",
+		)
+		self._validate_dialog_executed(label_dialog)
+		return label_dialog.get_value()
+
+	# ------------------------------------------------------------------------
+
+	def _get_name_for_group(self, group_index: int) -> str:
+		"""Get name for a single group from user via dialog."""
+		from dialogs import GetStringDialog  # noqa: PLC0415
+
+		name_dialog = GetStringDialog(
+			self._names_title,
+			f"{self._names_message}group {group_index + 1}:",
+		)
+		self._validate_dialog_executed(name_dialog)
+		return name_dialog.get_value()
+
+	# ------------------------------------------------------------------------
+
+	def _get_dimension_labels_and_names(
+		self,
+		ndim: int
+	) -> tuple[list[str], list[str]]:
+		"""Get dimension labels and names from user via dialogs."""
 		dim_labels = []
 		dim_names = []
 		for each_dim in range(ndim):
-			label_dialog = GetStringDialog(
-				self._labels_title,
-				f"{self._labels_message}dimension {each_dim + 1}:",
-			)
-			if not label_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Grouped data creation was cancelled"
-				)
-			dim_labels.append(label_dialog.get_value())
+			label = self._get_label_for_dimension(each_dim)
+			dim_labels.append(label)
+			name = self._get_name_for_dimension(each_dim)
+			dim_names.append(name)
+		return dim_labels, dim_names
 
-			name_dialog = GetStringDialog(
-				self._names_title,
-				f"{self._names_message}dimension {each_dim + 1}:",
-			)
-			if not name_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Grouped data creation was cancelled"
-				)
-			dim_names.append(name_dialog.get_value())
+	# ------------------------------------------------------------------------
 
-		# Get coordinates for each group
+	def _get_label_for_dimension(self, dim_index: int) -> str:
+		"""Get label for a single dimension from user via dialog."""
+		from dialogs import GetStringDialog  # noqa: PLC0415
+
+		label_dialog = GetStringDialog(
+			self._labels_title,
+			f"{self._labels_message}dimension {dim_index + 1}:",
+		)
+		self._validate_dialog_executed(label_dialog)
+		return label_dialog.get_value()
+
+	# ------------------------------------------------------------------------
+
+	def _get_name_for_dimension(self, dim_index: int) -> str:
+		"""Get name for a single dimension from user via dialog."""
+		from dialogs import GetStringDialog  # noqa: PLC0415
+
+		name_dialog = GetStringDialog(
+			self._names_title,
+			f"{self._names_message}dimension {dim_index + 1}:",
+		)
+		self._validate_dialog_executed(name_dialog)
+		return name_dialog.get_value()
+
+	# ------------------------------------------------------------------------
+
+	def _get_coordinates_for_groups(
+		self,
+		ngroups: int,
+		ndim: int,
+		group_names: list[str]
+	) -> list[list[float]]:
+		"""Get coordinates for each group from user via dialogs."""
 		coords_data = []
 		for each_group in range(ngroups):
-			coords_dialog = GetCoordinatesDialog(
-				self._coordinates_title,
-				f"{self._coordinates_message}{group_names[each_group]}:",
-				ndim,
-			)
-			if not coords_dialog.exec():
-				raise SpacesError(
-					"Create cancelled", "Grouped data creation was cancelled"
-				)
-			coords = coords_dialog.get_values()
+			coords = self._get_coordinates_for_single_group(
+				each_group, ndim, group_names)
 			coords_data.append(coords)
+		return coords_data
 
-		# Create DataFrame with proper labels
-		group_coords = pd.DataFrame(
-			coords_data, index=group_names, columns=dim_labels
+	# ------------------------------------------------------------------------
+
+	def _get_coordinates_for_single_group(
+		self,
+		group_index: int,
+		ndim: int,
+		group_names: list[str]
+	) -> list[float]:
+		"""Get coordinates for a single group from user via dialog."""
+		from dialogs import GetCoordinatesDialog  # noqa: PLC0415
+
+		coords_dialog = GetCoordinatesDialog(
+			self._coordinates_title,
+			f"{self._coordinates_message}{group_names[group_index]}:",
+			ndim,
 		)
+		self._validate_dialog_executed(coords_dialog)
+		return coords_dialog.get_values()
 
-		# Capture state for undo BEFORE modifications
-		params = {"ngroups": ngroups, "ndim": ndim}
-		self.common.capture_and_push_undo_state(
-			"New grouped data", "active", params
-		)
+	# ------------------------------------------------------------------------
 
-		# Store the new grouped data directly in active
+	def _validate_dialog_executed(self, dialog: object) -> None:
+		"""Validate that dialog was not cancelled."""
+		if not dialog.exec():
+			raise SpacesError(
+				"Create cancelled", "Grouped data creation was cancelled")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _store_grouped_data(
+		self,
+		ndim: int,
+		ngroups: int,
+		dim_labels: list[str],
+		dim_names: list[str],
+		group_labels: list[str],
+		group_names: list[str],
+		group_codes: list[str],
+		group_coords: pd.DataFrame
+	) -> None:
+		"""Store the new grouped data in active feature."""
 		self._director.grouped_data_active.ndim = ndim
 		self._director.grouped_data_active.ngroups = ngroups
 		self._director.grouped_data_active.range_dims = range(ndim)
@@ -1081,14 +1329,6 @@ class NewGroupedDataCommand:
 		self._director.grouped_data_active.group_names = group_names
 		self._director.grouped_data_active.group_codes = group_codes
 		self._director.grouped_data_active.group_coords = group_coords
-
-		self._director.grouped_data_active.print_grouped_data()
-		self._director.common.create_plot_for_tabs("grouped_data")
-		self._director.title_for_table_widget = (
-			f"Grouped data has {ndim} dimensions and {ngroups} groups"
-		)
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
 		return
 
 	# ------------------------------------------------------------------------
@@ -2524,88 +2764,167 @@ class SaveScriptCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
 		file_name = self._director.get_file_name_to_store_file(
 			self._save_script_caption,
-			self._save_script_filter
-		)
+			self._save_script_filter)
+		script_lines = self._collect_script_lines()
+		self._write_script_file(file_name, script_lines)
+		self._director.name_of_file_written_to = file_name
+		self._director.title_for_table_widget = (
+			f"Script saved with {len(script_lines)} commands:\n{file_name}")
+		self._display_saved_script(script_lines, file_name)
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		return
 
-		# Get command history from undo stack
+	# ------------------------------------------------------------------------
+
+	def _collect_script_lines(self) -> list[str]:
+		"""Collect command lines from undo stack for script."""
 		undo_stack = self._director.undo_stack
-
-		# Collect commands with their parameters from undo stack
 		script_lines = []
-		for i, cmd_state in enumerate(undo_stack):
-			# Skip commands with empty names
-			if not cmd_state.command_name:
-				continue
+		for each_cmd_state in undo_stack:
+			cmd_line = self._build_command_line(each_cmd_state)
+			self._add_command_line_if_valid(cmd_line, script_lines)
+		return script_lines
 
-			# Skip script-type commands (OpenScript, SaveScript, ViewScript)
-			# These are meta-commands that should not appear in generated scripts
-			if cmd_state.command_type == "script":
-				continue
+	# ------------------------------------------------------------------------
 
-			# Skip interactive_only commands (Create, New grouped data)
-			# These require extensive user interaction and cannot be scripted
-			if cmd_state.command_type == "interactive_only":
-				continue
+	def _build_command_line(self, cmd_state: object) -> str:
+		"""Build command line with parameters from command state."""
+		if not self._is_valid_command_for_script(cmd_state):
+			return ""
+		cmd_line = cmd_state.command_name
+		cmd_line = self._add_parameters_to_command_line(
+			cmd_line, cmd_state)
+		return cmd_line
 
-			# Build command line with parameters
-			cmd_line = cmd_state.command_name
-			if cmd_state.command_params:
-				# Format parameters using common method
-				formatted_params = self.common.format_parameters_for_display(
-					cmd_state.command_name, cmd_state.command_params
-				)
-				# Add parameters as key=value pairs
-				# Format values appropriately: lists/dicts as-is, strings with quotes if needed
-				param_parts = []
-				for key, value in formatted_params.items():
-					if isinstance(value, str):
-						# String values - always add quotes for safety
-						# (names can contain spaces, making quotes necessary)
-						param_parts.append(f'{key}="{value}"')
-					elif isinstance(value, (list, dict)):
-						# Lists and dicts - write as Python literals
-						param_parts.append(f'{key}={value}')
-					else:
-						# Numbers, booleans, etc.
-						param_parts.append(f'{key}={value}')
-				params_str = " ".join(param_parts)
-				cmd_line = f"{cmd_line} {params_str}"
+	# ------------------------------------------------------------------------
+
+	def _is_valid_command_for_script(self, cmd_state: object) -> bool:
+		"""Check if command should be included in script."""
+		if not cmd_state.command_name:
+			return False
+		if cmd_state.command_type == "script":
+			return False
+		if cmd_state.command_type == "interactive_only":
+			return False
+		return True
+
+	# ------------------------------------------------------------------------
+
+	def _add_parameters_to_command_line(
+		self,
+		cmd_line: str,
+		cmd_state: object
+	) -> str:
+		"""Add formatted parameters to command line."""
+		if not cmd_state.command_params:
+			return cmd_line
+		formatted_params = self.common.format_parameters_for_display(
+			cmd_state.command_name, cmd_state.command_params)
+		param_parts = self._format_parameter_parts(formatted_params)
+		params_str = " ".join(param_parts)
+		return f"{cmd_line} {params_str}"
+
+	# ------------------------------------------------------------------------
+
+	def _format_parameter_parts(
+		self,
+		formatted_params: dict[str, object]
+	) -> list[str]:
+		"""Format parameter parts as key=value strings."""
+		param_parts = []
+		for each_key, each_value in formatted_params.items():
+			formatted_part = self._format_single_parameter(
+				each_key, each_value)
+			param_parts.append(formatted_part)
+		return param_parts
+
+	# ------------------------------------------------------------------------
+
+	def _format_single_parameter(self, key: str, value: object) -> str:
+		"""Format a single parameter as key=value string."""
+		if isinstance(value, str):
+			return f'{key}="{value}"'
+		if isinstance(value, (list, dict)):
+			return f'{key}={value}'
+		return f'{key}={value}'
+
+	# ------------------------------------------------------------------------
+
+	def _add_command_line_if_valid(
+		self,
+		cmd_line: str,
+		script_lines: list[str]
+	) -> None:
+		"""Add command line to script lines if valid."""
+		if cmd_line:
 			script_lines.append(cmd_line)
+		return
 
-		# Write script file
+	# ------------------------------------------------------------------------
+
+	def _write_script_file(
+		self,
+		file_name: str,
+		script_lines: list[str]
+	) -> None:
+		"""Write script lines to file."""
 		try:
-			with Path(file_name).open("w", encoding="utf-8") as f:
-				f.write("# Spaces Script\n")
-				f.write(f"# Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-				f.write("# Spaces Version: 2025\n")
-
-				for i, line in enumerate(script_lines):
-					if i == len(script_lines) - 1:
-						f.write(line)
-					else:
-						f.write(f"{line}\n")
-
-			self._director.name_of_file_written_to = file_name
-			self._director.title_for_table_widget = (
-				f"Script saved with {len(script_lines)} commands:\n{file_name}"
-			)
-
+			self._write_file_with_header(file_name, script_lines)
 		except (OSError, UnicodeEncodeError) as e:
 			raise SpacesError(
 				"Save script failed",
 				f"Unable to write script file: {e}",
 			) from e
+		return
 
-		# Display the script contents
-		self._display_saved_script(script_lines, file_name)
+	# ------------------------------------------------------------------------
 
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Output")
+	def _write_file_with_header(
+		self,
+		file_name: str,
+		script_lines: list[str]
+	) -> None:
+		"""Write file with header and script lines."""
+		with Path(file_name).open("w", encoding="utf-8") as f:
+			self._write_header(f)
+			self._write_script_lines(f, script_lines)
+		return
 
-		self._director.record_command_as_successfully_completed()
+	# ------------------------------------------------------------------------
+
+	def _write_header(self, f: object) -> None:
+		"""Write script header to file."""
+		f.write("# Spaces Script\n")
+		f.write(f"# Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+		f.write("# Spaces Version: 2025\n")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_script_lines(self, f: object, script_lines: list[str]) -> None:
+		"""Write script lines to file."""
+		for each_index, each_line in enumerate(script_lines):
+			self._write_single_line(f, each_line, each_index, script_lines)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_single_line(
+		self,
+		f: object,
+		line: str,
+		index: int,
+		script_lines: list[str]
+	) -> None:
+		"""Write a single line to file."""
+		if index == len(script_lines) - 1:
+			f.write(line)
+		else:
+			f.write(f"{line}\n")
 		return
 
 	# ------------------------------------------------------------------------
