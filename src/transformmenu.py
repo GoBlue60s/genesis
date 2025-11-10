@@ -4,18 +4,20 @@ import math
 import numpy as np
 from numpy.linalg import svd
 from numpy import asarray
-import peek  # noqa: F401
+import peek  # noqa: RUF100,F401
 import pandas as pd
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QDialog
-from dialogs import MoveDialog, SelectItemsDialog, SetValueDialog
-from exceptions import MissingInformationError, SelectionError, SpacesError
-from common import Spaces
+from PySide6.QtWidgets import QDialog # noqa: F401
+# from dialogs import MoveDialog, SelectItemsDialog, SetValueDialog
+
 from scipy.spatial import procrustes
+# from rivalry import Rivalry
 
 if TYPE_CHECKING:
+	from common import Spaces
 	from director import Status
+	# from exceptions import SpacesError
 
 # ------------------------------------------------------------------------
 
@@ -45,31 +47,24 @@ class CompareCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self.common.capture_and_push_undo_state(
+			"Compare", "active", {})
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.dependency_checker.detect_limitations_violations()
-		#
-		# Capture state before making changes (for undo)
-		#
-		self.common.capture_and_push_undo_state(
-			"Compare", "active", {}
-		)
-		#
-		# Now perform the comparison/rotation
-		#
+
 		self._director.target_active.disparity = self._compare()
-		self._director.scores_active.scores = pd.DataFrame()
-		self._create_compare_table()
-		self._print_comparison()
-		self._director.common.create_plot_for_tabs("compare")
 		disparity = self._director.target_active.disparity
+		self._create_compare_table()
+		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, common
-		)
+			self._director, common)
+		
+		self._director.common.create_plot_for_tabs("compare")
+		self._print_comparison()
 		self._director.title_for_table_widget = (
 			f"After procrustean rotation active configuration "
 			f"matches target configuration with disparity of "
-			f"{disparity:8.4f}"
-		)
+			f"{disparity:8.4f}")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -175,25 +170,16 @@ class CenterCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		#
-		# Capture state before making changes (for undo)
-		#
 		self.common.capture_and_push_undo_state(
-			"Center", "active", {}
-		)
-		#
-		# Now perform the center operation
-		#
+			"Center", "active", {})
 		self._center_by_subtracting_mean_from_coordinates()
 		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, common
-		)
+			self._director, common)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points"
-		)
+			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -245,31 +231,18 @@ class InvertCommand:
 		self.common.capture_and_push_undo_state(
 			"Invert",
 			"active",
-			params
-		)
-		#
+			params)
 		# Now perform the invert
-		#
 		self._invert(dims_indexes)
+		# self._director.scores_active.scores = pd.DataFrame()
 		rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common
-		)
+			self._director, self.common)
 		self._director.configuration_active.print_active_function()
-		if self._director.common.have_reference_points():
-			rivalry.use_reference_points_to_define_segments(
-				self._director
-			)
-			if (
-				self._director.common.have_scores()
-				and not self._director.common.have_segments()
-			):
-				rivalry.assign_to_segments()
 		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points"
-		)
+			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -290,6 +263,7 @@ class InvertCommand:
 				if each_dim == checked_dim:
 					self._inverter(checked_dim)
 		if self._director.common.have_scores():
+			peek("Scores exist, inverting scores on selected dimensions") # ty: ignore[call-non-callable]
 			cols = []
 			cols.extend(
 				[
@@ -302,6 +276,9 @@ class InvertCommand:
 			_scores[cols] = _scores[cols].mul(-1)
 
 		self._director.scores_active.scores = _scores
+		self._update_score_attributes_for_plotting()
+		self._director.scores_active.print_scores() # ty: ignore[call-non-callable]
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -315,6 +292,33 @@ class InvertCommand:
 			point_coords.iloc[each_point, which_dim] = (
 				point_coords.iloc[each_point, which_dim] * -1
 			)
+
+	# ------------------------------------------------------------------------
+
+	def _update_score_attributes_for_plotting(self) -> None:
+		"""Update score_1 and score_2 attributes after inversion."""
+		if not self._director.common.have_scores():
+			return
+
+		scores_active = self._director.scores_active
+		scores = scores_active.scores
+		dim_names = scores_active.dim_names
+		min_dims_for_first_score = 1
+		min_dims_for_second_score = 2
+
+		# Update score_1 if it exists
+		if len(dim_names) >= min_dims_for_first_score:
+			hor_axis_name = scores_active.hor_axis_name
+			scores_active.score_1 = scores[hor_axis_name]
+			scores_active.score_1_name = dim_names[0]
+
+		# Update score_2 if it exists
+		if len(dim_names) >= min_dims_for_second_score:
+			vert_axis_name = scores_active.vert_axis_name
+			scores_active.score_2 = scores[vert_axis_name]
+			scores_active.score_2_name = dim_names[1]
+
+		return
 
 	# ------------------------------------------------------------------------
 
@@ -332,17 +336,15 @@ class MoveCommand:
 		self._move_title = "Select dimension and value for move"
 		self._move_value_title = "Value to add to all points on this dimension"
 		self._move_options = self._director.configuration_active.dim_names
-
 		ndim = director.configuration_active.ndim
 		npoint = director.configuration_active.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points"
-		)
+			f"Configuration has {ndim} dimensions and {npoint} points")
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -355,20 +357,12 @@ class MoveCommand:
 		self.common.capture_and_push_undo_state(
 			"Move",
 			"active",
-			params
-		)
-		#
+			params)
 		# Now perform the move
-		#
 		self._move(selected_option, decimal_value)
 		self._director.scores_active.scores = pd.DataFrame()
 		rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common
-		)
-		if common.have_reference_points():
-			rivalry.use_reference_points_to_define_segments(
-				self._director
-			)
+			self._director, self.common)
 		self._director.configuration_active.inter_point_distances()
 		self.common.rank_when_similarities_match_configuration()
 		self._director.configuration_active.print_active_function()
@@ -389,22 +383,15 @@ class MoveCommand:
 			)
 		return
 
-	# ------------------------------------------------------------------------
-
-
 # ------------------------------------------------------------------------
 
 
 class RescaleCommand:
 	"""The Rescale command is used to rescale one or more dimensions."""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
-		self.common = common
-		# rivalry = self._director.rivalry
 		self._director.command = "Rescale"
-		# rivalry.bisector.case = "Unknown"
-		# rivalry.bisector.direction = "Unknown"
 		self._rescale_title = "Select dimension to rescale"
 		self._rescale_dims = self._director.configuration_active.dim_names
 		self._rescale_by_title = "Rescale configuration"
@@ -484,43 +471,29 @@ class RotateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Rotate")
 		deg: int = params["degrees"]
-		if deg == 0:
-			raise SpacesError(
-				"Rotate",
-				"Degree to rotate configuration is needed."
-			)
 		self.common.capture_and_push_undo_state(
 			"Rotate",
 			"active",
-			params
-		)
-		#
+			params)
 		# Now perform the rotation
-		#
 		radians = math.radians(float(deg))
 		self._rotate(radians)
 		self._director.scores_active.scores = pd.DataFrame()
 		rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common
-		)
-		if common.have_reference_points():
-			rivalry.use_reference_points_to_define_segments(
-				self._director
-			)
+			self._director, self.common)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_active.ndim
 		npoint = self._director.configuration_active.npoint
 		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points"
-		)
+			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

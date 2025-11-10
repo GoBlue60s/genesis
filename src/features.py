@@ -980,7 +980,7 @@ class ScoresFeature:
 		self.score_2: pd.DataFrame = pd.DataFrame()
 		self.score_1_name: str = ""
 		self.score_2_name: str = ""
-		self.score_color: str = "yellow"
+		self.score_color: str = "black" # had been "yellow"
 		self.hor_axis_name: str = ""
 		self.vert_axis_name: str = ""
 		self.stats_scores: pd.DataFrame = pd.DataFrame()

@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 # from archive import rivalry
 from constants import MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
-from exceptions import DependencyError, UnderDevelopmentError
+from exceptions import DependencyError
 
 from typing import TYPE_CHECKING
 
@@ -843,7 +843,7 @@ class MatplotlibMethods:
 		avg_eval = evaluations_active.avg_eval
 
 		fig, ax = matplotlib_common.\
-			begin_matplotlib_plot_with_title(
+			begin_matplotlib_plot_with_title( # noqa: RUF059
 				"Average Evaluations"
 			)
 		x = avg_eval.index
@@ -1256,7 +1256,7 @@ class MatplotlibMethods:
 	# ------------------------------------------------------------------------
 
 	def request_individuals_plot_for_tabs_using_matplotlib(self) -> None:
-		"""Create an individuals plot for plot and gallery tabs using matplotlib.
+		"""Create an individuals plot - plot and gallery tabs using matplotlib.
 
 		This method generates a scatter plot of individual scores, displays it
 		in the GUI, and sets the focus to the 'Plot' tab.
@@ -1629,7 +1629,7 @@ class MatplotlibMethods:
 			]
 
 			ax.scatter(score_1, score_2, c=point_colors, s=point_size,
-					  alpha=0.7, label='Data Points')
+					alpha=0.7, label='Data Points')
 		else:
 			# Original behavior for distance/similarity clustering
 			# Get coordinate data for ALL points

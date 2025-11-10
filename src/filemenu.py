@@ -57,9 +57,11 @@ class ConfigurationCommand:
 			common.read_configuration_type_file(
 			file_name, "Configuration")
 		self._director.dependency_checker.detect_consistency_issues()
+
 		self._director.configuration_active.inter_point_distances()
 		self.common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
+		
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		ndim = self._director.configuration_active.ndim
@@ -178,7 +180,7 @@ class CreateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None: # noqa: ARG002
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -454,22 +456,20 @@ class DeactivateCommand:
 			available_items.append("Target")
 			descriptions.append(
 				f"ndim={self._director.target_active.ndim}, "
-				f"npoint={self._director.target_active.npoint}"
-			)
+				f"npoint={self._director.target_active.npoint}")
 
 		if len(available_items) == 0:
-			raise SpacesError(
-				"Nothing to deactivate",
-				"There are no active features to deactivate.",
-			)
+			selection_title = "Nothing to deactivate"
+			selection_message = (
+				"There are no active features to deactivate.")
+			raise SpacesError(selection_title, selection_message)
 
 		# Get user selection
 		dialog = GetCheckboxListDialog(
 			self._deactivate_items_title,
 			self._deactivate_items_message,
 			available_items,
-			descriptions,
-		)
+			descriptions)
 
 		if not dialog.exec():
 			msg_title = "Deactivate cancelled"
@@ -479,10 +479,9 @@ class DeactivateCommand:
 		selected_items = dialog.get_selected_items()
 
 		if len(selected_items) == 0:
-			raise SpacesError(
-				"Nothing selected",
-				"No items were selected for deactivation.",
-			)
+			nothing_title = "Nothing selected"
+			nothing_message = "No items were selected for deactivation."
+			raise SpacesError(nothing_title, nothing_message)
 
 		# Capture state for undo BEFORE modifications
 		# Conditional: captures state for each item user selects to deactivate
@@ -597,7 +596,8 @@ class EvaluationsCommand:
 				self.common.event_driven_automatic_restoration()
 				raise ValueError("Evaluations file must have at least 3 items")
 
-			# Create a new EvaluationsFeature object (matching Correlations pattern)
+			# Create a new EvaluationsFeature object
+			# (matching Correlations pattern)
 			from features import EvaluationsFeature  # noqa: PLC0415
 			self._director.evaluations_active = EvaluationsFeature(
 				self._director
@@ -725,7 +725,7 @@ class GroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Grouped data")
@@ -2761,9 +2761,7 @@ class SettingsDisplayCommand:
 		displacement: int = params["displacement"]
 		point_size: int = params["point_size"]
 		self.common.capture_and_push_undo_state(
-			"Settings - display sizing", "active", params
-		)
-
+			"Settings - display sizing", "active", params)
 		# Apply settings - convert percentages to floats
 		common.axis_extra = axis_extra / 100.0
 		common.displacement = displacement / 100.0

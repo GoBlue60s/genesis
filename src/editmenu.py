@@ -503,8 +503,8 @@ class UndoCommand:
 				"core_pcts",
 				"likely_pcts"
 			]:
-				pcts: list[float] = riv.get(pct_type)
-				if pcts and len(pcts) > 0:
+				pcts = riv.get(pct_type)
+				if pcts is not None and len(pcts) > 0:
 					pct_types.append(pct_type.replace("_pcts", ""))
 			if pct_types:
 				pct_list: str = ", ".join(pct_types)

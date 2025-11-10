@@ -1440,7 +1440,7 @@ class Rivalry:
 		self.set_region_attributes_based_on_location_of_rivals(
 			self._director
 		)
-
+		self.use_reference_points_to_define_segments(self._director)
 		return
 
 	# ------------------------------------------------------------------------
@@ -3333,6 +3333,9 @@ class Rivalry:
 		self,
 		director: Status  # noqa: ARG002
 	) -> None:
+		if not self._director.common.have_scores() \
+			or not self._director.common.have_reference_points():
+			return
 		score_1_name = self._director.scores_active.score_1_name
 		score_2_name = self._director.scores_active.score_2_name
 		segment_names = self.segment_names

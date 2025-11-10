@@ -277,11 +277,7 @@ class AlikeCommand:
 			similarities_active.sorted_similarities_w_pairs
 		)
 		value_type: str = similarities_active.value_type
-		# print(f"\nDEBUG -- in _create_alike_table:"
-		# 	f"\n{value_type=}")
 		cut_point: float = self._director.cut_point
-		# print(f"\nDEBUG -- also in _create_alike_table:"
-		# 	f"\n{sorted_similarities_w_pairs=}")
 		# Filter pairs that meet the cutoff criteria
 		alike_pairs: list[tuple] = []
 		for pair in sorted_similarities_w_pairs:
@@ -817,18 +813,18 @@ class ShepardCommand:
 	def execute(
 		self,
 		common: Spaces,  # noqa: ARG002
-		Axis_for_similarities: str,
+		axis_for_similarities: str,
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self.shepard_axis: str = Axis_for_similarities
-		self._director.common.shepard_axis = Axis_for_similarities
+		self.shepard_axis: str = axis_for_similarities
+		self._director.common.shepard_axis = axis_for_similarities
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"Axis_for_similarities": Axis_for_similarities}
+			{"Axis_for_similarities": axis_for_similarities}
 		)
 
 		self._director.common.create_plot_for_tabs("shepard")
@@ -912,14 +908,9 @@ class StressContributionCommand:
 		ranks_df["Absolute_Difference"] = abs(ranks_df["AB_Rank_Difference"])
 		ranks_df["Pct_of_Stress"] = ranks_df["Absolute_Difference"]
 		total_differences: float = np.sum(ranks_df["Pct_of_Stress"])
-		# print(
-		# 	f"\nDEBUG -- in middle of _calculate_and_sort..."
-		# 	f"\n{total_differences=}"
-		# )
 		ranks_df["Pct_of_Stress"] = (
 			ranks_df["Pct_of_Stress"] / total_differences
 		) * 100
-		# print(f"\n\nDEBUG -- nxt...\n{ranks_df['Pct_of_Stress'].sum()=}")
 		sorted_dyads: pd.DataFrame = ranks_df.sort_values(
 			by="Absolute_Difference", ascending=False
 		)
@@ -934,11 +925,6 @@ class StressContributionCommand:
 		]
 
 		self._director.similarities_active.ranks_df = ranks_df
-
-		# print(
-		# 	"\nDEBUG -- at bottom of _calculate_and_sort_stress_contributions"
-		# )
-		# print(f"\nDEBUG -- worst_fit:\n{worst_fit}")
 
 		return worst_fit
 

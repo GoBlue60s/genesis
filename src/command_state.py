@@ -398,22 +398,45 @@ class CommandState:
 			"seg": rivalry.seg.copy()
 			if not rivalry.seg.empty
 			else pd.DataFrame(),
-			"base_pcts": rivalry.base_pcts.copy() if rivalry.base_pcts else [],
+			"base_pcts": (
+			rivalry.base_pcts.copy()
+			if rivalry.base_pcts is not None and len(rivalry.base_pcts) > 0
+			else []
+		),
 			"battleground_pcts": (
 				rivalry.battleground_pcts.copy()
-				if rivalry.battleground_pcts
+				if rivalry.battleground_pcts is not None
+				and len(rivalry.battleground_pcts) > 0
 				else []
 			),
-			"conv_pcts": rivalry.conv_pcts.copy() if rivalry.conv_pcts else [],
-			"core_pcts": rivalry.core_pcts.copy() if rivalry.core_pcts else [],
+			"conv_pcts": (
+				rivalry.conv_pcts.copy()
+				if rivalry.conv_pcts is not None
+				and len(rivalry.conv_pcts) > 0
+				else []
+			),
+			"core_pcts": (
+				rivalry.core_pcts.copy()
+				if rivalry.core_pcts is not None and len(rivalry.core_pcts) > 0
+				else []
+			),
 			"first_pcts": (
-				rivalry.first_pcts.copy() if rivalry.first_pcts else []
+				rivalry.first_pcts.copy()
+				if rivalry.first_pcts is not None
+				and len(rivalry.first_pcts) > 0
+				else []
 			),
 			"likely_pcts": (
-				rivalry.likely_pcts.copy() if rivalry.likely_pcts else []
+				rivalry.likely_pcts.copy()
+				if rivalry.likely_pcts is not None
+				and len(rivalry.likely_pcts) > 0
+				else []
 			),
 			"second_pcts": (
-				rivalry.second_pcts.copy() if rivalry.second_pcts else []
+				rivalry.second_pcts.copy()
+				if rivalry.second_pcts is not None
+				and len(rivalry.second_pcts) > 0
+				else []
 			),
 			"core_radius": rivalry.core_radius,
 			"bisector": capture_line(rivalry.bisector),

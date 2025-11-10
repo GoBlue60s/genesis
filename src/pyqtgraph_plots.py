@@ -654,7 +654,7 @@ class PyQtGraphMethods:
 		point_labels = configuration_active.point_labels
 		rival_a = rivalry.rival_a
 		rival_b = rivalry.rival_b
-		connector = rivalry.connector
+		# connector = rivalry.connector
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:

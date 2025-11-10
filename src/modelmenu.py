@@ -1660,10 +1660,7 @@ class PrincipalComponentsCommand:
 		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
-		print(
-			# f"DEBUG -- at bottom of PrincipalComponentsCommand"
-			f" {self._director.configuration_active.point_coords.to_string(float_format='{:.2f}'.format)}"
-		)
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -2100,8 +2097,6 @@ class UncertaintyCommand:
 			)
 
 			active_out_as_df = pd.DataFrame(active_out)
-			# print(f"\nDEBUG -- in _get_repetition after procrustes plus "
-			# 	f"\nactive_out_as_df: \n{active_out_as_df}")
 			self.solutions = pd.concat(
 				[self.solutions, active_out_as_df], ignore_index=True
 			)
