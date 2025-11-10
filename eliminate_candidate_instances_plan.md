@@ -818,33 +818,39 @@ Decision: **Leave automatic restoration as-is** (no emptiness check needed)
 
 After completing the elimination of candidate instances for all 8 features, the following cleanup tasks should be performed:
 
-### 1. Individuals Feature Completion
-- Complete conversion of `individuals_candidate` to direct `individuals_active` usage
-- Test individuals file loading and validation
+### 1. Individuals Feature Completion - ✓ COMPLETE
+- ✓ Complete conversion of `individuals_candidate` to direct `individuals_active` usage
+- ✓ Test individuals file loading and validation
 
-### 2. File Typing for CSV Files
+### 2. File Typing for CSV Files - ✓ COMPLETE (Commit: e1ec46b)
 Currently CSV files (scores, evaluations, uncertainty, individuals) lack file type identification, which causes the system to accept invalid files that happen to match the CSV format.
 
-**Tasks:**
-- Design file typing approach for CSV files (e.g., first line metadata/comment)
-- Implement file type checking in save commands for:
-  - Scores
-  - Evaluations
-  - Uncertainty
-  - Individuals
-- Implement file type checking in read commands/functions for:
-  - Scores
-  - Evaluations
-  - Uncertainty
-  - Individuals
-- May require new exceptions for file type mismatches
-- Review and update scripts in `scripts/` directory to use new file typing format
+**Implementation Complete:**
+- ✓ Designed file typing approach using comment line (e.g., `# TYPE: SCORES`) as first line
+- ✓ Added `write_csv_with_type_header()` in common.py to write type headers
+- ✓ Added `read_csv_with_type_check()` in common.py to validate type headers
+- ✓ Implemented in save commands:
+  - ✓ Save Scores - writes SCORES type header
+  - ✓ Save Individuals - writes INDIVIDUALS type header
+  - Note: Evaluations are never created within Spaces (only read), so no Save Evaluations command
+  - Note: Uncertainty still needs architectural decisions (deferred to task #3)
+- ✓ Implemented in read commands:
+  - ✓ Open Scores - validates SCORES type header
+  - ✓ Open Evaluations - validates EVALUATIONS type header
+  - ✓ Open Individuals - validates INDIVIDUALS type header
+  - Note: Uncertainty deferred to task #3
+- ✓ Added specific SpacesError exceptions for:
+  - Missing type headers
+  - Type mismatches
+  - File not found
+  - Permission errors
+- ✓ All errors trigger proper restoration flow
 
-**Considerations:**
-- CSV format doesn't have a standard metadata section like other file formats
-- Could use comment line (e.g., `# TYPE: SCORES`) as first line
-- Need to maintain backward compatibility or provide migration path for existing files
-- Should be consistent across all CSV-based features
+**What Was Done:**
+- CSV files now include type metadata as comment line: `# TYPE: SCORES`
+- Pandas `read_csv()` automatically skips comment lines, so format is backward compatible
+- Type validation ensures users can't accidentally load wrong file type
+- Consistent error handling with restoration across all CSV features
 
 ### 3. Uncertainty, Sample Design, Sample Repetitions, and Sample Solutions
 Resolve architectural and implementation decisions for these related features:
@@ -956,8 +962,8 @@ Review parameter names used throughout the codebase for consistency:
 - Decide if standardization is worth the effort
 - If proceeding, create phased plan for parameter renaming
 
-### 9. Review Execute Functions in filemenu.py
-Review all execute methods in filemenu.py to ensure adherence to standards and completeness:
+### 9. Review Execute Functions in all commands starting with filemenu.py
+Review all execute methods in all commands to ensure adherence to standards and completeness:
 
 **Tasks:**
 - Review each execute function in current filemenu.py for adherence to project standards:
@@ -966,6 +972,7 @@ Review all execute methods in filemenu.py to ensure adherence to standards and c
   - Proper use of helper methods for complex logic
   - Consistent error handling patterns
   - Proper documentation and type hints
+  - See Spaces documentation - flow within commands
 - Compare each execute function to its archived version to verify functionality:
   - Locate corresponding archived versions in `archive/` directory
   - Verify all functionality from archived versions is preserved
@@ -974,7 +981,7 @@ Review all execute methods in filemenu.py to ensure adherence to standards and c
 - Identify any commands that need refactoring to meet standards
 - Create list of any missing functionality that needs to be restored
 
-**Commands to review:**
+**Commands in filemenu.py to review:**
 - ConfigurationCommand
 - CreateCommand
 - CorrelationsCommand
@@ -988,4 +995,20 @@ Review all execute methods in filemenu.py to ensure adherence to standards and c
 
 **Goal**: Ensure all execute methods follow consistent patterns and retain full functionality from previous implementations
 
+**Commands whose review has been completed
+
+- Active commands
+  - configuration
+  
+- Passive commands
+  - compare
+
+- Other commands
+
 ---
+### 10. Reduce command/function compexity
+- get_command_parameters
+- capture_and_push_undo_state
+- Deactivate command
+- SaveScript command
+  - read_grouped_data
