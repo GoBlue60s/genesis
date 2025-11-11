@@ -299,7 +299,7 @@ command_dict = MappingProxyType({
 				"getter_type": "focal_item_dialog",
 				"title": "Point comparisons",
 				"label": "Select point to view relationships with others",
-				"items_source": "point_names"
+				"items_source": "configuration_active.point_names"
 			}
 		}
 	},
@@ -373,7 +373,7 @@ command_dict = MappingProxyType({
 			"contest": {
 				"getter_type": "pair_of_points_dialog",
 				"title": "Select a pair of reference points",
-				"items_source": "point_names"
+				"items_source": "configuration_active.point_names"
 			}
 		}
 	},

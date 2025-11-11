@@ -473,17 +473,20 @@ class UndoCommand:
 	) -> None:
 		"""Add rivalry details to restoration list."""
 		if "rivalry" in snapshot:
-			riv: dict = snapshot["rivalry"]
-			rival_a_name: str = riv.get("rival_a_name", "unknown")
-			rival_b_name: str = riv.get("rival_b_name", "unknown")
+			riv = snapshot["rivalry"]
+			rival_a_name: str = (
+				riv.rival_a.name if riv.rival_a.name else "unknown"
+			)
+			rival_b_name: str = (
+				riv.rival_b.name if riv.rival_b.name else "unknown"
+			)
 			details.append(
 				["Reference points", f"{rival_a_name} vs {rival_b_name}"]
 			)
 
 			# Check if segments were restored
-			seg = riv.get("seg")
-			if seg is not None and not seg.empty:
-				nsegments: int = len(seg)
+			if riv.seg is not None and not riv.seg.empty:
+				nsegments: int = len(riv.seg)
 				details.append(["Segments", f"{nsegments} segments restored"])
 
 			# Check if bisector and other lines were restored
@@ -492,7 +495,7 @@ class UndoCommand:
 				for line_name in [
 					"bisector", "east", "west", "connector", "first", "second"
 				]
-				if riv.get(line_name) is not None
+				if getattr(riv, line_name, None) is not None
 			]
 			if lines_restored:
 				line_list: str = ", ".join(lines_restored)
@@ -506,7 +509,7 @@ class UndoCommand:
 				"core_pcts",
 				"likely_pcts"
 			]:
-				pcts = riv.get(pct_type)
+				pcts = getattr(riv, pct_type, None)
 				if pcts is not None and len(pcts) > 0:
 					pct_types.append(pct_type.replace("_pcts", ""))
 			if pct_types:

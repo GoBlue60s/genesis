@@ -934,10 +934,12 @@ Each feature below needs BOTH its capture and restore methods refactored togethe
    - `restore_uncertainty_state()` (command_state.py:657-701) - restores 17 individual attributes
    - **Special consideration**: Has many DataFrame and list attributes. Verify object reassignment works correctly
 
-6. **rivalry**:
-   - `capture_rivalry_state()` (command_state.py:351-449) - captures many individual attributes
-   - `restore_rivalry_state()` (command_state.py:704-751) - restores many individual attributes with complex helper methods
-   - **Special consideration**: Has complex `LineInPlot` objects with helper methods `_restore_line()` and `_create_line_object()`. Need to verify if whole-object approach works or if rivalry has special requirements
+6. **rivalry** - ✓ COMPLETE
+   - ✓ Refactored `capture_rivalry_state()` to store entire object
+   - ✓ Refactored `restore_rivalry_state()` to restore entire object
+   - ✓ Removed helper methods `_restore_line()` and `_create_line_object()` (no longer needed)
+   - ✓ Tested with reference points script (test_rivalry_undo.spc)
+   - **Note**: LineInPlot objects successfully deep-copied using `_copy_feature_state()` pattern
 
 7. **settings**:
    - `capture_settings_state()` (command_state.py:452-466) - captures 3 individual attributes

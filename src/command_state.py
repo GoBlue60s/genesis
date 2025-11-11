@@ -7,7 +7,122 @@ import pandas as pd
 if TYPE_CHECKING:
 	from director import Status
 
-from geometry import Point
+# ----------------------------------------------------------------------------
+
+
+def _handle_basic_types_and_memo(
+	obj: object, memo: dict
+) -> tuple[bool, object] | None:
+	"""Handle basic types and check memo for circular references.
+
+	Returns:
+		Tuple of (found, value) if handled, None otherwise
+	"""
+	# Handle None and immutable basic types
+	if obj is None or isinstance(obj, (int, float, str, bool)):
+		return (True, obj)
+
+	# Check memo to avoid infinite recursion
+	obj_id = id(obj)
+	if obj_id in memo:
+		return (True, memo[obj_id])
+
+	return None
+
+
+# ----------------------------------------------------------------------------
+
+
+def _handle_pandas_objects(obj: object, memo: dict) -> object | None:
+	"""Handle pandas DataFrames and Series.
+
+	Returns:
+		Copied pandas object if handled, None otherwise
+	"""
+	if isinstance(obj, pd.DataFrame):
+		result = obj.copy()
+		memo[id(obj)] = result
+		return result
+
+	if isinstance(obj, pd.Series):
+		result = obj.copy()
+		memo[id(obj)] = result
+		return result
+
+	return None
+
+
+# ----------------------------------------------------------------------------
+
+
+def _handle_container_types(
+	obj: object, memo: dict, copier_func: object
+) -> object | None:
+	"""Handle list, dict, and tuple container types.
+
+	Returns:
+		Copied container if handled, None otherwise
+	"""
+	obj_id = id(obj)
+
+	# Handle lists
+	if isinstance(obj, list):
+		result = []
+		memo[obj_id] = result
+		result.extend(copier_func(item, memo) for item in obj)
+		return result
+
+	# Handle dicts
+	if isinstance(obj, dict):
+		result = {}
+		memo[obj_id] = result
+		for key, value in obj.items():
+			result[key] = copier_func(value, memo)
+		return result
+
+	# Handle tuples
+	if isinstance(obj, tuple):
+		return tuple(copier_func(item, memo) for item in obj)
+
+	return None
+
+
+# ----------------------------------------------------------------------------
+
+
+def _handle_custom_objects(
+	obj: object, memo: dict, copier_func: object
+) -> object:
+	"""Handle custom objects with __dict__.
+
+	Returns:
+		Copied custom object, or standard deepcopy if special handling fails
+	"""
+	# Handle objects with __dict__ (custom classes)
+	if not hasattr(obj, "__dict__"):
+		return copy.deepcopy(obj, memo)
+
+	# Create new instance without calling __init__
+	try:
+		new_obj = object.__new__(type(obj))
+	except TypeError:
+		# If object.__new__() doesn't work, use standard deepcopy
+		return copy.deepcopy(obj, memo)
+
+	memo[id(obj)] = new_obj
+
+	# Copy all attributes, handling _director specially
+	for attr_name, attr_value in obj.__dict__.items():
+		if attr_name == "_director":
+			# Set _director to None instead of copying
+			setattr(new_obj, attr_name, None)
+		else:
+			# Recursively copy other attributes
+			copied_value = copier_func(attr_value, memo)
+			setattr(new_obj, attr_name, copied_value)
+
+	return new_obj
+
 
 # ----------------------------------------------------------------------------
 
@@ -16,8 +131,8 @@ def _copy_feature_state[T](feature_obj: T) -> T:
 	"""Create a deep copy of a feature object, excluding _director.
 
 	Feature objects contain a _director reference to the Status (QMainWindow)
-	instance, which cannot be pickled/deepcopied. This function creates a new
-	instance of the feature class and copies all attributes except _director.
+	instance, which cannot be pickled/deepcopied. This function recursively
+	handles _director references at all nesting levels.
 
 	Args:
 		feature_obj: The feature object to copy
@@ -25,19 +140,34 @@ def _copy_feature_state[T](feature_obj: T) -> T:
 	Returns:
 		A new instance with all attributes copied except _director
 	"""
-	# Create new instance without calling __init__
-	new_obj = object.__new__(type(feature_obj))
 
-	# Copy all attributes except _director
-	for attr_name, attr_value in feature_obj.__dict__.items():
-		if attr_name == "_director":
-			# Store None instead of the director reference
-			setattr(new_obj, attr_name, None)
-		else:
-			# Deep copy all other attributes
-			setattr(new_obj, attr_name, copy.deepcopy(attr_value))
+	def _deepcopy_with_director_handling(obj: object, memo: dict) -> object:
+		"""Custom deepcopy that handles _director at any nesting level."""
 
-	return new_obj
+		# Handle basic types and memo check
+		basic_result = _handle_basic_types_and_memo(obj, memo)
+		if basic_result is not None:
+			return basic_result[1] if basic_result[0] else None
+
+		# Handle pandas objects
+		pandas_result = _handle_pandas_objects(obj, memo)
+		if pandas_result is not None:
+			return pandas_result
+
+		# Handle container types
+		container_result = _handle_container_types(
+			obj, memo, _deepcopy_with_director_handling
+		)
+		if container_result is not None:
+			return container_result
+
+		# Handle custom objects
+		return _handle_custom_objects(
+			obj, memo, _deepcopy_with_director_handling
+		)
+
+	# Start the recursive copy with empty memo
+	return _deepcopy_with_director_handling(feature_obj, {})
 
 # ----------------------------------------------------------------------------
 
@@ -354,101 +484,16 @@ class CommandState:
 	def capture_rivalry_state(self, director: Status) -> None:
 		"""Capture the current rivalry state.
 
+		Stores a deep copy of the entire rivalry object to prevent
+		mutations from affecting the captured state.
+
 		Args:
 			director: The director instance containing rivalry
 		"""
-		rivalry = director.rivalry
-
-		# Helper function to capture LineInPlot attributes
-		def capture_line(line: object) -> dict[str, object] | None:
-			if line is None:
-				return None
-			return {
-				"x": line._x,
-				"y": line._y,
-				"cross_x": line._cross_x,
-				"cross_y": line._cross_y,
-				"slope": line._slope,
-				"color": line._color,
-				"thickness": line._thickness,
-				"style": line._style,
-				"direction": line._direction,
-				"intercept": line._intercept,
-				"case": line._case,
-				"start_x": line._start.x if line._start else None,
-				"start_y": line._start.y if line._start else None,
-				"end_x": line._end.x if line._end else None,
-				"end_y": line._end.y if line._end else None,
-			}
-
-		# Capture connector (includes length attribute)
-		connector_data: dict[str, object] | None = None
-		if rivalry.connector is not None:
-			connector_data = capture_line(rivalry.connector)
-			connector_data["length"] = rivalry.connector.length
-
-		self.state_snapshot["rivalry"] = {
-			"rival_a_index": rivalry.rival_a.index,
-			"rival_a_name": rivalry.rival_a.name,
-			"rival_a_label": rivalry.rival_a.label,
-			"rival_a_x": rivalry.rival_a.x,
-			"rival_a_y": rivalry.rival_a.y,
-			"rival_b_index": rivalry.rival_b.index,
-			"rival_b_name": rivalry.rival_b.name,
-			"rival_b_label": rivalry.rival_b.label,
-			"rival_b_x": rivalry.rival_b.x,
-			"rival_b_y": rivalry.rival_b.y,
-			"seg": rivalry.seg.copy()
-			if not rivalry.seg.empty
-			else pd.DataFrame(),
-			"base_pcts": (
-			rivalry.base_pcts.copy()
-			if rivalry.base_pcts is not None and len(rivalry.base_pcts) > 0
-			else []
-		),
-			"battleground_pcts": (
-				rivalry.battleground_pcts.copy()
-				if rivalry.battleground_pcts is not None
-				and len(rivalry.battleground_pcts) > 0
-				else []
-			),
-			"conv_pcts": (
-				rivalry.conv_pcts.copy()
-				if rivalry.conv_pcts is not None
-				and len(rivalry.conv_pcts) > 0
-				else []
-			),
-			"core_pcts": (
-				rivalry.core_pcts.copy()
-				if rivalry.core_pcts is not None and len(rivalry.core_pcts) > 0
-				else []
-			),
-			"first_pcts": (
-				rivalry.first_pcts.copy()
-				if rivalry.first_pcts is not None
-				and len(rivalry.first_pcts) > 0
-				else []
-			),
-			"likely_pcts": (
-				rivalry.likely_pcts.copy()
-				if rivalry.likely_pcts is not None
-				and len(rivalry.likely_pcts) > 0
-				else []
-			),
-			"second_pcts": (
-				rivalry.second_pcts.copy()
-				if rivalry.second_pcts is not None
-				and len(rivalry.second_pcts) > 0
-				else []
-			),
-			"core_radius": rivalry.core_radius,
-			"bisector": capture_line(rivalry.bisector),
-			"east": capture_line(rivalry.east),
-			"west": capture_line(rivalry.west),
-			"connector": connector_data,
-			"first": capture_line(rivalry.first),
-			"second": capture_line(rivalry.second),
-		}
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["rivalry"] = _copy_feature_state(
+			director.rivalry
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -677,167 +722,19 @@ class CommandState:
 	def restore_rivalry_state(self, director: Status) -> None:
 		"""Restore rivalry state from snapshot.
 
+		Restores by reassigning the entire rivalry object.
+		No attribute copying or regeneration needed.
+
 		Args:
 			director: The director instance to restore state into
 		"""
 		if "rivalry" not in self.state_snapshot:
 			return
 
-		rivalry_snapshot: dict[str, Any] = self.state_snapshot["rivalry"]
-		rivalry = director.rivalry
-
-		rivalry.rival_a.index = rivalry_snapshot["rival_a_index"]
-		rivalry.rival_a.name = rivalry_snapshot["rival_a_name"]
-		rivalry.rival_a.label = rivalry_snapshot["rival_a_label"]
-		rivalry.rival_a.x = rivalry_snapshot["rival_a_x"]
-		rivalry.rival_a.y = rivalry_snapshot["rival_a_y"]
-		rivalry.rival_b.index = rivalry_snapshot["rival_b_index"]
-		rivalry.rival_b.name = rivalry_snapshot["rival_b_name"]
-		rivalry.rival_b.label = rivalry_snapshot["rival_b_label"]
-		rivalry.rival_b.x = rivalry_snapshot["rival_b_x"]
-		rivalry.rival_b.y = rivalry_snapshot["rival_b_y"]
-		rivalry.seg = rivalry_snapshot["seg"].copy()
-		rivalry.base_pcts = rivalry_snapshot["base_pcts"].copy()
-		rivalry.battleground_pcts = (
-			rivalry_snapshot["battleground_pcts"].copy()
-		)
-		rivalry.conv_pcts = rivalry_snapshot["conv_pcts"].copy()
-		rivalry.core_pcts = rivalry_snapshot["core_pcts"].copy()
-		rivalry.first_pcts = rivalry_snapshot["first_pcts"].copy()
-		rivalry.likely_pcts = rivalry_snapshot["likely_pcts"].copy()
-		rivalry.second_pcts = rivalry_snapshot["second_pcts"].copy()
-		rivalry.core_radius = rivalry_snapshot["core_radius"]
-
-		# Restore LineInPlot objects
-		bisector_data = rivalry_snapshot.get("bisector")
-		east_data = rivalry_snapshot.get("east")
-		west_data = rivalry_snapshot.get("west")
-		connector_data = rivalry_snapshot.get("connector")
-		first_data = rivalry_snapshot.get("first")
-		second_data = rivalry_snapshot.get("second")
-		self._restore_line(rivalry, "bisector", bisector_data)
-		self._restore_line(rivalry, "east", east_data)
-		self._restore_line(rivalry, "west", west_data)
-		self._restore_line(rivalry, "connector", connector_data)
-		self._restore_line(rivalry, "first", first_data)
-		self._restore_line(rivalry, "second", second_data)
-
-	# ------------------------------------------------------------------------
-
-	def _restore_line(
-		self,
-		rivalry: object,
-		line_attr_name: str,
-		line_data: dict[str, object] | None
-	) -> None:
-		"""Restore a LineInPlot object from captured data.
-
-		Creates a new line object if needed to restore the saved state.
-
-		Args:
-			rivalry: The rivalry instance to restore the line into
-			line_attr_name: Name of the line attribute to restore
-			line_data: Dictionary containing the line's captured state
-		"""
-		if line_data is None:
-			# If captured state was None, set the line to None
-			setattr(rivalry, line_attr_name, None)
-			return
-
-		line = getattr(rivalry, line_attr_name)
-		if line is None:
-			# Need to create a new line object to restore into
-			line = self._create_line_object(
-				rivalry._director, line_attr_name, line_data
-			)
-			setattr(rivalry, line_attr_name, line)
-
-		# Restore basic attributes
-		line._x = line_data["x"]
-		line._y = line_data["y"]
-		line._cross_x = line_data["cross_x"]
-		line._cross_y = line_data["cross_y"]
-		line._slope = line_data["slope"]
-		line._color = line_data["color"]
-		line._thickness = line_data["thickness"]
-		line._style = line_data["style"]
-		line._direction = line_data["direction"]
-		line._intercept = line_data["intercept"]
-		line._case = line_data["case"]
-
-		# Restore start and end points
-		start_x = line_data["start_x"]
-		start_y = line_data["start_y"]
-		if start_x is not None and start_y is not None:
-			line._start = Point(start_x, start_y)
-		end_x = line_data["end_x"]
-		end_y = line_data["end_y"]
-		if end_x is not None and end_y is not None:
-			line._end = Point(end_x, end_y)
-
-		# Connector has additional length attribute
-		if line_attr_name == "connector":
-			line.length = line_data["length"]
-
-	# ------------------------------------------------------------------------
-
-	def _create_line_object(
-		self,
-		director: Status,
-		line_attr_name: str,
-		line_data: dict[str, object]
-	) -> object:
-		"""Create a line object for restoration.
-
-		Creates a minimal line object using dummy values. The actual
-		state will be overwritten immediately after creation.
-
-		Args:
-			director: The director instance
-			line_attr_name: Name of the line type (bisector, east, etc.)
-			line_data: The saved line data (used to get correct class)
-
-		Returns:
-			A new line object of the appropriate type
-		"""
-		# Import line classes locally to avoid circular imports
-		from rivalry import (  # noqa: PLC0415
-			Bisector,
-			East,
-			West,
-			Connector,
-			First,
-			Second,
-		)
-
-		# Map line attribute names to their classes
-		line_classes = {
-			"bisector": Bisector,
-			"east": East,
-			"west": West,
-			"connector": Connector,
-			"first": First,
-			"second": Second,
-		}
-
-		# Get the appropriate class
-		line_class = line_classes[line_attr_name]
-
-		# Create a dummy point and use saved slope for construction
-		dummy_point: Point = Point(0.0, 0.0)
-		slope = line_data["slope"]
-
-		# Connector requires additional rival_a and rival_b parameters
-		if line_attr_name == "connector":
-			# Use dummy rival points for construction
-			rival_a: Point = Point(0.0, 0.0)
-			rival_b: Point = Point(0.0, 0.0)
-			return line_class(
-				director, dummy_point, slope, rival_a, rival_b
-			)
-
-		# All other line types just need director, point, slope
-		return line_class(director, dummy_point, slope)
+		# Restore the entire object
+		director.rivalry = self.state_snapshot["rivalry"]
+		# Reconnect the director reference (was set to None during copy)
+		director.rivalry._director = director
 
 	# ------------------------------------------------------------------------
 
