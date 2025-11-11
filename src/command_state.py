@@ -280,45 +280,33 @@ class CommandState:
 	def capture_grouped_data_state(self, director: Status) -> None:
 		"""Capture the current grouped data feature state.
 
+		Stores a deep copy of the entire grouped_data_active object to
+		prevent mutations from affecting the captured state.
+
 		Args:
 			director: The director instance containing grouped_data_active
 		"""
-		grouped = director.grouped_data_active
-
-		self.state_snapshot["grouped_data"] = {
-			"group_coords": grouped.group_coords.copy()
-			if not grouped.group_coords.empty
-			else pd.DataFrame(),
-			"group_names": grouped.group_names.copy(),
-			"group_labels": grouped.group_labels.copy(),
-			"dim_names": grouped.dim_names.copy(),
-			"dim_labels": grouped.dim_labels.copy(),
-			"grouping_var": grouped.grouping_var,
-			"ngroups": grouped.ngroups,
-			"ndim": grouped.ndim,
-		}
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["grouped_data"] = _copy_feature_state(
+			director.grouped_data_active
+		)
 
 	# ------------------------------------------------------------------------
 
 	def capture_target_state(self, director: Status) -> None:
 		"""Capture the current target feature state.
 
+		Stores a reference to the entire target_active object.
+		When restored, the object reference is reassigned, eliminating
+		the need for manual attribute lists.
+
 		Args:
 			director: The director instance containing target_active
 		"""
-		target = director.target_active
-
-		self.state_snapshot["target"] = {
-			"point_coords": target.point_coords.copy()
-			if not target.point_coords.empty
-			else pd.DataFrame(),
-			"point_names": target.point_names.copy(),
-			"point_labels": target.point_labels.copy(),
-			"dim_names": target.dim_names.copy(),
-			"dim_labels": target.dim_labels.copy(),
-			"ndim": target.ndim,
-			"npoint": target.npoint,
-		}
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["target"] = _copy_feature_state(
+			director.target_active
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -604,8 +592,8 @@ class CommandState:
 	def restore_grouped_data_state(self, director: Status) -> None:
 		"""Restore grouped data feature state from snapshot.
 
-		Restores grouped data from the captured dictionary snapshot
-		into the grouped_data_active object.
+		Restores by reassigning the entire grouped_data_active object.
+		No attribute copying or regeneration needed.
 
 		Args:
 			director: The director instance to restore state into
@@ -613,26 +601,18 @@ class CommandState:
 		if "grouped_data" not in self.state_snapshot:
 			return
 
-		grouped_snapshot: dict[str, Any] = self.state_snapshot["grouped_data"]
-		grouped = director.grouped_data_active
-
-		# Restore all attributes
-		grouped.group_coords = grouped_snapshot["group_coords"].copy()
-		grouped.group_names = grouped_snapshot["group_names"].copy()
-		grouped.group_labels = grouped_snapshot["group_labels"].copy()
-		grouped.dim_names = grouped_snapshot["dim_names"].copy()
-		grouped.dim_labels = grouped_snapshot["dim_labels"].copy()
-		grouped.grouping_var = grouped_snapshot["grouping_var"]
-		grouped.ngroups = grouped_snapshot["ngroups"]
-		grouped.ndim = grouped_snapshot["ndim"]
+		# Restore the entire object
+		director.grouped_data_active = self.state_snapshot["grouped_data"]
+		# Reconnect the director reference (was set to None during copy)
+		director.grouped_data_active._director = director
 
 	# ------------------------------------------------------------------------
 
 	def restore_target_state(self, director: Status) -> None:
 		"""Restore target feature state from snapshot.
 
-		Restores target data from the captured dictionary snapshot
-		into the target_active object.
+		Restores by reassigning the entire target_active object.
+		No attribute copying or regeneration needed.
 
 		Args:
 			director: The director instance to restore state into
@@ -640,17 +620,10 @@ class CommandState:
 		if "target" not in self.state_snapshot:
 			return
 
-		target_snapshot: dict[str, Any] = self.state_snapshot["target"]
-		target = director.target_active
-
-		# Restore all attributes
-		target.point_coords = target_snapshot["point_coords"].copy()
-		target.point_names = target_snapshot["point_names"].copy()
-		target.point_labels = target_snapshot["point_labels"].copy()
-		target.dim_names = target_snapshot["dim_names"].copy()
-		target.dim_labels = target_snapshot["dim_labels"].copy()
-		target.ndim = target_snapshot["ndim"]
-		target.npoint = target_snapshot["npoint"]
+		# Restore the entire object
+		director.target_active = self.state_snapshot["target"]
+		# Reconnect the director reference (was set to None during copy)
+		director.target_active._director = director
 
 	# ------------------------------------------------------------------------
 

@@ -377,9 +377,9 @@ class UndoCommand:
 	) -> None:
 		"""Add target details to restoration list."""
 		if "target" in snapshot:
-			target: dict = snapshot["target"]
-			ndim: int = target.get("ndim", 0)
-			npoint: int = target.get("npoint", 0)
+			target = snapshot["target"]
+			ndim: int = target.ndim
+			npoint: int = target.npoint
 			details.append(["Target", f"{ndim} dimensions, {npoint} points"])
 
 	# ------------------------------------------------------------------------
@@ -435,10 +435,10 @@ class UndoCommand:
 			details.append(["Scores", text])
 
 		if "grouped_data" in snapshot:
-			grouped: dict = snapshot["grouped_data"]
-			ngroups: int = grouped.get("ngroups", 0)
-			ndim: int = grouped.get("ndim", 0)
-			grouping_var: str = grouped.get("grouping_var", "unknown")
+			grouped = snapshot["grouped_data"]
+			ngroups: int = grouped.ngroups
+			ndim: int = grouped.ndim
+			grouping_var: str = grouped.grouping_var
 			text: str = \
 				f"{ndim} dimensions, {ngroups} groups, var={grouping_var}"
 			details.append(["Grouped data", text])

@@ -286,6 +286,7 @@ class CreateCommand:
 			max_value=100,
 		)
 		if not npoint_dialog.exec():
+			self.common.event_driven_automatic_restoration()
 			raise SpacesError(self._cancel_title, self._cancel_message)
 		return npoint_dialog.get_value()
 
@@ -301,6 +302,7 @@ class CreateCommand:
 			max_value=10,
 		)
 		if not ndim_dialog.exec():
+			self.common.event_driven_automatic_restoration()
 			raise SpacesError(self._cancel_title, self._cancel_message)
 		return ndim_dialog.get_value()
 
@@ -319,6 +321,7 @@ class CreateCommand:
 				f"{self._labels_message}point {each_point + 1}:",
 			)
 			if not label_dialog.exec():
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			point_labels.append(label_dialog.get_value())
 
@@ -327,6 +330,7 @@ class CreateCommand:
 				f"{self._names_message}point {each_point + 1}:",
 			)
 			if not name_dialog.exec():
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			point_names.append(name_dialog.get_value())
 
@@ -347,6 +351,7 @@ class CreateCommand:
 				f"{self._labels_message}dimension {each_dim + 1}:",
 			)
 			if not label_dialog.exec():
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			dim_labels.append(label_dialog.get_value())
 
@@ -355,6 +360,7 @@ class CreateCommand:
 				f"{self._names_message}dimension {each_dim + 1}:",
 			)
 			if not name_dialog.exec():
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			dim_names.append(name_dialog.get_value())
 
@@ -375,6 +381,7 @@ class CreateCommand:
 				ndim,
 			)
 			if not coords_dialog.exec():
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			coords = coords_dialog.get_values()
 			coords_data.append(coords)
@@ -1305,6 +1312,7 @@ class NewGroupedDataCommand:
 	def _validate_dialog_executed(self, dialog: object) -> None:
 		"""Validate that dialog was not cancelled."""
 		if not dialog.exec():
+			self.common.event_driven_automatic_restoration()
 			cancelled_title = "Create cancelled"
 			cancelled_message = "Grouped data creation was cancelled"
 			raise SpacesError(
@@ -1365,6 +1373,7 @@ class NewGroupedDataCommand:
 			group_var_list = dialog.getNames()
 			grouping_var = group_var_list[0]
 		else:
+			self.common.event_driven_automatic_restoration()
 			raise SpacesError(
 				self.missing_grouping_var_error_title,
 				self.missing_grouping_var_error_message,

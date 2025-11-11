@@ -12,7 +12,7 @@ Ranks similarities
 Status
 Ranks differences
 Status
-Shepard Axis_for_similarities="X"
+Shepard axis_for_similarities="X"
 Status
-Shepard Axis_for_similarities="Y"
+Shepard axis_for_similarities="Y"
 Status

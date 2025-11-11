@@ -920,9 +920,10 @@ During the design phase, we rejected Option 1 (listing attributes to capture) as
 
 Each feature below needs BOTH its capture and restore methods refactored together:
 
-3. **grouped_data**:
-   - `capture_grouped_data_state()` (command_state.py:265-285) - captures 8 individual attributes
-   - `restore_grouped_data_state()` (command_state.py:604-628) - restores 8 individual attributes
+3. **grouped_data** - ✓ COMPLETE
+   - ✓ Refactored `capture_grouped_data_state()` to store entire object
+   - ✓ Refactored `restore_grouped_data_state()` to restore entire object
+   - ✓ Tested with grouped data file loading
 
 4. **target**:
    - `capture_target_state()` (command_state.py:288-307) - captures 7 individual attributes
