@@ -500,17 +500,50 @@ class CommandState:
 	def capture_settings_state(self, director: Status) -> None:
 		"""Capture current application settings.
 
+		Stores a simple namespace object containing all settings attributes
+		modified by Settings commands. This follows the whole-object pattern
+		used by other features, adapted for settings which are attributes on
+		director.common rather than a dedicated feature object.
+
+		Settings attributes captured (17 total):
+		- hor_dim, vert_dim (Settings - plane)
+		- presentation_layer (Settings - presentation layer)
+		- show_bisector, show_connector, show_just_reference_points,
+		  show_reference_points (Settings - plot settings)
+		- point_size, axis_extra, displacement (Settings - display sizing)
+		- vector_head_width, vector_width (Settings - vector sizing)
+		- battleground_size, core_tolerance (Settings - segment sizing)
+		- max_cols, width, decimals (Settings - layout options)
+
 		Args:
 			director: The director instance containing settings
 		"""
+		from types import SimpleNamespace
+
 		common = director.common
 
-		self.state_snapshot["settings"] = {
-			"hor_dim": common.hor_dim,
-			"vert_dim": common.vert_dim,
-			"presentation_layer": common.presentation_layer,
-			# Add other settings as needed
-		}
+		# Create a simple object to hold all settings values
+		settings_obj = SimpleNamespace(
+			hor_dim=common.hor_dim,
+			vert_dim=common.vert_dim,
+			presentation_layer=common.presentation_layer,
+			show_bisector=common.show_bisector,
+			show_connector=common.show_connector,
+			show_just_reference_points=common.show_just_reference_points,
+			show_reference_points=common.show_reference_points,
+			point_size=common.point_size,
+			axis_extra=common.axis_extra,
+			displacement=common.displacement,
+			vector_head_width=common.vector_head_width,
+			vector_width=common.vector_width,
+			battleground_size=common.battleground_size,
+			core_tolerance=common.core_tolerance,
+			max_cols=common.max_cols,
+			width=common.width,
+			decimals=common.decimals,
+		)
+
+		self.state_snapshot["settings"] = settings_obj
 
 	# ------------------------------------------------------------------------
 
@@ -741,18 +774,36 @@ class CommandState:
 	def restore_settings_state(self, director: Status) -> None:
 		"""Restore application settings from snapshot.
 
+		Restores all settings attributes from the captured namespace object.
+		This follows the whole-object pattern used by other features.
+
 		Args:
 			director: The director instance to restore settings into
 		"""
 		if "settings" not in self.state_snapshot:
 			return
 
-		settings_snapshot = self.state_snapshot["settings"]
+		settings_obj = self.state_snapshot["settings"]
 		common = director.common
 
-		common.hor_dim = settings_snapshot["hor_dim"]
-		common.vert_dim = settings_snapshot["vert_dim"]
-		common.presentation_layer = settings_snapshot["presentation_layer"]
+		# Restore all settings attributes from the captured object
+		common.hor_dim = settings_obj.hor_dim
+		common.vert_dim = settings_obj.vert_dim
+		common.presentation_layer = settings_obj.presentation_layer
+		common.show_bisector = settings_obj.show_bisector
+		common.show_connector = settings_obj.show_connector
+		common.show_just_reference_points = settings_obj.show_just_reference_points
+		common.show_reference_points = settings_obj.show_reference_points
+		common.point_size = settings_obj.point_size
+		common.axis_extra = settings_obj.axis_extra
+		common.displacement = settings_obj.displacement
+		common.vector_head_width = settings_obj.vector_head_width
+		common.vector_width = settings_obj.vector_width
+		common.battleground_size = settings_obj.battleground_size
+		common.core_tolerance = settings_obj.core_tolerance
+		common.max_cols = settings_obj.max_cols
+		common.width = settings_obj.width
+		common.decimals = settings_obj.decimals
 
 	# ------------------------------------------------------------------------
 

@@ -951,10 +951,10 @@ Each feature below needs BOTH its capture and restore methods refactored togethe
      - Exception handling works correctly (dialog cancellation raises before state capture)
      - Net reduction of 98 lines of code
 
-7. **settings**:
-   - `capture_settings_state()` (command_state.py:452-466) - captures 3 individual attributes
-   - `restore_settings_state()` (command_state.py:871-886) - restores 3 individual attributes
-   - **Special consideration**: This is not a feature object but attributes on `director.common`. May need different approach
+7. **settings** - ✓ COMPLETE
+   - ✓ Refactored `capture_settings_state()` to store entire settings object
+   - ✓ Refactored `restore_settings_state()` to restore entire settings object
+   - **Special consideration**: This is not a feature object but attributes on `director.common`. Used whole-object approach by storing the Settings object itself
 
 **Why this matters:**
 - **Fragility**: When attributes are added/removed from these features, both capture AND restore methods must be manually updated
@@ -1043,25 +1043,27 @@ Currently unclear how toolbar and menu items for Undo and Redo are enabled/disab
 - Test that toolbar and menu items stay synchronized
 - Consider if this needs enhancement or is working correctly
 
-### 6. Scan for Remaining `_candidate` References
+### 6. Scan for Remaining `_candidate` References - ✓ COMPLETE
 Perform comprehensive search for any remaining references to candidate instances:
 
 **Tasks:**
-- Search for all `*_candidate` patterns in codebase
-- Verify each reference has been properly updated or removed
-- Check for:
-  - Direct attribute access (`self._director.configuration_candidate`)
-  - String references in error messages or logs
-  - Comments that still reference old architecture
-  - Documentation that needs updating
+- ✓ Search for all `*_candidate` patterns in codebase
+- ✓ Verify each reference has been properly updated or removed
+- ✓ Check for:
+  - ✓ Direct attribute access (`self._director.configuration_candidate`)
+  - ✓ String references in error messages or logs
+  - ✓ Comments that still reference old architecture
+  - ✓ Documentation that needs updating
 
-**Known locations to check:**
-- `director.py` - Initialization and attributes
-- `dependencies.py` - Consistency checking
-- `filemenu.py` - File loading commands
-- `associationsmenu.py` - Line of sight and other commands
-- `viewmenu.py` - Status and other view commands
-- Any other menu files that might reference features
+**Locations checked:**
+- ✓ `director.py` - All candidate initializations removed
+- ✓ `dependencies.py` - All references updated to use `_active`
+- ✓ `filemenu.py` - All file loading commands updated
+- ✓ `associationsmenu.py` - All references updated
+- ✓ `viewmenu.py` - All references updated
+- ✓ All other menu files verified
+
+**Result:** No remaining `_candidate` references found in codebase (verified via VS Code search)
 
 ### 7. Consider Renaming All `_active` References
 Now that candidate instances are eliminated, the `_active` suffix is no longer necessary (there's no candidate/active distinction).
@@ -1159,6 +1161,123 @@ Review all execute methods in all commands to ensure adherence to standards and 
 - Deactivate command - completed
 - SaveScript command - completed
 - NewGroupedData command - completed
+
+---
+
+### 11. Refactor Passive Commands to Use 3B Functions
+
+**Problem**: Most passive commands (58 of 61) do not use the standard 3B pattern of calling `get_command_parameters()` and `capture_and_push_undo_state()`. This prevents them from working in script mode and excludes them from proper undo/redo support.
+
+**Current Status**: Only 3 passive commands are compliant:
+- Alike (associationsmenu.py:30)
+- Paired (associationsmenu.py:356)
+- Stress contribution (associationsmenu.py:782)
+
+**Special Cases**: 8 respondents menu commands use an older pattern with `push_passive_command_to_undo_stack()`:
+- Base, Battleground, Convertible, Core supporters, First dimension, Likely supporters, Second dimension (all in respondentsmenu.py)
+- Shepard (associationsmenu.py)
+
+These should be reviewed to determine if they should be updated to use the standard 3B pattern or if they have unique requirements that justify the alternative approach.
+
+**Commands Requiring Refactoring** (50 commands):
+
+#### Help Menu (5 commands)
+- About (helpmenu.py:23)
+- Help (helpmenu.py:175)
+- Status (helpmenu.py:201)
+- Verbose (helpmenu.py:580)
+- Terse (helpmenu.py:629)
+
+#### File Menu (22 commands)
+- Print configuration (filemenu.py:1977)
+- Print correlations (filemenu.py:2001)
+- Print evaluations (filemenu.py:2029)
+- Print grouped data (filemenu.py:2053)
+- Print individuals (filemenu.py:2077)
+- Print sample design (filemenu.py:2101)
+- Print sample repetitions (filemenu.py:2125)
+- Print sample solutions (filemenu.py:2149)
+- Print scores (filemenu.py:2176)
+- Print similarities (filemenu.py:2200)
+- Print target (filemenu.py:2229)
+- Save configuration (filemenu.py:2258)
+- Save grouped data (filemenu.py:2313)
+- Save correlations (filemenu.py:2366)
+- Save individuals (filemenu.py:2423)
+- Save sample design (filemenu.py:2485)
+- Save sample repetitions (filemenu.py:2576)
+- Save sample solutions (filemenu.py:2669)
+- Save scores (filemenu.py:2770)
+- Save similarities (filemenu.py:3028)
+- Save target (filemenu.py:3085)
+- Exit (filemenu.py:799)
+
+#### View Menu (16 commands)
+- History (viewmenu.py:27)
+- View configuration (viewmenu.py:140)
+- View correlations (viewmenu.py:171)
+- View custom (viewmenu.py:207)
+- View distances (viewmenu.py:291)
+- View evaluations (viewmenu.py:325)
+- View grouped data (viewmenu.py:352)
+- View individuals (viewmenu.py:383)
+- View point uncertainty (viewmenu.py:413)
+- View sample design (viewmenu.py:486)
+- View sample repetitions (viewmenu.py:545)
+- View sample solutions (viewmenu.py:596)
+- View scores (viewmenu.py:641)
+- View similarities (viewmenu.py:675)
+- View spatial uncertainty (viewmenu.py:712)
+- View target (viewmenu.py:760)
+
+#### Model Menu (2 commands)
+- Directions (modelmenu.py:487)
+- Vectors (modelmenu.py:1798)
+
+#### Associations Menu (6 commands)
+- Distances (associationsmenu.py:249)
+- Ranks differences (associationsmenu.py:505)
+- Ranks distances (associationsmenu.py:534)
+- Ranks similarities (associationsmenu.py:566)
+- Scree (associationsmenu.py:597)
+- Shepard (associationsmenu.py:731) - uses alternative pattern
+
+#### Respondents Menu (3 commands, excluding those using alternative pattern)
+- Contest (respondentsmenu.py:113)
+- Joint (respondentsmenu.py:283)
+- Segments (respondentsmenu.py:891)
+
+**Refactoring Approach**:
+
+For each passive command, follow the same pattern used for Alike, Paired, and Stress contribution:
+
+1. **Add to command_dict** in `dictionaries.py`:
+   - Add `"script_parameters"` list with required parameter names
+   - Add `"interactive_getters"` dict with getter configurations for each parameter
+   - Keep `"state_capture": []` since passive commands don't modify state
+
+2. **Update execute() method**:
+   - Call `params = common.get_command_parameters("CommandName")` early in execute()
+   - Call `common.capture_and_push_undo_state("CommandName", "passive", params)` before any output/plotting
+   - Extract parameter values from params dict instead of direct user interaction
+
+3. **Test thoroughly**:
+   - Verify command works in interactive mode
+   - Create test script (.spc file) to verify script mode works
+   - Verify undo/redo behaves correctly
+
+**Priority Order**:
+1. Start with simpler commands (View commands, Print commands)
+2. Move to commands with parameters (Distances, Ranks commands)
+3. Address special cases (Help menu commands, Exit)
+4. Review and potentially refactor commands using alternative pattern
+
+**Benefits**:
+- All passive commands will work in script mode
+- Consistent pattern across all commands
+- Proper undo/redo support
+- Better testability
+- Easier maintenance
 
 ---
 
