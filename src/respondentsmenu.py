@@ -375,8 +375,7 @@ class ReferencePointsCommand:
 		self.rival_b = rivalry.rival_b
 		self._refs_title: str = "Select a pair of reference points"
 		self._refs_items: list[str] = (
-			self._director.configuration_active.point_names
-		)
+			self._director.configuration_active.point_names)
 
 		return
 
@@ -387,8 +386,6 @@ class ReferencePointsCommand:
 		rivalry = self._director.rivalry
 		point_names = self._director.configuration_active.point_names
 		point_labels = self._director.configuration_active.point_labels
-		rival_a = rivalry.rival_a
-		rival_b = rivalry.rival_b
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -399,8 +396,7 @@ class ReferencePointsCommand:
 		new_rival_a_index = point_names.index(contest[0])
 		new_rival_b_index = point_names.index(contest[1])
 		self.common.capture_and_push_undo_state(
-			"Reference points", "active", params
-		)
+			"Reference points", "active", params)
 
 		# NOW modify the rivalry state with the new reference points
 		rivalry.rival_a.index = new_rival_a_index
@@ -409,28 +405,18 @@ class ReferencePointsCommand:
 		rivalry.rival_b.name = point_names[new_rival_b_index]
 		rivalry.rival_a.label = point_labels[new_rival_a_index]
 		rivalry.rival_b.label = point_labels[new_rival_b_index]
-
-		self._print_reference_points()
-
 		rivalry.create_or_revise_rivalry_attributes(self._director, common)
 		rivalry.use_reference_points_to_define_segments(self._director)
-		# have_scores = self._director.common.have_scores()
-		# have_segments = self._director.common.have_segments()
-		if (
-			self._director.common.have_scores()
-			and not self._director.common.have_segments()
-		):
-			rivalry.assign_to_segments()
+		rivalry.assign_to_segments()
+
+		self._print_reference_points()
 		self._director.common.create_plot_for_tabs("configuration")
 		self._director.title_for_table_widget = (
-			f"Reference points will be {rival_a.name} and {rival_b.name}"
-		)
+			f"Reference points will be {rivalry.rival_a.name} "
+			f"and {rivalry.rival_b.name}")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
-
-	# ------------------------------------------------------------------------
 
 	# ------------------------------------------------------------------------
 

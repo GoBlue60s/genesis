@@ -61,7 +61,7 @@ class PyQtGraphMethods:
 		common = director.common
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
-		similarities_active = director.similarities_active
+		current_command = director.current_command
 
 		if not common.have_alike_coords():
 			title = "No alike points available for plotting"
@@ -71,10 +71,10 @@ class PyQtGraphMethods:
 			)
 			raise DependencyError(title, message)
 
-		a_x_alike = similarities_active.a_x_alike
-		a_y_alike = similarities_active.a_y_alike
-		b_x_alike = similarities_active.b_x_alike
-		b_y_alike = similarities_active.b_y_alike
+		a_x_alike = current_command.a_x_alike
+		a_y_alike = current_command.a_y_alike
+		b_x_alike = current_command.b_x_alike
+		b_y_alike = current_command.b_y_alike
 
 		ndim = configuration_active.ndim
 
@@ -986,6 +986,9 @@ class PyQtGraphMethods:
 
 	def request_cutoff_plot_for_tabs_using_pyqtgraph(self) -> None:
 		director = self._director
+		# Skip plot if executing from script
+		if director.executing_script:
+			return
 		pyqtgraph_common = director.pyqtgraph_common
 		similarities_active = director.similarities_active
 

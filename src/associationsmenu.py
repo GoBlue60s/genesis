@@ -7,17 +7,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from PySide6.QtWidgets import QDialog, QTableWidget
+from PySide6.QtWidgets import QTableWidget
 from sklearn import manifold
 
-from constants import (
-	MINIMUM_ALLOWABLE_CUT_OFF,
-	MAXIMUM_ALLOWABLE_CUT_OFF,
-	DEFAULT_ALLOWABLE_CUT_OFF,
-	IS_CUTOFF_AN_INTEGER,
-)
-
-from dialogs import ChoseOptionDialog, SetValueDialog
+from dialogs import ChoseOptionDialog
 
 from exceptions import (
 	SelectionError,
@@ -47,34 +40,32 @@ class AlikeCommand:
 		self._director = director
 		self._common = common
 		self._director.command = "Alike"
-		self._director.cut_point = 0
-		self._title: str = "Set cutoff level"
-		self._label: str = (
-			"If similarities, minimum similarity  points alike"
-			"\nIf dis/similarities, maximum dis/similarity"
-		)
-		self._min_allowed: float = MINIMUM_ALLOWABLE_CUT_OFF
-		self._max_allowed: float = MAXIMUM_ALLOWABLE_CUT_OFF
-		self._default: float = DEFAULT_ALLOWABLE_CUT_OFF
-		self._an_integer: bool = IS_CUTOFF_AN_INTEGER
+		# Store alike-specific data in command instance, not in feature
+		self.cutoff: float = 0.0
+		self.filtered_pairs: list[list] = []
+		self.a_x_alike: list[float] = []
+		self.a_y_alike: list[float] = []
+		self.b_x_alike: list[float] = []
+		self.b_y_alike: list[float] = []
+		self.alike_df: pd.DataFrame = pd.DataFrame()
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		# self._director.detect_limitations_violations()
 		self._director.common.create_plot_for_tabs("cutoff")
-		self._get_cutoff_from_user()
+		params = common.get_command_parameters("Alike")
+		common.capture_and_push_undo_state("Alike", "passive", params)
+		self.cutoff = params["cutoff"]
 		self._determine_alike_pairs()
 		self._print_alike_pairs()
 		self._create_alike_table()
-		cut_point = self._director.cut_point
-		self._director.title_for_table_widget= (
-			f"Pairs with similarity using cutoff: {cut_point}"
+		self._director.title_for_table_widget = (
+			f"Pairs with similarity using cutoff: {self.cutoff}"
 		)
 		self._director.common.create_plot_for_tabs("alike")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -99,16 +90,15 @@ class AlikeCommand:
 			SelectionError: If no pairs satisfy the cutoff criteria
 		"""
 		self._determine_alike_pairs_initialize_variables()
-		cut_point: float = self._director.cut_point
 		value_type: str = self._director.similarities_active.value_type
 		sorted_pairs: list[list] = (
 			self._director.similarities_active.sorted_similarities_w_pairs
 		)
 		# Use the filter_pairs_by_cutoff method to get qualifying pairs
-		filtered_pairs: list[list] = self._filter_pairs_by_cutoff(
-			sorted_pairs, cut_point, value_type
+		self.filtered_pairs = self._filter_pairs_by_cutoff(
+			sorted_pairs, self.cutoff, value_type
 		)
-		n_similar_pairs: int = len(filtered_pairs)
+		n_similar_pairs: int = len(self.filtered_pairs)
 
 		if n_similar_pairs == 0:
 			raise SelectionError(
@@ -116,9 +106,7 @@ class AlikeCommand:
 			)
 
 		# Store filtered pairs and update coordinate lists for plotting
-		self._director.similarities_active.filtered_pairs = filtered_pairs
-
-		self._update_coordinates_for_similar_pairs(filtered_pairs)
+		self._update_coordinates_for_similar_pairs(self.filtered_pairs)
 		self._director.n_similar_pairs = n_similar_pairs
 
 		return
@@ -151,19 +139,18 @@ class AlikeCommand:
 			filtered_pairs: List of pairs that meet the cutoff criteria
 
 		This method updates the a_x_alike, a_y_alike, b_x_alike, and b_y_alike
-		lists in the similarities_active object for plotting.
+		lists in the command instance for plotting.
 		"""
 		# Get necessary objects
-		similarities_active = self._director.similarities_active
 		point_coords = self._director.configuration_active.point_coords
 		hor_dim = self._director.common.hor_dim
 		vert_dim = self._director.common.vert_dim
 
 		# Clear existing coordinate lists
-		similarities_active.a_x_alike = []
-		similarities_active.a_y_alike = []
-		similarities_active.b_x_alike = []
-		similarities_active.b_y_alike = []
+		self.a_x_alike = []
+		self.a_y_alike = []
+		self.b_x_alike = []
+		self.b_y_alike = []
 
 		# Get item labels and coordinates
 		for pair in filtered_pairs:
@@ -185,16 +172,16 @@ class AlikeCommand:
 			)
 
 			# Add coordinates to the lists
-			similarities_active.a_x_alike.append(
+			self.a_x_alike.append(
 				point_coords.iloc[item_a_index, hor_dim]
 			)
-			similarities_active.a_y_alike.append(
+			self.a_y_alike.append(
 				point_coords.iloc[item_a_index, vert_dim]
 			)
-			similarities_active.b_x_alike.append(
+			self.b_x_alike.append(
 				point_coords.iloc[item_b_index, hor_dim]
 			)
-			similarities_active.b_y_alike.append(
+			self.b_y_alike.append(
 				point_coords.iloc[item_b_index, vert_dim]
 			)
 
@@ -204,61 +191,17 @@ class AlikeCommand:
 
 	def _print_alike_pairs(self) -> None:
 		"""Print information about the cutoff and similar pairs."""
-		most_alike_pairs: list[list] = \
-			self._director.similarities_active.filtered_pairs
-		cut_point: float = self._director.cut_point
-		print("\tCut point: ", cut_point)
+		print("\tCut point: ", self.cutoff)
 		print(f"\tNumber of similar pairs: {self._director.n_similar_pairs}")
 
 		print(f"\n\t {'Item':<15} {'Paired With':<15} {'Similarity'}")
 		print("\t" + "-" * 43)
-		for each_pair in range(len(most_alike_pairs)):
+		for each_pair in range(len(self.filtered_pairs)):
 			print(
-				f"\t {most_alike_pairs[each_pair][3]:<15}"
-				f"{most_alike_pairs[each_pair][4]:<15}"
-				f"{most_alike_pairs[each_pair][0]:>8.3f}"
+				f"\t {self.filtered_pairs[each_pair][3]:<15}"
+				f"{self.filtered_pairs[each_pair][4]:<15}"
+				f"{self.filtered_pairs[each_pair][0]:>8.3f}"
 			)
-
-		return
-
-	# ------------------------------------------------------------------------
-
-	def _get_cutoff_from_user_initialize_variables(self) -> None:
-		self.cutoff_value_needed_title: str = self._director.command
-		self.cutoff_value_needed_message: str = "Value for cutoff needed"
-
-	# ------------------------------------------------------------------------
-
-	def _get_cutoff_from_user(self) -> None:
-		self._get_cutoff_from_user_initialize_variables()
-		# command = self._director.command
-		title: str = self._title
-		label: str = self._label
-		min_allowed: float = self._min_allowed
-		max_allowed: float = self._max_allowed
-		an_integer: bool = self._an_integer
-		default: float = self._default
-		# cut_point = self._director.cut_point
-
-		cutoff_dialog = SetValueDialog(
-			title, label, min_allowed,
-			max_allowed, an_integer, default
-		)
-		result: int = cutoff_dialog.exec()
-		if result == QDialog.Accepted: # ty: ignore[unresolved-attribute]
-			cut_point: int | float = cutoff_dialog.getValue()
-		else:
-			raise SelectionError(
-				self.cutoff_value_needed_title,
-				self.cutoff_value_needed_message,
-			)
-		if cut_point == 0:
-			raise SelectionError(
-				self.cutoff_value_needed_title,
-				self.cutoff_value_needed_message,
-			)
-
-		self._director.cut_point = cut_point
 
 		return
 
@@ -277,7 +220,6 @@ class AlikeCommand:
 			similarities_active.sorted_similarities_w_pairs
 		)
 		value_type: str = similarities_active.value_type
-		cut_point: float = self._director.cut_point
 		# Filter pairs that meet the cutoff criteria
 		alike_pairs: list[tuple] = []
 		for pair in sorted_similarities_w_pairs:
@@ -285,8 +227,8 @@ class AlikeCommand:
 			item_a: str = pair[1]
 			item_b: str = pair[2]
 			# Add pairs that meet cutoff criteria based on value_type
-			if (value_type == "similarities" and similarity > cut_point) or (
-				value_type == "dissimilarities" and similarity < cut_point
+			if (value_type == "similarities" and similarity > self.cutoff) or (
+				value_type == "dissimilarities" and similarity < self.cutoff
 			):
 				alike_pairs.append((item_a, item_b, similarity))
 
@@ -294,15 +236,12 @@ class AlikeCommand:
 		similarity_column_name = (
 			"Similarity" if value_type == "similarities" else "Dis/similarity"
 		)
-		alike_df: pd.DataFrame = pd.DataFrame(
+		self.alike_df = pd.DataFrame(
 			alike_pairs,
 			columns=["Item", "Paired with", similarity_column_name],
 		)
 
-		# Store in the director for later use
-		self._director.similarities_active.alike_df= alike_df
-
-		return alike_df
+		return self.alike_df
 
 	# ------------------------------------------------------------------------
 

@@ -3,6 +3,13 @@ from __future__ import annotations
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
+from constants import (
+	MINIMUM_ALLOWABLE_CUT_OFF,
+	MAXIMUM_ALLOWABLE_CUT_OFF,
+	DEFAULT_ALLOWABLE_CUT_OFF,
+	IS_CUTOFF_AN_INTEGER,
+)
+
 if TYPE_CHECKING:
 	from director import Status
 
@@ -22,7 +29,23 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"Alike": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],  # Passive command - no state changes
+		"script_parameters": ["cutoff"],
+		"interactive_getters": {
+			"cutoff": {
+				"getter_type": "set_value_dialog",
+				"title": "Set cutoff level",
+				"label": (
+					"If similarities, minimum similarity points alike"
+					"\nIf dis/similarities, maximum dis/similarity"
+				),
+				"min_val": MINIMUM_ALLOWABLE_CUT_OFF,
+				"max_val": MAXIMUM_ALLOWABLE_CUT_OFF,
+				"is_integer": IS_CUTOFF_AN_INTEGER,
+				"default": DEFAULT_ALLOWABLE_CUT_OFF
+			}
+		}
 	},
 	"Base": {
 		"type": "passive"
@@ -3035,7 +3058,7 @@ square_table_dict = MappingProxyType({
 
 statistical_table_dict = MappingProxyType({
 	"alike": {
-		"source_attr": "similarities_active",
+		"source_attr": "current_command",
 		"data_attr": "alike_df",
 		"row_headers": [],
 		"column_headers_attr": "data.columns",

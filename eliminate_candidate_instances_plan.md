@@ -924,10 +924,13 @@ Each feature below needs BOTH its capture and restore methods refactored togethe
    - ✓ Refactored `capture_grouped_data_state()` to store entire object
    - ✓ Refactored `restore_grouped_data_state()` to restore entire object
    - ✓ Tested with grouped data file loading
+   - ✓ Committed and pushed (commit f5f72bb)
 
-4. **target**:
-   - `capture_target_state()` (command_state.py:288-307) - captures 7 individual attributes
-   - `restore_target_state()` (command_state.py:631-654) - restores 7 individual attributes
+4. **target** - ✓ COMPLETE
+   - ✓ Refactored `capture_target_state()` to store entire object
+   - ✓ Refactored `restore_target_state()` to restore entire object
+   - ✓ Tested with target feature script
+   - ✓ Committed and pushed (commit f5f72bb)
 
 5. **uncertainty**:
    - `capture_uncertainty_state()` (command_state.py:310-348) - captures 17 individual attributes
@@ -938,8 +941,15 @@ Each feature below needs BOTH its capture and restore methods refactored togethe
    - ✓ Refactored `capture_rivalry_state()` to store entire object
    - ✓ Refactored `restore_rivalry_state()` to restore entire object
    - ✓ Removed helper methods `_restore_line()` and `_create_line_object()` (no longer needed)
+   - ✓ Enhanced `_copy_feature_state()` to handle nested `_director` references
+   - ✓ Added helper functions for recursive deepcopy logic
+   - ✓ Updated `UndoCommand._add_rivalry_details()` to work with object attributes
    - ✓ Tested with reference points script (test_rivalry_undo.spc)
-   - **Note**: LineInPlot objects successfully deep-copied using `_copy_feature_state()` pattern
+   - ✓ Committed and pushed (commit 0810c76)
+   - **Key insights:**
+     - LineInPlot objects successfully deep-copied with nested `_director` handling
+     - Exception handling works correctly (dialog cancellation raises before state capture)
+     - Net reduction of 98 lines of code
 
 7. **settings**:
    - `capture_settings_state()` (command_state.py:452-466) - captures 3 individual attributes
@@ -1131,6 +1141,7 @@ Review all execute methods in all commands to ensure adherence to standards and 
 
 - Active commands
   - configuration
+  - reference points
 
 - Passive commands
   - compare
@@ -1148,5 +1159,47 @@ Review all execute methods in all commands to ensure adherence to standards and 
 - Deactivate command - completed
 - SaveScript command - completed
 - NewGroupedData command - completed
-- GroupedData command - completed
-  - read_grouped_data function - completed
+
+---
+
+## Session Notes and Key Insights
+
+### Session: 2025-11-11 - Rivalry Feature Refactoring
+
+**Work Completed:**
+- Successfully refactored rivalry feature to use whole-object capture/restore pattern
+- Enhanced `_copy_feature_state()` to handle nested objects with `_director` references at any level
+- Added helper functions for recursive deepcopy logic:
+  - `_handle_basic_types_and_memo()` - handles primitives and circular reference detection
+  - `_handle_pandas_objects()` - handles DataFrame and Series copying
+  - `_handle_container_types()` - handles list, dict, tuple with recursive processing
+  - `_handle_custom_objects()` - handles custom classes with `__dict__` attributes
+- Updated `UndoCommand._add_rivalry_details()` to access object attributes instead of dict keys
+- Removed 2 obsolete helper methods: `_restore_line()` and `_create_line_object()`
+
+**Testing:**
+- Test script `test_rivalry_undo.spc` passed successfully
+- Verified undo/redo works correctly with reference points
+- Confirmed LineInPlot objects (Bisector, East, West, Connector, First, Second) are properly deep-copied
+- Verified nested `_director` references are handled at all nesting levels
+
+**Key Technical Insights:**
+
+1. **Nested _director Handling**: The enhanced `_copy_feature_state()` now recursively handles `_director` references in nested objects, not just at the top level. This was critical for LineInPlot objects within rivalry.
+
+2. **Exception Handling Pattern**: Confirmed that dialog cancellation exceptions are raised BEFORE state capture occurs, which is the correct behavior. No state changes needed for exception handling.
+   - Flow: User cancels dialog → exception raised in `_raise_cancelled_error()` → no state captured → no modifications made → nothing to undo
+   - This pattern is safe and correct for the whole-object approach
+
+3. **Object Identity vs Data**: The whole-object approach maintains object identity through undo/redo, which is important for complex nested structures like rivalry with its LineInPlot objects.
+
+4. **Code Reduction**: Net reduction of 98 lines (275 deleted, 177 added) while improving robustness and maintainability.
+
+**Remaining Features to Refactor:**
+- uncertainty (17 attributes) - next priority
+- settings (3 attributes) - special case, not a feature object but attributes on director.common
+
+**Next Steps:**
+- Continue with uncertainty feature refactoring
+- Consider if settings needs special handling due to being director.common attributes
+- Monitor for any edge cases with nested object copying in other features

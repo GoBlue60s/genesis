@@ -1117,10 +1117,7 @@ class SimilaritiesFeature:
 		self.b_item_label: str = ""  # the label of the second item
 		# self.a_item_label: list[int] = []  # replaces self.a_item_label_sims
 		# self.b_item_label: list[int] = []  # replaces self.b_item_label_sims
-		self.a_x_alike: list = []
-		self.a_y_alike: list = []
-		self.b_x_alike: list = []
-		self.b_y_alike: list = []
+		# Alike-related attributes moved to AlikeCommand (command instance)
 		# self.point_size: int = 15		# the size of the dots representing
 		self.ranks_df: pd.DataFrame = pd.DataFrame()
 		# Pandas data frame used for advanced computations on dyads

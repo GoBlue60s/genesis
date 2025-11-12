@@ -9,7 +9,7 @@ from pathlib import Path
 # Third-party imports
 import numpy as np
 import pandas as pd
-import peek  # noqa: F401
+import peek
 
 
 from pyqtgraph.Qt import QtCore
@@ -724,6 +724,8 @@ class Spaces:
 					self._director.matplotlib_plotter,
 					f"request_{plot_type}_plot_for_tabs_using_matplotlib",
 				)()
+				
+		self._director.set_focus_on_tab("Plot")
 
 	# ------------------------------------------------------------------------
 
@@ -857,9 +859,11 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def have_alike_coords(self) -> bool:
+		from associationsmenu import AlikeCommand  # noqa: PLC0415
 		return (
-			self._director.similarities_active is not None
-			and len(self._director.similarities_active.a_x_alike) != 0
+			self._director.current_command is not None
+			and isinstance(self._director.current_command, AlikeCommand)
+			and len(self._director.current_command.a_x_alike) != 0
 		)
 
 	# ------------------------------------------------------------------------
@@ -904,7 +908,8 @@ class Spaces:
 		#
 		return (
 			self._director.similarities_active is not None
-			and len(self._director.similarities_active.ranked_similarities) != 0
+			and len(
+				self._director.similarities_active.ranked_similarities) != 0
 		)
 
 	# ------------------------------------------------------------------------
@@ -951,7 +956,8 @@ class Spaces:
 		#
 		return (
 			self._director.similarities_active is not None
-			and not self._director.similarities_active.differences_of_ranks_as_dataframe.empty
+			and not \
+			self._director.similarities_active.differences_of_ranks_as_dataframe.empty
 		)
 
 	# ------------------------------------------------------------------------
