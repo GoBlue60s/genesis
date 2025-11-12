@@ -643,7 +643,17 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"Stress contribution": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],  # Passive command - no state changes
+		"script_parameters": ["focal_item"],
+		"interactive_getters": {
+			"focal_item": {
+				"getter_type": "focal_item_dialog",
+				"title": "Contribution to stress",
+				"label": "Select point to see stress contribution",
+				"items_source": "configuration_active.point_names"
+			}
+		}
 	},
 	"Target": {
 		"type": "active",
@@ -3207,7 +3217,7 @@ statistical_table_dict = MappingProxyType({
 		"format_spec": ["4.0f", "8.2f"],
 	},
 	"stress_contribution": {
-		"source_attr": "similarities_active",
+		"source_attr": "current_command",
 		"data_attr": "stress_contribution_df",
 		"row_headers": [],
 		"column_headers": ["Item", "Stress Contribution"],

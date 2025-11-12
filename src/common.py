@@ -2491,13 +2491,8 @@ class Spaces:
 		Raises:
 			SpacesError: If param_value not found in items list
 		"""
-		items_source = getter_info.get("items_source", None)
-		if items_source:
-			items = getattr(
-				self._director.configuration_active, items_source
-			)
-		else:
-			items = getter_info.get("items", [])
+		# Use _get_items_from_source to correctly resolve dotted paths
+		items = self._get_items_from_source(getter_info)
 
 		# Convert name to index
 		if param_value in items:
@@ -3381,9 +3376,11 @@ class Spaces:
 			if getter_type == "focal_item_dialog":
 				items_source = getter_info.get("items_source", None)
 				if items_source:
-					items = getattr(
-						self._director.configuration_active, items_source
-					)
+					# Handle dotted attribute paths like "configuration_active.point_names"
+					obj = self._director
+					for attr in items_source.split("."):
+						obj = getattr(obj, attr)
+					items = obj
 				else:
 					items = getter_info.get("items", [])
 

@@ -792,48 +792,31 @@ class StressContributionCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Stress contribution"
-		self._contributions_title: str = "Contribution to stress"
-		self._contributions_label: str = (
-			"Select point to see stress contribution"
-		)
-		self._contributions_items: list[str] = (
-			self._director.configuration_active.point_names
-		)
-		self._worst_fit: pd.DataFrame = pd.DataFrame()
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-			self,
-			common: Spaces) -> None:  # noqa: ARG002
-
+	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		worst_fit = self._calculate_and_sort_stress_contributions()
 		self._print_highest_stress_contributions(worst_fit)
-		# self._director.configuration_active.print_the_configuration()
-		index: int = self.common.get_focal_item_from_user(
-			self._contributions_title,
-			self._contributions_label,
-			self._contributions_items)
-		stress_contribution_df: pd.DataFrame = \
+		params = common.get_command_parameters("Stress contribution")
+		common.capture_and_push_undo_state("Stress contribution", "passive", params)
+		index = params["focal_item"]
+		self.stress_contribution_df = (
 			self._create_stress_contribution_df(index, worst_fit)
-		self._director.similarities_active.stress_contribution_df = \
-			stress_contribution_df
-		point_labels: list[str] = \
-			self._director.configuration_active.point_labels
-		point_to_plot_label: str = point_labels[index]
-		self._point_to_plot_label: str = point_to_plot_label
-		self._point_to_plot_index: int = index
+		)
+		point_labels = self._director.configuration_active.point_labels
+		self._point_to_plot_label = point_labels[index]
+		self._point_to_plot_index = index
 		self._director.common.create_plot_for_tabs("stress_contribution")
-		point_names: list[str] = \
-			self._director.configuration_active.point_names
+		point_names = self._director.configuration_active.point_names
 		self._director.title_for_table_widget = (
-			f"Stress contribution of "
-			f"{point_names[index]}")
+			f"Stress contribution of {point_names[index]}"
+		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -889,14 +872,12 @@ class StressContributionCommand:
 			DataFrame with columns 'Item' and 'Stress Contribution',
 			sorted by contribution
 		"""
-		point_names: list[str] = \
-			self._director.configuration_active.point_names
-		point_labels: list[str] = \
-			self._director.configuration_active.point_labels
-		focal_label: str = point_labels[index]
+		point_names = self._director.configuration_active.point_names
+		point_labels = self._director.configuration_active.point_labels
+		focal_label = point_labels[index]
 
 		contributions = []
-		label_to_name_map: dict[str, str] = self._create_label_to_name_mapping(
+		label_to_name_map = self._create_label_to_name_mapping(
 			point_labels, point_names
 		)
 
@@ -913,8 +894,7 @@ class StressContributionCommand:
 						)
 					)
 
-		result_df: pd.DataFrame = \
-			self._create_and_sort_dataframe(contributions)
+		result_df = self._create_and_sort_dataframe(contributions)
 		self.stress_contribution_df = result_df
 		return result_df
 
