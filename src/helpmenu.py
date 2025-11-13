@@ -27,11 +27,12 @@ class AboutCommand:
 		self._director.command = "About"
 		self._director.acknowledgements = (
 			"Charles Antonelli",
+			"Phillipp Acsany"
 			"Ned Batchelder",
 			"Cornell Belcher",
 			"Alexis Castelanas",
 			"ChatGPT",
-			"Claude",
+			"Claude Code",
 			"Clyde Coombs",
 			"Beautiful Corners",
 			"Meghan Dailey",

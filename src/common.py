@@ -3376,7 +3376,8 @@ class Spaces:
 			if getter_type == "focal_item_dialog":
 				items_source = getter_info.get("items_source", None)
 				if items_source:
-					# Handle dotted attribute paths like "configuration_active.point_names"
+					# Handle dotted attribute paths
+					# like "configuration_active.point_names"
 					obj = self._director
 					for attr in items_source.split("."):
 						obj = getattr(obj, attr)
@@ -3574,7 +3575,8 @@ class Spaces:
 
 		# Capture all required feature states
 		state_capture_list = command_dict[command_name]["state_capture"]
-		self._capture_feature_states(cmd_state, state_capture_list, command_name)
+		self._capture_feature_states(
+			cmd_state, state_capture_list, command_name)
 
 		# Clear redo stack when a new command executes (not undo/redo)
 		if command_name not in ["Undo", "Redo"]:
@@ -3623,7 +3625,8 @@ class Spaces:
 				message = (
 					f"Item '{feature_name}' is not supported by "
 					"capture_and_push_undo_state().\n"
-					f"Supported items: {', '.join(sorted(capture_methods.keys()))}"
+					"Supported items:"
+					f" {', '.join(sorted(capture_methods.keys()))}"
 				)
 				raise SpacesError(title, message)
 
@@ -3643,7 +3646,8 @@ class Spaces:
 		so they appear in saved scripts.
 
 		Note: This should NOT be used for script-type commands (OpenScript,
-		SaveScript, ViewScript), which should be excluded from script generation.
+		SaveScript, ViewScript), which should be excluded from script
+		generation.
 
 		Args:
 			command_name: Name of the passive command
@@ -3867,6 +3871,11 @@ class Spaces:
 		Raises:
 			SpacesError: If file format is invalid or type check fails
 		"""
+		_individuals_error_bad_input_title = "Individuals problem"
+		_individuals_error_bad_input_message = (
+			"Input is inconsistent with an individuals file.\nLook at "
+			"the contents of file and try again."
+		)
 		try:
 			# Read CSV with type validation
 			df = self.read_csv_with_type_check(file_name, "INDIVIDUALS")
@@ -3880,10 +3889,12 @@ class Spaces:
 				individuals_active.item_labels = [
 					name[:4] for name in individuals_active.item_names
 				]
-		except SpacesError:
-			# read_csv_with_type_check already handled restoration
-			raise
-
+		except SpacesError as e:
+			self.event_driven_automatic_restoration()
+			raise SpacesError(
+				_individuals_error_bad_input_title,
+				_individuals_error_bad_input_message,
+			) from e
 		return
 
 	# ------------------------------------------------------------------------
@@ -3950,7 +3961,8 @@ class Spaces:
 					raise SpacesError(
 						"Missing File Type",
 						f"This file does not have a type identifier.\n"
-						f"Expected '# TYPE: {expected_type.upper()}' as first line."
+						f"Expected '# TYPE: {expected_type.upper()}' "
+						"as first line."
 					)
 
 				file_type = first_line.split(":", 1)[1].strip()

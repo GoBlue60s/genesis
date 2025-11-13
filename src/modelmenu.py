@@ -6,6 +6,7 @@ from factor_analyzer import FactorAnalyzer
 import numpy as np
 import pandas as pd
 import peek
+import random
 
 
 from PySide6 import QtCore
@@ -1983,6 +1984,15 @@ class UncertaintyCommand:
 		self.active_out: np.array = np.array([])
 		self.target_adjusted = TargetFeature(self._director)
 
+		# Dialog parameters for sample design
+		self._designer_title = "Set sample parameters for uncertainty analysis"
+		self._designer_items = [
+			"Probability of inclusion",
+			"Number of repetitions",
+		]
+		self._designer_integers = [True, True]
+		self._designer_default_values = [50, 100]
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -1991,25 +2001,33 @@ class UncertaintyCommand:
 		director = self._director
 		common = self.common
 		uncertainty_active = director.uncertainty_active
-		sample_repetitions = uncertainty_active.sample_repetitions
 		nreferent = director.evaluations_active.nreferent
 
 		director.record_command_as_selected_and_in_process()
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
-		#
+
+		# Get user input for sample design parameters
+		params = self.common.get_command_parameters("Uncertainty")
+		probability_of_inclusion: int = params["probability_of_inclusion"]
+		nrepetitions: int = params["nrepetitions"]
+		universe_size = director.evaluations_active.nevaluators
+
 		# Capture state before making changes (for undo)
-		#
-		params = {
-			"sample_repetitions": sample_repetitions.shape[0],  # number of rows
-			"nreferent": nreferent
-		}
 		common.capture_and_push_undo_state(
 			"Uncertainty", "active", params
 		)
-		#
+
+		# Create sample design and repetitions
+		self._create_sample_design(
+			probability_of_inclusion, nrepetitions, universe_size
+		)
+		self._create_sample_repetitions()
+
+		# Get sample_repetitions after creating them
+		sample_repetitions = uncertainty_active.sample_repetitions
+
 		# Now perform uncertainty analysis
-		#
 		self.target_out, self.active_out = self._get_solutions_from_mds(
 			common, sample_repetitions, nreferent
 		)
@@ -2092,7 +2110,7 @@ class UncertaintyCommand:
 
 			target_in = np.array(target_active.point_coords)
 
-			target_out, active_out, disparity = procrustes(
+			target_out, active_out, _disparity = procrustes(
 				target_in, active_in
 			)
 
@@ -2225,6 +2243,110 @@ class UncertaintyCommand:
 			line_of_sight.nitem,
 			line_of_sight.value_type,
 		)
+
+	# ------------------------------------------------------------------------
+
+	def _create_sample_design(
+		self,
+		probability_of_inclusion: int,
+		nrepetitions: int,
+		universe_size: int
+	) -> None:
+		"""Create sample design with random selections for each repetition.
+
+		Args:
+			probability_of_inclusion: Percentage chance of including each case
+			nrepetitions: Number of repetitions to generate
+			universe_size: Total number of cases in the universe
+		"""
+		uncertainty_active = self._director.uncertainty_active
+		sample_design = pd.DataFrame(
+			columns=["RespId", "Repetition", "Selected"]
+		)
+
+		range_of_universe = range(universe_size)
+		range_of_repetitions = range(1, nrepetitions + 1)
+		next_out = 0
+
+		for each_repetition in range_of_repetitions:
+			for each_case in range_of_universe:
+				probability: float = probability_of_inclusion
+				if random.uniform(0.0, 100.0) <= probability:
+					select = True
+				else:
+					select = False
+				sample_design.loc[next_out] = {
+					"RespId": each_case,
+					"Repetition": each_repetition,
+					"Selected": select,
+				}
+				next_out += 1
+
+		sample_design.sort_values(by=["Repetition", "RespId"], inplace=True)
+
+		sample_design_frequencies = (
+			sample_design.groupby(["Repetition", "Selected"])
+			.size()
+			.reset_index(name="Count")
+		)
+		sample_design_frequencies_as_json = sample_design_frequencies.to_json(
+			orient="records"
+		)
+
+		# Store in uncertainty_active
+		uncertainty_active.universe_size = universe_size
+		uncertainty_active.probability_of_inclusion = probability_of_inclusion
+		uncertainty_active.nrepetitions = nrepetitions
+		uncertainty_active.sample_design = sample_design
+		uncertainty_active.sample_design_nrepetitions = nrepetitions
+		uncertainty_active.sample_design_frequencies = (
+			sample_design_frequencies
+		)
+		uncertainty_active.sample_design_frequencies_as_json = (
+			sample_design_frequencies_as_json
+		)
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _create_sample_repetitions(self) -> None:
+		"""Extract selected cases from evaluations based on sample design."""
+		uncertainty_active = self._director.uncertainty_active
+		evaluations = self._director.evaluations_active.evaluations
+		universe_size = uncertainty_active.universe_size
+		nrepetitions = uncertainty_active.nrepetitions
+		sample_design = uncertainty_active.sample_design
+
+		# Validate universe size matches evaluations
+		if universe_size != len(evaluations):
+			raise SpacesError(
+				"Sample size mismatch",
+				f"Size in sample design: {universe_size} "
+				f"does not match size of evaluations: {len(evaluations)}"
+			)
+
+		columns = evaluations.columns
+		sample_repetitions = pd.DataFrame(columns=columns)
+		range_of_repetitions = range(1, nrepetitions + 1)
+
+		next_out = 0
+		for each_repetition in range_of_repetitions:
+			repetition_start = 0 + (each_repetition - 1) * universe_size
+			repetition_end = each_repetition * universe_size
+			range_of_this_repetition = range(repetition_start, repetition_end)
+			restart = (each_repetition - 1) * universe_size
+
+			for each_case in range_of_this_repetition:
+				if sample_design.loc[each_case]["Selected"]:
+					sample_repetitions.loc[next_out] = evaluations.loc[
+						each_case - 0 - restart
+					]
+					next_out += 1
+
+		uncertainty_active.sample_repetitions = sample_repetitions
+
+		return
 
 	# ------------------------------------------------------------------------
 

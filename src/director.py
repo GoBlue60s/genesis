@@ -924,9 +924,7 @@ class Status(QMainWindow):
 		self.commands_used.append(self.command)
 		self.command_exit_code.append(-1)  # -1  command is in process
 		print(f"\nStarting {self.command} command: \n")
-		#
-		# Create previous for undo
-		#
+
 		active_commands = (
 			"Center", "Cluster", "Compare", "Configuration", "Correlations",
 			"Deactivate", "Evaluations", "Factor analysis",
@@ -1285,7 +1283,11 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
-	def push_undo_state(self, cmd_state: CommandState) -> None:
+	def push_undo_state(
+		self,
+		cmd_state: CommandState,
+		preserve_redo_stack: bool = False
+	) -> None:
 		"""Push a CommandState onto the undo stack.
 
 		When a new active command executes (not Undo/Redo), clear the redo
@@ -1294,6 +1296,7 @@ class Status(QMainWindow):
 
 		Args:
 			cmd_state: The CommandState to push onto the stack
+			preserve_redo_stack: If True, preserve redo stack (used by Redo)
 		"""
 		self.undo_stack.append(cmd_state)
 		self.undo_stack_source.append(cmd_state.command_name)
@@ -1304,8 +1307,10 @@ class Status(QMainWindow):
 		# Clear redo stack when a new ACTIVE command executes
 		# (not Undo/Redo/passive). This matches Microsoft Word behavior.
 		# Passive commands are read-only and shouldn't affect undo/redo.
+		# Don't clear if preserve_redo_stack is True (called from Redo).
 		if (
-			cmd_state.command_name not in ["Undo", "Redo"]
+			not preserve_redo_stack
+			and cmd_state.command_name not in ["Undo", "Redo"]
 			and cmd_state.command_type == "active"
 		):
 			self.clear_redo_stack()

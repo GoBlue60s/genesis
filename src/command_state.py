@@ -443,41 +443,15 @@ class CommandState:
 	def capture_uncertainty_state(self, director: Status) -> None:
 		"""Capture the current uncertainty feature state.
 
+		Stores a deep copy of the entire uncertainty object to prevent
+		mutations from affecting the captured state.
+
 		Args:
 			director: The director instance containing uncertainty_active
 		"""
-		uncertainty = director.uncertainty_active
-
-		self.state_snapshot["uncertainty"] = {
-			"universe_size": uncertainty.universe_size,
-			"nrepetitions": uncertainty.nrepetitions,
-			"probability_of_inclusion": uncertainty.probability_of_inclusion,
-			"sample_design": uncertainty.sample_design.copy()
-			if not uncertainty.sample_design.empty
-			else pd.DataFrame(),
-			"sample_design_frequencies": (
-				uncertainty.sample_design_frequencies.copy()
-				if not uncertainty.sample_design_frequencies.empty
-				else pd.DataFrame()
-			),
-			"sample_repetitions": uncertainty.sample_repetitions.copy()
-			if not uncertainty.sample_repetitions.empty
-			else pd.DataFrame(),
-			"solutions_stress_df": uncertainty.solutions_stress_df.copy()
-			if not uncertainty.solutions_stress_df.empty
-			else pd.DataFrame(),
-			"sample_solutions": uncertainty.sample_solutions.copy()
-			if not uncertainty.sample_solutions.empty
-			else pd.DataFrame(),
-			"ndim": uncertainty.ndim,
-			"npoint": uncertainty.npoint,
-			"npoints": uncertainty.npoints,
-			"nsolutions": uncertainty.nsolutions,
-			"dim_names": uncertainty.dim_names.copy(),
-			"dim_labels": uncertainty.dim_labels.copy(),
-			"point_names": uncertainty.point_names.copy(),
-			"point_labels": uncertainty.point_labels.copy(),
-		}
+		self.state_snapshot["uncertainty"] = _copy_feature_state(
+			director.uncertainty_active
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -708,8 +682,7 @@ class CommandState:
 	def restore_uncertainty_state(self, director: Status) -> None:
 		"""Restore uncertainty feature state from snapshot.
 
-		Restores uncertainty data from the captured dictionary snapshot
-		into the uncertainty_active object.
+		Restores the entire uncertainty object from the captured snapshot.
 
 		Args:
 			director: The director instance to restore state into
@@ -717,38 +690,10 @@ class CommandState:
 		if "uncertainty" not in self.state_snapshot:
 			return
 
-		unc_snapshot: dict[str, Any] = self.state_snapshot["uncertainty"]
-		uncertainty = director.uncertainty_active
-
-		# Restore scalar attributes
-		uncertainty.universe_size = unc_snapshot["universe_size"]
-		uncertainty.nrepetitions = unc_snapshot["nrepetitions"]
-		uncertainty.probability_of_inclusion = (
-			unc_snapshot["probability_of_inclusion"]
-		)
-		uncertainty.ndim = unc_snapshot["ndim"]
-		uncertainty.npoint = unc_snapshot["npoint"]
-		uncertainty.npoints = unc_snapshot["npoints"]
-		uncertainty.nsolutions = unc_snapshot["nsolutions"]
-
-		# Restore dataframes
-		uncertainty.sample_design = unc_snapshot["sample_design"].copy()
-		uncertainty.sample_design_frequencies = (
-			unc_snapshot["sample_design_frequencies"].copy()
-		)
-		uncertainty.sample_repetitions = (
-			unc_snapshot["sample_repetitions"].copy()
-		)
-		uncertainty.solutions_stress_df = (
-			unc_snapshot["solutions_stress_df"].copy()
-		)
-		uncertainty.sample_solutions = unc_snapshot["sample_solutions"].copy()
-
-		# Restore arrays
-		uncertainty.dim_names = unc_snapshot["dim_names"].copy()
-		uncertainty.dim_labels = unc_snapshot["dim_labels"].copy()
-		uncertainty.point_names = unc_snapshot["point_names"].copy()
-		uncertainty.point_labels = unc_snapshot["point_labels"].copy()
+		# Restore the entire object
+		director.uncertainty_active = self.state_snapshot["uncertainty"]
+		# Reconnect the director reference (was set to None during copy)
+		director.uncertainty_active._director = director
 
 	# ------------------------------------------------------------------------
 
@@ -792,7 +737,8 @@ class CommandState:
 		common.presentation_layer = settings_obj.presentation_layer
 		common.show_bisector = settings_obj.show_bisector
 		common.show_connector = settings_obj.show_connector
-		common.show_just_reference_points = settings_obj.show_just_reference_points
+		common.show_just_reference_points = \
+			settings_obj.show_just_reference_points
 		common.show_reference_points = settings_obj.show_reference_points
 		common.point_size = settings_obj.point_size
 		common.axis_extra = settings_obj.axis_extra

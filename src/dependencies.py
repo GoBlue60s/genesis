@@ -176,12 +176,10 @@ class DependencyChecking:
 			"print sample design",
 			"sample repetitions",
 			"view sample design",
-			"uncertainty",
 		}
 		self.commands_that_need_sample_repetitions: set = {
 			"print sample repetitions",
 			"save sample repetitions",
-			"uncertainty",
 			"view sample repetitions",
 		}
 		self.commands_that_need_sample_solutions: set = {

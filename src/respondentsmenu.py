@@ -435,7 +435,11 @@ class ReferencePointsCommand:
 
 class SampleDesignerCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
-		"""The Sample designer command is used to create a sample design."""
+		"""The Sample designer command is used to create a sample design.
+
+		DEPRECATED: This command is deprecated and may be removed in a future
+		version. The Uncertainty command now handles sample design internally.
+		"""
 		self._director = director
 		self.common = common
 		self._director.command = "Sample designer"
@@ -600,7 +604,12 @@ class SampleDesignerCommand:
 class SampleRepetitionsCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
 		"""The Sample repetitions command is used to create
-		sample repetitions."""
+		sample repetitions.
+
+		DEPRECATED: This command is deprecated and may be removed in a future
+		version. The Uncertainty command now handles sample repetitions
+		internally.
+		"""
 		self._director = director
 		self.common = common
 		self._director.command = "Sample repetitions"

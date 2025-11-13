@@ -932,10 +932,15 @@ Each feature below needs BOTH its capture and restore methods refactored togethe
    - ✓ Tested with target feature script
    - ✓ Committed and pushed (commit f5f72bb)
 
-5. **uncertainty**:
-   - `capture_uncertainty_state()` (command_state.py:310-348) - captures 17 individual attributes
-   - `restore_uncertainty_state()` (command_state.py:657-701) - restores 17 individual attributes
-   - **Special consideration**: Has many DataFrame and list attributes. Verify object reassignment works correctly
+5. **uncertainty** - ✓ COMPLETE
+   - ✓ Refactored `capture_uncertainty_state()` to store entire object
+   - ✓ Refactored `restore_uncertainty_state()` to restore entire object
+   - ✓ Made uncertainty command independent of Sample Designer and Sample Repetitions commands
+   - ✓ Integrated sample design and repetitions logic directly into UncertaintyCommand
+   - ✓ Added interactive dialog for sample parameters (probability of inclusion, number of repetitions)
+   - ✓ Updated command_dict metadata for parameter handling
+   - ✓ Tested both interactively and with scripts
+   - ✓ Marked Sample Designer, Sample Repetitions, and related Save/Open commands as deprecated
 
 6. **rivalry** - ✓ COMPLETE
    - ✓ Refactored `capture_rivalry_state()` to store entire object

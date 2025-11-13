@@ -543,7 +543,7 @@ command_dict = MappingProxyType({
 	},
 	"Settings - plane": {
 		"type": "active",
-		"state_capture": ["settings"],
+		"state_capture": ["configuration", "settings"],
 		"script_parameters": ["horizontal", "vertical"],
 		"interactive_getters": {
 			"horizontal": {
@@ -677,7 +677,20 @@ command_dict = MappingProxyType({
 	"Uncertainty": {
 		"type": "active",
 		"state_capture": ["uncertainty"],
-		"script_parameters": []
+		"script_parameters": ["probability_of_inclusion", "nrepetitions"],
+		"interactive_getters": {
+			"sample_parameters": {
+				"getter_type": "modify_values_dialog",
+				"title": "Set sample parameters for uncertainty analysis",
+				"labels": [
+					"Probability of inclusion",
+					"Number of repetitions"
+				],
+				"is_integer": True,
+				"defaults": [50, 100],
+				"boolean_params": ["probability_of_inclusion", "nrepetitions"]
+			}
+		}
 	},
 	"Undo": {
 		"type": "active",
@@ -1994,8 +2007,8 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 		"Settings - plot settings": [SettingsPlotCommand, "unique", None],
 		"Settings - presentation layer": [
 			SettingsPresentationLayerCommand,
-			"shared",
-			parent.display_a_line,
+			"unique",
+			None,
 		],
 		"Settings - segment sizing": [
 			SettingsSegmentCommand,

@@ -804,7 +804,8 @@ class StressContributionCommand:
 		worst_fit = self._calculate_and_sort_stress_contributions()
 		self._print_highest_stress_contributions(worst_fit)
 		params = common.get_command_parameters("Stress contribution")
-		common.capture_and_push_undo_state("Stress contribution", "passive", params)
+		common.capture_and_push_undo_state(
+			"Stress contribution", "passive", params)
 		index = params["focal_item"]
 		self.stress_contribution_df = (
 			self._create_stress_contribution_df(index, worst_fit)

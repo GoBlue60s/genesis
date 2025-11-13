@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import pandas as pd
+import peek
 
 if TYPE_CHECKING:
 	from common import Spaces
@@ -1056,11 +1057,7 @@ class IndividualsCommand:
 		self._director.command = "Individuals"
 		self._individuals_caption = "Open individuals"
 		self._individuals_filter = "*.csv"
-		self._individuals_error_bad_input_title = "Individuals problem"
-		self._individuals_error_bad_input_message = (
-			"Input is inconsistent with an individuals file.\nLook at "
-			"the contents of file and try again."
-		)
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -1071,27 +1068,14 @@ class IndividualsCommand:
 		params = self.common.get_command_parameters("Individuals")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
-			"Individuals", "active", params
-		)
+			"Individuals", "active", params)
+		common.read_individuals_file(
+				file_name, self._director.individuals_active)
 
-		# Error handling
-		# If not an individuals file, then return an error message
-		try:
-			common.read_individuals_file(
-				file_name, self._director.individuals_active
-			)
-		except SpacesError as e:
-			# read_individuals_file already handled restoration via
-			# read_csv_with_type_check
-			raise SpacesError(
-				self._individuals_error_bad_input_title,
-				self._individuals_error_bad_input_message,
-			) from e
 		self._director.individuals_active.print_individuals()
 		self._director.title_for_table_widget = (
 			f"Individuals data has been read "
-			f"({len(self._director.individuals_active.ind_vars)} rows)"
-		)
+			f"({len(self._director.individuals_active.ind_vars)} rows)")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1386,7 +1370,11 @@ class NewGroupedDataCommand:
 
 
 class OpenSampleDesignCommand:
-	"""The Open sample design command is used to read a sample design file."""
+	"""The Open sample design command is used to read a sample design file.
+
+	DEPRECATED: This command is deprecated and may be removed in a future
+	version. The Uncertainty command now handles sample design internally.
+	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -1436,7 +1424,11 @@ class OpenSampleDesignCommand:
 
 
 class OpenSampleRepetitionsCommand:
-	"""The Open sample repetitions command reads sample repetitions."""
+	"""The Open sample repetitions command reads sample repetitions.
+
+	DEPRECATED: This command is deprecated and may be removed in a future
+	version. The Uncertainty command now handles sample repetitions internally.
+	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
@@ -2485,6 +2477,9 @@ class SaveIndividualsCommand:
 class SaveSampleDesignCommand:
 	"""The Save sample design command is used to write a copy of the active
 	sample design to a file.
+
+	DEPRECATED: This command is deprecated and may be removed in a future
+	version. The Uncertainty command now handles sample design internally.
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
@@ -2576,6 +2571,9 @@ class SaveSampleDesignCommand:
 class SaveSampleRepetitionsCommand:
 	"""The Save sample repetitions command writes active repetitions
 	to a file.
+
+	DEPRECATED: This command is deprecated and may be removed in a future
+	version. The Uncertainty command now handles sample repetitions internally.
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
@@ -3165,11 +3163,13 @@ class SettingsDisplayCommand:
 		point_size: int = params["point_size"]
 		self.common.capture_and_push_undo_state(
 			"Settings - display sizing", "active", params)
+		
 		# Apply settings - convert percentages to floats
 		common.axis_extra = axis_extra / 100.0
 		common.displacement = displacement / 100.0
 		common.point_size = point_size
 
+		common.print_display_settings()
 		self._director.title_for_table_widget = (
 			"Display sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -3191,7 +3191,6 @@ class SettingsDisplayCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(150)
 		settings_text = (
-			f"{self._director.title_for_table_widget}\n\n"
 			f"Axis extra margin: {self.common.axis_extra * 100:.1f}%\n"
 			f"Label displacement: {self.common.displacement * 100:.1f}%\n"
 			f"Point size: {self.common.point_size}"
@@ -3228,17 +3227,17 @@ class SettingsLayoutCommand:
 		width: int = params["width"]
 		decimals: int = params["decimals"]
 		self.common.capture_and_push_undo_state(
-			"Settings - layout options", "active", params
-		)
+			"Settings - layout options", "active", params)
 
 		# Apply settings
 		common.max_cols = max_cols
 		common.width = width
 		common.decimals = decimals
 
+		common.print_layout_options_settings()
 		self._director.title_for_table_widget = "Layout options updated"
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Output")
+		self.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -3256,7 +3255,7 @@ class SettingsLayoutCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(150)
 		settings_text = (
-			f"{self._director.title_for_table_widget}\n\n"
+			# f"{self._director.title_for_table_widget}\n\n"
 			f"Maximum columns: {self.common.max_cols}\n"
 			f"Column width: {self.common.width}\n"
 			f"Decimal places: {self.common.decimals}"
@@ -3290,35 +3289,10 @@ class SettingsPlaneCommand:
 		params = self.common.get_command_parameters("Settings - plane")
 		horizontal: str = params["horizontal"]
 		vertical: str = params["vertical"]
+		(hor_dim, vert_dim) = \
+			self.detect_acceptability_of_plane_parameters(horizontal, vertical)
 		self.common.capture_and_push_undo_state(
-			"Settings - plane", "active", params
-		)
-
-		# Get dimension names from active configuration
-		dim_names = self._director.configuration_active.dim_names
-
-		# Find the dimension indices
-		try:
-			hor_dim = dim_names.index(horizontal)
-			vert_dim = dim_names.index(vertical)
-		except ValueError as e:
-			invalid_dimension_title = "Invalid dimension name"
-			invalid_dimension_message = (
-				f"Dimension names must be from {dim_names}, "
-				f"got horizontal='{horizontal}', vertical='{vertical}'"
-			)
-			raise SpacesError(invalid_dimension_title,
-				invalid_dimension_message,
-			) from e
-
-		# Validate that horizontal and vertical are different
-		if hor_dim == vert_dim:
-			invalid_pland_title = "Invalid plane parameters"
-			invalid_plane_message = (
-				"Horizontal and vertical axes must be different dimensions"
-			)
-			raise SpacesError(invalid_pland_title, invalid_plane_message)
-
+			"Settings - plane", "active", params)
 
 		# Apply settings
 		common.hor_dim = hor_dim
@@ -3326,9 +3300,10 @@ class SettingsPlaneCommand:
 		self._director.configuration_active.hor_axis_name = horizontal
 		self._director.configuration_active.vert_axis_name = vertical
 
+		common.print_plane_settings()
+		self.common.create_plot_for_tabs("configuration")
 		self._director.title_for_table_widget = "Plane settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -3346,7 +3321,7 @@ class SettingsPlaneCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(120)
 		settings_text = (
-			f"{self._director.title_for_table_widget}\n\n"
+			# f"{self._director.title_for_table_widget}\n\n"
 			f"Horizontal axis: "
 			f"{self._director.configuration_active.hor_axis_name}\n"
 			f"Vertical axis: "
@@ -3356,6 +3331,48 @@ class SettingsPlaneCommand:
 		return widget
 
 	# ------------------------------------------------------------------------
+
+	def detect_acceptability_of_plane_parameters(
+		self, horizontal: str, vertical: str) -> tuple[int, int]:
+
+		"""Detect if plane parameters are acceptable."""
+		
+		hor_dim: int | None = None
+		vert_dim: int | None = None
+		dim_names = self._director.configuration_active.dim_names
+
+		if not horizontal or not vertical:
+			missing_parameter_title = "Missing plane parameter"
+			missing_parameter_message = (
+				"Both horizontal and vertical parameters must be provided")
+			# self._director.common.event_driven_automatic_restoration()
+			raise SpacesError(
+				missing_parameter_title, missing_parameter_message)
+	
+		try:
+			hor_dim = dim_names.index(horizontal)
+			vert_dim = dim_names.index(vertical)
+		except ValueError as e:
+			invalid_dimension_title = "Invalid dimension name"
+			invalid_dimension_message = (
+				f"Dimension names must be from {dim_names}, "
+				f"got horizontal='{horizontal}', vertical='{vertical}'"
+			)
+			# self._director.common.event_driven_automatic_restoration()
+			raise SpacesError(invalid_dimension_title,
+				invalid_dimension_message,
+			) from e
+
+		# Validate that horizontal and vertical are different
+		if hor_dim == vert_dim:
+			invalid_pland_title = "Invalid plane parameters"
+			invalid_plane_message = (
+				"Horizontal and vertical axes must be different dimensions")
+			# self._director.common.event_driven_automatic_restoration()
+			raise SpacesError(invalid_pland_title, invalid_plane_message)
+		return [hor_dim, vert_dim]
+
+#----------------------------------------------------------------------------
 
 
 class SettingsPlotCommand:
@@ -3385,19 +3402,18 @@ class SettingsPlotCommand:
 		reference_points: bool = params["reference_points"]
 		just_reference_points: bool = params["just_reference_points"]
 		self.common.capture_and_push_undo_state(
-			"Settings - plot settings", "active", params
-		)
+			"Settings - plot settings", "active", params)
 
 		# Apply settings
 		common.show_bisector = bisector
 		common.show_connector = connector
 		common.show_reference_points = reference_points
 		common.show_just_reference_points = just_reference_points
-
+		
+		common.print_plot_settings()
 		self._director.title_for_table_widget = "Plot settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
-		common.print_plot_settings()
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -3413,8 +3429,9 @@ class SettingsPlotCommand:
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)
+		widget.setMinimumHeight(150)
 		settings_text = (
-			f"{self._director.title_for_table_widget}\n\n"
+			# f"{self._director.title_for_table_widget}\n\n"
 			f"Show bisector if available: "
 			f"{self.common.show_bisector}\n"
 			f"Show connector if available: "
@@ -3448,15 +3465,14 @@ class SettingsPresentationLayerCommand:
 			"Settings - presentation layer", layer=layer)
 		layer: str = params["layer"]
 		self.common.capture_and_push_undo_state(
-			"Settings - presentation layer", "active", params
-		)
+			"Settings - presentation layer", "active", params)
 
 		# Apply presentation layer setting
 		self._director.common.presentation_layer = layer
 
+		common.print_presentation_layer_settings()
 		self._director.title_for_table_widget = (
-			f"Presentation layer set to: {layer}"
-		)
+			"Presentation layer updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3475,7 +3491,8 @@ class SettingsPresentationLayerCommand:
 		widget = QTextEdit()
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(100)
-		settings_text = f"{self._director.title_for_table_widget}"
+		settings_text = (
+			f"Layer: {self._director.common.presentation_layer}")
 		widget.setPlainText(settings_text)
 		return widget
 
@@ -3506,18 +3523,17 @@ class SettingsSegmentCommand:
 		battleground: int = params["battleground"]
 		core: int = params["core"]
 		self.common.capture_and_push_undo_state(
-			"Settings - segment sizing", "active", params
-		)
+			"Settings - segment sizing", "active", params)
 
 		# Apply settings (convert from 0-100 to 0.0-1.0)
 		common.battleground_size = battleground / 100.0
 		common.core_tolerance = core / 100.0
 
+		common.print_segment_sizing_settings()
 		self._director.title_for_table_widget = (
 			"Segment sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
-		common.print_segment_sizing_settings()
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -3533,8 +3549,9 @@ class SettingsSegmentCommand:
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)
+		widget.setMinimumHeight(120)
 		settings_text = (
-			f"{self._director.title_for_table_widget}\n\n"
+			# f"{self._director.title_for_table_widget}\n\n"
 			f"Battleground size: {self.common.battleground_size}\n"
 			f"Core tolerance: {self.common.core_tolerance}"
 		)
@@ -3567,18 +3584,16 @@ class SettingsVectorSizeCommand:
 		vector_head_width: float = params["vector_head_width"]
 		vector_width: float = params["vector_width"]
 		self.common.capture_and_push_undo_state(
-			"Settings - vector sizing", "active", params
-		)
+			"Settings - vector sizing", "active", params)
 
 		# Apply settings
 		common.vector_head_width = vector_head_width
 		common.vector_width = vector_width
 
+		common.print_vector_sizing_settings()
 		self._director.title_for_table_widget = (
 			"Vector sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Output")
-		common.print_vector_sizing_settings()
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -3596,7 +3611,7 @@ class SettingsVectorSizeCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(120)
 		settings_text = (
-			f"{self._director.title_for_table_widget}\n\n"
+			# f"{self._director.title_for_table_widget}\n\n"
 			f"Vector head width (in inches): {self.common.vector_head_width}\n"
 			f"Vector width (in inches): {self.common.vector_width}"
 		)
