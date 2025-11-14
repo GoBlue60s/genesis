@@ -10,7 +10,7 @@ import random
 
 
 from PySide6 import QtCore
-from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem
 from scipy.spatial import procrustes
 
 from sklearn.cluster import KMeans
@@ -2018,10 +2018,21 @@ class UncertaintyCommand:
 			"Uncertainty", "active", params
 		)
 
+		# Show status: Starting sample design
+		director.progress_label.setText("Starting sample design")
+		director.progress_label.show()
+		director.progress_spacer.show()
+		QApplication.processEvents()
+
 		# Create sample design and repetitions
 		self._create_sample_design(
 			probability_of_inclusion, nrepetitions, universe_size
 		)
+
+		# Show status: Starting generation of repetitions
+		director.progress_label.setText("Starting generation of repetitions")
+		QApplication.processEvents()
+
 		self._create_sample_repetitions()
 
 		# Get sample_repetitions after creating them
@@ -2087,6 +2098,14 @@ class UncertaintyCommand:
 		extract_ndim = 2
 		repetition_n = 1
 		stress_data = []
+
+		# Setup progress bar (label and spacer already showing)
+		director.progress_bar.setRange(0, nrepetitions)
+		director.progress_bar.setValue(0)
+		director.progress_bar.setStyleSheet("")
+		director.progress_label.setText(f"Repetition 0 of {nrepetitions}")
+		director.progress_bar.show()
+
 		for repetition_size in repetition_sizes:
 			(current_repetition, start_case) = self.get_current_repetition(
 				start_case,
@@ -2119,8 +2138,20 @@ class UncertaintyCommand:
 				[self.solutions, active_out_as_df], ignore_index=True
 			)
 
+			# Update progress bar and label
+			director.progress_bar.setValue(repetition_n)
+			director.progress_label.setText(
+				f"Repetition {repetition_n} of {nrepetitions}"
+			)
+			QApplication.processEvents()
+
 			# start_case = end_case
 			repetition_n += 1
+
+		# Hide progress bar and label
+		director.progress_bar.hide()
+		director.progress_label.hide()
+		director.progress_spacer.hide()
 
 		# Create solutions_stress_df from the collected stress data
 		uncertainty_active.solutions_stress_df = pd.DataFrame(

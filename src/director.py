@@ -14,9 +14,11 @@ from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (
 	QFileDialog,
+	QHBoxLayout,
 	QLabel,
 	QMainWindow,
 	QMenu,
+	QProgressBar,
 	QPushButton,
 	QScrollArea,
 	QSizePolicy,
@@ -703,21 +705,31 @@ class Status(QMainWindow):
 		self.center_statusbar_message: str = ""
 		self.right_statusbar_message: str = "Spaces 2025"
 		self.left_statusbar: QLabel = QLabel(self.left_statusbar_message)
-		self.center_statusbar: QLabel = QLabel(self.center_statusbar_message)
 		self.right_statusbar: QLabel = QLabel(self.right_statusbar_message)
-		left_spacer = QWidget()
-		left_spacer.setSizePolicy(
-			QSizePolicy.Expanding, # ty: ignore[unresolved-attribute]
-			QSizePolicy.Expanding) # ty: ignore[unresolved-attribute]
-		right_spacer = QWidget()
-		right_spacer.setSizePolicy(
-			QSizePolicy.Expanding, # ty: ignore[unresolved-attribute]
-			QSizePolicy.Expanding) # ty: ignore[unresolved-attribute]
-		self.spaces_statusbar.addWidget(self.left_statusbar)
-		self.spaces_statusbar.addWidget(left_spacer)
-		self.spaces_statusbar.addWidget(self.center_statusbar)
-		self.spaces_statusbar.addWidget(right_spacer)
-		self.spaces_statusbar.addPermanentWidget(self.right_statusbar)
+
+		# Create progress label and bar for long-running operations
+		self.progress_label = QLabel()
+		self.progress_label.hide()
+
+		self.progress_bar = QProgressBar()
+		self.progress_bar.setRange(0, 100)
+		self.progress_bar.setTextVisible(False)
+		self.progress_bar.setFixedWidth(150)
+		self.progress_bar.hide()
+
+		# Create expanding spacer between progress bar and right label
+		self.progress_spacer = QWidget()
+		self.progress_spacer.setSizePolicy(
+			QSizePolicy.Expanding, # type: ignore[attr-defined]
+			QSizePolicy.Preferred  # type: ignore[attr-defined]
+		)
+		self.progress_spacer.hide()
+
+		self.spaces_statusbar.addWidget(self.left_statusbar, 1)
+		self.spaces_statusbar.addPermanentWidget(self.progress_label, 0)
+		self.spaces_statusbar.addPermanentWidget(self.progress_bar, 0)
+		self.spaces_statusbar.addPermanentWidget(self.progress_spacer, 1)
+		self.spaces_statusbar.addPermanentWidget(self.right_statusbar, 0)
 		self.setStatusBar(self.spaces_statusbar)
 		self.left_statusbar.setText("Awaiting your command!")
 
