@@ -1,0 +1,27 @@
+Lower Triangular
+11
+BLM;Black Lives Matter
+Fund;Christian fundamentalists
+Harp;Kamala Harris (post)
+Penp;Mike Pence (post)
+Cons;Conservatives
+Libs;Liberals
+Dems;Democratic Party
+Trum;Donald Trump
+Bide;Joe Biden
+Obam;Barack Obama
+Reps;Republican Party
+-0.27411 
+ 0.75006 -0.32234
+-0.68026  0.50595 -0.74777
+-0.46537  0.59183 -0.51089  0.08156
+ 0.67464 -0.29233  0.69674  0.25805 -0.47028
+ 0.67646 -0.25911  0.79749  0.25662 -0.46023  0.65146
+-0.70591  0.43504 -0.78996 -0.08339  0.59681 -0.63313 -0.73718
+ 0.66259 -0.29596  0.81361  0.20692 -0.47025  0.63962  0.83374 -0.77613
+-0.59429  0.45098 -0.67557  0.03045  0.61699 -0.56154 -0.64114  0.83480  0.79695
+ 0.72192 -0.33536  0.80636  0.19966 -0.49852  0.65091  0.81504 -0.79048 -0.70443 -0.66330 
+ 
+
+
+
