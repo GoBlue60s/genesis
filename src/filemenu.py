@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 import peek
+from PySide6.QtWidgets import QApplication
 
 if TYPE_CHECKING:
 	from common import Spaces
@@ -1744,6 +1745,24 @@ class OpenScriptCommand:
 		self._director.executing_script = True
 		commands_executed = 0
 
+		# Count total executable lines (non-empty, non-comment)
+		total_commands = sum(
+			1 for line in script_lines
+			if line.strip() and not line.strip().startswith("#")
+		)
+
+		# Setup progress bar
+		director = self._director
+		director.progress_bar.setRange(0, total_commands)
+		director.progress_bar.setValue(0)
+		director.progress_bar.setStyleSheet("")
+		director.progress_label.setText(
+			f"Executing line 0 of {total_commands}"
+		)
+		director.progress_label.show()
+		director.progress_spacer.show()
+		director.progress_bar.show()
+
 		try:
 			# Parse and execute commands
 			for line_num, line in enumerate(script_lines, 1):
@@ -1763,6 +1782,13 @@ class OpenScriptCommand:
 					)
 					commands_executed += 1
 					self._executed_commands.append(command_name)
+
+					# Update progress bar
+					director.progress_bar.setValue(commands_executed)
+					director.progress_label.setText(
+						f"Executing line {commands_executed} of {total_commands}"
+					)
+					QApplication.processEvents()
 
 				except SpacesError as e:
 					# Script command failed - stop execution
@@ -1787,8 +1813,11 @@ class OpenScriptCommand:
 					) from e
 
 		finally:
-			# Always clear script execution flag
+			# Always clear script execution flag and hide progress bar
 			self._director.executing_script = False
+			director.progress_bar.hide()
+			director.progress_label.hide()
+			director.progress_spacer.hide()
 
 		return commands_executed
 
