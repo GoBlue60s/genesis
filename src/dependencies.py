@@ -155,6 +155,7 @@ class DependencyChecking:
 			"print evaluations",
 			"sample designer",
 			"sample repetitions",
+			"uncertainty",
 			"score individuals",
 			"view evaluations",
 		}

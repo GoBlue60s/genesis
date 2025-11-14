@@ -439,7 +439,8 @@ class ViewPointUncertaintyCommand:
 
 		# Get command parameters (will use dialog if interactive)
 		# Pass plot as kwarg since it comes from execute method
-		params = common.get_command_parameters("View point uncertainty", plot=plot)
+		params = common.get_command_parameters(
+			"View point uncertainty", plot=plot)
 		selected_points: list[str] = params["points"]
 
 		# Validate selection
@@ -499,11 +500,13 @@ class ViewSampleDesignCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		sample_design = self._director.uncertainty_active.sample_design
-		print(sample_design)
+
 		universe_size = self._director.uncertainty_active.universe_size
 		probability_of_inclusion = (
 			self._director.uncertainty_active.probability_of_inclusion
 		)
+		print(f"Sample design - Size of universe: {universe_size},"
+			f" Probability of inclusion: {probability_of_inclusion}")
 		self._director.title_for_table_widget = (
 			f"Sample design - Size of universe: {universe_size},"
 			f" Probability of inclusion: "
@@ -558,7 +561,9 @@ class ViewSampleRepetitionsCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		print(self._director.uncertainty_active.sample_repetitions)
+		# print(self._director.uncertainty_active.sample_repetitions)
+		n_repetitions = self._director.uncertainty_active.nrepetitions
+		print(f"Sample repetitions - number of repetitions: {n_repetitions}")
 		self._director.title_for_table_widget = "Sample repetitions"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -609,6 +614,11 @@ class ViewSampleSolutionsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		# print(self._director.uncertainty_active.sample_solutions)
+
+		common.create_solutions_table()
+		common.print_sample_solutions()
+
+		common.create_plot_for_tabs("uncertainty")
 		nsolutions = self._director.uncertainty_active.nsolutions
 		ndim = self._director.uncertainty_active.ndim
 		npoint = self._director.uncertainty_active.npoints
@@ -616,9 +626,6 @@ class ViewSampleSolutionsCommand:
 			f"{nsolutions} solutions have {ndim} dimensions "
 			f"and {npoint} points"
 		)
-		common.create_solutions_table()
-		common.print_sample_solutions()
-		common.create_plot_for_tabs("uncertainty")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()

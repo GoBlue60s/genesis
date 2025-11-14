@@ -1976,8 +1976,7 @@ class UncertaintyCommand:
 		self._director.command = "Uncertainty"
 
 		self.solutions: pd.DataFrame = pd.DataFrame(
-			columns=[self._director.target_active.dim_names]
-		)
+			columns=[self._director.target_active.dim_names])
 		self.solutions: pd.DataFrame = pd.DataFrame()
 		self._director.uncertainty_active.sample_solutions = pd.DataFrame()
 		self.target_out: np.array = np.array([])
@@ -2007,62 +2006,34 @@ class UncertaintyCommand:
 		director.optionally_explain_what_command_does()
 		director.dependency_checker.detect_dependency_problems()
 
-		# Get user input for sample design parameters
-		params = self.common.get_command_parameters("Uncertainty")
+		params = common.get_command_parameters("Uncertainty")
 		probability_of_inclusion: int = params["probability_of_inclusion"]
 		nrepetitions: int = params["nrepetitions"]
 		universe_size = director.evaluations_active.nevaluators
 
-		# Capture state before making changes (for undo)
 		common.capture_and_push_undo_state(
-			"Uncertainty", "active", params
-		)
+			"Uncertainty", "active", params)
 
-		# Show status only if not executing a script
-		if not director.executing_script:
-			director.progress_label.setText("Starting sample design")
-			director.progress_label.show()
-			director.progress_spacer.show()
-			QApplication.processEvents()
-
-		# Create sample design and repetitions
 		self._create_sample_design(
-			probability_of_inclusion, nrepetitions, universe_size
-		)
-
-		# Show status only if not executing a script
-		if not director.executing_script:
-			director.progress_label.setText("Starting generation of repetitions")
-			QApplication.processEvents()
-
-		self._create_sample_repetitions()
-
-		# Get sample_repetitions after creating them
+			director,
+			probability_of_inclusion, nrepetitions, universe_size)
+		self._create_sample_repetitions(director)
 		sample_repetitions = uncertainty_active.sample_repetitions
-
-		# Now perform uncertainty analysis
 		self.target_out, self.active_out = self._get_solutions_from_mds(
-			common, sample_repetitions, nreferent
-		)
+			common, sample_repetitions, nreferent)
 		uncertainty_active.target_out = self.target_out
 		uncertainty_active.solutions = self.solutions
 		uncertainty_active.sample_solutions = self.solutions
-
 		common.create_solutions_table()
 
 		print(
 			director.uncertainty_active.solutions_stress_df.to_string(
-				index=False
-			)
-		)
-
+				index=False))
 		director.common.create_plot_for_tabs("uncertainty")
 		director.title_for_table_widget = (
 			"An ellipse around each point delineates with 95% confidence that "
-			"the point lies within that point's ellipse"
-		)
+			"the point lies within that point's ellipse")
 		director.create_widgets_for_output_and_log_tabs()
-		director.set_focus_on_tab("Plot")
 		director.record_command_as_successfully_completed()
 
 		return
@@ -2286,6 +2257,7 @@ class UncertaintyCommand:
 
 	def _create_sample_design(
 		self,
+		director: Status,
 		probability_of_inclusion: int,
 		nrepetitions: int,
 		universe_size: int
@@ -2298,6 +2270,14 @@ class UncertaintyCommand:
 			universe_size: Total number of cases in the universe
 		"""
 		uncertainty_active = self._director.uncertainty_active
+
+		# Show status only if not executing a script
+		if not director.executing_script:
+			director.progress_label.setText("Starting sample design")
+			director.progress_label.show()
+			director.progress_spacer.show()
+			QApplication.processEvents()
+		
 		sample_design = pd.DataFrame(
 			columns=["RespId", "Repetition", "Selected"]
 		)
@@ -2348,7 +2328,7 @@ class UncertaintyCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _create_sample_repetitions(self) -> None:
+	def _create_sample_repetitions(self, director: Status) -> None:
 		"""Extract selected cases from evaluations based on sample design."""
 		uncertainty_active = self._director.uncertainty_active
 		evaluations = self._director.evaluations_active.evaluations
@@ -2356,14 +2336,19 @@ class UncertaintyCommand:
 		nrepetitions = uncertainty_active.nrepetitions
 		sample_design = uncertainty_active.sample_design
 
+		if not director.executing_script:
+			director.progress_label.setText(
+				"Starting generation of repetitions")
+			QApplication.processEvents()
+
 		# Validate universe size matches evaluations
 		if universe_size != len(evaluations):
-			raise SpacesError(
-				"Sample size mismatch",
+			size_issue_title = "Sample size mismatch"
+			size_issue_message = (
 				f"Size in sample design: {universe_size} "
 				f"does not match size of evaluations: {len(evaluations)}"
 			)
-
+			raise SpacesError(size_issue_title, size_issue_message)
 		columns = evaluations.columns
 		sample_repetitions = pd.DataFrame(columns=columns)
 		range_of_repetitions = range(1, nrepetitions + 1)
