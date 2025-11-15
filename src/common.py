@@ -2704,11 +2704,23 @@ class Spaces:
 		"""Handle file dialog parameter getter."""
 		caption = getter_info.get("caption", "Open file")
 		file_filter = getter_info.get("filter", "*.*")
-		file_name = (
-			self._director.get_file_name_and_handle_nonexistent_file_names(
-				caption, file_filter
+		mode = getter_info.get("mode", "open")
+		directory = getter_info.get("directory", None)
+
+		# Use appropriate dialog based on mode
+		if mode == "save":
+			# For save operations, use getSaveFileName dialog
+			dir_to_use = directory if directory is not None else "scripts"
+			file_name = self._director.get_file_name_to_store_file(
+				caption, file_filter, dir_to_use
 			)
-		)
+		else:
+			# For open operations, use getOpenFileName dialog
+			file_name = (
+				self._director.get_file_name_and_handle_nonexistent_file_names(
+					caption, file_filter, directory
+				)
+			)
 
 		# Store and return
 		self._director.obtained_parameters[param_name] = file_name
