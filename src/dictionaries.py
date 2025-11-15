@@ -26,7 +26,9 @@ FrozenDict = MappingProxyType
 
 command_dict = MappingProxyType({
 	"About": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Alike": {
 		"type": "passive",
@@ -195,7 +197,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Help": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"History": {
 		"type": "passive"
@@ -640,7 +644,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Status": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Stress contribution": {
 		"type": "passive",
@@ -668,7 +674,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Terse": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Tester": {
 		"type": "active",
@@ -705,7 +713,9 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"Verbose": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View configuration": {
 		"type": "passive"

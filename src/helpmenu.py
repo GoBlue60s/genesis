@@ -72,6 +72,8 @@ class AboutCommand:
 
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
+		params = common.get_command_parameters("About")
+		common.capture_and_push_undo_state("About", "passive", params)
 		self._director.title_for_table_widget = (
 			"Spaces was developed by Ed Schneider."
 			"\n\nIt is based on programs he developed in the 1970s as "
@@ -185,9 +187,11 @@ class HelpCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Help")
+		common.capture_and_push_undo_state("Help", "passive", params)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.unable_to_complete_command_set_status_as_failed()
@@ -213,9 +217,11 @@ class StatusCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Status")
+		common.capture_and_push_undo_state("Status", "passive", params)
 		self._director.common.print_established_elements()
 		self._director.common.print_plot_settings()
 		self._director.common.print_plane_settings()
@@ -593,8 +599,10 @@ class VerboseCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
+		params = common.get_command_parameters("Verbose")
+		common.capture_and_push_undo_state("Verbose", "passive", params)
 		self._print_verbose_message()
 		# verbosity_toggle = True
 		self._director.verbosity_alternative = "Terse"
@@ -641,8 +649,10 @@ class TerseCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
+		params = common.get_command_parameters("Terse")
+		common.capture_and_push_undo_state("Terse", "passive", params)
 		self._print_terse_message()
 		# verbosity_toggle = False
 		self._director.verbosity_alternative = "Verbose"

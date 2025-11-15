@@ -1184,14 +1184,16 @@ Review all execute methods in all commands to ensure adherence to standards and 
 
 These should be reviewed to determine if they should be updated to use the standard 3B pattern or if they have unique requirements that justify the alternative approach.
 
-**Commands Requiring Refactoring** (50 commands):
+**Commands Requiring Refactoring** (45 commands remaining):
 
-#### Help Menu (5 commands)
-- About (helpmenu.py:23)
-- Help (helpmenu.py:175)
-- Status (helpmenu.py:201)
-- Verbose (helpmenu.py:580)
-- Terse (helpmenu.py:629)
+#### Help Menu (5 commands) - ✓ COMPLETE
+- ✓ About (helpmenu.py:23)
+- ✓ Help (helpmenu.py:175)
+- ✓ Status (helpmenu.py:201)
+- ✓ Verbose (helpmenu.py:580)
+- ✓ Terse (helpmenu.py:629)
+
+**Completed**: All 5 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries with `state_capture: []` and `script_parameters: []`. Tested in both interactive and script modes - all working correctly.
 
 #### File Menu (22 commands)
 - Print configuration (filemenu.py:1977)
