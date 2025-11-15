@@ -1257,10 +1257,13 @@ These should be reviewed to determine if they should be updated to use the stand
 
 **Completed**: All 6 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries: Distances, Ranks differences, Ranks distances, and Ranks similarities with `state_capture: []` and `script_parameters: []`. Scree updated with `script_parameters: ["use_metric"]`, `execute_parameters: ["use_metric"]`, and interactive_getter for model selection dialog. Shepard updated with `state_capture: []` and interactive_getter for axis selection, converted from old `push_passive_command_to_undo_stack()` pattern to 3B pattern.
 
-#### Respondents Menu (3 commands, excluding those using alternative pattern)
-- Contest (respondentsmenu.py:113)
-- Joint (respondentsmenu.py:283)
-- Segments (respondentsmenu.py:891)
+#### Respondents Menu (3 commands, excluding those using alternative pattern) - ✓ COMPLETE
+
+- ✓ Contest (respondentsmenu.py:113)
+- ✓ Joint (respondentsmenu.py:283)
+- ✓ Segments (respondentsmenu.py:900)
+
+**Completed**: All 3 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries with `state_capture: []` and `script_parameters: []`. Test script test_respondents_menu_commands.spc created.
 
 **Refactoring Approach**:
 
@@ -1335,5 +1338,81 @@ For each passive command, follow the same pattern used for Alike, Paired, and St
 
 **Next Steps:**
 - Continue with uncertainty feature refactoring
+
+---
+
+## Project Completion Summary
+
+### Session: 2025-11-15 - Final Passive Command Refactoring and Bug Fixes
+
+**Work Completed:**
+
+#### Passive Command Refactoring (Task #11) - ✓ COMPLETE
+
+Successfully refactored all remaining passive commands to use the 3B pattern (get_command_parameters + capture_and_push_undo_state):
+
+- **Model Menu** (2 commands): Directions, Vectors
+- **Associations Menu** (6 commands): Distances, Ranks differences, Ranks distances, Ranks similarities, Scree (with use_metric parameter), Shepard (with axis parameter, converted from old pattern)
+- **Respondents Menu** (3 commands): Contest, Joint, Segments
+
+**Total Passive Commands Refactored**: 54 commands across all menus
+- Help Menu: 5 commands
+- File Menu: 22 commands
+- View Menu: 16 commands
+- Model Menu: 2 commands
+- Associations Menu: 6 commands
+- Respondents Menu: 3 commands
+
+#### Critical Bug Fixes
+
+1. **MDS Dimension Names Bug** (modelmenu.py:1596-1614)
+   - **Issue**: MDS wasn't setting dim_names, dim_labels, hor_axis_name, vert_axis_name
+   - **Symptom**: Status command showed blanks for horizontal/vertical dimensions after MDS
+   - **Fix**: Added dimension initialization in `_perform_mds_pick_up_point_labelling_from_similarities()`
+
+2. **Undo Display Bug** (editmenu.py:604)
+   - **Issue**: Using `self._director.rivalry_active` which doesn't exist
+   - **Symptom**: AttributeError when running Undo after rivalry-related commands
+   - **Fix**: Changed to `self._director.rivalry` (correct attribute name)
+   - **Root Cause**: Bug introduced in commit 5f87d39 (Nov 13) during Undo refactoring
+
+3. **Redo Stack Clearing Bug** (common.py:3596)
+   - **Issue**: Passive commands were clearing the redo stack via `capture_and_push_undo_state()`
+   - **Symptom**: Redo failed with "Nothing to redo" after running passive commands between Undo and Redo
+   - **Fix**: Modified `capture_and_push_undo_state()` to not clear redo stack for passive commands
+   - **Impact**: Affected all 54 refactored passive commands
+   - **Root Cause**: Passive commands should not affect undo/redo navigation (they're read-only)
+
+#### Test Scripts Created
+
+- test_model_menu_commands.spc
+- test_associations_menu_commands.spc
+- test_respondents_menu_commands.spc
+
+### Final Status
+
+**✓ COMPLETE**: All tasks in the eliminate_candidate_instances plan have been completed:
+
+1. ✓ Eliminate candidate/active instance split for all features
+2. ✓ Refactor all feature state capture/restore to whole-object pattern
+3. ✓ Update all Save/Open commands to work with single instances
+4. ✓ Refactor Uncertainty command to eliminate Sample Designer/Repetitions dependencies
+5. ✓ Refactor all passive commands to use 3B pattern for proper script generation
+
+**Key Achievements:**
+
+- Unified architecture: All features now use single instances instead of candidate/active splits
+- Consistent undo/redo: Whole-object capture/restore pattern throughout
+- Script compatibility: All passive commands work correctly in script mode
+- Code quality: Significant reduction in complexity and duplication
+- Bug fixes: Resolved critical issues with MDS, Undo display, and Redo functionality
+
+**Lessons Learned:**
+
+- Late discovery of redo stack bug highlighted need for comprehensive interactive Undo/Redo testing
+- Test scripts verify script mode but don't catch interactive workflow issues
+- Centralized fixes (like redo stack bug) have wide positive impact across many commands
+
+---
 - Consider if settings needs special handling due to being director.common attributes
 - Monitor for any edge cases with nested object copying in other features

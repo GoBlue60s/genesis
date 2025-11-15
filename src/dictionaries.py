@@ -100,7 +100,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Contest": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Convertible": {
 		"type": "passive"
@@ -238,7 +240,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Joint": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Likely supporters": {
 		"type": "passive"
@@ -664,7 +668,9 @@ command_dict = MappingProxyType({
 		"type": "passive"
 	},
 	"Segments": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Settings - display sizing": {
 		"type": "active",

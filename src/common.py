@@ -3591,7 +3591,9 @@ class Spaces:
 			cmd_state, state_capture_list, command_name)
 
 		# Clear redo stack when a new command executes (not undo/redo)
-		if command_name not in ["Undo", "Redo"]:
+		# Passive commands don't clear redo stack - they're read-only
+		# and shouldn't affect undo/redo navigation
+		if command_name not in ["Undo", "Redo"] and command_type != "passive":
 			self._director.clear_redo_stack()
 
 		self._director.push_undo_state(cmd_state)

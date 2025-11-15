@@ -126,6 +126,11 @@ class ContestCommand:
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Contest")
+		common.capture_and_push_undo_state("Contest", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.create_plot_for_tabs("contest")
 		self._rival_a = rivalry.rival_a
@@ -297,6 +302,11 @@ class JointCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Joint")
+		common.capture_and_push_undo_state("Joint", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.create_plot_for_tabs("joint")
 		self._director.title_for_table_widget = (
@@ -921,6 +931,11 @@ class SegmentsCommand:
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Segments")
+		common.capture_and_push_undo_state("Segments", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		if not self._director.common.have_segments():
 			self._director.rivalry.assign_to_segments()

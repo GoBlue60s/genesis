@@ -601,7 +601,7 @@ class UndoCommand:
 	) -> None:
 		"""Add current rivalry details to restoration list."""
 		if "rivalry" in restored_types:
-			riv = self._director.rivalry_active
+			riv = self._director.rivalry
 			rival_a_name: str = (
 				riv.rival_a.name if riv.rival_a.name else "unknown"
 			)
