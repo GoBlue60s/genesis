@@ -1221,23 +1221,25 @@ These should be reviewed to determine if they should be updated to use the stand
 
 **Completed**: All 22 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries: Print commands and Exit with `state_capture: []` and `script_parameters: []`; Save commands with `state_capture: []`, `script_parameters: ["file"]`, and file_dialog interactive_getters. All Print and Save commands tested in script mode and working correctly. Fixed one unused noqa directive at line 3525.
 
-#### View Menu (16 commands)
-- History (viewmenu.py:27)
-- View configuration (viewmenu.py:140)
-- View correlations (viewmenu.py:171)
-- View custom (viewmenu.py:207)
-- View distances (viewmenu.py:291)
-- View evaluations (viewmenu.py:325)
-- View grouped data (viewmenu.py:352)
-- View individuals (viewmenu.py:383)
-- View point uncertainty (viewmenu.py:413)
-- View sample design (viewmenu.py:486)
-- View sample repetitions (viewmenu.py:545)
-- View sample solutions (viewmenu.py:596)
-- View scores (viewmenu.py:641)
-- View similarities (viewmenu.py:675)
-- View spatial uncertainty (viewmenu.py:712)
-- View target (viewmenu.py:760)
+#### View Menu (16 commands) - ✓ COMPLETE
+- ✓ History (viewmenu.py:27)
+- ✓ View configuration (viewmenu.py:140)
+- ✓ View correlations (viewmenu.py:171)
+- ✓ View custom (viewmenu.py:207)
+- ✓ View distances (viewmenu.py:291)
+- ✓ View evaluations (viewmenu.py:325)
+- ✓ View grouped data (viewmenu.py:352)
+- ✓ View individuals (viewmenu.py:383)
+- ✓ View point uncertainty (viewmenu.py:413)
+- ✓ View sample design (viewmenu.py:486)
+- ✓ View sample repetitions (viewmenu.py:545)
+- ✓ View sample solutions (viewmenu.py:596)
+- ✓ View scores (viewmenu.py:641)
+- ✓ View similarities (viewmenu.py:675)
+- ✓ View spatial uncertainty (viewmenu.py:712)
+- ✓ View target (viewmenu.py:760)
+
+**Completed**: All 16 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries with `state_capture: []` and `script_parameters: []` for all commands. View point uncertainty was already compliant. View spatial uncertainty updated from old `push_passive_command_to_undo_stack()` pattern to 3B pattern with plot parameter. Test script test_view_menu_commands.spc created and all commands tested successfully in script mode.
 
 #### Model Menu (2 commands)
 - Directions (modelmenu.py:487)

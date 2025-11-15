@@ -204,7 +204,9 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"History": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Individuals": {
 		"type": "active",
@@ -852,25 +854,39 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"View configuration": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View correlations": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View custom": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View distances": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View evaluations": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View grouped data": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View individuals": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View point uncertainty": {
 		"type": "passive",
@@ -886,29 +902,43 @@ command_dict = MappingProxyType({
 		}
 	},
 	"View sample design": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View sample repetitions": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View sample solutions": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View scores": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View script": {
 		"type": "script"  # Meta-command for script operations
 	},
 	"View similarities": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"View spatial uncertainty": {
 		"type": "passive",
-		"script_parameters": ["plot"]
+		"state_capture": [],
+		"script_parameters": ["plot"],
+		"execute_parameters": ["plot"]
 	},
 	"View target": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 })
 
