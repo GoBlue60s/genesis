@@ -1219,7 +1219,7 @@ These should be reviewed to determine if they should be updated to use the stand
 - ✓ Save target (filemenu.py:3167)
 - ✓ Exit (filemenu.py:811)
 
-**Completed**: All 22 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries: Print commands and Exit with `state_capture: []` and `script_parameters: []`; Save commands with `state_capture: []`, `script_parameters: ["file"]`, and file_dialog interactive_getters. All Print commands tested in script mode. Fixed one unused noqa directive at line 3525.
+**Completed**: All 22 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries: Print commands and Exit with `state_capture: []` and `script_parameters: []`; Save commands with `state_capture: []`, `script_parameters: ["file"]`, and file_dialog interactive_getters. All Print and Save commands tested in script mode and working correctly. Fixed one unused noqa directive at line 3525.
 
 #### View Menu (16 commands)
 - History (viewmenu.py:27)
