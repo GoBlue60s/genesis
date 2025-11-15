@@ -2,7 +2,7 @@
 # Tests that the commands work in script mode with the new 3B pattern
 
 # Load test data
-Configuration file="data/Elections/2004/2004.txt"
+Configuration file="data/Elections/2004/ANES_2004_conf_new.txt"
 
 # Test Print configuration command
 Print configuration
@@ -11,7 +11,7 @@ Print configuration
 Save configuration file="data/test_config_output.txt"
 
 # Load similarities and test Print/Save
-Similarities file="data/Elections/2004/2004.txt"
+Similarities file="data/Elections/2004/ANES_2004_los.txt" value_type="dissimilarities"
 Print similarities
 Save similarities file="data/test_similarities_output.txt"
 

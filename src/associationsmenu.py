@@ -65,8 +65,7 @@ class AlikeCommand:
 		self._print_alike_pairs()
 		self._create_alike_table()
 		self._director.title_for_table_widget = (
-			f"Pairs with similarity using cutoff: {self.cutoff}"
-		)
+			f"Pairs with similarity using cutoff: {self.cutoff}")
 		self._director.common.create_plot_for_tabs("alike")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -269,8 +268,7 @@ class DistancesCommand:
 
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_distances(
-			self._width, self._decimals, common
-		)
+			self._width, self._decimals, common)
 		self._director.common.create_plot_for_tabs("heatmap_dist")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
@@ -307,28 +305,23 @@ class LineOfSightCommand:
 		self.common.capture_and_push_undo_state(
 			"Line of sight",
 			"active",
-			{}
-		)
+			{})
 		#
 		# Now perform the line of sight calculation
 		#
 		self._director.similarities_active = self.common.los(
-			self._director.evaluations_active
-		)
+			self._director.evaluations_active)
 		self._duplicate_similarities(common)
 		self._director.similarities_active.rank_similarities()
 		self._director.similarities_active.duplicate_ranked_similarities(
-			common
-		)
+			common)
 		self._director.similarities_active.print_the_similarities(
-			self._width, self._decimals, common
-		)
+			self._width, self._decimals, common)
 		self._director.title_for_table_widget = (
 			f"Line of sight:\n"
 			f"The {self._director.similarities_active.value_type}"
 			f"matrix has {self._director.similarities_active.nreferent}"
-			f" items"
-		)
+			f" items")
 		self._director.common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
@@ -389,8 +382,7 @@ class PairedCommand:
 		point_names = self._director.configuration_active.point_names
 		self._director.title_for_table_widget = (
 			f"Relationships between {point_names[focal_index]} "
-			f"and other points"
-		)
+			f"and other points")
 
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -406,12 +398,10 @@ class PairedCommand:
 		focal_index = self._focal_item_index
 		point_names = self._director.configuration_active.point_names
 		similarities_as_dataframe: pd.DataFrame = (
-			self._director.similarities_active.similarities_as_dataframe
-		)
+			self._director.similarities_active.similarities_as_dataframe)
 		value_type: str = self._director.similarities_active.value_type
 		distances_as_dataframe: pd.DataFrame = (
-			self._director.configuration_active.distances_as_dataframe
-		)
+			self._director.configuration_active.distances_as_dataframe)
 
 		# Create a list to store data for the DataFrame
 		paired_data = []
@@ -432,8 +422,7 @@ class PairedCommand:
 						"Name": name,
 						"Similarity": similarity,
 						"Distance": distance,
-					}
-				)
+					})
 
 		# Create DataFrame
 		paired_df: pd.DataFrame = pd.DataFrame(paired_data)
@@ -524,17 +513,12 @@ class RanksDifferencesCommand:
 		# Get command parameters and capture state
 		params = common.get_command_parameters("Ranks differences")
 		common.capture_and_push_undo_state(
-			"Ranks differences", "passive", params
-		)
+			"Ranks differences", "passive", params)
 
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.similarities_active.compute_differences_in_ranks()
-		# self._create_rank_plot_for_tabs()
-		# columns_to_print = \
-		# 	self._director.similarities_active.columns_for_ranks[self._columns]
-		# print(columns_to_print)
+
 		self._director.common.create_plot_for_tabs("heatmap_rank_diff")
-		# "differences")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		self._director.set_focus_on_tab("Plot")
@@ -560,8 +544,7 @@ class RanksDistancesCommand:
 		# Get command parameters and capture state
 		params = common.get_command_parameters("Ranks distances")
 		common.capture_and_push_undo_state(
-			"Ranks distances", "passive", params
-		)
+			"Ranks distances", "passive", params)
 
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.print_lower_triangle(
@@ -570,10 +553,8 @@ class RanksDistancesCommand:
 			self._director.configuration_active.point_names,
 			self._director.configuration_active.npoint,
 			self._director.configuration_active.ranked_distances,
-			self._director.common.width,
-		)
+			self._director.common.width)
 		self._director.common.create_plot_for_tabs("heatmap_ranked_dist")
-		# "ranked_distances")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		self._director.set_focus_on_tab("Plot")
@@ -599,8 +580,7 @@ class RanksSimilaritiesCommand:
 		# Get command parameters and capture state
 		params = common.get_command_parameters("Ranks similarities")
 		common.capture_and_push_undo_state(
-			"Ranks similarities", "passive", params
-		)
+			"Ranks similarities", "passive", params)
 
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.print_lower_triangle(
@@ -609,8 +589,7 @@ class RanksSimilaritiesCommand:
 			self._director.similarities_active.item_names,
 			self._director.similarities_active.nitem,
 			self._director.similarities_active.ranked_similarities,
-			self._director.common.width,
-		)
+			self._director.common.width)
 		self._director.common.create_plot_for_tabs("heatmap_ranked_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -628,14 +607,12 @@ class ScreeCommand:
 		self.common = common
 		self._director.command = "Scree"
 		self._director.configuration_active.min_stress = pd.DataFrame(
-			columns=["Dimensionality", "Best Stress"]
-		)
+			columns=["Dimensionality", "Best Stress"])
 		self._dim_names: list[str] = []
 		self._dim_labels: list[str] = []
 		self._use_metric: bool = False
 		self._min_stress: pd.DataFrame = (
-			self._director.configuration_active.min_stress
-		)
+			self._director.configuration_active.min_stress)
 		self._scree_title: str = "MDS model"
 		self._scree_options_title: str = "Model to use"
 		self._scree_options: list[str] = ["Non-metric", "Metric"]
@@ -669,8 +646,7 @@ class ScreeCommand:
 	def _get_model_for_scree_diagram_initialize_variables(self) -> None:
 		self.need_model_for_scree_error_title = self._director.command
 		self.need_model_for_scree_error_message: str = (
-			"A model is needed to use in creating scree diagram."
-		)
+			"A model is needed to use in creating scree diagram.")
 
 	# ------------------------------------------------------------------------
 
@@ -773,8 +749,7 @@ class ShepardCommand:
 		self._shepard_options_title: str = "Show similarity on:"
 		self._shepard_options: list[str] = [
 			"X-axis (horizontal)",
-			"Y-axis (vertical)",
-		]
+			"Y-axis (vertical)"]
 
 		self.shepard_axis: str = ""
 		return
@@ -791,8 +766,7 @@ class ShepardCommand:
 
 		# Get command parameters and capture state
 		params = common.get_command_parameters(
-			"Shepard", axis=axis_for_similarities
-		)
+			"Shepard", axis=axis_for_similarities)
 		axis_for_similarities = params["axis"]
 		common.capture_and_push_undo_state("Shepard", "passive", params)
 
@@ -803,8 +777,7 @@ class ShepardCommand:
 		self._director.common.create_plot_for_tabs("shepard")
 		self._director.title_for_table_widget = (
 			"Rank of similarity above diagonal, "
-			"rank of distance below diagonal"
-		)
+			"rank of distance below diagonal")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -842,16 +815,14 @@ class StressContributionCommand:
 			"Stress contribution", "passive", params)
 		index = params["focal_item"]
 		self.stress_contribution_df = (
-			self._create_stress_contribution_df(index, worst_fit)
-		)
+			self._create_stress_contribution_df(index, worst_fit))
 		point_labels = self._director.configuration_active.point_labels
 		self._point_to_plot_label = point_labels[index]
 		self._point_to_plot_index = index
 		self._director.common.create_plot_for_tabs("stress_contribution")
 		point_names = self._director.configuration_active.point_names
 		self._director.title_for_table_widget = (
-			f"Stress contribution of {point_names[index]}"
-		)
+			f"Stress contribution of {point_names[index]}")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
