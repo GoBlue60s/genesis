@@ -129,10 +129,14 @@ command_dict = MappingProxyType({
 		"state_capture": ["conditional"]  # Conditional: captures state for each item user selects to deactivate
 	},
 	"Directions": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Distances": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Evaluations": {
 		"type": "active",
@@ -406,13 +410,19 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"Ranks differences": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Ranks distances": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Ranks similarities": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Redo": {
 		"type": "active",
@@ -636,7 +646,19 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"Scree": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["use_metric"],
+		"execute_parameters": ["use_metric"],
+		"interactive_getters": {
+			"use_metric": {
+				"getter_type": "option",
+				"title": "MDS model",
+				"prompt": "Model to use",
+				"options": ["Non-metric", "Metric"],
+				"map_to_bool": True
+			}
+		}
 	},
 	"Second dimension": {
 		"type": "passive"
@@ -763,8 +785,17 @@ command_dict = MappingProxyType({
 	},
 	"Shepard": {
 		"type": "passive",
+		"state_capture": [],
 		"script_parameters": ["axis"],
-		"execute_parameters": ["axis"]
+		"execute_parameters": ["axis"],
+		"interactive_getters": {
+			"axis": {
+				"getter_type": "option",
+				"title": "Shepard diagram",
+				"prompt": "Show similarity on:",
+				"options": ["X-axis (horizontal)", "Y-axis (vertical)"]
+			}
+		}
 	},
 	"Similarities": {
 		"type": "active",
@@ -846,7 +877,9 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"Vectors": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Verbose": {
 		"type": "passive",

@@ -508,9 +508,14 @@ class DirectionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Directions")
+		common.capture_and_push_undo_state("Directions", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._calculate_point_directions()
 		# self._director.configuration_active.print_active_function()
@@ -1590,6 +1595,24 @@ class MDSCommand:
 			configuration_instance.point_coords
 		)
 
+		# Set dimension names and labels from MDS-generated configuration
+		self._director.configuration_active.dim_names = (
+			configuration_instance.dim_names
+		)
+		self._director.configuration_active.dim_labels = (
+			configuration_instance.dim_labels
+		)
+
+		# Initialize horizontal and vertical axis names
+		if ndim >= 1:
+			self._director.configuration_active.hor_axis_name = (
+				configuration_instance.dim_names[0]
+			)
+		if ndim >= 2:
+			self._director.configuration_active.vert_axis_name = (
+				configuration_instance.dim_names[1]
+			)
+
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)
@@ -1817,9 +1840,14 @@ class VectorsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Vectors")
+		common.capture_and_push_undo_state("Vectors", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("vectors")

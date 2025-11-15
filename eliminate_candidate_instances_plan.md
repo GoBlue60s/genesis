@@ -1241,17 +1241,21 @@ These should be reviewed to determine if they should be updated to use the stand
 
 **Completed**: All 16 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries with `state_capture: []` and `script_parameters: []` for all commands. View point uncertainty was already compliant. View spatial uncertainty updated from old `push_passive_command_to_undo_stack()` pattern to 3B pattern with plot parameter. Test script test_view_menu_commands.spc created and all commands tested successfully in script mode.
 
-#### Model Menu (2 commands)
-- Directions (modelmenu.py:487)
-- Vectors (modelmenu.py:1798)
+#### Model Menu (2 commands) - ✓ COMPLETE
+- ✓ Directions (modelmenu.py:487)
+- ✓ Vectors (modelmenu.py:1798)
 
-#### Associations Menu (6 commands)
-- Distances (associationsmenu.py:249)
-- Ranks differences (associationsmenu.py:505)
-- Ranks distances (associationsmenu.py:534)
-- Ranks similarities (associationsmenu.py:566)
-- Scree (associationsmenu.py:597)
-- Shepard (associationsmenu.py:731) - uses alternative pattern
+**Completed**: Both commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries with `state_capture: []` and `script_parameters: []`. Test script test_model_menu_commands.spc created.
+
+#### Associations Menu (6 commands) - ✓ COMPLETE
+- ✓ Distances (associationsmenu.py:249)
+- ✓ Ranks differences (associationsmenu.py:505)
+- ✓ Ranks distances (associationsmenu.py:534)
+- ✓ Ranks similarities (associationsmenu.py:566)
+- ✓ Scree (associationsmenu.py:597)
+- ✓ Shepard (associationsmenu.py:731)
+
+**Completed**: All 6 commands refactored to use `get_command_parameters()` and `capture_and_push_undo_state()`. Updated command_dict entries: Distances, Ranks differences, Ranks distances, and Ranks similarities with `state_capture: []` and `script_parameters: []`. Scree updated with `script_parameters: ["use_metric"]`, `execute_parameters: ["use_metric"]`, and interactive_getter for model selection dialog. Shepard updated with `state_capture: []` and interactive_getter for axis selection, converted from old `push_passive_command_to_undo_stack()` pattern to 3B pattern.
 
 #### Respondents Menu (3 commands, excluding those using alternative pattern)
 - Contest (respondentsmenu.py:113)

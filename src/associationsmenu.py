@@ -262,6 +262,11 @@ class DistancesCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Distances")
+		common.capture_and_push_undo_state("Distances", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_distances(
 			self._width, self._decimals, common
@@ -512,9 +517,16 @@ class RanksDifferencesCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Ranks differences")
+		common.capture_and_push_undo_state(
+			"Ranks differences", "passive", params
+		)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.similarities_active.compute_differences_in_ranks()
 		# self._create_rank_plot_for_tabs()
@@ -541,9 +553,16 @@ class RanksDistancesCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Ranks distances")
+		common.capture_and_push_undo_state(
+			"Ranks distances", "passive", params
+		)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.print_lower_triangle(
 			self._director.common.decimals,
@@ -573,9 +592,16 @@ class RanksSimilaritiesCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Ranks similarities")
+		common.capture_and_push_undo_state(
+			"Ranks similarities", "passive", params
+		)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.print_lower_triangle(
 			self._director.common.decimals,
@@ -618,13 +644,19 @@ class ScreeCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(
+		self, common: Spaces, use_metric: bool = False  # noqa: FBT001, FBT002
+	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters("Scree", use_metric=use_metric)
+		use_metric = params["use_metric"]
+		common.capture_and_push_undo_state("Scree", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
-		self._get_model_for_scree_diagram(
-			self._scree_title, self._scree_options_title, self._scree_options
-		)
+		self._use_metric = use_metric
 		self._scree()
 		self._director.common.create_plot_for_tabs("scree")
 		self._director.title_for_table_widget = "Best stress by dimensionality"
@@ -751,20 +783,22 @@ class ShepardCommand:
 
 	def execute(
 		self,
-		common: Spaces,  # noqa: ARG002
-		axis_for_similarities: str,
+		common: Spaces,
+		axis_for_similarities: str = "",
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+
+		# Get command parameters and capture state
+		params = common.get_command_parameters(
+			"Shepard", axis=axis_for_similarities
+		)
+		axis_for_similarities = params["axis"]
+		common.capture_and_push_undo_state("Shepard", "passive", params)
+
 		self._director.dependency_checker.detect_dependency_problems()
 		self.shepard_axis: str = axis_for_similarities
 		self._director.common.shepard_axis = axis_for_similarities
-
-		# Track passive command with parameters for script generation
-		self._director.common.push_passive_command_to_undo_stack(
-			self._director.command,
-			{"Axis_for_similarities": axis_for_similarities}
-		)
 
 		self._director.common.create_plot_for_tabs("shepard")
 		self._director.title_for_table_widget = (
