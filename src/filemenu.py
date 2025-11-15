@@ -808,9 +808,11 @@ class ExitCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Exit")
+		common.capture_and_push_undo_state("Exit", "passive", params)
 		self._director.record_command_as_successfully_completed()
 		sys.exit(0)
 
@@ -2006,9 +2008,12 @@ class PrintConfigurationCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print configuration")
+		common.capture_and_push_undo_state(
+			"Print configuration", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.print_the_configuration()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2030,9 +2035,12 @@ class PrintCorrelationsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print correlations")
+		common.capture_and_push_undo_state(
+			"Print correlations", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.correlations_active.print_the_correlations(
 			width=8,
@@ -2058,9 +2066,12 @@ class PrintEvaluationsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print evaluations")
+		common.capture_and_push_undo_state(
+			"Print evaluations", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.evaluations_active.print_evaluations()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2082,9 +2093,12 @@ class PrintGroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print grouped data")
+		common.capture_and_push_undo_state(
+			"Print grouped data", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2106,9 +2120,12 @@ class PrintIndividualsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print individuals")
+		common.capture_and_push_undo_state(
+			"Print individuals", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.individuals_active.print_individuals()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2130,9 +2147,12 @@ class PrintSampleDesignCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print sample design")
+		common.capture_and_push_undo_state(
+			"Print sample design", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.uncertainty_active.print_sample_design()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2154,9 +2174,12 @@ class PrintSampleRepetitionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print sample repetitions")
+		common.capture_and_push_undo_state(
+			"Print sample repetitions", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.uncertainty_active.print_sample_repetitions()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2178,9 +2201,12 @@ class PrintSampleSolutionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print sample solutions")
+		common.capture_and_push_undo_state(
+			"Print sample solutions", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		# Implementation for printing sample solutions
 		# TODO: Add actual implementation
@@ -2205,9 +2231,12 @@ class PrintScoresCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print scores")
+		common.capture_and_push_undo_state(
+			"Print scores", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.scores_active.print_scores()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2235,6 +2264,10 @@ class PrintSimilaritiesCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print similarities")
+		common.capture_and_push_undo_state(
+			"Print similarities", "passive", params
+		)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.similarities_active.print_the_similarities(
 			self._width, self._decimals, common
@@ -2259,9 +2292,11 @@ class PrintTargetCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Print target")
+		common.capture_and_push_undo_state("Print target", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.target_active.print_target()
 		self._director.title_for_table_widget = (
@@ -2294,15 +2329,17 @@ class SaveConfigurationCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_conf_caption, self._save_conf_filter, directory="data"
+		params = common.get_command_parameters("Save configuration")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save configuration", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.write_a_configuration_type_file(
 			file_name, self._director.configuration_active
 		)
@@ -2347,15 +2384,15 @@ class SaveGroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_grouped_caption,
-			self._save_grouped_filter,
-			directory="data"
+		params = common.get_command_parameters("Save grouped data")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save grouped data", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		self._director.grouped_data_active.write_a_grouped_data_file(
 			file_name, self._director.grouped_data_active
 		)
@@ -2402,17 +2439,17 @@ class SaveCorrelationsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_correlations_caption,
-			self._save_correlations_filter,
-			directory="data"
+		params = common.get_command_parameters("Save correlations")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save correlations", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		# Write correlations to CSV
 		correlations_df = pd.DataFrame(
 			self._director.correlations_active.correlations_as_square
@@ -2467,12 +2504,12 @@ class SaveIndividualsCommand:
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_individuals_title,
-			self._save_individuals_filter,
-			directory="data"
+		params = common.get_command_parameters("Save individuals")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save individuals", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		# Write with type header for file validation
 		common.write_csv_with_type_header(
 			self._director.individuals_active.ind_vars,
@@ -2522,15 +2559,15 @@ class SaveSampleDesignCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_sample_design_caption,
-			self._save_sample_design_filter,
-			directory="data"
+		params = common.get_command_parameters("Save sample design")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save sample design", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_design_file(file_name)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_sample_design_confirmation(file_name)
@@ -2618,15 +2655,15 @@ class SaveSampleRepetitionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_sample_repetitions_caption,
-			self._save_sample_repetitions_filter,
-			directory="data"
+		params = common.get_command_parameters("Save sample repetitions")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save sample repetitions", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_repetitions_file(file_name)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_sample_repetitions_confirmation(file_name)
@@ -2709,15 +2746,15 @@ class SaveSampleSolutionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_sample_solutions_caption,
-			self._save_sample_solutions_filter,
-			directory="data"
+		params = common.get_command_parameters("Save sample solutions")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save sample solutions", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_solutions_file(file_name)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_sample_solutions_confirmation(file_name)
@@ -2821,10 +2858,10 @@ class SaveScoresCommand:
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Save scores")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state("Save scores", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_scores_title, self._save_scores_filter, directory="data"
-		)
 		# Write with type header for file validation
 		common.write_csv_with_type_header(
 			self._director.scores_active.scores,
@@ -3070,17 +3107,17 @@ class SaveSimilaritiesCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_similarities_caption,
-			self._save_similarities_filter,
-			directory="data"
+		params = common.get_command_parameters("Save similarities")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state(
+			"Save similarities", "passive", params
 		)
+		self._director.dependency_checker.detect_dependency_problems()
 		# Write similarities to CSV
 		similarities_df = pd.DataFrame(
 			self._director.similarities_active.similarities_as_square
@@ -3127,17 +3164,15 @@ class SaveTargetCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		# _message and _feedback changed to _title and _message
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		params = common.get_command_parameters("Save target")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state("Save target", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_target_caption,
-			self._save_target_filter,
-			directory="data"
-		)
 		self._director.target_active.write_a_configuration_type_file(
 			file_name, self._director.target_active
 		)
@@ -3487,7 +3522,7 @@ class SettingsPresentationLayerCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, layer: str | None = None) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces, layer: str | None = None) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters(

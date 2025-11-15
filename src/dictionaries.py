@@ -147,7 +147,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Exit": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Factor analysis": {
 		"type": "active",
@@ -347,37 +349,59 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Print configuration": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print correlations": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print evaluations": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print grouped data": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print individuals": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print sample design": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print sample repetitions": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print sample solutions": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print scores": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print similarities": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Print target": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": []
 	},
 	"Ranks differences": {
 		"type": "passive"
@@ -462,34 +486,144 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"Save configuration": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active configuration",
+				"filter": "*.txt",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save correlations": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active correlations",
+				"filter": "*.csv",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save grouped data": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active grouped data",
+				"filter": "*.txt",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save individuals": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active individuals",
+				"filter": "*.csv",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save sample design": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active sample design",
+				"filter": "*.txt",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save sample repetitions": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active sample repetitions",
+				"filter": "*.txt",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save sample solutions": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active sample solutions",
+				"filter": "*.txt",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save scores": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active scores",
+				"filter": "*.csv",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save similarities": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active similarities",
+				"filter": "*.txt",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save target": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save active target",
+				"filter": "*.txt",
+				"mode": "save",
+				"directory": "data"
+			}
+		}
 	},
 	"Save script": {
 		"type": "script"  # Meta-command for script operations
