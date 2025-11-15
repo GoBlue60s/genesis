@@ -44,6 +44,11 @@ class ConfigurationCommand:
 			"configuration file.\nLook at the contents of file and try "
 			"again."
 		)
+		self._title_generator = lambda: (
+			f"Configuration has {self._director.configuration_active.ndim} "
+			f"dimensions and {self._director.configuration_active.npoint} "
+			f"points"
+		)
 		return
 
 	# ------------------------------------------------------------------------
@@ -63,13 +68,10 @@ class ConfigurationCommand:
 		self._director.configuration_active.inter_point_distances()
 		self.common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
-		
+
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		ndim = self._director.configuration_active.ndim
-		npoint = self._director.configuration_active.npoint
-		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
+		self._director.title_for_table_widget = self._title_generator()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
