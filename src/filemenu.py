@@ -7,8 +7,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import pandas as pd
-import peek
-from PySide6.QtWidgets import QApplication
+import peek # noqa: F401
+from PySide6.QtWidgets import QApplication, QTextEdit
+
 
 if TYPE_CHECKING:
 	from common import Spaces
@@ -16,6 +17,11 @@ if TYPE_CHECKING:
 
 from exceptions import SpacesError
 from rivalry import Rivalry
+from constants import(
+	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
+	MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
+	MINIMUM_NUMBER_OF_ITEMS_IN_EVALUATIONS_FILE
+)
 
 if __name__ == "__main__":  # pragma: no cover
 	print("This module is not designed to run as a script.  "
@@ -44,11 +50,6 @@ class ConfigurationCommand:
 			"configuration file.\nLook at the contents of file and try "
 			"again."
 		)
-		self._title_generator = lambda: (
-			f"Configuration has {self._director.configuration_active.ndim} "
-			f"dimensions and {self._director.configuration_active.npoint} "
-			f"points"
-		)
 		return
 
 	# ------------------------------------------------------------------------
@@ -56,6 +57,7 @@ class ConfigurationCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Configuration")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -71,7 +73,6 @@ class ConfigurationCommand:
 
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		self._director.title_for_table_widget = self._title_generator()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -104,6 +105,7 @@ class CorrelationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = \
 			self.common.get_command_parameters("Correlations")
 		file_name: str = params["file"]
@@ -114,8 +116,6 @@ class CorrelationsCommand:
 		self._director.correlations_active.print_the_correlations(
 			width=8, decimals=3, common=common)
 		self._director.common.create_plot_for_tabs("heatmap_corr")
-		self._director.title_for_table_widget = (
-			"The correlations are shown as a square matrix")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -163,7 +163,6 @@ class CreateCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Create"
-		self._director.title_for_table_widget = "Create configuration"
 		self._number_of_points_title = "Specify the number of points"
 		self._number_of_points_message = (
 			"Enter the number of points in the configuration:"
@@ -188,7 +187,7 @@ class CreateCommand:
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
+		self._director.dependency_checker.detect_dependency_problems()
 		(
 			npoint,
 			ndim,
@@ -213,9 +212,6 @@ class CreateCommand:
 		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -402,7 +398,6 @@ class DeactivateCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Deactivate"
-		self._director.title_for_table_widget = "Deactivate"
 		self._deactivate_items_title = "Select items to deactivate"
 		self._deactivate_items_message = \
 			"Select one or more items to deactivate:"
@@ -413,6 +408,7 @@ class DeactivateCommand:
 	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		available_items, descriptions = self._build_available_items_list()
 		selected_items = self._get_user_selection(
 			available_items, descriptions)
@@ -421,12 +417,22 @@ class DeactivateCommand:
 		deactivated_list = self._deactivate_selected_items(selected_items)
 		self._director.deactivated_items = deactivated_list
 		self._director.deactivated_descriptions = descriptions
-		deactivated_items_str = ", ".join(deactivated_list)
-		self._director.title_for_table_widget = (
-			f"Deactivated: {deactivated_items_str}")
+		self._print_deactivated_features(deactivated_list)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_deactivated_features(
+		self,
+		deactivated_list: list[str]
+	) -> None:
+		"""Print list of deactivated features."""
+		self._director.print_heading("Deactivated")
+		for item in deactivated_list:
+			self._director.print_output(item)
 		return
 
 	# ------------------------------------------------------------------------
@@ -668,6 +674,7 @@ class EvaluationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Evaluations")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -678,9 +685,6 @@ class EvaluationsCommand:
 		self._director.evaluations_active.print_the_evaluations()
 		self._director.evaluations_active.summarize_evaluations()
 		self._director.common.create_plot_for_tabs("evaluations")
-		self._director.title_for_table_widget = (
-			"Evaluations have been read and correlations computed"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -702,7 +706,7 @@ class EvaluationsCommand:
 			item_names = evaluations.columns.tolist()
 			item_labels = [name[:4] for name in item_names]
 
-			if len(item_names) < 3:
+			if len(item_names) < MINIMUM_NUMBER_OF_ITEMS_IN_EVALUATIONS_FILE:
 				self.common.event_driven_automatic_restoration()
 				raise ValueError("Evaluations file must have at least 3 items")
 
@@ -742,18 +746,15 @@ class EvaluationsCommand:
 		if (
 			self._director.evaluations_active.item_names
 			and self._director.correlations_active.item_names
+			and self._director.evaluations_active.item_names == \
+				self._director.correlations_active.item_names
 		):
-			# If item names match, correlations are linked to evaluations
-			if (
-				self._director.evaluations_active.item_names
-				== self._director.correlations_active.item_names
-			):
-				# Reinitialize correlations since they're linked to
-				# old evaluations
-				from features import CorrelationsFeature  # noqa: PLC0415
-				self._director.correlations_active = CorrelationsFeature(
-					self._director
-				)
+			# Reinitialize correlations since they're linked to
+			# old evaluations
+			from features import CorrelationsFeature  # noqa: PLC0415
+			self._director.correlations_active = CorrelationsFeature(
+				self._director
+			)
 		return
 
 	# ------------------------------------------------------------------------
@@ -1615,7 +1616,8 @@ class OpenScoresCommand:
 				self._director.scores_active.dim_names = dim_names
 
 				# Set horizontal and vertical axis names
-				if len(dim_names) >= 2:
+				if len(dim_names) >= \
+					MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 					self._director.scores_active.hor_axis_name = dim_names[0]
 					self._director.scores_active.vert_axis_name = dim_names[1]
 				elif len(dim_names) == 1:
@@ -1626,14 +1628,14 @@ class OpenScoresCommand:
 				self._director.scores_active.ndim = len(dim_names)
 
 				# Extract score_1 and score_2 for plotting
-				if len(dim_names) >= 1:
+				if len(dim_names) >= MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 					hor_axis_name = (
 						self._director.scores_active.hor_axis_name)
 					self._director.scores_active.score_1 = (
 						scores[hor_axis_name])
 					self._director.scores_active.score_1_name = dim_names[0]
 
-				if len(dim_names) >= 2:
+				if len(dim_names) >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 					vert_axis_name = (
 						self._director.scores_active.vert_axis_name)
 					self._director.scores_active.score_2 = (
@@ -1782,7 +1784,7 @@ class OpenScriptCommand:
 
 					# Execute command with parameters
 					self._execute_script_command(
-						command_name, params_dict, line_num, line
+						command_name, params_dict, line_num
 					)
 					commands_executed += 1
 					self._executed_commands.append(command_name)
@@ -1790,7 +1792,8 @@ class OpenScriptCommand:
 					# Update progress bar
 					director.progress_bar.setValue(commands_executed)
 					director.progress_label.setText(
-						f"Executing line {commands_executed} of {total_commands}"
+						f"Executing line {commands_executed} of "
+						f"{total_commands}"
 					)
 					QApplication.processEvents()
 
@@ -1913,8 +1916,7 @@ class OpenScriptCommand:
 		self,
 		command_name: str,
 		params_dict: dict,
-		line_num: int,
-		line: str,
+		line_num: int
 	) -> None:
 		"""Execute a command from a script with given parameters.
 
@@ -1922,7 +1924,6 @@ class OpenScriptCommand:
 			command_name: Name of command to execute
 			params_dict: Dictionary of parameters for the command
 			line_num: Line number in script (for error messages)
-			line: Original line text (for error messages)
 		"""
 		import inspect  # noqa: PLC0415
 		from dictionaries import command_dict  # noqa: PLC0415
@@ -2211,7 +2212,7 @@ class PrintSampleSolutionsCommand:
 			"Print sample solutions", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		# Implementation for printing sample solutions
-		# TODO: Add actual implementation
+		#  Add actual implementation
 		self._director.title_for_table_widget = (
 			"Sample solutions printing not yet implemented")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2702,7 +2703,7 @@ class SaveSampleRepetitionsCommand:
 			# Line 1: Comment line
 			f.write(
 				f"# Sample repetitions file created: "
-				f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+				f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n" # noqa: DTZ005
 			)
 
 			# Line 2: Basic dimensions (I4 format)
@@ -2790,8 +2791,7 @@ class SaveSampleSolutionsCommand:
 
 		with Path(file_name).open("w", encoding="utf-8") as f:
 			# Line 1: Comment line
-			f.write(
-				f"# Sample solutions file created: ")
+			f.write("# Sample solutions file created: ")
 
 			# Line 2: Basic dimensions (I4 format)
 			f.write(f"{ndim:4d}{npoint:4d}{nsolutions:4d}\n")
@@ -3044,7 +3044,9 @@ class SaveScriptCommand:
 	def _write_header(self, f: object) -> None:
 		"""Write script header to file."""
 		f.write("# Spaces Script\n")
-		f.write(f"# Created: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+		f.write(
+			f"# Created: "
+			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n") # noqa: DTZ005
 		f.write("# Spaces Version: 2025\n")
 		return
 
@@ -3251,7 +3253,6 @@ class SettingsDisplayCommand:
 		Returns:
 			QTextEdit widget showing updated display sizing settings
 		"""
-		from PySide6.QtWidgets import QTextEdit
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)
@@ -3315,7 +3316,6 @@ class SettingsLayoutCommand:
 		Returns:
 			QTextEdit widget showing updated layout options
 		"""
-		from PySide6.QtWidgets import QTextEdit
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)
@@ -3381,7 +3381,6 @@ class SettingsPlaneCommand:
 		Returns:
 			QTextEdit widget showing updated plane settings
 		"""
-		from PySide6.QtWidgets import QTextEdit
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)
@@ -3454,12 +3453,7 @@ class SettingsPlotCommand:
 
 	def execute(
 		self,
-		common: Spaces,
-		bisector: bool | None = None,
-		connector: bool | None = None,
-		reference_points: bool | None = None,
-		just_reference_points: bool | None = None,
-	) -> None:
+		common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters("Settings - plot settings")
@@ -3491,8 +3485,7 @@ class SettingsPlotCommand:
 		Returns:
 			QTextEdit widget showing updated plot settings
 		"""
-		from PySide6.QtWidgets import QTextEdit
-
+	
 		widget = QTextEdit()
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(150)
@@ -3552,7 +3545,7 @@ class SettingsPresentationLayerCommand:
 		Returns:
 			QTextEdit widget showing updated presentation layer setting
 		"""
-		from PySide6.QtWidgets import QTextEdit
+	
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)
@@ -3611,7 +3604,6 @@ class SettingsSegmentCommand:
 		Returns:
 			QTextEdit widget showing updated segment sizing settings
 		"""
-		from PySide6.QtWidgets import QTextEdit
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)
@@ -3671,7 +3663,6 @@ class SettingsVectorSizeCommand:
 		Returns:
 			QTextEdit widget showing updated vector sizing settings
 		"""
-		from PySide6.QtWidgets import QTextEdit
 
 		widget = QTextEdit()
 		widget.setReadOnly(True)

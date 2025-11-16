@@ -3561,6 +3561,328 @@ rivalry_table_dict = MappingProxyType({
 
 
 # ----------------------------------------------------------------------------
+# Dictionary: title_generator_dict
+# Purpose: Generate titles for table widgets in BuildOutputForGUI
+# Structure: Maps command names to lambda functions that generate titles
+# All lambdas take director parameter for uniform access pattern
+# Alphabetically ordered for maintainability
+# ----------------------------------------------------------------------------
+
+title_generator_dict = MappingProxyType({
+	"About": lambda d: (
+		"Spaces was developed by Ed Schneider."
+		"\n\nIt is based on programs he developed in the 1970s as "
+		"a graduate student at "
+		"The University of Michigan and while consulting on the Obama "
+		"2008 campaign."
+		"\n\nQuite a few individuals and organizations have "
+		"contributed to the development of Spaces."
+		"\nAmong those who have contributed (in alphabetical order) are:"
+	),
+	"Alike": lambda d: (
+		f"Pairs with similarity using cutoff: {d.common.cutoff}"
+	),
+	"Base": lambda d: (
+		f"Base supporters of {d.rivalry.rival_a.name} and "
+		f"{d.rivalry.rival_b.name}"
+	),
+	"Battleground": lambda d: "Size of battleground",
+	"Center": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"Cluster": lambda d: (
+		f"K-Means Clustering Results using "
+		f"{d.common.name_source.capitalize()} (k={d.common.n_clusters})"
+	),
+	"Compare": lambda d: (
+		f"After procrustean rotation active configuration matches "
+		f"target configuration with disparity of {d.common.disparity:8.4f}"
+	),
+	"Configuration": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"Contest": lambda d: (
+		f"Segments are based on a contest between "
+		f"{d.rivalry.rival_a.name} and {d.rivalry.rival_b.name}"
+	),
+	"Convertible": lambda d: (
+		f"Potential supporters convertible to {d.rivalry.rival_a.name} "
+		f"and {d.rivalry.rival_b.name}"
+	),
+	"Core supporters": lambda d: (
+		f"Core supporters of {d.rivalry.rival_a.name} and "
+		f"{d.rivalry.rival_b.name}"
+	),
+	"Correlations": lambda d: (
+		"The correlations are shown as a square matrix"
+	),
+	"Create": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"Deactivate": lambda d: "Deactivate",
+	"Directions": lambda d: (
+		f"Directions are based on the active configuration which has "
+		f"{d.configuration_active.ndim} dimensions and "
+		f"{d.configuration_active.npoint} points"
+	),
+	"Distances": lambda d: "Inter-point distances",
+	"Evaluations": lambda d: (
+		"Evaluations have been read and correlations computed"
+	),
+	"Exit": lambda d: "Exiting Spaces",
+	"Factor analysis": lambda d: "Factor analysis",
+	"Factor analysis machine learning": lambda d: (
+		"Factor Analysis - Machine Learning"
+	),
+	"First dimension": lambda d: "Party oriented segments",
+	"Grouped data": lambda d: (
+		f"Grouped data has {d.grouped_data_active.ndim} dimensions and "
+		f"{d.grouped_data_active.ngroups} groups"
+	),
+	"Help": lambda d: (
+		"Help command under construction - stay tuned, please"
+	),
+	"History": lambda d: "Commands used",
+	"Individuals": lambda d: (
+		f"Individuals data has been read "
+		f"({len(d.individuals_active.ind_vars)} rows)"
+	),
+	"Invert": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"Joint": lambda d: (
+		"Warning: Make sure the scores match the \n"
+		"dimensions AND orientation of the active configuration."
+	),
+	"Likely supporters": lambda d: (
+		f"Likely supporters of {d.rivalry.rival_a.name} and "
+		f"{d.rivalry.rival_b.name}"
+	),
+	"Line of sight": lambda d: (
+		f"Line of sight:\n"
+		f"The {d.similarities_active.value_type} matrix has "
+		f"{d.similarities_active.nreferent} items"
+	),
+	"MDS": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} dimensions and "
+		f"{d.configuration_active.npoint} points and stress of "
+		f"{d.common.best_stress: 6.4f}"
+	),
+	"Move": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"New grouped data": lambda d: (
+		f"Grouped data has {d.grouped_data_active.ndim} dimensions and "
+		f"{d.grouped_data_active.ngroups} groups"
+	),
+	"Open sample design": lambda d: "Sample design has been read",
+	"Open sample repetitions": lambda d: (
+		"Sample repetitions have been read"
+	),
+	"Open sample solutions": lambda d: "Sample solutions have been read",
+	"Open scores": lambda d: (
+		f"Scores have been read ({len(d.scores_active.scores)} rows)"
+	),
+	"Open script": lambda d: (
+		f"Script executed: {d.common.commands_executed} commands from "
+		f"{d.common.script_file_name}"
+	),
+	"Paired": lambda d: (
+		f"Relationships between "
+		f"{d.configuration_active.point_names[d.common.focal_index]} "
+		f"and other points"
+	),
+	"Principal components": lambda d: "Principal components",
+	"Print configuration": lambda d: "Active configuration",
+	"Print correlations": lambda d: "Active correlations",
+	"Print evaluations": lambda d: "Active evaluations",
+	"Print grouped data": lambda d: "Active grouped data",
+	"Print individuals": lambda d: "Active individuals",
+	"Print sample design": lambda d: "Active sample design",
+	"Print sample repetitions": lambda d: "Active sample repetitions",
+	"Print sample solutions": lambda d: "Active sample solutions",
+	"Print scores": lambda d: "Active scores",
+	"Print similarities": lambda d: "Active similarities",
+	"Print target": lambda d: (
+		f"Target configuration has {d.target_active.ndim} dimensions and "
+		f"{d.target_active.npoint} points"
+	),
+	"Ranks differences": lambda d: "Difference of Ranks",
+	"Ranks distances": lambda d: "Rank of Distances",
+	"Ranks similarities": lambda d: "Rank of Similarities",
+	"Redo": lambda d: f"Redid {d.common.cmd_state.command_name} command",
+	"Reference points": lambda d: (
+		f"Reference points will be {d.rivalry.rival_a.name} and "
+		f"{d.rivalry.rival_b.name}"
+	),
+	"Rescale": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"Rotate": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"Sample designer": lambda d: (
+		f"Sample design - Size of universe: {d.common.universe_size}, "
+		f"Probability of inclusion: {d.common.probability_of_inclusion}"
+	),
+	"Sample repetitions": lambda d: (
+		f"Sample repetitions - Size of universe: {d.common.universe_size}"
+	),
+	"Save configuration": lambda d: (
+		f"The active configuration has been written to: \n"
+		f"{d.common.name_of_file_written_to}\n"
+	),
+	"Save correlations": lambda d: (
+		f"The active correlations have been written to:\n"
+		f"{d.common.file_name}"
+	),
+	"Save grouped data": lambda d: (
+		f"The active grouped data has been written to: \n"
+		f"{d.common.name_of_file_written_to}\n"
+	),
+	"Save individuals": lambda d: (
+		f"The active individuals have been written to:\n"
+		f"{d.common.file_name}"
+	),
+	"Save sample design": lambda d: (
+		f"The active sample design has been written to:\n"
+		f"{d.common.file_name}"
+	),
+	"Save sample repetitions": lambda d: (
+		f"The active sample repetitions have been written to:\n"
+		f"{d.common.file_name}"
+	),
+	"Save sample solutions": lambda d: (
+		f"The active sample solutions have been written to:\n"
+		f"{d.common.file_name}"
+	),
+	"Save scores": lambda d: (
+		f"The active scores have been written to:\n{d.common.file_name}"
+	),
+	"Save script": lambda d: (
+		f"Script saved with {len(d.common.script_lines)} commands:\n"
+		f"{d.common.file_name}"
+	),
+	"Save similarities": lambda d: (
+		f"The active similarities have been written to:\n"
+		f"{d.common.file_name}"
+	),
+	"Save target": lambda d: (
+		f"The active target has been written to: \n"
+		f"{d.common.name_of_file_written_to}\n"
+	),
+	"Score individuals": lambda d: (
+		f"There are {d.scores_active.nscores} active scores for "
+		f"{d.scores_active.nscored} individuals."
+	),
+	"Scree": lambda d: "Best stress by dimensionality",
+	"Second dimension": lambda d: "Social oriented segments",
+	"Segments": lambda d: (
+		f"Segments defined by contest between {d.rivalry.rival_a.name} "
+		f"and {d.rivalry.rival_b.name}"
+	),
+	"Settings - display sizing": lambda d: "Display sizing settings updated",
+	"Settings - layout options": lambda d: "Layout options updated",
+	"Settings - plane": lambda d: "Plane settings updated",
+	"Settings - plot settings": lambda d: "Plot settings updated",
+	"Settings - presentation layer": lambda d: "Presentation layer updated",
+	"Settings - segment sizing": lambda d: (
+		"Segment sizing settings updated"
+	),
+	"Settings - vector sizing": lambda d: "Vector sizing settings updated",
+	"Shepard": lambda d: (
+		"Rank of similarity above diagonal, "
+		"rank of distance below diagonal"
+	),
+	"Similarities": lambda d: (
+		f"The {d.similarities_active.value_type} matrix has "
+		f"{d.similarities_active.nreferent} items"
+	),
+	"Status": lambda d: "Status of current session",
+	"Stress contribution": lambda d: (
+		f"Stress contribution of "
+		f"{d.configuration_active.point_names[d.common.point_index]}"
+	),
+	"Target": lambda d: (
+		f"Target configuration has {d.target_active.ndim} dimensions and "
+		f"{d.target_active.npoint} points"
+	),
+	"Terse": lambda d: "Output will not include explanations",
+	"Tester": lambda d: "Tester",
+	"Uncertainty": lambda d: (
+		"An ellipse around each point delineates with 95% confidence "
+		"that the point lies within that point's ellipse"
+	),
+	"Undo": lambda d: f"Undid {d.common.cmd_state.command_name} command",
+	"Varimax": lambda d: "Varimax rotation of active configuration",
+	"Vectors": lambda d: (
+		f"Vectors are based on the active configuration which has "
+		f"{d.configuration_active.ndim} dimensions and "
+		f"{d.configuration_active.npoint} points"
+	),
+	"Verbose": lambda d: "Output will include explanations",
+	"View configuration": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"View correlations": lambda d: (
+		f"Correlation matrix has {d.correlations_active.nreferent} items"
+	),
+	"View custom": lambda d: (
+		f"Configuration has {d.configuration_active.ndim} "
+		f"dimensions and {d.configuration_active.npoint} points"
+	),
+	"View distances": lambda d: "Inter-point distances",
+	"View evaluations": lambda d: "Evaluations",
+	"View grouped data": lambda d: (
+		f"Configuration is based on {d.common.grouping_var} and has "
+		f"{d.grouped_data_active.ndim} dimensions and "
+		f"{d.grouped_data_active.ngroups} points"
+	),
+	"View individuals": lambda d: "Individuals",
+	"View point uncertainty": lambda d: (
+		f"Point Uncertainty - {len(d.common.selected_indices)} points: "
+		f"{', '.join(d.common.selected_points)}"
+	),
+	"View sample design": lambda d: (
+		f"Sample design - Size of universe: {d.common.universe_size}, "
+		f"Probability of inclusion: {d.common.probability_of_inclusion}"
+	),
+	"View sample repetitions": lambda d: "Sample repetitions",
+	"View sample solutions": lambda d: (
+		f"{d.sample_solutions_active.nsolutions} solutions have "
+		f"{d.sample_solutions_active.ndim} dimensions and "
+		f"{d.sample_solutions_active.npoint} points"
+	),
+	"View scores": lambda d: (
+		f"There are {d.scores_active.nscores} active scores for "
+		f"{d.scores_active.nscored} individuals."
+	),
+	"View script": lambda d: "Script commands",
+	"View similarities": lambda d: (
+		f"The {d.similarities_active.value_type} matrix has "
+		f"{d.similarities_active.nreferent} items"
+	),
+	"View spatial uncertainty": lambda d: (
+		f"Spatial Uncertainty - {d.sample_solutions_active.nsolutions} "
+		f"solutions with {d.sample_solutions_active.ndim} dimensions and "
+		f"{d.sample_solutions_active.npoint} points"
+	),
+	"View target": lambda d: (
+		f"Target configuration has {d.target_active.ndim} dimensions and "
+		f"{d.target_active.npoint} points"
+	),
+})
+
+
+# ----------------------------------------------------------------------------
 # Note: Feature dictionaries from dependencies.py are NOT included here
 # because they are dynamically created in the __init__ method using
 # runtime values from candidate and active objects.

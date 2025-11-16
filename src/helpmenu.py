@@ -72,21 +72,41 @@ class AboutCommand:
 
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
+		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("About")
 		common.capture_and_push_undo_state("About", "passive", params)
-		self._director.title_for_table_widget = (
-			"Spaces was developed by Ed Schneider."
-			"\n\nIt is based on programs he developed in the 1970s as "
-			"a graduate student at"
-			"The University of Michigan and while consulting on the Obama "
-			"2008 campaign."
-			"\n\nQuite a few individuals and organizations have "
-			"contributed to the development of Spaces."
-			"\nAmong those who have contributed (in alphabetical order) are:"
-		)
+		self._print_about()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_about(self) -> None:
+		"""Print information about Spaces and acknowledgements."""
+		self._director.print_heading("About Spaces")
+		self._director.print_output(
+			"Spaces was developed by Ed Schneider.\n\n"
+			"It is based on programs he developed in the 1970s as "
+			"a graduate student at The University of Michigan and while "
+			"consulting on the Obama 2008 campaign.\n\n"
+			"Quite a few individuals and organizations have contributed "
+			"to the development of Spaces.\n"
+			"Among those who have contributed (in alphabetical order) are:"
+		)
+		# Print acknowledgements in 2 columns
+		acknowledgements = self._director.acknowledgements
+		col_width = 40
+		mid = (len(acknowledgements) + 1) // 2
+		for i in range(mid):
+			left = acknowledgements[i]
+			if i + mid < len(acknowledgements):
+				right = acknowledgements[i + mid]
+				self._director.print_output(f"  {left:<{col_width}}{right}")
+			else:
+				self._director.print_output(f"  {left}")
 		return
 
 	# ------------------------------------------------------------------------
@@ -180,9 +200,6 @@ class HelpCommand:
 		self._director = director
 		self.common = common
 		director.command = "Help"
-		self._director.title_for_table_widget = (
-			"Help command under construction - stay tuned, please"
-		)
 		return
 
 	# ------------------------------------------------------------------------
@@ -190,6 +207,7 @@ class HelpCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Help")
 		common.capture_and_push_undo_state("Help", "passive", params)
 		self._director.create_widgets_for_output_and_log_tabs()

@@ -1,0 +1,501 @@
+About
+Alike
+Base
+Battleground
+Center
+Cluster
+Compare
+Configuration
+Contest
+Convertible
+Core supporters
+Correlations
+Create
+Deactivate
+Directions
+Distances
+Evaluations
+Exit
+Factor analysis
+Factor analysis machine learning
+First dimension
+Grouped data
+Help
+History
+Individuals
+Invert
+Joint
+Likely supporters
+Line of sight
+MDS
+Move
+New grouped data
+Open sample design
+Open sample repetitions
+Open sample solutions
+Open scores
+Open script
+Paired
+Principal components
+Print configuration
+Print correlations
+Print evaluations
+Print grouped data
+Print individuals
+Print sample design
+Print sample repetitions
+Print sample solutions
+Print scores
+Print similarities
+Print target
+Ranks differences
+Ranks distances
+Ranks similarities
+Redo
+Reference points
+Rescale
+Rotate
+Sample designer
+Sample repetitions
+Save configuration
+Save correlations
+Save grouped data
+Save individuals
+Save sample design
+Save sample repetitions
+Save sample solutions
+Save scores
+Save similarities
+Save target
+Save script
+Score individuals
+Scree
+Second dimension
+Segments
+Settings - display sizing
+Settings - layout options
+Settings - plane
+Settings - plot settings
+Settings - presentation layer
+Settings - segment sizing
+Settings - vector sizing
+Shepard
+Similarities
+Status
+Stress contribution
+Target
+Terse
+Tester
+Uncertainty
+Undo
+Varimax
+Vectors
+Verbose
+View configuration
+View correlations
+View custom
+View distances
+View evaluations
+View grouped data
+View individuals
+View point uncertainty
+View sample design
+View sample repetitions
+View sample solutions
+View scores
+View script
+View similarities
+View spatial uncertainty
+View target
+About provides information about the program.
+Alike can be used to place lines between points 
+Base identifies regions close to the reference 
+Battleground is used to define a region of 
+Center is used to shift points to be centered around 
+Cluster used to assign points to clusters.\n
+Compare is used to compare the target configuration 
+Configuration reads in a configuration file.\n
+Contest identifies regions defined by the reference 
+Convertible identifies regions where \n
+Core supporters identifies regions 
+Correlations reads in a correlation matrix 
+Create is used to build the \nactive configuration by 
+Deactivate is used to deactivate the active \n
+Directions is used to display a plot showing the 
+Distances displays a matrix of inter-point 
+Evaluations reads in a file containing \n
+Exit exits the program.
+Factor creates a factor analysis of the 
+Factor creates a factor 
+First dimension identifies regions 
+Grouped data reads in a file with coordinates
+Help displays general information about Spaces.
+History displays a list of commands used in this 
+Individuals is used to establish variables\n
+Invert inverts dimension(s).\n
+Joint creates a plot including points 
+Likely supporters identifies regions 
+Line of sight computes the Line of sight 
+MDS is used to perform a metric or non-metric 
+Move is used to add a constant to the coordinates 
+New grouped data creates a new grouped 
+Open sample design reads in a file 
+Open sample repetitions reads in 
+Open sample solutions reads in 
+Open scores reads in a file containing individual 
+Open script reads and executes a script file (.spc) 
+Paired is used to obtain information about pairs of 
+Principal components is used to obtain 
+Print configuration is used to print 
+Print correlations is used to print 
+Print evaluations is used to print the 
+Print grouped data is used to print the 
+Print individuals is used to print the 
+Print sample design is used to print 
+Print sample repetitions is used 
+Print sample solutions is used 
+Print scores is used to print the active scores.
+Print similarities is used to print 
+Print target is used to print the active target.
+Ranks differences displays a matrix of 
+Ranks distances is used to display ranks of 
+Ranks similarities is used to display 
+Redo redoes the last action.
+Reference points is used to designate two 
+Rescale is used to increase or decrease coordinates.\n
+Rotate is used to rotate the current plane of the 
+Sample designer is used to create a sample 
+Sample repetitions is used to create a 
+Save configuration is used to save 
+Save correlations is used to save the 
+Save grouped data is used to save the 
+Save individuals is used to save the 
+Save sample design is used to save the 
+Save sample repetitions is used to 
+Save sample solutions is used to save 
+Save scores is used to save the active scores 
+Save similarities is used to save the 
+Save target is used to save the active target 
+Save script exports the command history from the 
+Score individuals is used to create 
+Scree displays a diagram showing stress vs.
+Second dimension identifies regions 
+Segments identifies regions defined by the
+Settings - display sizing
+Settings - layout options is 
+Settings - plane is used to define the plane 
+Settings - plot settings is used to 
+Settings - 
+Settings - segment sizing
+Settings - vector sizing is used to 
+Shepard is used to create a Shepard diagram.\n
+Similarities reads in a similarity matrix.\n
+Status displays the current status of the program.
+Stress contribution is used to identify 
+Target estabishes a target configuration.\n
+Terse sets the verbosity level to terse.\n
+Tester is used to test various features of the 
+Uncertainty uses the sample repetitions to create
+Undo undoes the last action.
+Varimax performs a varimax rotation of the active 
+Vectors creates a plot with vectors from the origin
+Verbose sets the verbosity level to verbose.\n
+View configuration is used to view 
+View correlations is used to view 
+View custom is used to view a custom matrix.
+View distances is used to view the active 
+View evaluations is used to view the active 
+View grouped data is used to view the 
+View individuals is used to view the 
+View point uncertainty is used to 
+View sample design is used to view the 
+View sample repetitions is used to 
+View sample solutions is used to 
+View scores is used to view the active scores.
+View script displays the current command history 
+View similarities is used to view the 
+View spatial uncertainty is used to 
+View target is used to view the active target.
+Plot
+Output
+Gallery
+Log
+Record
+unique
+Alike
+Base
+Battleground
+Center
+unique
+Compare
+Configuration
+shared
+Convertible
+Core supporters
+Correlations
+Create
+unique
+Directions
+Distances
+Evaluations
+unique
+Factor analysis
+Factor analysis machine learning
+First dimension
+Grouped data
+shared
+unique
+Individuals
+Invert
+shared
+Likely supporters
+Line of sight
+MDS
+Move
+New grouped data
+Open sample design
+Open sample repetitions
+Open sample solutions
+Open scores
+unique
+unique
+Principal components
+Print configuration
+Print correlations
+Print evaluations
+Print grouped data
+Print individuals
+Print sample design
+Print sample repetitions
+Print sample solutions
+Print scores
+Print similarities
+Print target
+Ranks differences
+Ranks distances
+Ranks similarities
+unique
+Reference points
+Rescale
+Rotate
+Sample designer
+Sample repetitions
+Save configuration
+Save correlations
+Save grouped data
+Save individuals
+Save sample design
+Save sample repetitions
+Save sample solutions
+Save scores
+Save similarities
+Save target
+Save script
+Score individuals
+Scree
+Second dimension
+Segments
+Settings - display sizing
+Settings - layout options
+unique
+unique
+Settings - presentation layer
+Settings - segment sizing
+Settings - vector sizing
+Shepard
+Similarities
+unique
+Stress contribution
+Target
+shared
+unique
+Uncertainty
+unique
+Varimax
+Vectors
+shared
+View configuration
+View correlations
+unique
+View distances
+View evaluations
+View grouped data
+View individuals
+View point uncertainty
+View sample design
+View sample repetitions
+View sample solutions
+View scores
+unique
+View similarities
+View spatial uncertainty
+View target
+New
+Configuration
+Grouped data
+Open
+Configuration
+Target
+Grouped data
+Similarities
+Similarities
+Dissimilarities
+Correlations
+Evaluations
+Individuals
+Scores
+Sample
+Design
+Repetitions
+Solutions
+Script
+Save
+Configuration
+Save the active target
+Correlations
+Grouped data
+Similarities
+Individuals
+Save the active scores
+Sample
+Design
+Repetitions
+Solutions
+Script
+Deactivate
+Settings
+Plot settings
+Settings for plane
+Segment sizing
+Display sizing
+Vector sizing
+Presentation layer
+Matplotlib
+PyQtGraph
+Layout options
+Print
+Configuration
+Print active target
+Grouped data
+Correlations
+Similarities
+Evaluations
+Individuals
+Print active scores
+Sample
+Design
+Repetitions
+Solutions
+Exit Spaces
+Undo
+Redo
+Configuration
+Target
+Grouped data
+Similarities
+Correlations
+Distances
+Evaluations
+Individuals
+Scores
+History
+Script
+Sample
+Design
+Repetitions
+Solutions
+Spatial uncertainty
+Lines
+Boxes
+Ellipses
+Circles
+Point uncertainty
+Lines
+Boxes
+Ellipses
+Circles
+Custom
+Center
+Move
+Invert
+Rescale
+Rotate
+Compare
+Varimax
+Correlations
+Similarities
+Line of sight
+Paired
+Alike
+Distances
+Ranks
+Ranks of distances
+Ranks of similarities
+Difference of ranks
+Scree diagram
+Shepard diagram
+Similarities on x-axis
+Similarities on y-axis
+Stress contribution
+Cluster
+Principal Components
+Factor Analysis
+Factor Analysis Machine Learning
+Multi-Dimensional Scaling
+Use non-metric estimation
+Use metric estimation
+Vectors
+Directions
+Uncertainty
+Evaluations
+Sample
+Design samples
+Generate repetitions
+Score individuals
+Joint
+Reference points
+Contest
+Segments
+Core
+Spatially defined regions
+Left core supporters
+Right core supporters
+Both core supporters
+Neither core supporters
+Base supporters
+Spatially defined regions
+Left base supporters
+Right base supporters
+Both base supporters
+Neither base supporters
+Likely supporters
+Spatially defined regions
+Likely left supporters
+Likely right supporters
+Both likely supporters
+Battleground
+Spatially defined regions
+Battleground
+Settled
+Convertible
+Spatially defined regions
+Convertible to the left
+Convertible to the right
+Both
+Settled
+Focused on first dimension
+Spatially defined regions
+Left focused
+Right focused
+Focused on second dimension
+Spatially defined regions
+Upper focused
+Lower focused
+Help Content
+Display status
+Verbose
+About Spaces
+tester
+Configuration
+Correlations
+Create

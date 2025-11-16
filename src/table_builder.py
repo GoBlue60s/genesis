@@ -21,6 +21,7 @@ from dictionaries import (
 	square_table_dict,
 	statistical_table_dict,
 	rivalry_table_dict,
+	title_generator_dict,
 )
 from exceptions import SpacesError
 # ----------------------------------------------------------------------------
@@ -38,7 +39,11 @@ class BuildOutputForGUI(QWidget):
 		if director.include_explanation_when_verbosity_last_set_to_verbose():
 			explain = QLabel(director.optionally_explain_what_command_does())
 			gui_output_layout.addWidget(explain)
-		title_label = QLabel(director.title_for_table_widget)
+		if director.command in title_generator_dict:
+			title = title_generator_dict[director.command](director)
+		else:
+			title = f"{director.command} output"
+		title_label = QLabel(title)
 		gui_output_layout.addWidget(title_label)
 		if director.command in director.widget_dict:
 			gui_output_as_widget = director.widget_control(director.command)
