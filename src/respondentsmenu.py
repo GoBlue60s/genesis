@@ -51,12 +51,41 @@ class BaseCommand(ASupporterGrouping):
 			{"show": show}
 		)
 
+		self._print_base()
 		common.create_plot_for_tabs("base")
-		director.title_for_table_widget = (
-			f"Base supporters of {self._rival_a.name} and {self._rival_b.name}"
-		)
 		director.create_widgets_for_output_and_log_tabs()
 		director.record_command_as_successfully_completed()
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_base(self) -> None:
+		"""Print base supporter counts for each rival."""
+		director = self._director
+		rivalry = director.rivalry
+
+		# Get the title (same as table widget title)
+		title = (
+			f"Base supporters of {self._rival_a.name} and "
+			f"{self._rival_b.name}"
+		)
+		director.print_heading(title)
+
+		# Calculate counts from percentages
+		nscored = rivalry.nscored_individ
+		base_left_count = int((self._base_pcts[1] / 100) * nscored)
+		base_right_count = int((self._base_pcts[3] / 100) * nscored)
+
+		# Print the counts
+		director.print_output(
+			f"There are {base_left_count} base supporters of "
+			f"{self._rival_a.name}"
+		)
+		director.print_output(
+			f"There are {base_right_count} base supporters of "
+			f"{self._rival_b.name}"
+		)
 
 		return
 
@@ -101,10 +130,36 @@ class BattlegroundCommand(ASupporterGrouping):
 			{"show": show}
 		)
 
+		self._print_battleground()
 		self._director.common.create_plot_for_tabs("battleground")
-		self._director.title_for_table_widget = "Size of battleground"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_battleground(self) -> None:
+		"""Print battleground and settled counts."""
+		director = self._director
+		rivalry = director.rivalry
+
+		# Get the title (same as table widget title)
+		title = "Size of battleground"
+		director.print_heading(title)
+
+		# Calculate counts from percentages
+		nscored = rivalry.nscored_individ
+		battleground_count = int(
+			(self._battleground_pcts[1] / 100) * nscored
+		)
+		settled_count = int((self._battleground_pcts[2] / 100) * nscored)
+
+		# Print the counts
+		director.print_output(
+			f"There are {battleground_count} in the battleground"
+		)
+		director.print_output(f"There are {settled_count} settled")
+
 		return
 
 	# ------------------------------------------------------------------------
