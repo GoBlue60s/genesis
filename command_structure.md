@@ -58,8 +58,8 @@
 2. create_widgets_for_output_and_log_tabs
 
 ## 14. if no plot
-1. conditional
-1. set_focus_on_tab(“Output”)
+1. conditional - only needed if there is no plot, if there is a plot no line is needed as that would be redundant
+2. set_focus_on_tab(“Output”)
 
 ## 15. end of command
 1. required

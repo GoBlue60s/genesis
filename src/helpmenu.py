@@ -27,7 +27,7 @@ class AboutCommand:
 		self._director.command = "About"
 		self._director.acknowledgements = (
 			"Charles Antonelli",
-			"Phillipp Acsany"
+			"Phillipp Acsany",
 			"Ned Batchelder",
 			"Cornell Belcher",
 			"Alexis Castelanas",
@@ -86,27 +86,44 @@ class AboutCommand:
 
 	def _print_about(self) -> None:
 		"""Print information about Spaces and acknowledgements."""
-		self._director.print_heading("About Spaces")
-		self._director.print_output(
-			"Spaces was developed by Ed Schneider.\n\n"
-			"It is based on programs he developed in the 1970s as "
-			"a graduate student at The University of Michigan and while "
-			"consulting on the Obama 2008 campaign.\n\n"
-			"Quite a few individuals and organizations have contributed "
-			"to the development of Spaces.\n"
-			"Among those who have contributed (in alphabetical order) are:"
+		print("\tAbout Spaces\n")
+		print(
+			"\tSpaces was developed by Ed Schneider."
+			"\n\n\tIt is based on programs he developed in the 1970s as "
+			"a graduate student"
+			"\n\tat The University of Michigan and while "
+			"consulting on the Obama 2008"
+			"\n\tcampaign."
+			"\n\n\tQuite a few individuals and organizations have contributed "
+			"to the"
+			"\n\tdevelopment of Spaces."
+			"\n\n\tAmong those who have contributed (in alphabetical order)"
+			" are:\n"
 		)
-		# Print acknowledgements in 2 columns
+		# Print acknowledgements in 2 columns, preserving newlines within entries
 		acknowledgements = self._director.acknowledgements
-		col_width = 40
+		# Calculate column width based on longest LINE (not entry)
+		max_line_len = max(
+			len(line)
+			for ack in acknowledgements
+			for line in ack.split("\n")
+		)
+		col_width = max_line_len + 3
 		mid = (len(acknowledgements) + 1) // 2
+
 		for i in range(mid):
-			left = acknowledgements[i]
-			if i + mid < len(acknowledgements):
-				right = acknowledgements[i + mid]
-				self._director.print_output(f"  {left:<{col_width}}{right}")
-			else:
-				self._director.print_output(f"  {left}")
+			left_lines = acknowledgements[i].split("\n")
+			right_lines = (
+				acknowledgements[i + mid].split("\n")
+				if i + mid < len(acknowledgements)
+				else [""]
+			)
+			max_lines = max(len(left_lines), len(right_lines))
+
+			for line_num in range(max_lines):
+				left = left_lines[line_num] if line_num < len(left_lines) else ""
+				right = right_lines[line_num] if line_num < len(right_lines) else ""
+				print(f"\t  {left:<{col_width}}{right}")
 		return
 
 	# ------------------------------------------------------------------------

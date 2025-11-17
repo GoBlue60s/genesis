@@ -69,7 +69,7 @@ class BaseCommand(ASupporterGrouping):
 			f"Base supporters of {self._rival_a.name} and "
 			f"{self._rival_b.name}"
 		)
-		director.print_heading(title)
+		print(f"\n\t{title}\n")
 
 		# Calculate counts from percentages
 		nscored = rivalry.nscored_individ
@@ -77,12 +77,12 @@ class BaseCommand(ASupporterGrouping):
 		base_right_count = int((self._base_pcts[3] / 100) * nscored)
 
 		# Print the counts
-		director.print_output(
-			f"There are {base_left_count} base supporters of "
+		print(
+			f"\tThere are {base_left_count} base supporters of "
 			f"{self._rival_a.name}"
 		)
-		director.print_output(
-			f"There are {base_right_count} base supporters of "
+		print(
+			f"\tThere are {base_right_count} base supporters of "
 			f"{self._rival_b.name}"
 		)
 
@@ -142,7 +142,7 @@ class BattlegroundCommand(ASupporterGrouping):
 
 		# Get the title (same as table widget title)
 		title = "Size of battleground"
-		director.print_heading(title)
+		print(f"\n\t{title}\n")
 
 		# Calculate counts from percentages
 		nscored = rivalry.nscored_individ
@@ -152,10 +152,10 @@ class BattlegroundCommand(ASupporterGrouping):
 		settled_count = int((self._battleground_pcts[2] / 100) * nscored)
 
 		# Print the counts
-		director.print_output(
-			f"There are {battleground_count} in the battleground"
+		print(
+			f"\tThere are {battleground_count} in the battleground"
 		)
-		director.print_output(f"There are {settled_count} settled")
+		print(f"\tThere are {settled_count} settled")
 
 		return
 

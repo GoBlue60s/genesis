@@ -430,9 +430,9 @@ class DeactivateCommand:
 		deactivated_list: list[str]
 	) -> None:
 		"""Print list of deactivated features."""
-		self._director.print_heading("Deactivated")
+		print("\n\tDeactivated\n")
 		for item in deactivated_list:
-			self._director.print_output(item)
+			print(f"\t{item}")
 		return
 
 	# ------------------------------------------------------------------------

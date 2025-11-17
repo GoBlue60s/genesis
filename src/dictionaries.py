@@ -3573,11 +3573,11 @@ title_generator_dict = MappingProxyType({
 		"Spaces was developed by Ed Schneider."
 		"\n\nIt is based on programs he developed in the 1970s as "
 		"a graduate student at "
-		"The University of Michigan and while consulting on the Obama "
+		"The University of Michigan\nand while consulting on the Obama "
 		"2008 campaign."
 		"\n\nQuite a few individuals and organizations have "
 		"contributed to the development of Spaces."
-		"\nAmong those who have contributed (in alphabetical order) are:"
+		"\n\nAmong those who have contributed (in alphabetical order) are:\n"
 	),
 	"Alike": lambda d: (
 		f"Pairs with similarity using cutoff: {d.common.cutoff}"
