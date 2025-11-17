@@ -48,8 +48,7 @@ class BaseCommand(ASupporterGrouping):
 		# Track passive command with parameters for script generation
 		common.push_passive_command_to_undo_stack(
 			director.command,
-			{"show": show}
-		)
+			{"show": show})
 
 		self._print_base()
 		common.create_plot_for_tabs("base")
@@ -121,14 +120,12 @@ class BattlegroundCommand(ASupporterGrouping):
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.current_command._battleground_groups_to_show = (
-			show
-		)
+			show)
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command,
-			{"show": show}
-		)
+			{"show": show})
 
 		self._print_battleground()
 		self._director.common.create_plot_for_tabs("battleground")

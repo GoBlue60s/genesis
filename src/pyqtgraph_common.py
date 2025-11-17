@@ -307,8 +307,8 @@ class PyQtGraphCommon:
 	# ------------------------------------------------------------------------
 
 	def _plot_scree_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
-		use_metric = self._use_metric
-		min_stress = self._min_stress
+		use_metric = self._director.common._use_metric
+		min_stress = self._director.common._min_stress
 
 		graphics_layout_widget, plot = (
 			self._director.pyqtgraph_common.begin_pyqtgraph_plot_with_title(

@@ -511,23 +511,16 @@ class DirectionsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 
 		# Get command parameters and capture state
 		params = common.get_command_parameters("Directions")
 		common.capture_and_push_undo_state("Directions", "passive", params)
 
-		self._director.dependency_checker.detect_dependency_problems()
 		self._calculate_point_directions()
 		# self._director.configuration_active.print_active_function()
 		self._print_directions_df()
 		self._director.common.create_plot_for_tabs("directions")
-		ndim = self._director.configuration_active.ndim
-		npoint = self._director.configuration_active.npoint
-		self._director.title_for_table_widget = (
-			f"Directions are based on the active configuration"
-			f" which has {ndim} dimensions and "
-			f"{npoint} points"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -695,12 +688,14 @@ class FactorAnalysisCommand:
 		#
 		configuration_active.ndim = int(ext_fact)
 		self._factors_and_scores()
-		self._director.common.create_plot_for_tabs("scree")
+		# self._director.common.create_plot_for_tabs("scree")
 		self._create_factor_analysis_table()
-		self._print_factor_analysis_results()
 		self._fill_configuration()
-		director.title_for_table_widget = "Factor analysis"
+		self._print_factor_analysis_results()
+		# Scree plot temporarily disabled - needs eigenvalue support
+		# self._director.common.create_plot_for_tabs("scree")
 		director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		director.record_command_as_successfully_completed()
 		return
 
@@ -1006,12 +1001,10 @@ class FactorAnalysisMachineLearningCommand:
 		# Now perform factor analysis
 		#
 		self._perform_factor_analysis_m_l_and_setup(n_components)
-		self._director.common.create_plot_for_tabs("scree")
+		# Scree plot temporarily disabled - needs eigenvalue support
+		# self._director.common.create_plot_for_tabs("scree")
 		self._display()
-		self._director.title_for_table_widget = \
-			"Factor Analysis - Machine Learning"
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -1527,20 +1520,17 @@ class MDSCommand:
 		self._director.configuration_active.n_comp = n_comp
 		self._perform_mds_pick_up_point_labelling_from_similarities()
 
-		ndim = self._director.configuration_active.ndim
-		npoint = self._director.configuration_active.npoint
-		best_stress = self._director.configuration_active.best_stress
 		self._director.configuration_active.inter_point_distances()
 		self.common.rank_when_similarities_match_configuration()
-		self._print_best_stress(ndim, best_stress)
+		self._print_best_stress()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, self.common
 		)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		self._director.title_for_table_widget = (
-			f"Configuration has  {ndim} dimensions and "
-			f"{npoint} points and stress of {best_stress: 6.4f}"
+		# Store best_stress for title generation
+		self._director.common.best_stress = (
+			self._director.configuration_active.best_stress
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -1620,7 +1610,9 @@ class MDSCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _print_best_stress(self, ndim: int, best_stress: float) -> None:
+	def _print_best_stress(self) -> None:
+		ndim = self._director.configuration_active.ndim
+		best_stress = self._director.configuration_active.best_stress
 		print(f"Best stress in {ndim} dimensions:    {best_stress: 6.4}\n")
 
 		return

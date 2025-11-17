@@ -1854,10 +1854,9 @@ class OpenScriptCommand:
 
 		# Call _display to create the widget showing executed commands
 		self._display()
-		self._director.title_for_table_widget = (
-			f"Script executed: {commands_executed} commands from "
-			f"{Path(file_name).name}"
-		)
+		# Store values for title generation
+		self._director.common.commands_executed = commands_executed
+		self._director.common.script_file_name = Path(file_name).name
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 

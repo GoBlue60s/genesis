@@ -180,8 +180,8 @@ class MatplotlibCommon:
 	# ------------------------------------------------------------------------
 
 	def _plot_scree_using_matplotlib(self) -> plt.Figure:
-		use_metric = self._use_metric
-		min_stress = self._min_stress
+		use_metric = self._director.common._use_metric
+		min_stress = self._director.common._min_stress
 
 		fig, ax = self.begin_matplotlib_plot_with_title(
 			"Scree Diagram"

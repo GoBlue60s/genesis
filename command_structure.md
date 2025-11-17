@@ -34,7 +34,7 @@
 2. read file
 
 ## 8. Check for consistency with existing features
-1. conditional
+1. conditional - only use when command has a read file
 2. detect_consistency_issues
 
 ## 9. Perform the requested action inherent in the command
