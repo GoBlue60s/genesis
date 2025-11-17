@@ -53,6 +53,7 @@ from dictionaries import (
 	button_dict,
 	request_dict,
 	create_widget_dict,
+	title_generator_dict,
 	file_menu_dict,
 	edit_menu_dict,
 	view_menu_dict,
@@ -159,6 +160,7 @@ class Status(QMainWindow):
 
 	def variables_used_for_widget_building_etc(self) -> None:
 		self.widget_dict = create_widget_dict(self)
+		self.title_generator_dict = title_generator_dict
 		self.column_header_color: str = "#F08080"  #  light coral for lightred
 		self.row_header_color: str = "lightgreen"
 		self.cell_color: str = "lightyellow"
@@ -176,6 +178,9 @@ class Status(QMainWindow):
 		# Initialize Undo and Redo as disabled (no stack items on startup)
 		self.disable_undo()
 		self.disable_redo()
+
+		# The following checks the consistency of dictionaries
+		# Do they all handle all commands and are in the same order!!!!!!!!!!!!
 		# self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
@@ -271,12 +276,14 @@ class Status(QMainWindow):
 		print(" request_dict: follows the order of the menu items")
 		print(" commands: alphabetical order of commands")
 		print(" widget_dict: alphabetical order of keys")
+		print(" title_generator_dict: alphabetical order of keys")
 		print(" explain_dict: alphabetical order of keys \n")
 
 		print("Lengths of dictionaries and arrays:")
 		print(" request_dict: ", len(self.request_dict))
 		print(" commands: ", len(self.commands))
 		print(" widget_dict: ", len(self.widget_dict))
+		print(" title_generator_dict: ", len(self.title_generator_dict))
 		print(" explain_dict: ", len(explain_dict), "\n")
 
 		print("Checking that all commands are the same as request_dict keys")
@@ -299,6 +306,8 @@ class Status(QMainWindow):
 		print(" widget_dict key:", key)
 		key = next(iter(islice(explain_dict.keys(), element, None)), None)
 		print(" explain_dict key:", key)
+		key = next(iter(islice(self.title_generator_dict.keys(), element, None)), None)
+		print(" title_generator_dict key:", key)
 
 		for element in range(len(self.commands)):
 			if next(
@@ -310,6 +319,9 @@ class Status(QMainWindow):
 				print(" widget_dict key is: ", next(
 					iter(islice(self.widget_dict.keys(), element, None)),
 					None))
+				print(" title_generator_dict key is: ", next(
+					iter(islice(self.title_generator_dict.keys(),
+						element, None)), None))
 				print(" explain_dict key is: ", next(
 					iter(islice(explain_dict.keys(), element, None)),
 					None))
