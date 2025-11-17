@@ -490,10 +490,6 @@ class RotateCommand:
 			self._director, self.common)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		ndim = self._director.configuration_active.ndim
-		npoint = self._director.configuration_active.npoint
-		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

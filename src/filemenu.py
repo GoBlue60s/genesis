@@ -48,8 +48,7 @@ class ConfigurationCommand:
 		self._config_error_bad_input_message = (
 			"Input is inconsistent with a "
 			"configuration file.\nLook at the contents of file and try "
-			"again."
-		)
+			"again.")
 		return
 
 	# ------------------------------------------------------------------------

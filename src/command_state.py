@@ -2,7 +2,26 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 import copy
+import pickle
 import pandas as pd
+import weakref
+
+# Import for type checking unpickleable objects
+try:
+	from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+	from matplotlib.figure import Figure
+	MATPLOTLIB_AVAILABLE = True
+except ImportError:
+	FigureCanvasQTAgg = None
+	Figure = None
+	MATPLOTLIB_AVAILABLE = False
+
+try:
+	from PySide6.QtWidgets import QWidget
+	QT_AVAILABLE = True
+except ImportError:
+	QWidget = None
+	QT_AVAILABLE = False
 
 if TYPE_CHECKING:
 	from director import Status
@@ -19,8 +38,26 @@ def _handle_basic_types_and_memo(
 		Tuple of (found, value) if handled, None otherwise
 	"""
 	# Handle None and immutable basic types
-	if obj is None or isinstance(obj, (int, float, str, bool)):
+	if isinstance(obj, (type(None), int, float, str, bool)):
 		return (True, obj)
+
+	# Handle weakref types (WeakMethod, weakref, etc.) - skip them
+	if isinstance(obj, (weakref.ref, weakref.WeakMethod)):
+		return (True, None)
+
+	# Handle callable types that can't be pickled
+	if isinstance(obj, (weakref.ProxyType, weakref.CallableProxyType)):
+		return (True, None)
+
+	# Handle matplotlib objects (figures, canvases) - skip them
+	if MATPLOTLIB_AVAILABLE:
+		if isinstance(obj, (FigureCanvasQTAgg, Figure)):
+			return (True, None)
+
+	# Handle Qt widgets - skip them
+	if QT_AVAILABLE:
+		if isinstance(obj, QWidget):
+			return (True, None)
 
 	# Check memo to avoid infinite recursion
 	obj_id = id(obj)
@@ -96,18 +133,27 @@ def _handle_custom_objects(
 	"""Handle custom objects with __dict__.
 
 	Returns:
-		Copied custom object, or standard deepcopy if special handling fails
+		Copied custom object, or None if object cannot be pickled
 	"""
 	# Handle objects with __dict__ (custom classes)
 	if not hasattr(obj, "__dict__"):
-		return copy.deepcopy(obj, memo)
+		# Try to deepcopy, but skip if it fails (unpickleable object)
+		try:
+			return copy.deepcopy(obj, memo)
+		except (TypeError, AttributeError, pickle.PicklingError):
+			# Object cannot be pickled - skip it
+			return None
 
 	# Create new instance without calling __init__
 	try:
 		new_obj = object.__new__(type(obj))
 	except TypeError:
-		# If object.__new__() doesn't work, use standard deepcopy
-		return copy.deepcopy(obj, memo)
+		# If object.__new__() doesn't work, try standard deepcopy
+		try:
+			return copy.deepcopy(obj, memo)
+		except (TypeError, AttributeError, pickle.PicklingError):
+			# Object cannot be pickled - skip it
+			return None
 
 	memo[id(obj)] = new_obj
 
