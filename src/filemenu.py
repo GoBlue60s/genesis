@@ -4,11 +4,16 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 import peek # noqa: F401
-from PySide6.QtWidgets import QApplication, QTextEdit
+from PySide6.QtWidgets import (
+	QApplication,
+	QTableWidget,
+	QTableWidgetItem,
+	QTextEdit,
+)
 
 
 if TYPE_CHECKING:
@@ -164,12 +169,10 @@ class CreateCommand:
 		self._director.command = "Create"
 		self._number_of_points_title = "Specify the number of points"
 		self._number_of_points_message = (
-			"Enter the number of points in the configuration:"
-		)
+			"Enter the number of points in the configuration:")
 		self._number_of_dimensions_title = "Specify the number of dimensions"
 		self._number_of_dimensions_message = (
-			"Enter the number of dimensions in the configuration:"
-		)
+			"Enter the number of dimensions in the configuration:")
 		self._labels_title = "Specify the labels"
 		self._labels_message = "Enter a label for "
 		self._names_title = "Specify the names"
@@ -187,28 +190,18 @@ class CreateCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		(
-			npoint,
-			ndim,
-			point_labels,
-			point_names,
-			dim_labels,
-			dim_names,
-			point_coords,
-		) = self._get_configuration_information_from_user()
 
-		params = {"npoint": npoint, "ndim": ndim}
+		config_info = self._get_configuration_information_from_user()
+
+		params = {"npoint": config_info["npoint"], "ndim": config_info["ndim"]}
 		self.common.capture_and_push_undo_state("Create", "active", params)
 
-		self._create_active_configuration(
-			npoint,
-			ndim,
-			point_labels,
-			point_names,
-			dim_labels,
-			dim_names,
-			point_coords,
-		)
+		self._create_active_configuration(config_info)
+		self._director.dependency_checker.detect_consistency_issues()
+		self._director.configuration_active.inter_point_distances()
+		self.common.rank_when_similarities_match_configuration()
+		self._director.rivalry = Rivalry(self._director)
+
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -217,11 +210,7 @@ class CreateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _get_configuration_information_from_user(
-		self,
-	) -> tuple[
-		int, int, list[str], list[str], list[str], list[str], pd.DataFrame
-	]:
+	def _get_configuration_information_from_user(self) -> dict[str, Any]:
 
 		npoint = self._get_number_of_points()
 		ndim = self._get_number_of_dimensions()
@@ -235,42 +224,48 @@ class CreateCommand:
 			coords_data, index=point_labels, columns=dim_labels
 		)
 
-		return (
-			npoint,
-			ndim,
-			point_labels,
-			point_names,
-			dim_labels,
-			dim_names,
-			point_coords,
-		)
+		return {
+			"npoint": npoint,
+			"ndim": ndim,
+			"point_labels": point_labels,
+			"point_names": point_names,
+			"dim_labels": dim_labels,
+			"dim_names": dim_names,
+			"point_coords": point_coords,
+		}
 
 	# ------------------------------------------------------------------------
 
 	def _create_active_configuration(
-		self,
-		npoint: int,
-		ndim: int,
-		point_labels: list[str],
-		point_names: list[str],
-		dim_labels: list[str],
-		dim_names: list[str],
-		point_coords: pd.DataFrame,
+		self, config_info: dict[str, Any]
 	) -> None:
 		"""Set up the active configuration with all necessary data."""
+		ndim = config_info["ndim"]
+		npoint = config_info["npoint"]
+		dim_names = config_info["dim_names"]
+
 		self._director.configuration_active.ndim = ndim
 		self._director.configuration_active.npoint = npoint
 		self._director.configuration_active.range_dims = range(ndim)
 		self._director.configuration_active.range_points = range(npoint)
-		self._director.configuration_active.dim_labels = dim_labels
+		self._director.configuration_active.dim_labels = config_info[
+			"dim_labels"
+		]
 		self._director.configuration_active.dim_names = dim_names
-		self._director.configuration_active.point_labels = point_labels
-		self._director.configuration_active.point_names = point_names
-		self._director.configuration_active.point_coords = point_coords
-		self._director.dependency_checker.detect_consistency_issues()
-		self._director.configuration_active.inter_point_distances()
-		self.common.rank_when_similarities_match_configuration()
-		self._director.rivalry = Rivalry(self._director)
+		self._director.configuration_active.point_labels = config_info[
+			"point_labels"
+		]
+		self._director.configuration_active.point_names = config_info[
+			"point_names"
+		]
+		self._director.configuration_active.point_coords = config_info[
+			"point_coords"
+		]
+		# Initialize horizontal and vertical axis names to first two dimensions
+		if ndim >= 1:
+			self._director.configuration_active.hor_axis_name = dim_names[0]
+		if ndim >= 2:
+			self._director.configuration_active.vert_axis_name = dim_names[1]
 		return
 
 	# ------------------------------------------------------------------------
@@ -412,7 +407,7 @@ class DeactivateCommand:
 		selected_items = self._get_user_selection(
 			available_items, descriptions)
 		params = {"items": selected_items}
-		self.common.capture_and_push_undo_state("Deactivate", "active", params)
+		self._capture_conditional_undo_state(selected_items, params)
 		deactivated_list = self._deactivate_selected_items(selected_items)
 		self._director.deactivated_items = deactivated_list
 		self._director.deactivated_descriptions = descriptions
@@ -420,6 +415,41 @@ class DeactivateCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _capture_conditional_undo_state(
+		self, selected_items: list[str], params: dict
+	) -> None:
+		"""Capture state for selected items only."""
+		from command_state import CommandState  # noqa: PLC0415
+		from datetime import datetime  # noqa: PLC0415
+
+		cmd_state = CommandState("Deactivate", "active", params)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+		# Map item names to their capture methods
+		item_to_capture = {
+			"Configuration": cmd_state.capture_configuration_state,
+			"Target": cmd_state.capture_target_state,
+			"Scores": cmd_state.capture_scores_state,
+			"Similarities": cmd_state.capture_similarities_state,
+			"Correlations": cmd_state.capture_correlations_state,
+			"Evaluations": cmd_state.capture_evaluations_state,
+			"Individuals": cmd_state.capture_individuals_state,
+			"Grouped data": cmd_state.capture_grouped_data_state,
+		}
+
+		# Capture state only for selected items
+		for item in selected_items:
+			capture_method = item_to_capture.get(item)
+			if capture_method:
+				capture_method(self._director)
+
+		# Clear redo stack when a new command executes
+		self._director.clear_redo_stack()
+		self._director.push_undo_state(cmd_state)
 		return
 
 	# ------------------------------------------------------------------------
@@ -433,6 +463,40 @@ class DeactivateCommand:
 		for item in deactivated_list:
 			print(f"\t{item}")
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> QTableWidget:
+		"""Create table widget showing deactivated features."""
+		deactivated_items = self._director.deactivated_items
+		deactivated_descriptions = self._director.deactivated_descriptions
+
+		# Create table widget
+		gui_output_as_widget = QTableWidget()
+		gui_output_as_widget.setRowCount(len(deactivated_items))
+		gui_output_as_widget.setColumnCount(2)
+
+		# Set headers
+		self._director.set_column_and_row_headers(
+			gui_output_as_widget, ["Feature", "Description"], []
+		)
+
+		# Populate table
+		for row_index, item in enumerate(deactivated_items):
+			# Feature name
+			item_widget = QTableWidgetItem(item)
+			gui_output_as_widget.setItem(row_index, 0, item_widget)
+
+			# Description
+			desc = deactivated_descriptions[row_index]
+			desc_widget = QTableWidgetItem(desc)
+			gui_output_as_widget.setItem(row_index, 1, desc_widget)
+
+		# Set column widths
+		gui_output_as_widget.setColumnWidth(0, 150)  # Feature column
+		gui_output_as_widget.setColumnWidth(1, 300)  # Description column
+
+		return gui_output_as_widget
 
 	# ------------------------------------------------------------------------
 
@@ -547,7 +611,7 @@ class DeactivateCommand:
 		if len(self._director.similarities_active.similarities) > 0:
 			available_items.append("Similarities")
 			descriptions.append(
-				f"nvar={self._director.similarities_active.nvar}")
+				f"nreferent={self._director.similarities_active.nreferent}")
 		return
 
 	# ------------------------------------------------------------------------
@@ -581,18 +645,16 @@ class DeactivateCommand:
 	def _get_user_selection(
 		self,
 		available_items: list[str],
-		descriptions: list[str]
+		descriptions: list[str]  # noqa: ARG002
 	) -> list[str]:
 		"""Get user selection of items to deactivate."""
-		from dialogs import GetCheckboxListDialog  # noqa: PLC0415
+		from dialogs import SelectItemsDialog  # noqa: PLC0415
 
-		dialog = GetCheckboxListDialog(
-			self._deactivate_items_title,
-			self._deactivate_items_message,
-			available_items,
-			descriptions)
+		dialog = SelectItemsDialog(
+			self._deactivate_items_title, available_items
+		)
 		self._validate_dialog_executed(dialog)
-		selected_items = dialog.get_selected_items()
+		selected_items = dialog.selected_items()
 		self._validate_items_selected(selected_items)
 		return selected_items
 

@@ -3616,7 +3616,7 @@ title_generator_dict = MappingProxyType({
 		f"{d.rivalry.rival_b.name}"
 	),
 	"Correlations": lambda d: (
-		"The correlations are shown as a square matrix"
+		f"The correlation matrix has {d.correlations_active.nitem} items"
 	),
 	"Create": lambda d: (
 		f"Configuration has {d.configuration_active.ndim} "
@@ -3715,7 +3715,7 @@ title_generator_dict = MappingProxyType({
 	"Ranks differences": lambda d: "Difference of Ranks",
 	"Ranks distances": lambda d: "Rank of Distances",
 	"Ranks similarities": lambda d: "Rank of Similarities",
-	"Redo": lambda d: f"Redid {d.common.cmd_state.command_name} command",
+	"Redo": lambda d: f"Redid {d.common.redone_command_name} command",
 	"Reference points": lambda d: (
 		f"Reference points will be {d.rivalry.rival_a.name} and "
 		f"{d.rivalry.rival_b.name}"
@@ -3820,7 +3820,7 @@ title_generator_dict = MappingProxyType({
 		"An ellipse around each point delineates with 95% confidence "
 		"that the point lies within that point's ellipse"
 	),
-	"Undo": lambda d: f"Undid {d.common.cmd_state.command_name} command",
+	"Undo": lambda d: f"Undid {d.common.undone_command_name} command",
 	"Varimax": lambda d: "Varimax rotation of active configuration",
 	"Vectors": lambda d: (
 		f"Vectors are based on the active configuration which has "

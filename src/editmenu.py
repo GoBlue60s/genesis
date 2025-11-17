@@ -76,10 +76,8 @@ class RedoCommand:
 
 	def _build_redo_output(self, cmd_state: CommandState) -> None:
 		"""Build output and title based on what was redone."""
-		# Set simple title indicating what was redone
-		self._director.title_for_table_widget: str = (
-			f"Redid {cmd_state.command_name} command"
-		)
+		# Store the redone command name for title generator to access
+		self.common.redone_command_name = cmd_state.command_name
 
 		# Store the command state for _display() to use
 		self._restored_cmd_state = cmd_state
@@ -263,10 +261,8 @@ class UndoCommand:
 
 	def _build_undo_output(self, cmd_state: CommandState) -> None:
 		"""Build output and title based on what was undone."""
-		# Set simple title indicating what was undone
-		self._director.title_for_table_widget: str = (
-			f"Undid {cmd_state.command_name} command"
-		)
+		# Store the undone command name for title generator to access
+		self.common.undone_command_name = cmd_state.command_name
 
 		# Store the command state for _display() to use
 		self._restored_cmd_state = cmd_state

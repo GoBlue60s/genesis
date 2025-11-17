@@ -1,0 +1,7 @@
+Commands that have been standardized:
+
+Configuration - 11/17/2025
+Correlations - 11/17/2025
+Create - 11/17/2025
+Deactivate- 11/17/2025
+Rotate - 11/17/2025
