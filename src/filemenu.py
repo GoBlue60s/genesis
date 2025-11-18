@@ -263,9 +263,9 @@ class CreateCommand:
 			"point_coords"
 		]
 		# Initialize horizontal and vertical axis names to first two dimensions
-		if ndim >= 1:
+		if ndim >= MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			self._director.configuration_active.hor_axis_name = dim_names[0]
-		if ndim >= 2:
+		if ndim >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			self._director.configuration_active.vert_axis_name = dim_names[1]
 		return
 
@@ -1171,6 +1171,18 @@ class GroupedDataCommand:
 		self._director.grouped_data_active.group_codes = group_codes
 		self._director.grouped_data_active.group_coords = group_coords
 		self._director.grouped_data_active.range_dims = range_dims
+
+		# Initialize horizontal and vertical axis names and dimension indices
+		if expected_dim >= MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			self._director.grouped_data_active.hor_axis_name = dim_names[0]
+			self._director.grouped_data_active._hor_dim = dim_names.index(
+				self._director.grouped_data_active.hor_axis_name
+			)
+		if expected_dim >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			self._director.grouped_data_active.vert_axis_name = dim_names[1]
+			self._director.grouped_data_active._vert_dim = dim_names.index(
+				self._director.grouped_data_active.vert_axis_name
+			)
 		return
 
 	# ------------------------------------------------------------------------
@@ -1217,19 +1229,16 @@ class NewGroupedDataCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "New grouped data"
-		self._director.title_for_table_widget = "Create grouped data"
 		self._group_title = "Grouping variable"
 		self._group_label = "Enter name of grouping variable"
 		self._group_default = {"Grouping variable"}
 		self._group_max_chars = 32
 		self._number_of_groups_title = "Specify the number of groups"
 		self._number_of_groups_message = (
-			"Enter the number of groups in the grouped data:"
-		)
+			"Enter the number of groups in the grouped data:")
 		self._number_of_dimensions_title = "Specify the number of dimensions"
 		self._number_of_dimensions_message = (
-			"Enter the number of dimensions in the grouped data:"
-		)
+			"Enter the number of dimensions in the grouped data:")
 		self._labels_title = "Specify the labels"
 		self._labels_message = "Enter a label for "
 		self._names_title = "Specify the names"
@@ -1243,6 +1252,7 @@ class NewGroupedDataCommand:
 	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		self._get_grouping_var()
 		ngroups = self._get_number_of_groups()
 		ndim = self._get_number_of_dimensions()
@@ -1259,10 +1269,9 @@ class NewGroupedDataCommand:
 		self._store_grouped_data(
 			ndim, ngroups, dim_labels, dim_names,
 			group_labels, group_names, group_codes, group_coords)
+		self._director.dependency_checker.detect_consistency_issues()
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
-		self._director.title_for_table_widget = (
-			f"Grouped data has {ndim} dimensions and {ngroups} groups")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1454,6 +1463,17 @@ class NewGroupedDataCommand:
 		self._director.grouped_data_active.group_names = group_names
 		self._director.grouped_data_active.group_codes = group_codes
 		self._director.grouped_data_active.group_coords = group_coords
+		# Initialize horizontal and vertical axis names and dimension indices
+		if ndim >= MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			self._director.grouped_data_active.hor_axis_name = dim_names[0]
+			self._director.grouped_data_active._hor_dim = dim_names.index(
+				self._director.grouped_data_active.hor_axis_name
+			)
+		if ndim >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			self._director.grouped_data_active.vert_axis_name = dim_names[1]
+			self._director.grouped_data_active._vert_dim = dim_names.index(
+				self._director.grouped_data_active.vert_axis_name
+			)
 		return
 
 	# ------------------------------------------------------------------------

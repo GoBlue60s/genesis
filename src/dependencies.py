@@ -544,6 +544,8 @@ class DependencyChecking:
 			new: str = new.capitalize()
 		elif command == "Create":
 			new: str = "Configuration"
+		elif command == "New grouped data":
+			new: str = "Grouped data"
 		else:
 			new: str = command
 		return new

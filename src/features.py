@@ -30,8 +30,10 @@ class ConfigurationFeature:
 	def __init__(self, director: Status) -> None:  # xxxxxxxxxx
 		self._director = director
 		self._director.title_for_table_widget = ""
-		self._hor_dim = director.common.hor_dim
-		self._vert_dim = director.common.vert_dim
+		# self._hor_dim = director.common.hor_dim
+		# self._vert_dim = director.common.vert_dim
+		# NOTE: _hor_dim and _vert_dim are unused - configuration plotting
+		# reads directly from common.hor_dim and common.vert_dim
 
 		self.nreferent: int = 0
 		self.npoint: int = 0
@@ -853,8 +855,10 @@ class EvaluationsFeature:
 class GroupedDataFeature:
 	def __init__(self, director: Status) -> None:
 		self._director = director
-		self._hor_dim = director.common.hor_dim
-		self._vert_dim = director.common.vert_dim
+		# self._hor_dim = director.common.hor_dim
+		# self._vert_dim = director.common.vert_dim
+		# NOTE: _hor_dim and _vert_dim should be set when grouped data is
+		# loaded, not at Director initialization
 		self.file_handle: str = ""
 		# the handle of the grouped configuration file
 		self.grouping_var: str = ""
@@ -868,6 +872,8 @@ class GroupedDataFeature:
 		self.group_names: list[str] = []  # replaces point_names_grpd
 		self.group_labels: list[str] = []  # replaces point_labels_grpd
 		self.group_coords: pd.DataFrame = pd.DataFrame()
+		self.hor_axis_name: str = ""
+		self.vert_axis_name: str = ""
 
 	# ------------------------------------------------------------------------
 

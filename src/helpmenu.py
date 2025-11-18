@@ -491,7 +491,7 @@ class StatusCommand:
 			4,
 			3,
 			QTableWidgetItem(
-				str(self._director.configuration_active.hor_axis_name)
+				str(self._get_horizontal_axis_name())
 			),
 		)
 		table_widget.setItem(
@@ -501,7 +501,7 @@ class StatusCommand:
 			5,
 			3,
 			QTableWidgetItem(
-				str(self._director.configuration_active.vert_axis_name)
+				str(self._get_vertical_axis_name())
 			),
 		)
 		table_widget.setItem(
@@ -615,6 +615,26 @@ class StatusCommand:
 			),
 		)
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _get_horizontal_axis_name(self) -> str:
+		"""Get horizontal axis name from configuration or grouped data."""
+		if self._director.common.have_active_configuration():
+			return self._director.configuration_active.hor_axis_name
+		if self._director.common.have_grouped_data():
+			return self._director.grouped_data_active.hor_axis_name
+		return ""
+
+	# ------------------------------------------------------------------------
+
+	def _get_vertical_axis_name(self) -> str:
+		"""Get vertical axis name from configuration or grouped data."""
+		if self._director.common.have_active_configuration():
+			return self._director.configuration_active.vert_axis_name
+		if self._director.common.have_grouped_data():
+			return self._director.grouped_data_active.vert_axis_name
+		return ""
 
 	# ------------------------------------------------------------------------
 
