@@ -10,6 +10,7 @@ import pandas as pd
 import peek # noqa: F401
 from PySide6.QtWidgets import (
 	QApplication,
+	QMessageBox,
 	QTableWidget,
 	QTableWidgetItem,
 	QTextEdit,
@@ -865,9 +866,14 @@ class EvaluationsCommand:
 class ExitCommand:
 	"""The Exit command is used to exit the application."""
 
-	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
+		self.common = common
 		self._director.command = "Exit"
+		self._exit_confirmation_title = "Exit Spaces"
+		self._exit_confirmation_message = (
+			"Are you sure you want to exit Spaces?"
+		)
 		return
 
 	# ------------------------------------------------------------------------
@@ -875,10 +881,67 @@ class ExitCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = common.get_command_parameters("Exit")
-		common.capture_and_push_undo_state("Exit", "passive", params)
-		self._director.record_command_as_successfully_completed()
-		sys.exit(0)
+		self._director.dependency_checker.detect_dependency_problems()
+		self._handle_exit_confirmation(common)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _handle_exit_confirmation(self, common: Spaces) -> None:
+		"""Show confirmation dialog and handle user's choice.
+
+		When executing from a script, exit immediately without confirmation.
+		When executing interactively, show confirmation dialog.
+		"""
+		# Skip confirmation if executing from script
+		if self._director.executing_script:
+			params = common.get_command_parameters("Exit")
+			common.capture_and_push_undo_state("Exit", "passive", params)
+			self._director.record_command_as_successfully_completed()
+			sys.exit(0)
+
+		# Show confirmation for interactive use
+		reply = QMessageBox.question(
+			None,
+			self._exit_confirmation_title,
+			self._exit_confirmation_message,
+			QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+			QMessageBox.StandardButton.No
+		)
+
+		if reply == QMessageBox.StandardButton.Yes:
+			# User confirmed - exit the application
+			params = common.get_command_parameters("Exit")
+			common.capture_and_push_undo_state("Exit", "passive", params)
+			self._director.record_command_as_successfully_completed()
+			sys.exit(0)
+		else:
+			# User cancelled - print message and mark as failed
+			self._print_exit_cancelled()
+			self._director.create_widgets_for_output_and_log_tabs()
+			self._director.set_focus_on_tab("Output")
+			self._director.unable_to_complete_command_set_status_as_failed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_exit_cancelled(self) -> None:
+		"""Print message when exit is cancelled."""
+		print("\n\tExit cancelled")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _display(self) -> QTableWidget:
+		"""Create and return the table widget for cancelled exit output."""
+		table = QTableWidget(1, 1)
+		table.setHorizontalHeaderLabels(["Status"])
+		table.setVerticalHeaderLabels(["Exit"])
+		table.setItem(0, 0, QTableWidgetItem("Cancelled"))
+		table.resizeColumnsToContents()
+		table.resizeRowsToContents()
+		self._director.output_widget_type = "Table"
+		return table
 
 	# ------------------------------------------------------------------------
 
@@ -904,17 +967,15 @@ class GroupedDataCommand:
 	def execute(self, common: Spaces) -> None: # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Grouped data")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Grouped data", "active", params)
 		self._read_grouped_data(file_name)
+		self._director.dependency_checker.detect_consistency_issues()
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
-		ndim = self._director.grouped_data_active.ndim
-		ngroups = self._director.grouped_data_active.ngroups
-		self._director.title_for_table_widget = (
-			f"Grouped data has {ndim} dimensions and {ngroups} groups")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1132,18 +1193,17 @@ class IndividualsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Individuals")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
 			"Individuals", "active", params)
 		common.read_individuals_file(
 				file_name, self._director.individuals_active)
-
+		self._director.dependency_checker.detect_consistency_issues()
 		self._director.individuals_active.print_individuals()
-		self._director.title_for_table_widget = (
-			f"Individuals data has been read "
-			f"({len(self._director.individuals_active.ind_vars)} rows)")
 		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 

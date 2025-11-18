@@ -178,7 +178,7 @@ All new commands should follow this consistent structure:
 - **Class Structure**: Most command classes have:
   - `__init__` method containing strings used in error messaging
   - `exec` method that should be kept flat (minimal nesting)
-- **Exception Handling**: All exceptions should be raised below the `exec` method, not within it
+- **Exception Handling**: All exceptions should be raised in helper methods called by the `exec` method, not within it
 - **Avoid hasattr**: Don't use `hasattr()` - there's likely a checking function in `director` instead
 - **Follow Patterns**: Study existing commands to maintain consistency in structure and flow
 

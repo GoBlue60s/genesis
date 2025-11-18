@@ -67,6 +67,13 @@ class RedoCommand:
 		# Restore all captured state
 		cmd_state.restore_all_state(self._director)
 
+		# Enable Undo now that undo stack has an item
+		self._director.enable_undo()
+
+		# Disable Redo if the redo stack is now empty
+		if not self._director.redo_stack:
+			self._director.disable_redo()
+
 		# Build appropriate output and title based on restored state
 		self._build_redo_output(cmd_state)
 
