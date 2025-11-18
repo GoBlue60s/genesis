@@ -1654,19 +1654,7 @@ class OpenSampleSolutionsCommand:
 		self.common.capture_and_push_undo_state(
 			"Open sample solutions", "active", params
 		)
-
-		# Error handling
-		# If not a sample solutions file, then return an error message
-		try:
-			common.read_sample_solutions_file_check_for_errors(
-				file_name, self._director.uncertainty_active
-			)
-		except ValueError as e:
-			raise SpacesError(
-				self._sample_solutions_error_bad_input_title,
-				self._sample_solutions_error_bad_input_message,
-			) from e
-
+		self._read_sample_solutions_file_check_for_errors(file_name)
 		self._director.uncertainty_active.print_sample_solutions()
 		self._director.title_for_table_widget = (
 			"Sample solutions have been read"
@@ -1674,6 +1662,75 @@ class OpenSampleSolutionsCommand:
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _read_sample_solutions_file_check_for_errors(
+		self, file_name: str
+	) -> None:
+		"""Read sample solutions file and validate format."""
+		try:
+			from pathlib import Path
+			from features import UncertaintyFeature  # noqa: PLC0415
+
+			with Path(file_name).open("r", encoding="utf-8") as f:
+				# Line 1: Comment line (skip)
+				f.readline()
+
+				# Line 2: ndim, npoint, nsolutions (4-character integers)
+				dimensions_line = f.readline().strip()
+				if len(dimensions_line) < 12:
+					raise ValueError("Invalid dimensions line format")
+
+				ndim = int(dimensions_line[0:4])
+				npoint = int(dimensions_line[4:8])
+				nsolutions = int(dimensions_line[8:12])
+
+				# Read dimension labels and names
+				dim_labels = []
+				dim_names = []
+				for _ in range(ndim):
+					line = f.readline().strip()
+					if ";" not in line:
+						raise ValueError("Invalid dimension format")
+					label, name = line.split(";", 1)
+					dim_labels.append(label)
+					dim_names.append(name)
+
+				# Read point labels and names
+				point_labels = []
+				point_names = []
+				for _ in range(npoint):
+					line = f.readline().strip()
+					if ";" not in line:
+						raise ValueError("Invalid point format")
+					label, name = line.split(";", 1)
+					point_labels.append(label)
+					point_names.append(name)
+
+				# Create new UncertaintyFeature object
+				self._director.uncertainty_active = UncertaintyFeature(
+					self._director
+				)
+
+				# Store basic dimensions
+				self._director.uncertainty_active.ndim = ndim
+				self._director.uncertainty_active.npoint = npoint
+				self._director.uncertainty_active.nsolutions = nsolutions
+				self._director.uncertainty_active.dim_labels = dim_labels
+				self._director.uncertainty_active.dim_names = dim_names
+				self._director.uncertainty_active.point_labels = point_labels
+				self._director.uncertainty_active.point_names = point_names
+
+				# TODO: Read stress data and solution coordinates
+				# This is a shell implementation - full reading not yet complete
+
+		except (FileNotFoundError, ValueError, IndexError) as e:
+			self.common.event_driven_automatic_restoration()
+			raise SpacesError(
+				self._sample_solutions_error_bad_input_title,
+				self._sample_solutions_error_bad_input_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
@@ -1699,13 +1756,11 @@ class OpenScoresCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		# ????? is this needed here?
 		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Open scores")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
-			"Open scores", "active", params
-		)
+			"Open scores", "active", params)
 
 		self._read_scores(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
@@ -1714,10 +1769,6 @@ class OpenScoresCommand:
 		self._director.scores_active.summarize_scores()
 		self._director.scores_active.print_scores()
 		self._director.common.create_plot_for_tabs("scores")
-		self._director.title_for_table_widget = (
-			f"Scores have been read "
-			f"({len(self._director.scores_active.scores)} rows)"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

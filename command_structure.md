@@ -6,6 +6,7 @@
 2. sets a  local path to the outside variables by setting _director equal -  to director.
 3. sets the name of the command.  
 4. deprecated - sets the title for the output using string or lambda expression with  - variables
+Needs to be checked against command's entry in title_generator_dict - report and discrepancy
 5. sets the description of errors
 6. __init__
 
@@ -50,8 +51,10 @@
 2. create_plot_for_tabs(“X”)
 
 ## 12. Create title for table widget depending on how __init__ sets title
-1. deprecated
-2.title_for_table_widget = title_generator() or  = table_for_title
+1. deprecated - This should not be present in execute.
+2. title_generator_dict must have key for this command and value should be
+based on what had been in __init__ or what was in execute
+
 
 ## 13. Create_table_for_<command>
 1. required
