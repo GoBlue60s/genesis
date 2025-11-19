@@ -10,4 +10,8 @@ Grouped data - 11/17/2025
 Individuals- 11/17/2025
 New grouped data - 11/18/2025
 Open scores - 11/18/2025
+Open Script - 11/18/2025
+Print configuration - 11/18/2025
+Print similarities - 11/18/2025
+Print target - 11/18/2025
 Rotate - 11/17/2025

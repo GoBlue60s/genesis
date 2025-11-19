@@ -164,14 +164,7 @@ class ClusterCommand:
 
 		# Print cluster results table
 		self._print_cluster_results(cluster_centers, n_clusters)
-
-		# Set up display
-		self._director.title_for_table_widget = \
-			("K-Means Clustering Results using "
-			f"{name_source.capitalize()} (k={n_clusters})")
 		self._director.create_widgets_for_output_and_log_tabs()
-
-		# Create cluster plot
 		self._director.common.create_plot_for_tabs("clusters")
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1510,9 +1503,7 @@ class MDSCommand:
 		n_comp: int = params["n_components"]
 		use_metric: bool = params["use_metric"]
 		self.common.capture_and_push_undo_state(
-			"MDS", "active", params
-		)
-
+			"MDS", "active", params)
 		#
 		# Now perform MDS - set use_metric, n_comp and continue
 		#
@@ -1628,7 +1619,6 @@ class PrincipalComponentsCommand:
 		self.common = common
 		self._director.command = "Principal components"
 		self._director.common.ndim = 0
-		self._director.title_for_table_widget = "Principal components"
 
 		# self._director.configuration_active.pca_covar = pd.DataFrame()
 		# self._director.configuration_active.npoint = 0
@@ -1843,12 +1833,6 @@ class VectorsCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("vectors")
-		ndim = self._director.configuration_active.ndim
-		npoint = self._director.configuration_active.npoint
-		self._director.title_for_table_widget = (
-			f"Vectors are based on the active configuration "
-			f"which has {ndim} dimensions and {npoint} points"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -2050,9 +2034,6 @@ class UncertaintyCommand:
 			director.uncertainty_active.solutions_stress_df.to_string(
 				index=False))
 		director.common.create_plot_for_tabs("uncertainty")
-		director.title_for_table_widget = (
-			"An ellipse around each point delineates with 95% confidence that "
-			"the point lies within that point's ellipse")
 		director.create_widgets_for_output_and_log_tabs()
 		director.record_command_as_successfully_completed()
 

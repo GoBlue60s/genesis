@@ -64,8 +64,6 @@ class AlikeCommand:
 		self._determine_alike_pairs()
 		self._print_alike_pairs()
 		self._create_alike_table()
-		self._director.title_for_table_widget = (
-			f"Pairs with similarity using cutoff: {self.cutoff}")
 		self._director.common.create_plot_for_tabs("alike")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -89,6 +87,7 @@ class AlikeCommand:
 			SelectionError: If no pairs satisfy the cutoff criteria
 		"""
 		self._determine_alike_pairs_initialize_variables()
+		self._director.common.cutoff = self.cutoff
 		value_type: str = self._director.similarities_active.value_type
 		sorted_pairs: list[list] = (
 			self._director.similarities_active.sorted_similarities_w_pairs

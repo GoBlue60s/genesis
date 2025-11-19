@@ -27,7 +27,7 @@ Needs to be checked against command's entry in title_generator_dict - report and
 2. get_command_parameters
 
 ## 6. Capture state for undo
-1. required
+1. required - except for Open script
 2. capture_and_push_undo_state
 
 ## 7. Read file
@@ -35,15 +35,16 @@ Needs to be checked against command's entry in title_generator_dict - report and
 2. read file
 
 ## 8. Check for consistency with existing features
-1. conditional - only use when command has a read file or creates a feature
+1. conditional - only use when command, other than open script,
+ has a read file or creates a feature
 2. detect_consistency_issues
 
 ## 9. Perform the requested action inherent in the command
 1. optional
 2. such as  inter_point_distances, rank_when_similarities_match_X, Rivalry
 
-## 10. Print
-1. required
+## 10. Print on Record tab
+1. required - except for Open script
 2. print_X
 
 ## 11. Create plot

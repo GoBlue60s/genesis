@@ -1560,9 +1560,6 @@ class OpenSampleDesignCommand:
 			) from e
 
 		self._director.uncertainty_active.print_sample_design()
-		self._director.title_for_table_widget = (
-			"Sample design has been read"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1616,9 +1613,6 @@ class OpenSampleRepetitionsCommand:
 			) from e
 
 		self._director.uncertainty_active.print_sample_repetitions()
-		self._director.title_for_table_widget = (
-			"Sample repetitions have been read"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1656,9 +1650,6 @@ class OpenSampleSolutionsCommand:
 		)
 		self._read_sample_solutions_file_check_for_errors(file_name)
 		self._director.uncertainty_active.print_sample_solutions()
-		self._director.title_for_table_widget = (
-			"Sample solutions have been read"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1870,6 +1861,7 @@ class OpenScriptCommand:
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 
 		# Save the index of the "Open script" command in the exit code array
 		# so we can update it later (after script commands are executed)
@@ -1887,10 +1879,32 @@ class OpenScriptCommand:
 		# Execute the script
 		commands_executed = self._execute_script_lines(script_lines)
 
-		# Handle completion
-		self._handle_script_completion(
-			commands_executed, file_name, open_script_index
-		)
+		# Reset command name to "Open script" after script execution
+		# (otherwise it will print success message for the last script command)
+		self._director.command = "Open script"
+
+		# Set current_command to self so widget_control calls
+		# this command's _display (not the last executed command's _display)
+		self._director.current_command = self
+
+		# Call _display to create the widget showing executed commands
+		self._display()
+
+		# Store values for title generation
+		self._director.common.commands_executed = commands_executed
+		self._director.common.script_file_name = Path(file_name).name
+
+		# Standard completion steps
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+
+		# Update the "Open script" command's exit code directly
+		# Must set the specific index because the command stack has grown
+		# during script execution
+		self._director.command_exit_code[open_script_index] = 0
+
+		# Standard completion (provides success message)
+		self._director.record_command_as_successfully_completed()
 		return
 
 	# ------------------------------------------------------------------------
@@ -2022,45 +2036,46 @@ class OpenScriptCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _handle_script_completion(
-		self,
-		commands_executed: int,
-		file_name: str,
-		open_script_index: int,
-	) -> None:
-		"""Handle completion of script execution.
-
-		Args:
-			commands_executed: Number of commands executed
-			file_name: Name of the script file
-			open_script_index: Index in command_exit_code array
-		"""
-		# Reset command name to "Open script" before recording completion
-		# (otherwise it will print success message for the last script command)
-		self._director.command = "Open script"
-
-		# Set current_command to self so widget_control calls
-		# this command's _display
-		# (not the last executed command's _display)
-		self._director.current_command = self
-
-		# Call _display to create the widget showing executed commands
-		self._display()
-		# Store values for title generation
-		self._director.common.commands_executed = commands_executed
-		self._director.common.script_file_name = Path(file_name).name
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Output")
-
-		# Update the "Open script" command's exit code directly
-		# (can't use record_command_as_successfully_completed because that
-		# would update the last script command's exit code, not Open script's)
-		self._director.command_exit_code[open_script_index] = 0
-		self._director.spaces_statusbar.showMessage(
-			"Completed Open script command", 80000
-		)
-		print("\nSuccessfully completed Open script command.")
-		return
+	# COMMENTED OUT - Logic moved to execute() for standard structure
+	# def _handle_script_completion(
+	# 	self,
+	# 	commands_executed: int,
+	# 	file_name: str,
+	# 	open_script_index: int,
+	# ) -> None:
+	# 	"""Handle completion of script execution.
+	#
+	# 	Args:
+	# 		commands_executed: Number of commands executed
+	# 		file_name: Name of the script file
+	# 		open_script_index: Index in command_exit_code array
+	# 	"""
+	# 	# Reset command name to "Open script" before recording completion
+	# 	# (otherwise it will print success message for the last script command)
+	# 	self._director.command = "Open script"
+	#
+	# 	# Set current_command to self so widget_control calls
+	# 	# this command's _display
+	# 	# (not the last executed command's _display)
+	# 	self._director.current_command = self
+	#
+	# 	# Call _display to create the widget showing executed commands
+	# 	self._display()
+	# 	# Store values for title generation
+	# 	self._director.common.commands_executed = commands_executed
+	# 	self._director.common.script_file_name = Path(file_name).name
+	# 	self._director.create_widgets_for_output_and_log_tabs()
+	# 	self._director.set_focus_on_tab("Output")
+	#
+	# 	# Update the "Open script" command's exit code directly
+	# 	# (can't use record_command_as_successfully_completed because that
+	# 	# would update the last script command's exit code, not Open script's)
+	# 	self._director.command_exit_code[open_script_index] = 0
+	# 	self._director.spaces_statusbar.showMessage(
+	# 		"Completed Open script command", 80000
+	# 	)
+	# 	print("\nSuccessfully completed Open script command.")
+	# 	return
 
 	# ------------------------------------------------------------------------
 
@@ -2197,7 +2212,6 @@ class PrintConfigurationCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print configuration"
-		self._director.title_for_table_widget = "Active configuration"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2205,10 +2219,10 @@ class PrintConfigurationCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Print configuration")
 		common.capture_and_push_undo_state(
 			"Print configuration", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.print_the_configuration()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2224,7 +2238,6 @@ class PrintCorrelationsCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print correlations"
-		self._director.title_for_table_widget = "Active correlations"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2232,10 +2245,10 @@ class PrintCorrelationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Print correlations")
 		common.capture_and_push_undo_state(
 			"Print correlations", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.correlations_active.print_the_correlations(
 			width=8,
 			decimals=3,
@@ -2255,7 +2268,6 @@ class PrintEvaluationsCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print evaluations"
-		self._director.title_for_table_widget = "Active evaluations"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2263,10 +2275,10 @@ class PrintEvaluationsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Print evaluations")
 		common.capture_and_push_undo_state(
 			"Print evaluations", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.evaluations_active.print_evaluations()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2282,7 +2294,6 @@ class PrintGroupedDataCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print grouped data"
-		self._director.title_for_table_widget = "Active grouped data"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2290,10 +2301,10 @@ class PrintGroupedDataCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Print grouped data")
 		common.capture_and_push_undo_state(
 			"Print grouped data", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2309,7 +2320,6 @@ class PrintIndividualsCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print individuals"
-		self._director.title_for_table_widget = "Active individuals"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2317,10 +2327,10 @@ class PrintIndividualsCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Print individuals")
 		common.capture_and_push_undo_state(
 			"Print individuals", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.individuals_active.print_individuals()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2336,7 +2346,6 @@ class PrintSampleDesignCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print sample design"
-		self._director.title_for_table_widget = "Active sample design"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2363,7 +2372,6 @@ class PrintSampleRepetitionsCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print sample repetitions"
-		self._director.title_for_table_widget = "Active sample repetitions"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2390,7 +2398,6 @@ class PrintSampleSolutionsCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print sample solutions"
-		self._director.title_for_table_widget = "Active sample solutions"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2404,8 +2411,6 @@ class PrintSampleSolutionsCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		# Implementation for printing sample solutions
 		#  Add actual implementation
-		self._director.title_for_table_widget = (
-			"Sample solutions printing not yet implemented")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2420,7 +2425,6 @@ class PrintScoresCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
 		self._director.command = "Print scores"
-		self._director.title_for_table_widget = "Active scores"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2444,11 +2448,9 @@ class PrintScoresCommand:
 class PrintSimilaritiesCommand:
 	"""The Print similarities command is used to print similarities."""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		self._director.command = "Print similarities"
-		self._director.title_for_table_widget = "Active similarities"
 		self._width = 8
 		self._decimals = 3
 		return
@@ -2458,11 +2460,11 @@ class PrintSimilaritiesCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Print similarities")
 		common.capture_and_push_undo_state(
 			"Print similarities", "passive", params
 		)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.similarities_active.print_the_similarities(
 			self._width, self._decimals, common
 		)
@@ -2477,11 +2479,9 @@ class PrintSimilaritiesCommand:
 class PrintTargetCommand:
 	"""The Print target command is used to print target ."""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		self._director.command = "Print target"
-		self._director.title_for_table_widget = "Target configuration"
 		return
 
 	# ------------------------------------------------------------------------
@@ -2489,14 +2489,10 @@ class PrintTargetCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Print target")
 		common.capture_and_push_undo_state("Print target", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.target_active.print_target()
-		self._director.title_for_table_widget = (
-			f"Target configuration has {self._director.target_active.ndim}"
-			f" dimensions and {self._director.target_active.npoint} points"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2540,10 +2536,6 @@ class SaveConfigurationCommand:
 		self._director.name_of_file_written_to = file_name
 		self._print_active_configuration_confirmation(file_name)
 		name_of_file_written_to = self._director.name_of_file_written_to
-		self._director.title_for_table_widget = (
-			f"The active configuration has been written to: "
-			f"\n {name_of_file_written_to}\n"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2593,10 +2585,6 @@ class SaveGroupedDataCommand:
 		self._director.name_of_file_written_to = file_name
 		self._print_active_grouped_data_confirmation(file_name)
 		name_of_file_written_to = self._director.name_of_file_written_to
-		self._director.title_for_table_widget = (
-			f"The active grouped data has been written to: "
-			f"\n {name_of_file_written_to}\n"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2651,9 +2639,6 @@ class SaveCorrelationsCommand:
 		correlations_df.to_csv(file_name, index=False)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_correlations_confirmation(file_name)
-		self._director.title_for_table_widget = (
-			f"The active correlations have been written to:\n {file_name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2713,9 +2698,6 @@ class SaveIndividualsCommand:
 		)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_individuals_confirmation(file_name)
-		self._director.title_for_table_widget = (
-			f"The active individuals have been written to:\n {file_name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2765,9 +2747,6 @@ class SaveSampleDesignCommand:
 		self._write_sample_design_file(file_name)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_sample_design_confirmation(file_name)
-		self._director.title_for_table_widget = (
-			f"The active sample design has been written to:\n {file_name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2861,10 +2840,6 @@ class SaveSampleRepetitionsCommand:
 		self._write_sample_repetitions_file(file_name)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_sample_repetitions_confirmation(file_name)
-		self._director.title_for_table_widget = (
-			f"The active sample repetitions have been written to:\n "
-			f"{file_name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2952,9 +2927,6 @@ class SaveSampleSolutionsCommand:
 		self._write_sample_solutions_file(file_name)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_sample_solutions_confirmation(file_name)
-		self._director.title_for_table_widget = (
-			f"The active sample solutions have been written to:\n {file_name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3064,9 +3036,6 @@ class SaveScoresCommand:
 		)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_scores_confirmation(file_name)
-		self._director.title_for_table_widget = (
-			f"The active scores have been written to:\n {file_name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3106,9 +3075,6 @@ class SaveScriptCommand:
 			self._save_script_filter)
 		script_lines = self._collect_script_lines()
 		self._write_script_file(file_name, script_lines)
-		self._director.name_of_file_written_to = file_name
-		self._director.title_for_table_widget = (
-			f"Script saved with {len(script_lines)} commands:\n{file_name}")
 		self._display_saved_script(script_lines, file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -3215,6 +3181,8 @@ class SaveScriptCommand:
 			script_fail_title = "Save script failed"
 			script_fail_message = f"Unable to write script file: {e}"
 			raise SpacesError(script_fail_title, script_fail_message) from e
+		self._director.common.script_lines = script_lines
+		self._director.common.file_name = file_name
 		return
 
 	# ------------------------------------------------------------------------
@@ -3278,7 +3246,6 @@ class SaveScriptCommand:
 		print("Script contents:")
 		for line in script_lines:
 			print(f"{line}")
-		self._director.title_for_table_widget = f"Saved script: {file_name}"
 		return
 
 	# ------------------------------------------------------------------------
@@ -3320,9 +3287,6 @@ class SaveSimilaritiesCommand:
 		similarities_df.to_csv(file_name, index=False)
 		self._director.name_of_file_written_to = file_name
 		self._print_save_similarities_confirmation(file_name)
-		self._director.title_for_table_widget = (
-			f"The active similarities have been written to:\n {file_name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3374,10 +3338,6 @@ class SaveTargetCommand:
 		self._director.name_of_file_written_to = file_name
 		self._print_active_target_confirmation(file_name)
 		name_of_file_written_to = self._director.name_of_file_written_to
-		self._director.title_for_table_widget = (
-			f"The active target has been written to: "
-			f"\n {name_of_file_written_to}\n"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3429,8 +3389,6 @@ class SettingsDisplayCommand:
 		common.point_size = point_size
 
 		common.print_display_settings()
-		self._director.title_for_table_widget = (
-			"Display sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3493,7 +3451,6 @@ class SettingsLayoutCommand:
 		common.decimals = decimals
 
 		common.print_layout_options_settings()
-		self._director.title_for_table_widget = "Layout options updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3512,7 +3469,6 @@ class SettingsLayoutCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(150)
 		settings_text = (
-			# f"{self._director.title_for_table_widget}\n\n"
 			f"Maximum columns: {self.common.max_cols}\n"
 			f"Column width: {self.common.width}\n"
 			f"Decimal places: {self.common.decimals}"
@@ -3559,7 +3515,6 @@ class SettingsPlaneCommand:
 
 		common.print_plane_settings()
 		self.common.create_plot_for_tabs("configuration")
-		self._director.title_for_table_widget = "Plane settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -3577,7 +3532,6 @@ class SettingsPlaneCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(120)
 		settings_text = (
-			# f"{self._director.title_for_table_widget}\n\n"
 			f"Horizontal axis: "
 			f"{self._director.configuration_active.hor_axis_name}\n"
 			f"Vertical axis: "
@@ -3662,7 +3616,6 @@ class SettingsPlotCommand:
 		common.show_just_reference_points = just_reference_points
 		
 		common.print_plot_settings()
-		self._director.title_for_table_widget = "Plot settings updated"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3681,7 +3634,6 @@ class SettingsPlotCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(150)
 		settings_text = (
-			# f"{self._director.title_for_table_widget}\n\n"
 			f"Show bisector if available: "
 			f"{self.common.show_bisector}\n"
 			f"Show connector if available: "
@@ -3721,8 +3673,6 @@ class SettingsPresentationLayerCommand:
 		self._director.common.presentation_layer = layer
 
 		common.print_presentation_layer_settings()
-		self._director.title_for_table_widget = (
-			"Presentation layer updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3780,8 +3730,6 @@ class SettingsSegmentCommand:
 		common.core_tolerance = core / 100.0
 
 		common.print_segment_sizing_settings()
-		self._director.title_for_table_widget = (
-			"Segment sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -3800,7 +3748,6 @@ class SettingsSegmentCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(120)
 		settings_text = (
-			# f"{self._director.title_for_table_widget}\n\n"
 			f"Battleground size: {self.common.battleground_size}\n"
 			f"Core tolerance: {self.common.core_tolerance}"
 		)
@@ -3840,8 +3787,6 @@ class SettingsVectorSizeCommand:
 		common.vector_width = vector_width
 
 		common.print_vector_sizing_settings()
-		self._director.title_for_table_widget = (
-			"Vector sizing settings updated")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -3859,7 +3804,6 @@ class SettingsVectorSizeCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(120)
 		settings_text = (
-			# f"{self._director.title_for_table_widget}\n\n"
 			f"Vector head width (in inches): {self.common.vector_head_width}\n"
 			f"Vector width (in inches): {self.common.vector_width}"
 		)
@@ -3896,26 +3840,18 @@ class SimilaritiesCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = self.common.get_command_parameters(
-			"Similarities", value_type=value_type
-		)
+			"Similarities", value_type=value_type)
 		file_name: str = params["file"]
 		value_type: str = params["value_type"]
 		self.common.capture_and_push_undo_state(
-			"Similarities", "active", params
-		)
+			"Similarities", "active", params)
 		self._read_similarities(file_name, value_type, common)
 		self._director.dependency_checker.detect_consistency_issues()
 		width = 8
 		decimals = 3
 		self._director.similarities_active.print_the_similarities(
-			width, decimals, common
-		)
+			width, decimals, common)
 		self._director.common.create_plot_for_tabs("heatmap_simi")
-		nreferent = self._director.similarities_active.nreferent
-		value_type = self._director.similarities_active.value_type
-		self._director.title_for_table_widget = (
-			f"The {value_type} matrix has {nreferent} items"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -3992,16 +3928,10 @@ class TargetCommand:
 
 		# Read and validate target file
 		self._director.target_active = common.read_configuration_type_file(
-			file_name, "Target"
-		)
+			file_name, "Target")
 
 		self._director.target_active.print_target()
 		self._director.common.create_plot_for_tabs("target")
-		ndim = self._director.target_active.ndim
-		npoint = self._director.target_active.npoint
-		self._director.title_for_table_widget = (
-			f"Target configuration has {ndim} dimensions and {npoint} points"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

@@ -1510,7 +1510,7 @@ class TargetFeature:
 	def print_target(self) -> None:
 		"""print target function -
 		is used to print the target configuration."""
-		print(self.point_coords)
+		print(self.point_coords.to_string(float_format="{:.2f}".format))
 		return
 
 

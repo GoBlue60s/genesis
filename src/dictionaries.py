@@ -3847,19 +3847,16 @@ title_generator_dict = MappingProxyType({
 		f"{d.grouped_data_active.ngroups} points"
 	),
 	"View individuals": lambda d: "Individuals",
-	"View point uncertainty": lambda d: (
-		f"Point Uncertainty - {len(d.common.selected_indices)} points: "
-		f"{', '.join(d.common.selected_points)}"
-	),
+	"View point uncertainty": lambda d: "Point Uncertainty ",
 	"View sample design": lambda d: (
 		f"Sample design - Size of universe: {d.common.universe_size}, "
 		f"Probability of inclusion: {d.common.probability_of_inclusion}"
 	),
 	"View sample repetitions": lambda d: "Sample repetitions",
 	"View sample solutions": lambda d: (
-		f"{d.sample_solutions_active.nsolutions} solutions have "
-		f"{d.sample_solutions_active.ndim} dimensions and "
-		f"{d.sample_solutions_active.npoint} points"
+		f"{d.uncertainty_active.nsolutions} solutions have "
+		f"{d.uncertainty_active.ndim} dimensions and "
+		f"{d.uncertainty_active.npoint} points"
 	),
 	"View scores": lambda d: (
 		f"There are {d.scores_active.nscores} active scores for "
@@ -3871,9 +3868,9 @@ title_generator_dict = MappingProxyType({
 		f"{d.similarities_active.nreferent} items"
 	),
 	"View spatial uncertainty": lambda d: (
-		f"Spatial Uncertainty - {d.sample_solutions_active.nsolutions} "
-		f"solutions with {d.sample_solutions_active.ndim} dimensions and "
-		f"{d.sample_solutions_active.npoint} points"
+		f"Spatial Uncertainty - {d.uncertainty_active.nsolutions} "
+		f"solutions with {d.uncertainty_active.ndim} dimensions and "
+		f"{d.uncertainty_active.npoints} points"
 	),
 	"View target": lambda d: (
 		f"Target configuration has {d.target_active.ndim} dimensions and "

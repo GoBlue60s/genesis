@@ -484,16 +484,9 @@ class ViewPointUncertaintyCommand:
 		common.capture_and_push_undo_state(
 			"View point uncertainty",
 			"passive",
-			params
-		)
-
+			params)
 		# Create the point uncertainty plot
 		common.create_plot_for_tabs("point_uncertainty")
-
-		director.title_for_table_widget = (
-			f"Point Uncertainty - "
-			f"{len(selected_indices)} points: {', '.join(selected_points)}"
-		)
 		director.create_widgets_for_output_and_log_tabs()
 		director.set_focus_on_tab("Plot")
 		director.record_command_as_successfully_completed()
