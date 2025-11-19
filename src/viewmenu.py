@@ -37,9 +37,7 @@ class HistoryCommand:
 		# Error descriptions
 		self.unknown_status_of_command_error_title = "History"
 		self.unknown_status_of_command_error_message = (
-			"Commands used has unknown value"
-		)
-
+			"Commands used has unknown value")
 		return
 
 	# ------------------------------------------------------------------------
@@ -143,7 +141,6 @@ class ViewConfigurationCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "View configuration"
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -154,8 +151,7 @@ class ViewConfigurationCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("View configuration")
 		common.capture_and_push_undo_state(
-			"View configuration", "passive", params
-		)
+			"View configuration", "passive", params)
 		self._director.configuration_active.print_the_configuration()
 		self._director.common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -207,7 +203,6 @@ class ViewCustomCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "View custom"
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -289,8 +284,7 @@ class ViewDistancesCommand:
 		self._width = 8
 		self._decimals = 2
 		self._director.configuration_active.nreferent = (
-			self._director.configuration_active.npoint
-		)
+			self._director.configuration_active.npoint)
 		return
 
 		# --------------------------------------------------------------------
@@ -303,8 +297,7 @@ class ViewDistancesCommand:
 			"View distances", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_distances(
-			self._width, self._decimals, common
-		)
+			self._width, self._decimals, common)
 		self._director.common.create_plot_for_tabs("heatmap_dist")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -352,8 +345,6 @@ class ViewGroupedDataCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		ndim = self._director.grouped_data_active.ndim
-		ngroups = self._director.grouped_data_active.ngroups
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -363,7 +354,6 @@ class ViewGroupedDataCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.grouped_data_active.print_grouped_data()
 		self._director.common.create_plot_for_tabs("grouped_data")
-		grouping_var = self._director.grouped_data_active.grouping_var
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -381,7 +371,6 @@ class ViewIndividualsCommand:
 		self._director.command = "View individuals"
 		self._director.width = 8
 		self._director.decimals = 2
-
 		return
 
 		# --------------------------------------------------------------------
@@ -391,8 +380,7 @@ class ViewIndividualsCommand:
 		self._director.optionally_explain_what_command_does()
 		params = common.get_command_parameters("View individuals")
 		common.capture_and_push_undo_state(
-			"View individuals", "passive", params
-		)
+			"View individuals", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.individuals_active.print_individuals()
 		# self._director.common.create_plot_for_tabs(
@@ -411,7 +399,6 @@ class ViewPointUncertaintyCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "View point uncertainty"
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -488,15 +475,13 @@ class ViewSampleDesignCommand:
 		self._director.optionally_explain_what_command_does()
 		params = common.get_command_parameters("View sample design")
 		common.capture_and_push_undo_state(
-			"View sample design", "passive", params
-		)
+			"View sample design", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		sample_design = self._director.uncertainty_active.sample_design
 
 		universe_size = self._director.uncertainty_active.universe_size
 		probability_of_inclusion = (
-			self._director.uncertainty_active.probability_of_inclusion
-		)
+			self._director.uncertainty_active.probability_of_inclusion)
 		print(f"Sample design - Size of universe: {universe_size},"
 			f" Probability of inclusion: {probability_of_inclusion}")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -549,8 +534,7 @@ class ViewSampleRepetitionsCommand:
 		self._director.optionally_explain_what_command_does()
 		params = common.get_command_parameters("View sample repetitions")
 		common.capture_and_push_undo_state(
-			"View sample repetitions", "passive", params
-		)
+			"View sample repetitions", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		# print(self._director.uncertainty_active.sample_repetitions)
 		n_repetitions = self._director.uncertainty_active.nrepetitions
@@ -604,8 +588,7 @@ class ViewSampleSolutionsCommand:
 		self._director.optionally_explain_what_command_does()
 		params = common.get_command_parameters("View sample solutions")
 		common.capture_and_push_undo_state(
-			"View sample solutions", "passive", params
-		)
+			"View sample solutions", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		# print(self._director.uncertainty_active.sample_solutions)
 
@@ -614,7 +597,6 @@ class ViewSampleSolutionsCommand:
 
 		common.create_plot_for_tabs("uncertainty")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -641,14 +623,11 @@ class ViewScoresCommand:
 		director.command = "View scores"
 		self._width = 8
 		self._decimals = 2
-
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		nscores = self._director.scores_active.nscores
-		nscored = self._director.scores_active.nscored_individ
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
@@ -658,7 +637,6 @@ class ViewScoresCommand:
 		self._director.scores_active.print_scores()
 		self._director.common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -681,22 +659,17 @@ class ViewSimilaritiesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		value_type = self._director.similarities_active.value_type
-		nreferent = self._director.similarities_active.nreferent
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		params = common.get_command_parameters("View similarities")
 		common.capture_and_push_undo_state(
-			"View similarities", "passive", params
-		)
+			"View similarities", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.similarities_active.print_the_similarities(
-			self._width, self._decimals, common
-		)
+			self._width, self._decimals, common)
 		self._director.common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -709,7 +682,6 @@ class ViewSpatialUncertaintyCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "View spatial uncertainty"
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -718,9 +690,6 @@ class ViewSpatialUncertaintyCommand:
 		director = self._director
 		uncertainty_active = director.uncertainty_active
 		sample_solutions = uncertainty_active.sample_solutions
-		nsolutions = uncertainty_active.nsolutions
-		ndim = uncertainty_active.ndim
-		npoint = uncertainty_active.npoints
 
 		self.plot_to_show = plot
 		director.plot_to_show = plot  # Store for plotting functions
@@ -729,11 +698,9 @@ class ViewSpatialUncertaintyCommand:
 
 		# Get command parameters (will use plot from execute parameter)
 		params = common.get_command_parameters(
-			"View spatial uncertainty", plot=plot
-		)
+			"View spatial uncertainty", plot=plot)
 		common.capture_and_push_undo_state(
-			"View spatial uncertainty", "passive", params
-		)
+			"View spatial uncertainty", "passive", params)
 		director.dependency_checker.detect_dependency_problems()
 
 		print(sample_solutions)
@@ -741,7 +708,6 @@ class ViewSpatialUncertaintyCommand:
 		# Create the plot with the specified visualization mode
 		common.create_plot_for_tabs("spatial_uncertainty")
 		director.create_widgets_for_output_and_log_tabs()
-		director.set_focus_on_tab("Plot")
 		director.record_command_as_successfully_completed()
 		return
 
@@ -783,14 +749,11 @@ class ViewUncertaintyCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "View uncertainty"
-
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		nscores = self._director.scores_active.nscores
-		nscored = self._director.scores_active.nscored_individ
 
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()

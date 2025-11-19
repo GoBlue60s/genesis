@@ -674,8 +674,7 @@ class FactorAnalysisCommand:
 		params = common.get_command_parameters("Factor analysis")
 		ext_fact: int = params["n_factors"]
 		common.capture_and_push_undo_state(
-			"Factor analysis", "active", params
-		)
+			"Factor analysis", "active", params)
 		#
 		# Now perform factor analysis - set ndim and continue
 		#
@@ -961,8 +960,7 @@ class FactorAnalysisMachineLearningCommand:
 
 		self._director.evaluations_active.item_labels = []
 		self._director.evaluations_active.range_items = range(
-			self._director.evaluations_active.nitem
-		)
+			self._director.evaluations_active.nitem)
 		self._get_ncomponents_title = "Factor Analysis"
 		self._get_ncomponents_label = "Number of factors to extract:"
 		self._get_ncomponents_default = 2
@@ -988,8 +986,7 @@ class FactorAnalysisMachineLearningCommand:
 		params = common.get_command_parameters("Factor analysis machine learning")
 		n_components: int = params["n_components"]
 		common.capture_and_push_undo_state(
-			"Factor analysis machine learning", "active", params
-		)
+			"Factor analysis machine learning", "active", params)
 		#
 		# Now perform factor analysis
 		#
@@ -1643,8 +1640,7 @@ class PrincipalComponentsCommand:
 		params = self.common.get_command_parameters("Principal components")
 		n_components: int = params["n_components"]
 		self.common.capture_and_push_undo_state(
-			"Principal components", "active", params
-		)
+			"Principal components", "active", params)
 		#
 		# Now perform PCA
 		#
@@ -1817,7 +1813,6 @@ class VectorsCommand:
 		self._vert_dim = self._director.common.vert_dim
 		self.ndim = self._director.configuration_active.ndim
 		self.dim_names = self._director.configuration_active.dim_names
-
 		return
 
 	# ------------------------------------------------------------------------

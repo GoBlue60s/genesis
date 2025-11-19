@@ -229,10 +229,8 @@ class HelpCommand:
 		common.capture_and_push_undo_state("Help", "passive", params)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
-		self._director.unable_to_complete_command_set_status_as_failed()
+		self._director.record_command_as_successfully_completed()
 		return
-		# self._director.record_command_as_successfully_completed()
-		# return
 
 
 # --------------------------------------------------------------------------
@@ -247,7 +245,6 @@ class StatusCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Status"
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -257,6 +254,16 @@ class StatusCommand:
 		self._director.optionally_explain_what_command_does()
 		params = common.get_command_parameters("Status")
 		common.capture_and_push_undo_state("Status", "passive", params)
+		self._print_status()
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_status(self) -> None:
+
 		self._director.common.print_established_elements()
 		self._director.common.print_plot_settings()
 		self._director.common.print_plane_settings()
@@ -265,14 +272,10 @@ class StatusCommand:
 		self._director.common.print_vector_sizing_settings()
 		self._director.common.print_presentation_layer_settings()
 		self._director.common.print_layout_options_settings()
-		# self._print_status()
-		self._director.title_for_table_widget = "Status of current session"
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Output")
-		self._director.record_command_as_successfully_completed()
-		return
+	return
 
 	# ------------------------------------------------------------------------
+
 
 	def _display(self) -> QTableWidget:
 		#
@@ -647,9 +650,6 @@ class VerboseCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Verbose"
-		self._director.title_for_table_widget = (
-			"Output will include explanations"
-		)
 		return
 
 	# ------------------------------------------------------------------------
@@ -697,9 +697,6 @@ class TerseCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Terse"
-		self._director.title_for_table_widget = (
-			"Output will not include explanations"
-		)
 		return
 
 	# ------------------------------------------------------------------------

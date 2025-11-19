@@ -252,7 +252,6 @@ class DistancesCommand:
 		self._director.command = "Distances"
 		self._width: int = 8
 		self._decimals: int = 2
-		self.title_for_table_widget: str = "Inter-point distances"
 		return
 
 	# ------------------------------------------------------------------------
@@ -287,7 +286,6 @@ class LineOfSightCommand:
 		self._director.command = "Line of sight"
 		self._width: int = 8
 		self._decimals: int = 1
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -298,16 +296,8 @@ class LineOfSightCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		#
-		# Capture state before making changes (for undo)
-		#
-		self.common.capture_and_push_undo_state(
-			"Line of sight",
-			"active",
-			{})
-		#
-		# Now perform the line of sight calculation
-		#
+		self.common.capture_and_push_undo_state("Line of sight", "active", {})
+
 		self._director.similarities_active = self.common.los(
 			self._director.evaluations_active)
 		self._duplicate_similarities(common)
@@ -323,7 +313,6 @@ class LineOfSightCommand:
 			f" items")
 		self._director.common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -361,8 +350,7 @@ class PairedCommand:
 		self._director.command = "Paired"
 		self._paired_title: str = "Point comparisons"
 		self._paired_items: list[str] = (
-			self._director.configuration_active.point_names
-		)
+			self._director.configuration_active.point_names)
 		return
 
 	# ------------------------------------------------------------------------
@@ -500,7 +488,6 @@ class RanksDifferencesCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Ranks differences"
-		self._director.title_for_table_widget = "Difference of Ranks"
 		return
 
 	# ------------------------------------------------------------------------
@@ -509,7 +496,6 @@ class RanksDifferencesCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		# Get command parameters and capture state
 		params = common.get_command_parameters("Ranks differences")
 		common.capture_and_push_undo_state(
 			"Ranks differences", "passive", params)
@@ -520,7 +506,6 @@ class RanksDifferencesCommand:
 		self._director.common.create_plot_for_tabs("heatmap_rank_diff")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
-		self._director.set_focus_on_tab("Plot")
 		return
 
 	# ------------------------------------------------------------------------
@@ -531,7 +516,6 @@ class RanksDistancesCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Ranks distances"
-		self._director.title_for_table_widget = "Rank of Distances"
 		return
 
 	# ------------------------------------------------------------------------
@@ -540,7 +524,6 @@ class RanksDistancesCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		# Get command parameters and capture state
 		params = common.get_command_parameters("Ranks distances")
 		common.capture_and_push_undo_state(
 			"Ranks distances", "passive", params)
@@ -556,7 +539,6 @@ class RanksDistancesCommand:
 		self._director.common.create_plot_for_tabs("heatmap_ranked_dist")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
-		self._director.set_focus_on_tab("Plot")
 		return
 
 	# ------------------------------------------------------------------------
@@ -567,7 +549,6 @@ class RanksSimilaritiesCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Ranks similarities"
-		self._director.title_for_table_widget = "Rank of Similarities"
 		return
 
 	# ------------------------------------------------------------------------
@@ -576,7 +557,6 @@ class RanksSimilaritiesCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		# Get command parameters and capture state
 		params = common.get_command_parameters("Ranks similarities")
 		common.capture_and_push_undo_state(
 			"Ranks similarities", "passive", params)
@@ -592,7 +572,6 @@ class RanksSimilaritiesCommand:
 		self._director.common.create_plot_for_tabs("heatmap_ranked_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
-		self._director.set_focus_on_tab("Plot")
 		return
 
 	# ------------------------------------------------------------------------
@@ -626,7 +605,6 @@ class ScreeCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		# Get command parameters and capture state
 		params = common.get_command_parameters("Scree", use_metric=use_metric)
 		use_metric = params["use_metric"]
 		common.capture_and_push_undo_state("Scree", "passive", params)
@@ -635,7 +613,6 @@ class ScreeCommand:
 		self._use_metric = use_metric
 		self._scree()
 		self._director.common.create_plot_for_tabs("scree")
-		self._director.title_for_table_widget = "Best stress by dimensionality"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -749,7 +726,6 @@ class ShepardCommand:
 		self._shepard_options: list[str] = [
 			"X-axis (horizontal)",
 			"Y-axis (vertical)"]
-
 		self.shepard_axis: str = ""
 		return
 
@@ -763,7 +739,6 @@ class ShepardCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 
-		# Get command parameters and capture state
 		params = common.get_command_parameters(
 			"Shepard", axis=axis_for_similarities)
 		axis_for_similarities = params["axis"]
@@ -774,9 +749,6 @@ class ShepardCommand:
 		self._director.common.shepard_axis = axis_for_similarities
 
 		self._director.common.create_plot_for_tabs("shepard")
-		self._director.title_for_table_widget = (
-			"Rank of similarity above diagonal, "
-			"rank of distance below diagonal")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -819,9 +791,6 @@ class StressContributionCommand:
 		self._point_to_plot_label = point_labels[index]
 		self._point_to_plot_index = index
 		self._director.common.create_plot_for_tabs("stress_contribution")
-		point_names = self._director.configuration_active.point_names
-		self._director.title_for_table_widget = (
-			f"Stress contribution of {point_names[index]}")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

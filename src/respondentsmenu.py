@@ -32,7 +32,6 @@ class BaseCommand(ASupporterGrouping):
 		self._base_pcts = rivalry.base_pcts
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -119,8 +118,7 @@ class BattlegroundCommand(ASupporterGrouping):
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._battleground_groups_to_show = (
-			show)
+		self._director.current_command._battleground_groups_to_show = (show)
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
@@ -185,12 +183,8 @@ class ContestCommand:
 
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.create_plot_for_tabs("contest")
-		self._rival_a = rivalry.rival_a
-		self._rival_b = rivalry.rival_b
-		self._director.title_for_table_widget = (
-			f"Segments are based on a contest between "
-			f"{self._rival_a.name} and {self._rival_b.name}"
-		)
+		# self._rival_a = rivalry.rival_a
+		# self._rival_b = rivalry.rival_b
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -225,21 +219,13 @@ class ConvertibleCommand(ASupporterGrouping):
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._convertible_groups_to_show = (
-			show
-		)
+		self._director.current_command._convertible_groups_to_show = (show)
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
-			self._director.command,
-			{"show": show}
-		)
+			self._director.command, {"show": show})
 
 		self._director.common.create_plot_for_tabs("convertible")
-		self._director.title_for_table_widget = (
-			f"Potential supporters convertible to "
-			f"{self._rival_a.name} and {self._rival_b.name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -276,14 +262,9 @@ class CoreSupportersCommand(ASupporterGrouping):
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
-			self._director.command,
-			{"show": show}
-		)
+			self._director.command, {"show": show})
 
 		self._director.common.create_plot_for_tabs("core")
-		self._director.title_for_table_widget = (
-			f"Core supporters of {self._rival_a.name} and {self._rival_b.name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -317,22 +298,16 @@ class FirstDimensionCommand(ASupporterGrouping):
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._first_dim_groups_to_show = (
-			show
-		)
+		self._director.current_command._first_dim_groups_to_show = (show)
 
 		# Track passive command with parameters for script generation
 		common.push_passive_command_to_undo_stack(
-			self._director.command,
-			{"show": show}
-		)
+			self._director.command, {"show": show})
 
 		common.create_plot_for_tabs("first")
-		self._director.title_for_table_widget = "Party oriented segments"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
-
 
 # ----------------------------------------------------------------------------
 
@@ -361,11 +336,6 @@ class JointCommand:
 
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.common.create_plot_for_tabs("joint")
-		self._director.title_for_table_widget = (
-			"Warning: Make sure the scores "
-			"match the \ndimensions AND orientation of the active"
-			"configuration."
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -388,7 +358,6 @@ class LikelySupportersCommand(ASupporterGrouping):
 		self._likely_pcts = rivalry.likely_pcts
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -405,15 +374,9 @@ class LikelySupportersCommand(ASupporterGrouping):
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
-			self._director.command,
-			{"show": show}
-		)
+			self._director.command, {"show": show})
 
 		self._director.common.create_plot_for_tabs("likely")
-		self._director.title_for_table_widget = (
-			f"Likely supporters of {self._rival_a.name} "
-			f"and {self._rival_b.name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 
@@ -438,7 +401,6 @@ class ReferencePointsCommand:
 		self._refs_title: str = "Select a pair of reference points"
 		self._refs_items: list[str] = (
 			self._director.configuration_active.point_names)
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -473,9 +435,6 @@ class ReferencePointsCommand:
 
 		self._print_reference_points()
 		self._director.common.create_plot_for_tabs("configuration")
-		self._director.title_for_table_widget = (
-			f"Reference points will be {rivalry.rival_a.name} "
-			f"and {rivalry.rival_b.name}")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -509,11 +468,9 @@ class SampleDesignerCommand:
 		self._director.uncertainty_active.probability_of_inclusion = 0
 		self._director.uncertainty_active.nrepetitions = 0
 		self._director.uncertainty_active.sample_design = pd.DataFrame(
-			columns=["RespId", "Repetition", "Selected"]
-		)
+			columns=["RespId", "Repetition", "Selected"])
 		self._director.uncertainty_active.sample_design_frequencies = (
-			pd.DataFrame(columns=["Repetition", "Selected", "Count"])
-		)
+			pd.DataFrame(columns=["Repetition", "Selected", "Count"]))
 		self._designer_title = "Set sample parameters.."
 		self._designer_items = [
 			"Probability of inclusion",
@@ -540,21 +497,15 @@ class SampleDesignerCommand:
 		self._director.uncertainty_active.probability_of_inclusion = probability_of_inclusion
 		self._director.uncertainty_active.nrepetitions = nrepetitions
 		self.common.capture_and_push_undo_state(
-			"Sample designer", "active", params
-		)
+			"Sample designer", "active", params)
 
 		self._create_sample_design()
 
 		universe_size = self._director.uncertainty_active.universe_size
 		probability_of_inclusion = (
-			self._director.uncertainty_active.probability_of_inclusion
-		)
+			self._director.uncertainty_active.probability_of_inclusion)
 		self.common.create_sample_design_analysis_table()
 		self._print_sample_design_analysis_results()
-		self._director.title_for_table_widget = (
-			f"Sample design - Size of universe: {universe_size}, "
-			f"Probability of inclusion: {probability_of_inclusion}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -562,13 +513,10 @@ class SampleDesignerCommand:
 
 	# ------------------------------------------------------------------------
 
-	# ------------------------------------------------------------------------
-
 	def _create_sample_design(self) -> None:
 		universe_size = self._director.uncertainty_active.universe_size
 		probability_of_inclusion = (
-			self._director.uncertainty_active.probability_of_inclusion
-		)
+			self._director.uncertainty_active.probability_of_inclusion)
 		nrepetitions = self._director.uncertainty_active.nrepetitions
 		sample_design = self._director.uncertainty_active.sample_design
 
@@ -675,7 +623,6 @@ class SampleRepetitionsCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Sample repetitions"
-
 		self._director.uncertainty_active.sample_repetitions = pd.DataFrame()
 
 		return
@@ -691,17 +638,12 @@ class SampleRepetitionsCommand:
 
 		# Capture state for undo BEFORE modifications
 		params = {
-			"universe_size": self._director.uncertainty_active.universe_size
-		}
+			"universe_size": self._director.uncertainty_active.universe_size}
 		self.common.capture_and_push_undo_state(
-			"Sample repetitions", "active", params
-		)
+			"Sample repetitions", "active", params)
 
 		self._create_sample_repetitions()
 		universe_size = self._director.uncertainty_active.universe_size
-		self._director.title_for_table_widget = (
-			f"Sample repetitions - Size of universe: {universe_size}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -819,8 +761,7 @@ class ScoreIndividualsCommand:
 		# Capture state for undo BEFORE modifications
 		params = {}
 		self.common.capture_and_push_undo_state(
-			"Score individuals", "active", params
-		)
+			"Score individuals", "active", params)
 
 		self._calculate_scores()
 
@@ -828,13 +769,6 @@ class ScoreIndividualsCommand:
 		self._director.scores_active.print_scores()
 		if self._director.common.have_reference_points():
 			self._director.rivalry.assign_to_segments()
-		nscores = self._director.scores_active.nscores
-		nscored = self._director.scores_active.nscored_individ
-		self._director.title_for_table_widget = (
-			f"There are {nscores} active scores for {nscored} individuals."
-		)
-		# self._director.scores_active. \
-		# create_scores_plot_for_tabs(self._director)
 		self._director.common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -940,18 +874,13 @@ class SecondDimensionCommand(ASupporterGrouping):
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._second_dim_groups_to_show = (
-			show
-		)
+		self._director.current_command._second_dim_groups_to_show = (show)
 
 		# Track passive command with parameters for script generation
 		self._director.common.push_passive_command_to_undo_stack(
-			self._director.command,
-			{"show": show}
-		)
+			self._director.command, {"show": show})
 
 		self._director.common.create_plot_for_tabs("second")
-		self._director.title_for_table_widget = "Social oriented segments"
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -993,10 +922,6 @@ class SegmentsCommand:
 			self._director.rivalry.assign_to_segments()
 
 		self._print_segments(width, decimals)
-		self._director.title_for_table_widget = (
-			f"Segments defined by contest between "
-			f"{self._rival_a.name} and {self._rival_b.name}"
-		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
