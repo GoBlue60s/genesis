@@ -3597,7 +3597,7 @@ title_generator_dict = MappingProxyType({
 	),
 	"Compare": lambda d: (
 		f"After procrustean rotation active configuration matches "
-		f"target configuration with disparity of {d.common.disparity:8.4f}"
+		f"target configuration with disparity of {d.target_active.disparity:8.4f}"
 	),
 	"Configuration": lambda d: (
 		f"Configuration has {d.configuration_active.ndim} "
@@ -3780,7 +3780,7 @@ title_generator_dict = MappingProxyType({
 	),
 	"Score individuals": lambda d: (
 		f"There are {d.scores_active.nscores} active scores for "
-		f"{d.scores_active.nscored} individuals."
+		f"{d.scores_active.nscored_individ} individuals."
 	),
 	"Scree": lambda d: "Best stress by dimensionality",
 	"Second dimension": lambda d: "Social oriented segments",
@@ -3860,7 +3860,7 @@ title_generator_dict = MappingProxyType({
 	),
 	"View scores": lambda d: (
 		f"There are {d.scores_active.nscores} active scores for "
-		f"{d.scores_active.nscored} individuals."
+		f"{d.scores_active.nscored_individ} individuals."
 	),
 	"View script": lambda d: "Script commands",
 	"View similarities": lambda d: (

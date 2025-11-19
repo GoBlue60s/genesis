@@ -33,13 +33,9 @@ class CompareCommand:
 	as the active configuration.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		self._director.command = "Compare"
-		self._director.configuration_active.compared = pd.DataFrame()
-		self._director.target_active.disparity = 0.0
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -47,24 +43,19 @@ class CompareCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		self.common.capture_and_push_undo_state(
-			"Compare", "active", {})
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.dependency_checker.detect_limitations_violations()
+		common.capture_and_push_undo_state("Compare", "active", {})
 
 		self._director.target_active.disparity = self._compare()
-		disparity = self._director.target_active.disparity
+
 		self._create_compare_table()
 		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, common)
-		
-		self._director.common.create_plot_for_tabs("compare")
+
 		self._print_comparison()
-		self._director.title_for_table_widget = (
-			f"After procrustean rotation active configuration "
-			f"matches target configuration with disparity of "
-			f"{disparity:8.4f}")
+		self._director.common.create_plot_for_tabs("compare")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -90,7 +81,6 @@ class CompareCommand:
 		compared = point_coords.merge(
 			target_coords, how="inner", left_index=True, right_index=True
 		)
-
 		self._director.configuration_active.point_coords = point_coords
 		self._director.target_active.point_coords = target_coords
 		self._director.configuration_active.compared = compared
@@ -123,10 +113,10 @@ class CompareCommand:
 		for index, dim in [(hor_dim, "X"), (vert_dim, "Y")]:
 			compare_df[f"Active_{dim}"] = active_config.point_coords.iloc[
 				:, index
-			]
+			].apply(lambda x: f"{x:.2f}")
 			compare_df[f"Target_{dim}"] = target_config.point_coords.iloc[
 				:, index
-			]
+			].apply(lambda x: f"{x:.2f}")
 
 		self._director.target_active.compare_df = compare_df
 
@@ -140,9 +130,9 @@ class CompareCommand:
 
 		print(f"Disparity = {self._director.target_active.disparity:8.4f}")
 		print("\nActive configuration:")
-		print(point_coords)
+		print(point_coords.to_string(float_format="{:.2f}".format))
 		print("\nTarget configuration:")
-		print(target_coords)
+		print(target_coords.to_string(float_format="{:.2f}".format))
 		return
 
 
@@ -154,32 +144,24 @@ class CenterCommand:
 	This is useful when coordinates are Lat long degrees.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		director.command = "Center"
-
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		ndim = self._director.configuration_active.ndim
-		npoint = self._director.configuration_active.npoint
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self.common.capture_and_push_undo_state(
-			"Center", "active", {})
+		common.capture_and_push_undo_state("Center", "active", {})
 		self._center_by_subtracting_mean_from_coordinates()
 		self._director.scores_active.scores = pd.DataFrame()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, common)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -208,41 +190,31 @@ class CenterCommand:
 class InvertCommand:
 	"""The Invert command is used to invert dimensions"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		self._director.command = "Invert"
 		self._dimensions_to_invert_title = "Select dimensions to invert"
 		self._dimensions = self._director.configuration_active.dim_names
-
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None: # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		rivalry = self._director.rivalry
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		params = self.common.get_command_parameters("Invert")
+		params = common.get_command_parameters("Invert")
 		selected_items: list = params["dimensions"]
 		dim_names = self._director.configuration_active.dim_names
 		dims_indexes = [dim_names.index(dim) for dim in selected_items]
-		self.common.capture_and_push_undo_state(
-			"Invert",
-			"active",
-			params)
+		common.capture_and_push_undo_state("Invert", "active", params)
 		# Now perform the invert
 		self._invert(dims_indexes)
-		# self._director.scores_active.scores = pd.DataFrame()
 		rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, common)
 		self._director.configuration_active.print_active_function()
 		self._director.common.create_plot_for_tabs("configuration")
-		ndim = self._director.configuration_active.ndim
-		npoint = self._director.configuration_active.npoint
-		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -263,7 +235,7 @@ class InvertCommand:
 				if each_dim == checked_dim:
 					self._inverter(checked_dim)
 		if self._director.common.have_scores():
-			peek("Scores exist, inverting scores on selected dimensions") # ty: ignore[call-non-callable]
+			# peek("Scores exist, inverting scores on selected dimensions") # ty: ignore[call-non-callable]
 			cols = []
 			cols.extend(
 				[
@@ -274,10 +246,9 @@ class InvertCommand:
 				]
 			)
 			_scores[cols] = _scores[cols].mul(-1)
-
-		self._director.scores_active.scores = _scores
-		self._update_score_attributes_for_plotting()
-		self._director.scores_active.print_scores() # ty: ignore[call-non-callable]
+			self._director.scores_active.scores = _scores
+			self._update_score_attributes_for_plotting()
+			self._director.scores_active.print_scores()
 
 		return
 
@@ -286,7 +257,6 @@ class InvertCommand:
 	def _inverter(self, which_dim: int) -> None:
 		point_coords = self._director.configuration_active.point_coords
 		range_points = self._director.configuration_active.range_points
-		# ndim = self._director.configuration_active.ndim
 
 		for each_point in range_points:
 			point_coords.iloc[each_point, which_dim] = (
@@ -336,10 +306,7 @@ class MoveCommand:
 		self._move_title = "Select dimension and value for move"
 		self._move_value_title = "Value to add to all points on this dimension"
 		self._move_options = self._director.configuration_active.dim_names
-		ndim = director.configuration_active.ndim
-		npoint = director.configuration_active.npoint
-		self._director.title_for_table_widget = (
-			f"Configuration has {ndim} dimensions and {npoint} points")
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -354,10 +321,7 @@ class MoveCommand:
 		decimal_value: float = params["distance"]
 		dim_names = self._director.configuration_active.dim_names
 		selected_option = dim_names.index(dimension_name)
-		self.common.capture_and_push_undo_state(
-			"Move",
-			"active",
-			params)
+		self.common.capture_and_push_undo_state("Move", "active", params)
 		# Now perform the move
 		self._move(selected_option, decimal_value)
 		self._director.scores_active.scores = pd.DataFrame()
@@ -404,9 +368,6 @@ class RescaleCommand:
 		self._rescale_by_default = 0.0
 		_ndim = director.configuration_active.ndim
 		_npoint = director.configuration_active.npoint
-		self._director.title_for_table_widget = (
-			f"Configuration has {_ndim} dimensions and {_npoint} points"
-		)
 		return
 
 	# ------------------------------------------------------------------------
@@ -526,9 +487,6 @@ class VarimaxCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Varimax"
-		self._director.title_for_table_widget = (
-			"Varimax rotation of active configuration"
-		)
 		return
 
 	# ------------------------------------------------------------------------
