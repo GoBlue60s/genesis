@@ -428,7 +428,8 @@ class DeactivateCommand:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState("Deactivate", "active", params)
-		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		cmd_state.timestamp = datetime.now().strftime(
+			"%Y-%m-%d %H:%M:%S") # noqa: DTZ005
 
 		# Map item names to their capture methods
 		item_to_capture = {
@@ -1713,8 +1714,9 @@ class OpenSampleSolutionsCommand:
 				self._director.uncertainty_active.point_labels = point_labels
 				self._director.uncertainty_active.point_names = point_names
 
-				# TODO: Read stress data and solution coordinates
-				# This is a shell implementation - full reading not yet complete
+				# Read stress data and solution coordinates
+				# This is a shell implementation - full reading
+				# not yet complete
 
 		except (FileNotFoundError, ValueError, IndexError) as e:
 			self.common.event_driven_automatic_restoration()
@@ -3337,7 +3339,7 @@ class SaveTargetCommand:
 		)
 		self._director.name_of_file_written_to = file_name
 		self._print_active_target_confirmation(file_name)
-		name_of_file_written_to = self._director.name_of_file_written_to
+		# name_of_file_written_to = self._director.name_of_file_written_to
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()

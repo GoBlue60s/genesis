@@ -272,7 +272,7 @@ class StatusCommand:
 		self._director.common.print_vector_sizing_settings()
 		self._director.common.print_presentation_layer_settings()
 		self._director.common.print_layout_options_settings()
-	return
+		return
 
 	# ------------------------------------------------------------------------
 

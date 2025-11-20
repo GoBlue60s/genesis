@@ -204,6 +204,27 @@ class MatplotlibCommon:
 			ax.axis([1, 10, 0, show_min_stress])
 		return fig
 
+	# ------------------------------------------------------------------------
+
+	def _plot_scree_factor_using_matplotlib(self) -> plt.Figure:
+	#def _create_scree_diagram_for_plot_and_gallery_tabs(self) -> None:
+
+		evaluations = self._director.evaluations_active.evaluations
+		eigen = self._director.configuration_active.eigen
+
+		fig, ax = \
+			self.begin_matplotlib_plot_with_title(
+				"Scree Diagram")
+		xvals = range(1, evaluations.shape[1]+1)
+		ax.scatter(xvals, eigen)
+		ax.plot(xvals, eigen)
+		# ax.set_title('Scree Plot')
+		ax.set_xlabel('Factors')
+		ax.set_ylabel('Eigenvalue')
+		ax.grid()
+		# fig.show()
+
+		return fig
 	# --------------------------------------------------------------------
 
 	def plot_shep_using_matplotlib(self) -> plt.Figure:
@@ -291,6 +312,16 @@ class MatplotlibCommon:
 		matplotlib_common = self._director.matplotlib_common
 
 		fig = self._plot_scree_using_matplotlib()
+		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		self._director.set_focus_on_tab("Plot")
+		return
+	
+	# ------------------------------------------------------------------------
+
+	def request_scree_factor_plot_for_tabs_using_matplotlib(self) -> None:
+		matplotlib_common = self._director.matplotlib_common
+
+		fig = self._plot_scree_factor_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
 		self._director.set_focus_on_tab("Plot")
 		return
@@ -585,3 +616,4 @@ class MatplotlibCommon:
 			edgecolor="r", linewidth=1
 		)
 		ax.add_patch(circle)
+

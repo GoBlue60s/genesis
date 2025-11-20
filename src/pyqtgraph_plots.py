@@ -2728,3 +2728,5 @@ class PyQtGraphMethods:
 		message: str = "Must be created"
 
 		raise UnderDevelopmentError(title, message)
+
+

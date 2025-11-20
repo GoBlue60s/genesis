@@ -345,6 +345,27 @@ class PyQtGraphCommon:
 
 		return graphics_layout_widget
 
+	# --------------------------------------------------------------------------
+
+	def _plot_scree_factor_using_pyqtgraph(self):
+
+		evaluations = self._director.evaluations_active.evaluations
+		eigen = self._director.configuration_active.eigen
+		graphics_layout_widget, plot = (
+			self.begin_pyqtgraph_plot_with_title("Scree Diagram"))
+		plot.showGrid(x=True, y=True)
+		plot.setLabel('bottom', "Number of Factors", color="k", size='15pt')
+		plot.setLabel('left', "Eigenvalue", color="k", size='15pt')
+		pen = pg.mkPen(color=(255, 0, 0))
+		x_coords = range(1, evaluations.shape[1] + 1)
+		y_coords = eigen["Eigenvalue"].tolist()
+		max_eigen = math.ceil(eigen.iloc[0])
+		plot.disableAutoRange("xy")
+		plot.setYRange(0, max_eigen, padding=0)
+		plot.setXRange(1, len(x_coords), padding=None)
+		line = pg.PlotDataItem(x_coords, y_coords, pen=pen)
+		plot.addItem(line)
+		return graphics_layout_widget
 	# -----------------------------------------------------------------------
 
 	def plot_shep_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
@@ -428,6 +449,17 @@ class PyQtGraphCommon:
 		self._director.set_focus_on_tab("Plot")
 		return
 
+	# ------------------------------------------------------------------------
+
+	def request_scree_factor_plot_for_tabs_using_pyqtgraph(self) -> None:
+		pyqtgraph_common = self._director.pyqtgraph_common
+		tab_plot_widget = self._plot_scree_factor_using_pyqtgraph()
+		tab_gallery_widget = self._plot_scree_factor_using_pyqtgraph()
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
+		self._director.set_focus_on_tab("Plot")
+		return
 	# ------------------------------------------------------------------------
 
 	def request_shepard_plot_for_tabs_using_pyqtgraph(self) -> None:

@@ -695,7 +695,7 @@ class Spaces:
 	# ----------------------------------------------------------------------
 
 	def create_plot_for_tabs(self, plot_type: str) -> None:
-		common_plot_types = ["differences", "scree", "shepard"]
+		common_plot_types = ["differences", "screes","scree_factor", "shepard"]
 		if self._director.common.presentation_layer == "PyQtGraph":
 			try:
 				if plot_type in common_plot_types:
