@@ -3321,9 +3321,6 @@ class SaveSimilaritiesCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Save similarities"
-		self._save_similarities_caption = "Save active similarities"
-		self._save_similarities_filter = "*.txt"
-		self._director.name_of_file_written_to = ""
 		self._save_similarities_error_title = "Similarities save problem"
 		self._save_similarities_error_message = (
 			"Unable to write similarities file.\n"
@@ -3388,38 +3385,47 @@ class SaveTargetCommand:
 	target to a file.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
-		# _message and _feedback changed to _title and _message
-
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
+		self.common = common
 		self._director.command = "Save target"
-		self._save_target_caption = "Save active target"
-		self._save_target_filter = "*.txt"
-		self._director.name_of_file_written_to = ""
-
+		self._save_target_error_title = "Target save problem"
+		self._save_target_error_message = (
+			"Unable to write target file.\n"
+			"Check file path and permissions, then try again."
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Save target")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state("Save target", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.target_active.write_a_configuration_type_file(
-			file_name, self._director.target_active
-		)
-		self._director.name_of_file_written_to = file_name
+		self._write_target_file(file_name)
+		common.name_of_file_written_to = file_name
 		self._print_active_target_confirmation(file_name)
-		# name_of_file_written_to = self._director.name_of_file_written_to
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_target_file(self, file_name: str) -> None:
+		"""Write target to file with error handling."""
+		try:
+			self._director.target_active.write_a_configuration_type_file(
+				file_name, self._director.target_active
+			)
+		except (OSError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._save_target_error_title,
+				self._save_target_error_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
@@ -3444,15 +3450,10 @@ class SettingsDisplayCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,
-		axis_extra: int | None = None,
-		displacement: int | None = None,
-		point_size: int | None = None,
-	) -> None:
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters(
 			"Settings - display sizing")
 		axis_extra: int = params["axis_extra"]
@@ -3460,7 +3461,7 @@ class SettingsDisplayCommand:
 		point_size: int = params["point_size"]
 		self.common.capture_and_push_undo_state(
 			"Settings - display sizing", "active", params)
-		
+
 		# Apply settings - convert percentages to floats
 		common.axis_extra = axis_extra / 100.0
 		common.displacement = displacement / 100.0
@@ -3506,15 +3507,10 @@ class SettingsLayoutCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,
-		max_cols: int | None = None,
-		width: int | None = None,
-		decimals: int | None = None,
-	) -> None:
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters(
 			"Settings - layout options")
 		max_cols: int = params["max_cols"]
@@ -3530,7 +3526,7 @@ class SettingsLayoutCommand:
 
 		common.print_layout_options_settings()
 		self._director.create_widgets_for_output_and_log_tabs()
-		self.set_focus_on_tab("Output")
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -3568,12 +3564,7 @@ class SettingsPlaneCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,
-		horizontal: str | None = None,
-		vertical: str | None = None,
-	) -> None:
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
@@ -3622,9 +3613,7 @@ class SettingsPlaneCommand:
 
 	def detect_acceptability_of_plane_parameters(
 		self, horizontal: str, vertical: str) -> tuple[int, int]:
-
 		"""Detect if plane parameters are acceptable."""
-		
 		hor_dim: int | None = None
 		vert_dim: int | None = None
 		dim_names = self._director.configuration_active.dim_names
@@ -3633,10 +3622,9 @@ class SettingsPlaneCommand:
 			missing_parameter_title = "Missing plane parameter"
 			missing_parameter_message = (
 				"Both horizontal and vertical parameters must be provided")
-			# self._director.common.event_driven_automatic_restoration()
 			raise SpacesError(
 				missing_parameter_title, missing_parameter_message)
-	
+
 		try:
 			hor_dim = dim_names.index(horizontal)
 			vert_dim = dim_names.index(vertical)
@@ -3646,19 +3634,17 @@ class SettingsPlaneCommand:
 				f"Dimension names must be from {dim_names}, "
 				f"got horizontal='{horizontal}', vertical='{vertical}'"
 			)
-			# self._director.common.event_driven_automatic_restoration()
 			raise SpacesError(invalid_dimension_title,
 				invalid_dimension_message,
 			) from e
 
 		# Validate that horizontal and vertical are different
 		if hor_dim == vert_dim:
-			invalid_pland_title = "Invalid plane parameters"
+			invalid_plane_title = "Invalid plane parameters"
 			invalid_plane_message = (
 				"Horizontal and vertical axes must be different dimensions")
-			# self._director.common.event_driven_automatic_restoration()
-			raise SpacesError(invalid_pland_title, invalid_plane_message)
-		return [hor_dim, vert_dim]
+			raise SpacesError(invalid_plane_title, invalid_plane_message)
+		return (hor_dim, vert_dim)
 
 #----------------------------------------------------------------------------
 
@@ -3674,11 +3660,10 @@ class SettingsPlotCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces) -> None:
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters("Settings - plot settings")
 		bisector: bool = params["bisector"]
 		connector: bool = params["connector"]
@@ -3692,7 +3677,7 @@ class SettingsPlotCommand:
 		common.show_connector = connector
 		common.show_reference_points = reference_points
 		common.show_just_reference_points = just_reference_points
-		
+
 		common.print_plot_settings()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -3707,7 +3692,6 @@ class SettingsPlotCommand:
 		Returns:
 			QTextEdit widget showing updated plot settings
 		"""
-	
 		widget = QTextEdit()
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(150)
@@ -3741,6 +3725,7 @@ class SettingsPresentationLayerCommand:
 	def execute(self, common: Spaces, layer: str | None = None) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters(
 			"Settings - presentation layer", layer=layer)
 		layer: str = params["layer"]
@@ -3764,8 +3749,6 @@ class SettingsPresentationLayerCommand:
 		Returns:
 			QTextEdit widget showing updated presentation layer setting
 		"""
-	
-
 		widget = QTextEdit()
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(100)
@@ -3788,14 +3771,10 @@ class SettingsSegmentCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,
-		battleground: int | None = None,
-		core: int | None = None,
-	) -> None:
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = self.common.get_command_parameters(
 			"Settings - segment sizing")
 		battleground: int = params["battleground"]
@@ -3846,18 +3825,14 @@ class SettingsVectorSizeCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,
-		vector_head_width: float | None = None,
-		vector_width: float | None = None,
-	) -> None:
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Settings - vector sizing")
+		self._director.detect_dependency_problems()
+		params = common.get_command_parameters("Settings - vector sizing")
 		vector_head_width: float = params["vector_head_width"]
 		vector_width: float = params["vector_width"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Settings - vector sizing", "active", params)
 
 		# Apply settings
@@ -3866,6 +3841,7 @@ class SettingsVectorSizeCommand:
 
 		common.print_vector_sizing_settings()
 		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 

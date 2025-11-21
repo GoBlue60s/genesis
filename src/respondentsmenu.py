@@ -29,7 +29,6 @@ class BaseCommand(ASupporterGrouping):
 		self._director.command = "Base"
 		self._base_groups_to_show = ""
 		rivalry = self._director.rivalry
-		self._base_pcts = rivalry.base_pcts
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
 		return
@@ -71,9 +70,12 @@ class BaseCommand(ASupporterGrouping):
 		print(f"\n\t{title}\n")
 
 		# Calculate counts from percentages
-		nscored = rivalry.nscored_individ
-		base_left_count = int((self._base_pcts[1] / 100) * nscored)
-		base_right_count = int((self._base_pcts[3] / 100) * nscored)
+		# Access base_pcts directly from rivalry (it's a pandas Series)
+		# nscored comes from scores_active, not rivalry (rivalry.nscored_individ is 0)
+		nscored = director.scores_active.nscored_individ
+		base_pcts = rivalry.base_pcts
+		base_left_count = int((base_pcts[1] / 100) * nscored)
+		base_right_count = int((base_pcts[3] / 100) * nscored)
 
 		# Print the counts
 		print(
@@ -103,8 +105,6 @@ class BattlegroundCommand(ASupporterGrouping):
 		self.command = command
 		self._director.command = "Battleground"
 		self._battleground_groups_to_show = ""
-		rivalry = self._director.rivalry
-		self._battleground_pcts = rivalry.battleground_pcts
 
 		return
 
@@ -143,11 +143,14 @@ class BattlegroundCommand(ASupporterGrouping):
 		print(f"\n\t{title}\n")
 
 		# Calculate counts from percentages
-		nscored = rivalry.nscored_individ
+		# Access battleground_pcts directly from rivalry (it's a pandas Series)
+		# nscored comes from scores_active, not rivalry (rivalry.nscored_individ is 0)
+		nscored = director.scores_active.nscored_individ
+		battleground_pcts = rivalry.battleground_pcts
 		battleground_count = int(
-			(self._battleground_pcts[1] / 100) * nscored
+			(battleground_pcts[1] / 100) * nscored
 		)
-		settled_count = int((self._battleground_pcts[2] / 100) * nscored)
+		settled_count = int((battleground_pcts[2] / 100) * nscored)
 
 		# Print the counts
 		print(
@@ -203,7 +206,6 @@ class ConvertibleCommand(ASupporterGrouping):
 		self._director.command = "Convertible"
 		self._groups_to_show = ""
 		rivalry = self._director.rivalry
-		self._conv_pcts = rivalry.conv_pcts
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
 
@@ -225,9 +227,45 @@ class ConvertibleCommand(ASupporterGrouping):
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
+		self._print_convertible()
 		self._director.common.create_plot_for_tabs("convertible")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_convertible(self) -> None:
+		"""Print convertible supporter counts for each rival."""
+		director = self._director
+		rivalry = director.rivalry
+
+		# Get the title (same as table widget title)
+		title = (
+			f"Convertible supporters of {self._rival_a.name} and "
+			f"{self._rival_b.name}"
+		)
+		print(f"\n\t{title}\n")
+
+		# Calculate counts from percentages
+		# nscored comes from scores_active, not rivalry
+		nscored = director.scores_active.nscored_individ
+		conv_pcts = rivalry.conv_pcts
+		conv_left_count = int((conv_pcts[1] / 100) * nscored)
+		conv_right_count = int((conv_pcts[2] / 100) * nscored)
+		conv_settled_count = int((conv_pcts[3] / 100) * nscored)
+
+		# Print the counts
+		print(
+			f"\tThere are {conv_left_count} convertible to "
+			f"{self._rival_a.name}"
+		)
+		print(
+			f"\tThere are {conv_right_count} convertible to "
+			f"{self._rival_b.name}"
+		)
+		print(f"\tThere are {conv_settled_count} settled")
+
 		return
 
 
@@ -242,7 +280,6 @@ class CoreSupportersCommand(ASupporterGrouping):
 		self._director.command = "Core supporters"
 		self._groups_to_show = ""
 		rivalry = self._director.rivalry
-		self._core_pcts = rivalry.core_pcts
 		self._core_radius = rivalry.core_radius
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
@@ -264,9 +301,45 @@ class CoreSupportersCommand(ASupporterGrouping):
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
+		self._print_core()
 		self._director.common.create_plot_for_tabs("core")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_core(self) -> None:
+		"""Print core supporter counts for each rival."""
+		director = self._director
+		rivalry = director.rivalry
+
+		# Get the title (same as table widget title)
+		title = (
+			f"Core supporters of {self._rival_a.name} and "
+			f"{self._rival_b.name}"
+		)
+		print(f"\n\t{title}\n")
+
+		# Calculate counts from percentages
+		# nscored comes from scores_active, not rivalry
+		nscored = director.scores_active.nscored_individ
+		core_pcts = rivalry.core_pcts
+		core_left_count = int((core_pcts[1] / 100) * nscored)
+		core_neither_count = int((core_pcts[2] / 100) * nscored)
+		core_right_count = int((core_pcts[3] / 100) * nscored)
+
+		# Print the counts
+		print(
+			f"\tThere are {core_left_count} core supporters of "
+			f"{self._rival_a.name}"
+		)
+		print(
+			f"\tThere are {core_right_count} core supporters of "
+			f"{self._rival_b.name}"
+		)
+		print(f"\tThere are {core_neither_count} core supporters of neither")
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -285,7 +358,6 @@ class FirstDimensionCommand(ASupporterGrouping):
 		self._director.command = "First dimension"
 		self._groups_to_show = ""
 		rivalry = self._director.rivalry
-		self._first_pcts = rivalry.first_pcts
 		self._first_div = rivalry.first_div
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
@@ -304,10 +376,40 @@ class FirstDimensionCommand(ASupporterGrouping):
 		common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
+		self._print_first_dimension()
 		common.create_plot_for_tabs("first")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_first_dimension(self) -> None:
+		"""Print first dimension supporter counts."""
+		director = self._director
+		rivalry = director.rivalry
+
+		# Get the title (same as table widget title)
+		title = "First dimension supporters"
+		print(f"\n\t{title}\n")
+
+		# Calculate counts from percentages
+		# nscored comes from scores_active, not rivalry
+		nscored = director.scores_active.nscored_individ
+		first_pcts = rivalry.first_pcts
+		first_left_count = int((first_pcts[1] / 100) * nscored)
+		first_right_count = int((first_pcts[2] / 100) * nscored)
+
+		# Print the counts
+		print(
+			f"\tThere are {first_left_count} on the {self._rival_a.name} side"
+		)
+		print(
+			f"\tThere are {first_right_count} on the {self._rival_b.name} side"
+		)
+
+		return
+
 
 # ----------------------------------------------------------------------------
 
@@ -355,7 +457,6 @@ class LikelySupportersCommand(ASupporterGrouping):
 		rivalry = self._director.rivalry
 		self._director.command = "Likely supporters"
 		self._groups_to_show = ""
-		self._likely_pcts = rivalry.likely_pcts
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
 		return
@@ -376,9 +477,43 @@ class LikelySupportersCommand(ASupporterGrouping):
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
+		self._print_likely()
 		self._director.common.create_plot_for_tabs("likely")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_likely(self) -> None:
+		"""Print likely supporter counts for each rival."""
+		director = self._director
+		rivalry = director.rivalry
+
+		# Get the title (same as table widget title)
+		title = (
+			f"Likely supporters of {self._rival_a.name} and "
+			f"{self._rival_b.name}"
+		)
+		print(f"\n\t{title}\n")
+
+		# Calculate counts from percentages
+		# nscored comes from scores_active, not rivalry
+		nscored = director.scores_active.nscored_individ
+		likely_pcts = rivalry.likely_pcts
+		likely_left_count = int((likely_pcts[1] / 100) * nscored)
+		likely_right_count = int((likely_pcts[2] / 100) * nscored)
+
+		# Print the counts
+		print(
+			f"\tThere are {likely_left_count} likely supporters of "
+			f"{self._rival_a.name}"
+		)
+		print(
+			f"\tThere are {likely_right_count} likely supporters of "
+			f"{self._rival_b.name}"
+		)
 
 		return
 
@@ -857,7 +992,6 @@ class SecondDimensionCommand(ASupporterGrouping):
 		self._director.command = "Second dimension"
 		self._groups_to_show = ""
 		rivalry = self._director.rivalry
-		self._second_pcts = rivalry.second_pcts
 		self._second_div = rivalry.second_div
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
@@ -880,9 +1014,34 @@ class SecondDimensionCommand(ASupporterGrouping):
 		self._director.common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
+		self._print_second_dimension()
 		self._director.common.create_plot_for_tabs("second")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_second_dimension(self) -> None:
+		"""Print second dimension supporter counts."""
+		director = self._director
+		rivalry = director.rivalry
+
+		# Get the title (same as table widget title)
+		title = "Second dimension supporters"
+		print(f"\n\t{title}\n")
+
+		# Calculate counts from percentages
+		# nscored comes from scores_active, not rivalry
+		nscored = director.scores_active.nscored_individ
+		second_pcts = rivalry.second_pcts
+		second_up_count = int((second_pcts[1] / 100) * nscored)
+		second_down_count = int((second_pcts[2] / 100) * nscored)
+
+		# Print the counts
+		print(f"\tThere are {second_up_count} on the upper side")
+		print(f"\tThere are {second_down_count} on the lower side")
+
 		return
 
 	# ------------------------------------------------------------------------
