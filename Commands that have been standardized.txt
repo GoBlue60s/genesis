@@ -13,8 +13,11 @@ Individuals- 11/17/2025
 Invert - 11/18/2025
 New grouped data - 11/18/2025
 Open scores - 11/18/2025
-Open Script - 11/18/2025
+Open script - 11/18/2025
 Print configuration - 11/18/2025
 Print similarities - 11/18/2025
 Print target - 11/18/2025
 Rotate - 11/17/2025
+Save configuration - 11/20/2025
+Save correlations - 11/20/2025
+Save grouped data - 11/20/2025

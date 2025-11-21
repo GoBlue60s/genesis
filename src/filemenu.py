@@ -2509,39 +2509,49 @@ class SaveConfigurationCommand:
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
-		# _message and _feedback changed to _title and _message
-
 		self._director = director
 		self._director.command = "Save configuration"
 		self._save_conf_caption = "Save active configuration"
 		self._save_conf_filter = "*.txt"
 		self._director.name_of_file_written_to = ""
+		self._save_conf_error_title = "Configuration save problem"
+		self._save_conf_error_message = (
+			"Unable to write configuration file.\n"
+			"Check file path and permissions, then try again.")
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Save configuration")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
-			"Save configuration", "passive", params
-		)
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.configuration_active.write_a_configuration_type_file(
-			file_name, self._director.configuration_active
-		)
-		self._director.name_of_file_written_to = file_name
+			"Save configuration", "passive", params)
+		self._write_configuration_file(file_name)
+		common.name_of_file_written_to = file_name
 		self._print_active_configuration_confirmation(file_name)
-		name_of_file_written_to = self._director.name_of_file_written_to
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_configuration_file(self, file_name: str) -> None:
+		"""Write configuration to file with error handling."""
+		try:
+			self._director.configuration_active.\
+				write_a_configuration_type_file(
+				file_name, self._director.configuration_active)
+		except (OSError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._save_conf_error_title,
+				self._save_conf_error_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
@@ -2567,6 +2577,11 @@ class SaveGroupedDataCommand:
 		self._save_grouped_caption = "Save active grouped data"
 		self._save_grouped_filter = "*.txt"
 		self._director.name_of_file_written_to = ""
+		self._save_grouped_error_title = "Grouped data save problem"
+		self._save_grouped_error_message = (
+			"Unable to write grouped data file.\n"
+			"Check file path and permissions, then try again."
+		)
 
 		return
 
@@ -2575,22 +2590,32 @@ class SaveGroupedDataCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Save grouped data")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
-			"Save grouped data", "passive", params
-		)
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.grouped_data_active.write_a_grouped_data_file(
-			file_name, self._director.grouped_data_active
-		)
-		self._director.name_of_file_written_to = file_name
+			"Save grouped data", "passive", params)
+		self._write_grouped_data_file(file_name)
+		common.name_of_file_written_to = file_name
 		self._print_active_grouped_data_confirmation(file_name)
-		name_of_file_written_to = self._director.name_of_file_written_to
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_grouped_data_file(self, file_name: str) -> None:
+		"""Write grouped data to file with error handling."""
+		try:
+			self._director.grouped_data_active.write_a_grouped_data_file(
+				file_name, self._director.grouped_data_active
+			)
+		except (OSError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._save_grouped_error_title,
+				self._save_grouped_error_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
@@ -2611,40 +2636,56 @@ class SaveCorrelationsCommand:
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director = director
 		self.common = common
 		self._director.command = "Save correlations"
 		self._save_correlations_caption = "Save active correlations"
-		self._save_correlations_filter = "*.csv"
+		self._save_correlations_filter = "*.txt"
 		self._director.name_of_file_written_to = ""
+		self._save_correlations_error_title = "Correlations save problem"
+		self._save_correlations_error_message = (
+			"Unable to write correlations file.\n"
+			"Check file path and permissions, then try again."
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Save correlations")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
-			"Save correlations", "passive", params
-		)
-		self._director.dependency_checker.detect_dependency_problems()
-		# Write correlations to CSV
-		correlations_df = pd.DataFrame(
-			self._director.correlations_active.correlations_as_square
-		)
-		correlations_df.to_csv(file_name, index=False)
-		self._director.name_of_file_written_to = file_name
+			"Save correlations", "passive", params)
+		self._write_correlations_file(file_name)
+		common.name_of_file_written_to = file_name
 		self._print_save_correlations_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_correlations_file(self, file_name: str) -> None:
+		"""Write correlations to lower triangular file with error handling."""
+		try:
+			self.common.write_lower_triangle(
+				file_name,
+				self._director.correlations_active.correlations_as_list,
+				self._director.correlations_active.nitem,
+				self._director.correlations_active.item_labels,
+				self._director.correlations_active.item_names,
+				8,
+				5,
+			)
+		except (OSError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._save_correlations_error_title,
+				self._save_correlations_error_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
@@ -3259,40 +3300,57 @@ class SaveSimilaritiesCommand:
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director = director
 		self.common = common
 		self._director.command = "Save similarities"
 		self._save_similarities_caption = "Save active similarities"
 		self._save_similarities_filter = "*.txt"
 		self._director.name_of_file_written_to = ""
+		self._save_similarities_error_title = "Similarities save problem"
+		self._save_similarities_error_message = (
+			"Unable to write similarities file.\n"
+			"Check file path and permissions, then try again."
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Save similarities")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
 			"Save similarities", "passive", params
 		)
-		self._director.dependency_checker.detect_dependency_problems()
-		# Write similarities to CSV
-		similarities_df = pd.DataFrame(
-			self._director.similarities_active.similarities_as_square
-		)
-		similarities_df.to_csv(file_name, index=False)
-		self._director.name_of_file_written_to = file_name
+		self._write_similarities_file(file_name)
+		common.name_of_file_written_to = file_name
 		self._print_save_similarities_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_similarities_file(self, file_name: str) -> None:
+		"""Write similarities to lower triangular file with error handling."""
+		try:
+			self.common.write_lower_triangle(
+				file_name,
+				self._director.similarities_active.similarities_as_list,
+				self._director.similarities_active.nitem,
+				self._director.similarities_active.item_labels,
+				self._director.similarities_active.item_names,
+				8,
+				5,
+			)
+		except (OSError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._save_similarities_error_title,
+				self._save_similarities_error_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 

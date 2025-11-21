@@ -1037,7 +1037,6 @@ class Spaces:
 		"""
 
 		file_handle.write(file_type + "\n")
-		file_handle.write(file_type + "\n")
 
 		match file_type:
 			case "Configuration":

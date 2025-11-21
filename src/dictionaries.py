@@ -523,7 +523,7 @@ command_dict = MappingProxyType({
 			"file": {
 				"getter_type": "file_dialog",
 				"caption": "Save active correlations",
-				"filter": "*.csv",
+				"filter": "*.txt",
 				"mode": "save",
 				"directory": "data"
 			}
@@ -3741,7 +3741,7 @@ title_generator_dict = MappingProxyType({
 	),
 	"Save correlations": lambda d: (
 		f"The active correlations have been written to:\n"
-		f"{d.common.file_name}"
+		f"{d.common.name_of_file_written_to}\n"
 	),
 	"Save grouped data": lambda d: (
 		f"The active grouped data has been written to: \n"
