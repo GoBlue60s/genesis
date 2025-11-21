@@ -21,3 +21,6 @@ Rotate - 11/17/2025
 Save configuration - 11/20/2025
 Save correlations - 11/20/2025
 Save grouped data - 11/20/2025
+Save individuals - 11/21/2025
+Save scores - 11/21/2025
+Save script - needs extensive testing - 11/21/2025

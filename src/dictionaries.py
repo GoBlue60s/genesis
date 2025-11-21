@@ -642,7 +642,18 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Save script": {
-		"type": "script"  # Meta-command for script operations
+		"type": "script",  # Meta-command for script operations
+		"state_capture": [],
+		"script_parameters": ["file"],
+		"interactive_getters": {
+			"file": {
+				"getter_type": "file_dialog",
+				"caption": "Save command history as script",
+				"filter": "*.spc",
+				"mode": "save",
+				"directory": "scripts"
+			}
+		}
 	},
 	"Score individuals": {
 		"type": "active",
@@ -3749,7 +3760,7 @@ title_generator_dict = MappingProxyType({
 	),
 	"Save individuals": lambda d: (
 		f"The active individuals have been written to:\n"
-		f"{d.common.file_name}"
+		f"{d.common.name_of_file_written_to}\n"
 	),
 	"Save sample design": lambda d: (
 		f"The active sample design has been written to:\n"
@@ -3764,7 +3775,8 @@ title_generator_dict = MappingProxyType({
 		f"{d.common.file_name}"
 	),
 	"Save scores": lambda d: (
-		f"The active scores have been written to:\n{d.common.file_name}"
+		f"The active scores have been written to:\n"
+		f"{d.common.name_of_file_written_to}\n"
 	),
 	"Save script": lambda d: (
 		f"Script saved with {len(d.common.script_lines)} commands:\n"

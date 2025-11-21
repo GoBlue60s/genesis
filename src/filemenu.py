@@ -2706,45 +2706,52 @@ class SaveIndividualsCommand:
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director = director
 		self.common = common
 		self._director.command = "Save individuals"
-		self._save_individuals_title = "The response is empty."
-		self._save_individuals_message = (
-			"A file name is needed to save individuals."
-		)
 		self._save_individuals_filter = "*.csv"
 		self._director.name_of_file_written_to = ""
+		self._save_individuals_error_title = "Individuals save problem"
+		self._save_individuals_error_message = (
+			"Unable to write individuals file.\n"
+			"Check file path and permissions, then try again."
+		)
 		return
 
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Save individuals")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
-			"Save individuals", "passive", params
-		)
-		self._director.dependency_checker.detect_dependency_problems()
-		# Write with type header for file validation
-		common.write_csv_with_type_header(
-			self._director.individuals_active.ind_vars,
-			file_name,
-			"INDIVIDUALS",
-			index=False
-		)
-		self._director.name_of_file_written_to = file_name
+			"Save individuals", "passive", params)
+		self._write_individuals_file(file_name)
+		common.name_of_file_written_to = file_name
 		self._print_save_individuals_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_individuals_file(self, file_name: str) -> None:
+		"""Write individuals to CSV file with error handling."""
+		try:
+			self.common.write_csv_with_type_header(
+				self._director.individuals_active.ind_vars,
+				file_name,
+				"INDIVIDUALS",
+				index=False
+			)
+		except (OSError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._save_individuals_error_title,
+				self._save_individuals_error_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
@@ -3045,44 +3052,51 @@ class SaveScoresCommand:
 	"""
 
 	def __init__(self, director: Status, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
 		self._director = director
 		self.common = common
 		self._director.command = "Save scores"
-		self._save_scores_title = "The response is empty."
-		self._save_scores_message = "A file name is needed to save scores."
 		self._save_scores_filter = "*.csv"
 		self._director.name_of_file_written_to = ""
+		self._save_scores_error_title = "Scores save problem"
+		self._save_scores_error_message = (
+			"Unable to write scores file.\n"
+			"Check file path and permissions, then try again."
+		)
 		return
 
-	# -----------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		# _message and _feedback changed to _title and _message
-
-		# score_1_name = self._director.scores_active.score_1_name
-		# score_2_name = self._director.scores_active.score_2_name
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Save scores")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state("Save scores", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
-		# Write with type header for file validation
-		common.write_csv_with_type_header(
-			self._director.scores_active.scores,
-			file_name,
-			"SCORES",
-			index=False
-		)
-		self._director.name_of_file_written_to = file_name
+		self._write_scores_file(file_name)
+		common.name_of_file_written_to = file_name
 		self._print_save_scores_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _write_scores_file(self, file_name: str) -> None:
+		"""Write scores to CSV file with error handling."""
+		try:
+			self.common.write_csv_with_type_header(
+				self._director.scores_active.scores,
+				file_name,
+				"SCORES",
+				index=False
+			)
+		except (OSError, PermissionError, ValueError) as e:
+			raise SpacesError(
+				self._save_scores_error_title,
+				self._save_scores_error_message,
+			) from e
 
 	# ------------------------------------------------------------------------
 
@@ -3110,12 +3124,16 @@ class SaveScriptCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		file_name = self._director.get_file_name_to_store_file(
-			self._save_script_caption,
-			self._save_script_filter)
+		self._director.dependency_checker.detect_dependency_problems()
+		params = common.get_command_parameters("Save script")
+		file_name: str = params["file"]
+		common.capture_and_push_undo_state("Save script", "script", params)
+		# file_name = self._director.get_file_name_to_store_file(
+		# 	self._save_script_caption,
+		# 	self._save_script_filter)
 		script_lines = self._collect_script_lines()
 		self._write_script_file(file_name, script_lines)
 		self._display_saved_script(script_lines, file_name)
