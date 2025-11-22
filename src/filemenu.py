@@ -3872,10 +3872,7 @@ class SimilaritiesCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Similarities"
-		self._similarities_caption = "Open similarities"
-		self._similarities_filter = "*.txt"
 		self._similarities_error_bad_input_title = "Similarities problem"
 		self._similarities_error_bad_input_message = (
 			"Input is inconsistent with a similarities file.\nLook at "
@@ -3893,11 +3890,12 @@ class SimilaritiesCommand:
 	def execute(self, common: Spaces, value_type: str) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters(
+		self._director.dependency_checker.detect_dependency_problems()
+		params = common.get_command_parameters(
 			"Similarities", value_type=value_type)
 		file_name: str = params["file"]
 		value_type: str = params["value_type"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Similarities", "active", params)
 		self._read_similarities(file_name, value_type, common)
 		self._director.dependency_checker.detect_consistency_issues()
@@ -3905,7 +3903,7 @@ class SimilaritiesCommand:
 		decimals = 3
 		self._director.similarities_active.print_the_similarities(
 			width, decimals, common)
-		self._director.common.create_plot_for_tabs("heatmap_simi")
+		common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -3937,7 +3935,7 @@ class SimilaritiesCommand:
 			ValueError,
 			SpacesError
 		):
-			restored = self.common.event_driven_optional_restoration(
+			restored = common.event_driven_optional_restoration(
 				"similarities"
 			)
 			# Only raise exception if restoration failed
@@ -3960,10 +3958,7 @@ class TargetCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Target"
-		self._target_caption = "Open target"
-		self._target_filter = "*.txt"
 		self._target_error_bad_input_title = "Target problem"
 		self._target_error_bad_input_message = (
 			"Input is inconsistent with a target file.\nLook at the "
@@ -3976,16 +3971,18 @@ class TargetCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-		params = self.common.get_command_parameters("Target")
+		self._director.dependency_checker.detect_dependency_problems()
+		params = common.get_command_parameters("Target")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state("Target", "active", params)
+		common.capture_and_push_undo_state("Target", "active", params)
 
 		# Read and validate target file
 		self._director.target_active = common.read_configuration_type_file(
 			file_name, "Target")
+		self._director.dependency_checker.detect_consistency_issues()
 
 		self._director.target_active.print_target()
-		self._director.common.create_plot_for_tabs("target")
+		common.create_plot_for_tabs("target")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
