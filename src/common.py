@@ -695,6 +695,10 @@ class Spaces:
 	# ----------------------------------------------------------------------
 
 	def create_plot_for_tabs(self, plot_type: str) -> None:
+		# Skip plots needed for user choice when running a script
+		plots_needed_for_choice = ["cutoff", "sorted_stress_contributions"]
+		if plot_type in plots_needed_for_choice and self._director.executing_script:
+			return
 		common_plot_types = ["differences", "screes","scree_factor", "shepard"]
 		if self._director.common.presentation_layer == "PyQtGraph":
 			try:

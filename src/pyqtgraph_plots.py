@@ -1962,6 +1962,58 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
+	def request_sorted_stress_contributions_plot_for_tabs_using_pyqtgraph(
+		self,
+	) -> None:
+		pyqtgraph_common = self._director.pyqtgraph_common
+		tab_plot_widget = (
+			self._plot_sorted_stress_contributions_using_pyqtgraph()
+		)
+		gallery_plot_widget = (
+			self._plot_sorted_stress_contributions_using_pyqtgraph()
+		)
+		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, gallery_plot_widget
+		)
+		self._director.set_focus_on_tab("Plot")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _plot_sorted_stress_contributions_using_pyqtgraph(
+		self,
+	) -> pg.GraphicsLayoutWidget:
+		director = self._director
+		pyqtgraph_common = director.pyqtgraph_common
+		sorted_stress_df = director.current_command.sorted_stress_df
+
+		graphics_layout_widget, plot = (
+			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
+				"Stress Contribution by Point"
+			)
+		)
+
+		point_names = sorted_stress_df["Point"].tolist()[::-1]
+		stress_values = sorted_stress_df["Stress_Contribution"].tolist()[::-1]
+
+		indices = list(range(len(stress_values)))
+		centers = [val / 2 for val in stress_values]
+		widths = stress_values
+
+		bar_graph_item = BarGraphItem(
+			x=centers, height=0.6, width=widths, y=indices, brush="b", pen="k"
+		)
+		plot.addItem(bar_graph_item)
+
+		y_axis = plot.getAxis("left")
+		y_axis.setTicks([[(i, label) for i, label in enumerate(point_names)]])
+		plot.setLabel("bottom", "% of Total Stress")
+
+		director.set_focus_on_tab("Plot")
+		return graphics_layout_widget
+
+	# ------------------------------------------------------------------------
+
 	def request_stress_contribution_plot_for_tabs_using_pyqtgraph(self) \
 		-> None:
 		pyqtgraph_common = self._director.pyqtgraph_common

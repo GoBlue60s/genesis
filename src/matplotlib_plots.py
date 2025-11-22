@@ -1680,6 +1680,36 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
+	def request_sorted_stress_contributions_plot_for_tabs_using_matplotlib(
+		self,
+	) -> None:
+		matplotlib_common = self._director.matplotlib_common
+		fig = self._plot_sorted_stress_contributions_using_matplotlib()
+		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		self._director.set_focus_on_tab("Plot")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _plot_sorted_stress_contributions_using_matplotlib(self) -> plt.Figure:
+		matplotlib_common = self._director.matplotlib_common
+		sorted_stress_df = self._director.current_command.sorted_stress_df
+
+		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
+			"Stress Contribution by Point"
+		)
+
+		point_names = sorted_stress_df["Point"].tolist()[::-1]
+		stress_values = sorted_stress_df["Stress_Contribution"].tolist()[::-1]
+
+		ax.barh(point_names, stress_values)
+		ax.set_xlabel("% of Total Stress")
+
+		self._director.set_focus_on_tab("Plot")
+		return fig
+
+	# ------------------------------------------------------------------------
+
 	def request_stress_contribution_plot_for_tabs_using_matplotlib(self) \
 		-> None:
 		matplotlib_common = self._director.matplotlib_common

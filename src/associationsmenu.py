@@ -38,7 +38,6 @@ class AlikeCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self._common = common
 		self._director.command = "Alike"
 		# Store alike-specific data in command instance, not in feature
 		self.cutoff: float = 0.0
@@ -57,14 +56,14 @@ class AlikeCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.create_plot_for_tabs("cutoff")
+		common.create_plot_for_tabs("cutoff")
 		params = common.get_command_parameters("Alike")
 		common.capture_and_push_undo_state("Alike", "passive", params)
 		self.cutoff = params["cutoff"]
 		self._determine_alike_pairs()
 		self._print_alike_pairs()
 		self._create_alike_table()
-		self._director.common.create_plot_for_tabs("alike")
+		common.create_plot_for_tabs("alike")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 
@@ -248,7 +247,6 @@ class DistancesCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
 		"""Distances command - displays a matrix of inter-point distances."""
 		self._director = director
-		self.common = common
 		self._director.command = "Distances"
 		self._width: int = 8
 		self._decimals: int = 2
@@ -259,17 +257,14 @@ class DistancesCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
-		# Get command parameters and capture state
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Distances")
 		common.capture_and_push_undo_state("Distances", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_distances(
 			self._width, self._decimals, common)
-		self._director.common.create_plot_for_tabs("heatmap_dist")
+		common.create_plot_for_tabs("heatmap_dist")
 		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.set_focus_on_tab("Plot")
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -282,7 +277,6 @@ class LineOfSightCommand:
 		of association
 		"""
 		self._director = director
-		self.common = common
 		self._director.command = "Line of sight"
 		self._width: int = 8
 		self._decimals: int = 1
@@ -291,28 +285,23 @@ class LineOfSightCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-
-
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		self.common.capture_and_push_undo_state("Line of sight", "active", {})
-
-		self._director.similarities_active = self.common.los(
+		params = common.get_command_parameters("Line of sight")
+		common.capture_and_push_undo_state("Line of sight", "active", params)
+		self._director.similarities_active = common.los(
 			self._director.evaluations_active)
 		self._duplicate_similarities(common)
 		self._director.similarities_active.rank_similarities()
 		self._director.similarities_active.duplicate_ranked_similarities(
 			common)
+		self._director.dependency_checker.detect_consistency_issues()
 		self._director.similarities_active.print_the_similarities(
 			self._width, self._decimals, common)
-		self._director.title_for_table_widget = (
-			f"Line of sight:\n"
-			f"The {self._director.similarities_active.value_type}"
-			f"matrix has {self._director.similarities_active.nreferent}"
-			f" items")
-		self._director.common.create_plot_for_tabs("heatmap_simi")
+		common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -346,11 +335,7 @@ class PairedCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Paired"
-		self._paired_title: str = "Point comparisons"
-		self._paired_items: list[str] = (
-			self._director.configuration_active.point_names)
 		return
 
 	# ------------------------------------------------------------------------
@@ -361,16 +346,11 @@ class PairedCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Paired")
 		common.capture_and_push_undo_state("Paired", "passive", params)
-		point_names = self._director.configuration_active.point_names
 		focal_index: int = params["focus"]
+		common.focal_index = focal_index
 		self._focal_item_index: int = focal_index
 		self._create_paired_dataframe()
 		self._print_paired()
-		point_names = self._director.configuration_active.point_names
-		self._director.title_for_table_widget = (
-			f"Relationships between {point_names[focal_index]} "
-			f"and other points")
-
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -486,7 +466,6 @@ class PairedCommand:
 class RanksDifferencesCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Ranks differences"
 		return
 
@@ -495,17 +474,31 @@ class RanksDifferencesCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Ranks differences")
 		common.capture_and_push_undo_state(
 			"Ranks differences", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.similarities_active.compute_differences_in_ranks()
-
-		self._director.common.create_plot_for_tabs("heatmap_rank_diff")
+		self._print_rank_differences(common)
+		common.create_plot_for_tabs("heatmap_rank_diff")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_rank_differences(self, common: Spaces) -> None:
+		"""Print the differences of ranks in lower triangular format."""
+		similarities_active = self._director.similarities_active
+		print("\n\tDifference of Ranks")
+		common.print_lower_triangle(
+			0,  # decimals (ranks are integers)
+			similarities_active.item_labels,
+			similarities_active.item_names,
+			similarities_active.nreferent,
+			similarities_active.differences_of_ranks_as_list,
+			6  # width
+		)
 		return
 
 	# ------------------------------------------------------------------------
@@ -514,7 +507,6 @@ class RanksDifferencesCommand:
 class RanksDistancesCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Ranks distances"
 		return
 
@@ -523,20 +515,18 @@ class RanksDistancesCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Ranks distances")
 		common.capture_and_push_undo_state(
 			"Ranks distances", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.print_lower_triangle(
-			self._director.common.decimals,
+		common.print_lower_triangle(
+			common.decimals,
 			self._director.configuration_active.point_labels,
 			self._director.configuration_active.point_names,
 			self._director.configuration_active.npoint,
 			self._director.configuration_active.ranked_distances,
-			self._director.common.width)
-		self._director.common.create_plot_for_tabs("heatmap_ranked_dist")
+			common.width)
+		common.create_plot_for_tabs("heatmap_ranked_dist")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -547,7 +537,6 @@ class RanksDistancesCommand:
 class RanksSimilaritiesCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Ranks similarities"
 		return
 
@@ -556,20 +545,18 @@ class RanksSimilaritiesCommand:
 	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Ranks similarities")
 		common.capture_and_push_undo_state(
 			"Ranks similarities", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.print_lower_triangle(
-			self._director.common.decimals,
+		common.print_lower_triangle(
+			common.decimals,
 			self._director.similarities_active.item_labels,
 			self._director.similarities_active.item_names,
 			self._director.similarities_active.nitem,
 			self._director.similarities_active.ranked_similarities,
-			self._director.common.width)
-		self._director.common.create_plot_for_tabs("heatmap_ranked_simi")
+			common.width)
+		common.create_plot_for_tabs("heatmap_ranked_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -582,7 +569,6 @@ class ScreeCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Scree"
 		self._director.configuration_active.min_stress = pd.DataFrame(
 			columns=["Dimensionality", "Best Stress"])
@@ -591,10 +577,6 @@ class ScreeCommand:
 		self._use_metric: bool = False
 		self._min_stress: pd.DataFrame = (
 			self._director.configuration_active.min_stress)
-		self._scree_title: str = "MDS model"
-		self._scree_options_title: str = "Model to use"
-		self._scree_options: list[str] = ["Non-metric", "Metric"]
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -604,15 +586,13 @@ class ScreeCommand:
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters("Scree", use_metric=use_metric)
 		use_metric = params["use_metric"]
 		common.capture_and_push_undo_state("Scree", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
 		self._use_metric = use_metric
 		self._scree()
-		self._director.common.create_plot_for_tabs("scree")
+		common.create_plot_for_tabs("scree")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -719,14 +699,7 @@ class ShepardCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Shepard"
-		self._shepard_title: str = "Shepard diagram"
-		self._shepard_options_title: str = "Show similarity on:"
-		self._shepard_options: list[str] = [
-			"X-axis (horizontal)",
-			"Y-axis (vertical)"]
-		self.shepard_axis: str = ""
 		return
 
 	# ------------------------------------------------------------------------
@@ -738,17 +711,13 @@ class ShepardCommand:
 	) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
-
+		self._director.dependency_checker.detect_dependency_problems()
 		params = common.get_command_parameters(
 			"Shepard", axis_for_similarities=axis_for_similarities)
 		axis_for_similarities = params["axis_for_similarities"]
 		common.capture_and_push_undo_state("Shepard", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
-		self.shepard_axis: str = axis_for_similarities
-		self._director.common.shepard_axis = axis_for_similarities
-
-		self._director.common.create_plot_for_tabs("shepard")
+		common.shepard_axis = axis_for_similarities
+		common.create_plot_for_tabs("shepard")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -768,29 +737,30 @@ class StressContributionCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Stress contribution"
-
 		return
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		worst_fit = self._calculate_and_sort_stress_contributions()
-		self._print_highest_stress_contributions(worst_fit)
+		self._aggregate_stress_by_point()
+		common.create_plot_for_tabs("sorted_stress_contributions")
 		params = common.get_command_parameters("Stress contribution")
 		common.capture_and_push_undo_state(
 			"Stress contribution", "passive", params)
 		index = params["focal_item"]
+		common.point_index = index
 		self.stress_contribution_df = (
 			self._create_stress_contribution_df(index, worst_fit))
 		point_labels = self._director.configuration_active.point_labels
 		self._point_to_plot_label = point_labels[index]
 		self._point_to_plot_index = index
-		self._director.common.create_plot_for_tabs("stress_contribution")
+		self._print_highest_stress_contributions(worst_fit)
+		common.create_plot_for_tabs("stress_contribution")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -823,6 +793,33 @@ class StressContributionCommand:
 		self._director.similarities_active.ranks_df = ranks_df
 
 		return worst_fit
+
+	# ------------------------------------------------------------------------
+
+	def _aggregate_stress_by_point(self) -> None:
+		"""Aggregate stress contributions by point for the summary plot.
+
+		Creates a DataFrame with each point's total stress contribution,
+		sorted from highest to lowest contribution.
+		"""
+		ranks_df = self._director.similarities_active.ranks_df
+		point_names = self._director.configuration_active.point_names
+
+		stress_by_point: dict[str, float] = dict.fromkeys(point_names, 0.0)
+
+		for _, row in ranks_df.iterrows():
+			a_name = row["A_name"]
+			b_name = row["B_name"]
+			pct_stress = row["Pct_of_Stress"]
+			stress_by_point[a_name] += pct_stress
+			stress_by_point[b_name] += pct_stress
+
+		sorted_stress = sorted(
+			stress_by_point.items(), key=lambda x: x[1], reverse=True
+		)
+		self.sorted_stress_df = pd.DataFrame(
+			sorted_stress, columns=["Point", "Stress_Contribution"]
+		)
 
 	# ------------------------------------------------------------------------
 
