@@ -740,8 +740,8 @@ class ShepardCommand:
 		self._director.optionally_explain_what_command_does()
 
 		params = common.get_command_parameters(
-			"Shepard", axis=axis_for_similarities)
-		axis_for_similarities = params["axis"]
+			"Shepard", axis_for_similarities=axis_for_similarities)
+		axis_for_similarities = params["axis_for_similarities"]
 		common.capture_and_push_undo_state("Shepard", "passive", params)
 
 		self._director.dependency_checker.detect_dependency_problems()

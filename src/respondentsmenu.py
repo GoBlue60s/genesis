@@ -62,6 +62,9 @@ class BaseCommand(ASupporterGrouping):
 		director = self._director
 		rivalry = director.rivalry
 
+		if not director.common.have_segments():
+			return
+
 		# Get the title (same as table widget title)
 		title = (
 			f"Base supporters of {self._rival_a.name} and "
@@ -137,6 +140,9 @@ class BattlegroundCommand(ASupporterGrouping):
 		"""Print battleground and settled counts."""
 		director = self._director
 		rivalry = director.rivalry
+
+		if not director.common.have_segments():
+			return
 
 		# Get the title (same as table widget title)
 		title = "Size of battleground"
@@ -240,6 +246,9 @@ class ConvertibleCommand(ASupporterGrouping):
 		director = self._director
 		rivalry = director.rivalry
 
+		if not director.common.have_segments():
+			return
+
 		# Get the title (same as table widget title)
 		title = (
 			f"Convertible supporters of {self._rival_a.name} and "
@@ -313,6 +322,9 @@ class CoreSupportersCommand(ASupporterGrouping):
 		"""Print core supporter counts for each rival."""
 		director = self._director
 		rivalry = director.rivalry
+
+		if not director.common.have_segments():
+			return
 
 		# Get the title (same as table widget title)
 		title = (
@@ -388,6 +400,9 @@ class FirstDimensionCommand(ASupporterGrouping):
 		"""Print first dimension supporter counts."""
 		director = self._director
 		rivalry = director.rivalry
+
+		if not director.common.have_segments():
+			return
 
 		# Get the title (same as table widget title)
 		title = "First dimension supporters"
@@ -490,6 +505,9 @@ class LikelySupportersCommand(ASupporterGrouping):
 		"""Print likely supporter counts for each rival."""
 		director = self._director
 		rivalry = director.rivalry
+
+		if not director.common.have_segments():
+			return
 
 		# Get the title (same as table widget title)
 		title = (
@@ -1026,6 +1044,9 @@ class SecondDimensionCommand(ASupporterGrouping):
 		"""Print second dimension supporter counts."""
 		director = self._director
 		rivalry = director.rivalry
+
+		if not director.common.have_segments():
+			return
 
 		# Get the title (same as table widget title)
 		title = "Second dimension supporters"

@@ -2544,8 +2544,7 @@ class SaveConfigurationCommand:
 	def _write_configuration_file(self, file_name: str) -> None:
 		"""Write configuration to file with error handling."""
 		try:
-			self._director.configuration_active.\
-				write_a_configuration_type_file(
+			self._director.common.write_configuration_type_file(
 				file_name, self._director.configuration_active)
 		except (OSError, PermissionError, ValueError) as e:
 			raise SpacesError(
@@ -2795,7 +2794,7 @@ class SaveSampleDesignCommand:
 		)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_design_file(file_name)
-		self._director.name_of_file_written_to = file_name
+		common.name_of_file_written_to = file_name
 		self._print_save_sample_design_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2888,7 +2887,7 @@ class SaveSampleRepetitionsCommand:
 		)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_repetitions_file(file_name)
-		self._director.name_of_file_written_to = file_name
+		common.name_of_file_written_to = file_name
 		self._print_save_sample_repetitions_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2975,7 +2974,7 @@ class SaveSampleSolutionsCommand:
 		)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_solutions_file(file_name)
-		self._director.name_of_file_written_to = file_name
+		common.name_of_file_written_to = file_name
 		self._print_save_sample_solutions_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -3030,6 +3029,7 @@ class SaveSampleSolutionsCommand:
 
 			# Section: Coordinates for all points for all solutions
 			# solutions_df has columns for dimension, rows for points*solutions
+			solutions_df = uncertainty_active.sample_solutions
 			for solution_idx in range(nsolutions):
 				for point_idx in range(npoint):
 					# Calculate the row index in the DataFrame
@@ -3136,6 +3136,7 @@ class SaveScriptCommand:
 		# 	self._save_script_filter)
 		script_lines = self._collect_script_lines()
 		self._write_script_file(file_name, script_lines)
+		common.name_of_file_written_to = file_name
 		self._display_saved_script(script_lines, file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -3418,9 +3419,8 @@ class SaveTargetCommand:
 	def _write_target_file(self, file_name: str) -> None:
 		"""Write target to file with error handling."""
 		try:
-			self._director.target_active.write_a_configuration_type_file(
-				file_name, self._director.target_active
-			)
+			self._director.common.write_configuration_type_file(
+				file_name, self._director.target_active)
 		except (OSError, PermissionError, ValueError) as e:
 			raise SpacesError(
 				self._save_target_error_title,

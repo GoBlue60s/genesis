@@ -23,4 +23,13 @@ Save correlations - 11/20/2025
 Save grouped data - 11/20/2025
 Save individuals - 11/21/2025
 Save scores - 11/21/2025
-Save script - needs extensive testing - 11/21/2025
+Save script - 11/21/2025
+Save similarities - 11/21/2025
+Save target - needs testing - 11/21/2025
+Settings - display - needs testing - 11/21/2025
+Settings - layout - needs testing - 11/21/2025
+Settings - plane - needs testing - 11/21/2025
+Settings - plot - needs testing - 11/21/2025
+Settings - presentation layer - 11/21/2025
+Settings - segment - 11/21/2025
+Settings - vector - 11/21/2025

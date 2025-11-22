@@ -803,10 +803,10 @@ command_dict = MappingProxyType({
 	"Shepard": {
 		"type": "passive",
 		"state_capture": [],
-		"script_parameters": ["axis"],
-		"execute_parameters": ["axis"],
+		"script_parameters": ["axis_for_similarities"],
+		"execute_parameters": ["axis_for_similarities"],
 		"interactive_getters": {
-			"axis": {
+			"axis_for_similarities": {
 				"getter_type": "option",
 				"title": "Shepard diagram",
 				"prompt": "Show similarity on:",
@@ -3764,15 +3764,15 @@ title_generator_dict = MappingProxyType({
 	),
 	"Save sample design": lambda d: (
 		f"The active sample design has been written to:\n"
-		f"{d.common.file_name}"
+		f"{d.common.name_of_file_written_to}"
 	),
 	"Save sample repetitions": lambda d: (
 		f"The active sample repetitions have been written to:\n"
-		f"{d.common.file_name}"
+		f"{d.common.name_of_file_written_to}"
 	),
 	"Save sample solutions": lambda d: (
 		f"The active sample solutions have been written to:\n"
-		f"{d.common.file_name}"
+		f"{d.common.name_of_file_written_to}"
 	),
 	"Save scores": lambda d: (
 		f"The active scores have been written to:\n"
@@ -3780,11 +3780,11 @@ title_generator_dict = MappingProxyType({
 	),
 	"Save script": lambda d: (
 		f"Script saved with {len(d.common.script_lines)} commands:\n"
-		f"{d.common.file_name}"
+		f"{d.common.name_of_file_written_to}"
 	),
 	"Save similarities": lambda d: (
 		f"The active similarities have been written to:\n"
-		f"{d.common.file_name}"
+		f"{d.common.name_of_file_written_to}"
 	),
 	"Save target": lambda d: (
 		f"The active target has been written to: \n"

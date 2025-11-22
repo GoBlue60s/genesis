@@ -2188,6 +2188,47 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
+	def write_configuration_type_file(
+		self, file_name: str, source: object
+	) -> None:
+		"""Write a configuration-type file (configuration or target).
+
+		Args:
+			file_name: Path to the output file
+			source: Object with configuration attributes (ndim, npoint,
+				dim_labels, dim_names, point_labels, point_names,
+				range_dims, range_points, point_coords)
+		"""
+		file_type: str = "Configuration"
+		with Path(file_name).open("w") as file_handle:
+			file_handle.write(file_type + "\n")
+			file_handle.write(
+				" " + str(source.ndim) +
+				" " + str(source.npoint) + "\n"
+			)
+			lines = [
+				f"{source.dim_labels[each_dim]};"
+				f"{source.dim_names[each_dim].strip()}\n"
+				for each_dim in source.range_dims
+			]
+			file_handle.write("".join(lines))
+			lines = [
+				f"{source.point_labels[each_point]};"
+				f"{source.point_names[each_point]}\n"
+				for each_point in source.range_points
+			]
+			file_handle.write("".join(lines))
+			for each_point in source.range_points:
+				for each_dim in source.range_dims:
+					file_handle.write(
+						str(source.point_coords.iloc[each_point].iloc[each_dim])
+						+ " "
+					)
+				file_handle.write("\n")
+		return
+
+	# ------------------------------------------------------------------------
+
 	def point_solutions_extrema(
 		self, focal_point: int
 	) -> tuple[float, float, float, float]:
@@ -3497,8 +3538,8 @@ class Spaces:
 			char = param_str[i]
 
 			if char == "=" and current_key is None and in_brackets == 0:
-				# Found key=value separator
-				current_key = current_value.strip()
+				# Found key=value separator - normalize to lowercase
+				current_key = current_value.strip().lower()
 				current_value = ""
 			elif char in "[{(":
 				in_brackets += 1

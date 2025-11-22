@@ -639,67 +639,6 @@ class ConfigurationFeature:
 
 	# -------------------------------------------------------------------------
 
-	def write_a_configuration_type_file_initialize_variables(self) -> None:
-		self.conf_file_exists_error_title = "File exists"
-		self.conf_file_exists_error_message = (
-			"File already exists\n"
-			"Choose a different file name or delete the existing file."
-		)
-
-	# ------------------------------------------------------------------------
-
-	def write_a_configuration_type_file(
-		self, file_name: str, source: ConfigurationFeature
-	) -> None:
-		# dropped positional arguments message and feedback
-
-		self.write_a_configuration_type_file_initialize_variables()
-
-		file_type: str = "Configuration"
-		try:
-			with Path(file_name).open("w") as file_handle:
-				file_handle.write(file_type + "\n")
-				file_handle.write(
-					" " + str(source.ndim) + \
-					" " + str(source.npoint) + "\n"
-				)
-				lines = [
-					f"{source.dim_labels[each_dim]};"
-					f"{source.dim_names[each_dim].strip()}\n"
-					for each_dim in source.range_dims
-				]
-				file_handle.write("".join(lines))
-				lines = [
-					f"{source.point_labels[each_point]};"
-					f"{source.point_names[each_point]}\n"
-					for each_point in source.range_points
-				]
-				file_handle.write("".join(lines))
-				for each_point in source.range_points:
-					for each_dim in source.range_dims:
-						file_handle.write(
-							str(
-								source.point_coords.iloc[each_point].iloc[
-									each_dim
-								]
-							)
-							+ " "
-						)
-						continue
-					file_handle.write("\n")
-					continue
-
-		except SpacesError as exc:
-			# except SituationToBeNamedLaterError:
-			# peek("Do we get past Qt")
-			raise SpacesError(
-				self.conf_file_exists_error_title,
-				self.conf_file_exists_error_message,
-			) from exc
-		return
-
-	# ------------------------------------------------------------------------
-
 
 class CorrelationsFeature:
 	def __init__(self, director: Status) -> None:
