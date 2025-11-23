@@ -110,6 +110,116 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
+	def initiate_command_processes(self) -> None:
+		"""Initialize standard command processes.
+
+		This consolidates the first three steps that every command performs:
+		1. Record command as selected and in process
+		2. Optionally explain what the command does
+		3. Check for dependency problems
+		"""
+		self.record_command_as_selected_and_in_process()
+		self.optionally_explain_what_command_does()
+		self.detect_dependency_problems()
+
+	# ------------------------------------------------------------------------
+
+	def record_command_as_selected_and_in_process(self) -> None:
+		"""The start method is called at the beginning of each command to
+		indicate that the command is in process.
+		"""
+		# Clear obtained parameters from previous command
+		self._director.obtained_parameters.clear()
+
+		self._director.spaces_statusbar.showMessage(
+			f"Starting {self._director.command} command", 80000
+		)
+		self._director.commands_used.append(self._director.command)
+		self._director.command_exit_code.append(-1)  # -1 command is in process
+		print(f"\nStarting {self._director.command} command: \n")
+
+		active_commands = (
+			"Center", "Cluster", "Compare", "Configuration", "Correlations",
+			"Deactivate", "Evaluations", "Factor analysis",
+			"Factor analysis machine learning", "Grouped data", "Individuals",
+			"Invert", "Line of sight", "MDS", "Move",
+			"Open sample design", "Open sample repetitions",
+			"Open sample solutions", "Open scores",
+			"Principal components",
+			"Redo",  "Reference points", "Rescale", "Rotate",
+			"Sample designer", "Sample repetitions", "Score individuals",
+			"Settings - display sizing", "Settings - layout options",
+			"Settings - plane", "Settings - plot settings",
+			"Settings - presentation layer", "Settings - segment sizing",
+			"Settings - vector sizing", "Similarities",
+			"Target", "Tester", "Uncertainty", "Undo", "Varimax")
+		interactive_only_commands = (
+			"Create", "New grouped data")
+		script_commands = (
+			"Open script", "Save script", "View script")
+		passive_commands = (
+			"About", "Alike", "Base", "Battleground", "Contest",
+			"Convertible", "Core supporters", "Directions",
+			"Distances", "Exit", "First dimension","Help", "History", "Joint",
+			"Likely supporters",
+			"Paired", "Print configuration", "Print correlations",
+			"Print evaluations", "Print grouped data", "Print individuals",
+			"Print sample design", "Print sample repetitions",
+			"Print sample solutions", "Print scores",
+			"Print similarities", "Print target", "Ranks differences",
+			"Ranks distances", "Ranks similarities",
+			"Save configuration",
+			"Save correlations", "Save individuals", "Save sample design",
+			"Save sample repetitions", "Save sample solutions",
+			"Save scores", "Save similarities","Save target", "Scree",
+			"Second dimension", "Segments","Shepard",
+			"Status", "Stress contribution", "Terse", "Vectors", "Verbose",
+			"View configuration", "View correlations", "View custom",
+			"View distances", "View evaluations", "View grouped data",
+			"View individuals", "View point uncertainty", "View sample design",
+			"View sample repetitions", "View sample solutions", "View scores",
+			"View similarities", "View spatial uncertainty",
+			"View target")
+
+	# ------------------------------------------------------------------------
+
+	def optionally_explain_what_command_does(self) -> str:
+		from dictionaries import explain_dict  # noqa: PLC0415
+		msg = explain_dict[self._director.command]
+
+		return msg
+
+	# ------------------------------------------------------------------------
+
+	def detect_dependency_problems(self) -> None:
+		"""The Dependencies method is used to determine whether the
+		command being processed has any dependencies that must be
+		satisfied before the command can be executed.
+		"""
+		dependency_checker = self._director.dependency_checker
+
+		n_problems: int = \
+			dependency_checker.detect_dependency_problems_initialize_variables()
+
+		for each_test in range(len(
+			dependency_checker.commands_having_this_dependency
+		)):
+			if (
+				self._director.command.lower()
+				in dependency_checker.commands_having_this_dependency[each_test]
+			):
+				problem_detected: bool = \
+					dependency_checker.test_for_that_dependency_no_parens[
+					each_test
+				](self._director.command)
+				if problem_detected:
+					n_problems += 1
+		if n_problems > 0:
+			raise SpacesError(None, None)
+		return
+
+	# ------------------------------------------------------------------------
+
 	def create_sample_design_analysis_table(self) -> pd.DataFrame:
 		"""Create a DataFrame containing sample design analysis data.
 

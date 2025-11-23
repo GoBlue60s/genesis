@@ -60,9 +60,7 @@ class ConfigurationCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Configuration")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -108,9 +106,7 @@ class CorrelationsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = \
 			self.common.get_command_parameters("Correlations")
 		file_name: str = params["file"]
@@ -186,12 +182,8 @@ class CreateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None: # noqa: ARG002
-
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		config_info = self._get_configuration_information_from_user()
 
 		params = {"npoint": config_info["npoint"], "ndim": config_info["ndim"]}
@@ -400,10 +392,8 @@ class DeactivateCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None: # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		available_items, descriptions = self._build_available_items_list()
 		selected_items = self._get_user_selection(
 			available_items, descriptions)
@@ -735,9 +725,7 @@ class EvaluationsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Evaluations")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -880,9 +868,7 @@ class ExitCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		self._handle_exit_confirmation(common)
 		return
 
@@ -965,10 +951,8 @@ class GroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None: # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Grouped data")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -1204,9 +1188,7 @@ class IndividualsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Individuals")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -1250,10 +1232,8 @@ class NewGroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None: # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		self._get_grouping_var()
 		ngroups = self._get_number_of_groups()
 		ndim = self._get_number_of_dimensions()
@@ -1540,8 +1520,7 @@ class OpenSampleDesignCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Open sample design")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -1593,8 +1572,7 @@ class OpenSampleRepetitionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Open sample repetitions")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -1642,8 +1620,7 @@ class OpenSampleSolutionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Open sample solutions")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -1747,9 +1724,7 @@ class OpenScoresCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Open scores")
 		file_name: str = params["file"]
 		self.common.capture_and_push_undo_state(
@@ -1860,10 +1835,8 @@ class OpenScriptCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 
 		# Save the index of the "Open script" command in the exit code array
 		# so we can update it later (after script commands are executed)
@@ -2219,9 +2192,7 @@ class PrintConfigurationCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print configuration")
 		common.capture_and_push_undo_state(
 			"Print configuration", "passive", params)
@@ -2245,9 +2216,7 @@ class PrintCorrelationsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print correlations")
 		common.capture_and_push_undo_state(
 			"Print correlations", "passive", params)
@@ -2275,9 +2244,7 @@ class PrintEvaluationsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print evaluations")
 		common.capture_and_push_undo_state(
 			"Print evaluations", "passive", params)
@@ -2301,9 +2268,7 @@ class PrintGroupedDataCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print grouped data")
 		common.capture_and_push_undo_state(
 			"Print grouped data", "passive", params)
@@ -2327,9 +2292,7 @@ class PrintIndividualsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print individuals")
 		common.capture_and_push_undo_state(
 			"Print individuals", "passive", params)
@@ -2353,12 +2316,10 @@ class PrintSampleDesignCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print sample design")
 		common.capture_and_push_undo_state(
 			"Print sample design", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.uncertainty_active.print_sample_design()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2379,12 +2340,10 @@ class PrintSampleRepetitionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print sample repetitions")
 		common.capture_and_push_undo_state(
 			"Print sample repetitions", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.uncertainty_active.print_sample_repetitions()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2405,12 +2364,10 @@ class PrintSampleSolutionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print sample solutions")
 		common.capture_and_push_undo_state(
 			"Print sample solutions", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		# Implementation for printing sample solutions
 		#  Add actual implementation
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2432,12 +2389,10 @@ class PrintScoresCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print scores")
 		common.capture_and_push_undo_state(
 			"Print scores", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.scores_active.print_scores()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2460,9 +2415,7 @@ class PrintSimilaritiesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print similarities")
 		common.capture_and_push_undo_state(
 			"Print similarities", "passive", params
@@ -2489,9 +2442,7 @@ class PrintTargetCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Print target")
 		common.capture_and_push_undo_state("Print target", "passive", params)
 		self._director.target_active.print_target()
@@ -2524,9 +2475,7 @@ class SaveConfigurationCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save configuration")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
@@ -2587,9 +2536,7 @@ class SaveGroupedDataCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save grouped data")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
@@ -2651,9 +2598,7 @@ class SaveCorrelationsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save correlations")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
@@ -2720,9 +2665,7 @@ class SaveIndividualsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save individuals")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
@@ -2785,14 +2728,12 @@ class SaveSampleDesignCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save sample design")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
 			"Save sample design", "passive", params
 		)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_design_file(file_name)
 		common.name_of_file_written_to = file_name
 		self._print_save_sample_design_confirmation(file_name)
@@ -2878,14 +2819,12 @@ class SaveSampleRepetitionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save sample repetitions")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
 			"Save sample repetitions", "passive", params
 		)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_repetitions_file(file_name)
 		common.name_of_file_written_to = file_name
 		self._print_save_sample_repetitions_confirmation(file_name)
@@ -2965,14 +2904,12 @@ class SaveSampleSolutionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save sample solutions")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
 			"Save sample solutions", "passive", params
 		)
-		self._director.dependency_checker.detect_dependency_problems()
 		self._write_sample_solutions_file(file_name)
 		common.name_of_file_written_to = file_name
 		self._print_save_sample_solutions_confirmation(file_name)
@@ -3067,9 +3004,7 @@ class SaveScoresCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save scores")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state("Save scores", "passive", params)
@@ -3125,9 +3060,7 @@ class SaveScriptCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save script")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state("Save script", "script", params)
@@ -3332,9 +3265,7 @@ class SaveSimilaritiesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save similarities")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
@@ -3400,9 +3331,7 @@ class SaveTargetCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Save target")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state("Save target", "passive", params)
@@ -3451,9 +3380,7 @@ class SettingsDisplayCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters(
 			"Settings - display sizing")
 		axis_extra: int = params["axis_extra"]
@@ -3508,9 +3435,7 @@ class SettingsLayoutCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters(
 			"Settings - layout options")
 		max_cols: int = params["max_cols"]
@@ -3565,9 +3490,7 @@ class SettingsPlaneCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Settings - plane")
 		horizontal: str = params["horizontal"]
 		vertical: str = params["vertical"]
@@ -3661,9 +3584,7 @@ class SettingsPlotCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters("Settings - plot settings")
 		bisector: bool = params["bisector"]
 		connector: bool = params["connector"]
@@ -3723,9 +3644,7 @@ class SettingsPresentationLayerCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces, layer: str | None = None) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters(
 			"Settings - presentation layer", layer=layer)
 		layer: str = params["layer"]
@@ -3772,9 +3691,7 @@ class SettingsSegmentCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = self.common.get_command_parameters(
 			"Settings - segment sizing")
 		battleground: int = params["battleground"]
@@ -3826,9 +3743,7 @@ class SettingsVectorSizeCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Settings - vector sizing")
 		vector_head_width: float = params["vector_head_width"]
 		vector_width: float = params["vector_width"]
@@ -3888,9 +3803,7 @@ class SimilaritiesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces, value_type: str) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters(
 			"Similarities", value_type=value_type)
 		file_name: str = params["file"]
@@ -3969,9 +3882,7 @@ class TargetCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Target")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state("Target", "active", params)

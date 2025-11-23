@@ -53,9 +53,7 @@ class AlikeCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		common.create_plot_for_tabs("cutoff")
 		params = common.get_command_parameters("Alike")
 		common.capture_and_push_undo_state("Alike", "passive", params)
@@ -255,9 +253,7 @@ class DistancesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Distances")
 		common.capture_and_push_undo_state("Distances", "passive", params)
 		self._director.configuration_active.print_the_distances(
@@ -285,9 +281,7 @@ class LineOfSightCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Line of sight")
 		common.capture_and_push_undo_state("Line of sight", "active", params)
 		self._director.similarities_active = common.los(
@@ -341,9 +335,7 @@ class PairedCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Paired")
 		common.capture_and_push_undo_state("Paired", "passive", params)
 		focal_index: int = params["focus"]
@@ -472,9 +464,7 @@ class RanksDifferencesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Ranks differences")
 		common.capture_and_push_undo_state(
 			"Ranks differences", "passive", params)
@@ -513,9 +503,7 @@ class RanksDistancesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Ranks distances")
 		common.capture_and_push_undo_state(
 			"Ranks distances", "passive", params)
@@ -543,9 +531,7 @@ class RanksSimilaritiesCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Ranks similarities")
 		common.capture_and_push_undo_state(
 			"Ranks similarities", "passive", params)
@@ -584,9 +570,7 @@ class ScreeCommand:
 	def execute(
 		self, common: Spaces, use_metric: bool = False  # noqa: FBT001, FBT002
 	) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Scree", use_metric=use_metric)
 		use_metric = params["use_metric"]
 		common.capture_and_push_undo_state("Scree", "passive", params)
@@ -709,9 +693,7 @@ class ShepardCommand:
 		common: Spaces,
 		axis_for_similarities: str = "",
 	) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters(
 			"Shepard", axis_for_similarities=axis_for_similarities)
 		axis_for_similarities = params["axis_for_similarities"]
@@ -743,9 +725,7 @@ class StressContributionCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		worst_fit = self._calculate_and_sort_stress_contributions()
 		self._aggregate_stress_by_point()
 		common.create_plot_for_tabs("sorted_stress_contributions")

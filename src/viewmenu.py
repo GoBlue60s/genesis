@@ -43,9 +43,7 @@ class HistoryCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("History")
 		common.capture_and_push_undo_state("History", "passive", params)
 		self._print_history()
@@ -146,14 +144,12 @@ class ViewConfigurationCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("View configuration")
 		common.capture_and_push_undo_state(
 			"View configuration", "passive", params)
 		self._director.configuration_active.print_the_configuration()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

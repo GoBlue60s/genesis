@@ -13,6 +13,7 @@ Exit - 11/17/2025
 Grouped data - 11/17/2025
 Individuals- 11/17/2025
 Invert - 11/18/2025
+HIstory - needs testing - 11/22/2025
 Line of sight - needs testing - 11/22/2025
 New grouped data - 11/18/2025
 Open scores - 11/18/2025

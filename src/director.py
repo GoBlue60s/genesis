@@ -939,6 +939,11 @@ class Status(QMainWindow):
 		"""The start method is called at the beginning of each command to
 		indicate that the command is in process.
 		"""
+		print(
+			f"DEPRECATED: {self.command} uses "
+			"director.record_command_as_selected_and_in_process(). "
+			"Use common.initiate_command_processes() instead."
+		)
 		# Clear obtained parameters from previous command
 		self.obtained_parameters.clear()
 
@@ -1003,6 +1008,11 @@ class Status(QMainWindow):
 	# ------------------------------------------------------------------------
 
 	def optionally_explain_what_command_does(self) -> str:
+		print(
+			f"DEPRECATED: {self.command} uses "
+			"director.optionally_explain_what_command_does(). "
+			"Use common.initiate_command_processes() instead."
+		)
 		msg = explain_dict[self.command]
 
 		return msg

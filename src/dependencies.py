@@ -236,6 +236,11 @@ class DependencyChecking:
 		command being processed has any dependencies that must be
 		satisfied before the command can be executed.
 		"""
+		print(
+			f"DEPRECATED: {self._director.command} uses "
+			"dependency_checker.detect_dependency_problems(). "
+			"Use common.initiate_command_processes() instead."
+		)
 
 		n_problems: int = \
 			self.detect_dependency_problems_initialize_variables()

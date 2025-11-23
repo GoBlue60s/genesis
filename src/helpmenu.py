@@ -655,7 +655,7 @@ class VerboseCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Verbose")
 		common.capture_and_push_undo_state("Verbose", "passive", params)
 		self._print_verbose_message()
@@ -702,7 +702,7 @@ class TerseCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Terse")
 		common.capture_and_push_undo_state("Terse", "passive", params)
 		self._print_terse_message()
