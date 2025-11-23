@@ -1459,7 +1459,7 @@ class Spaces:
 		if not self.have_evaluations():
 			title = "No Evaluations have been established."
 			message = (
-				"Open Evaluations file or use Associations Evaluations "
+				"Use File Evaluations to open an Evaluations file "
 				"before using "
 				f"{command}."
 			)

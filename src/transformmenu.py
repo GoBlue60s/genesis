@@ -55,7 +55,7 @@ class CompareCommand:
 			self._director, common)
 
 		self._print_comparison()
-		self._director.common.create_plot_for_tabs("compare")
+		common.create_plot_for_tabs("compare")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -161,7 +161,7 @@ class CenterCommand:
 		self._director.rivalry.create_or_revise_rivalry_attributes(
 			self._director, common)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -214,7 +214,7 @@ class InvertCommand:
 		rivalry.create_or_revise_rivalry_attributes(
 			self._director, common)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -316,21 +316,21 @@ class MoveCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		params = self.common.get_command_parameters("Move")
+		params = common.get_command_parameters("Move")
 		dimension_name: str = params["dimension"]
 		decimal_value: float = params["distance"]
 		dim_names = self._director.configuration_active.dim_names
 		selected_option = dim_names.index(dimension_name)
-		self.common.capture_and_push_undo_state("Move", "active", params)
+		common.capture_and_push_undo_state("Move", "active", params)
 		# Now perform the move
 		self._move(selected_option, decimal_value)
 		self._director.scores_active.scores = pd.DataFrame()
 		rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common)
+			self._director, common)
 		self._director.configuration_active.inter_point_distances()
-		self.common.rank_when_similarities_match_configuration()
+		common.rank_when_similarities_match_configuration()
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -376,10 +376,10 @@ class RescaleCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		params = self.common.get_command_parameters("Rescale")
+		params = common.get_command_parameters("Rescale")
 		selected_items: list = params["dimensions"]
 		value: float = params["scale_factor"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Rescale",
 			"active",
 			params
@@ -390,12 +390,12 @@ class RescaleCommand:
 		self._rescale_selected_dimensions(selected_items, value)
 		self._director.scores_active.scores = pd.DataFrame()
 		self._director.configuration_active.inter_point_distances()
-		self.common.rank_when_similarities_match_configuration()
+		common.rank_when_similarities_match_configuration()
 		self._director.rivalry.create_or_revise_rivalry_attributes(
-			self._director, self.common
+			self._director, common
 		)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -505,7 +505,7 @@ class VarimaxCommand:
 		#
 		# Capture state before making changes (for undo)
 		#
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Varimax", "active", {}
 		)
 		#
@@ -526,7 +526,7 @@ class VarimaxCommand:
 			f"DEBUG -- after -- {point_coords=}{ndim=} {npoint=}{nreferent=}"
 		)
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

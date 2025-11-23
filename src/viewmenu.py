@@ -180,9 +180,9 @@ class ViewCorrelationsCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		# common.print_lower_triangle(self._director.correlations_active)
 		self._director.correlations_active.print_the_correlations(
-			self._director.common.width, self._director.common.decimals, common
+			common.width, common.decimals, common
 		)
-		self._director.common.create_plot_for_tabs("heatmap_corr")
+		common.create_plot_for_tabs("heatmap_corr")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -294,7 +294,7 @@ class ViewDistancesCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_distances(
 			self._width, self._decimals, common)
-		self._director.common.create_plot_for_tabs("heatmap_dist")
+		common.create_plot_for_tabs("heatmap_dist")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -323,7 +323,7 @@ class ViewEvaluationsCommand:
 		common.capture_and_push_undo_state(
 			"View evaluations", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.create_plot_for_tabs("evaluations")
+		common.create_plot_for_tabs("evaluations")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -349,7 +349,7 @@ class ViewGroupedDataCommand:
 			"View grouped data", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.grouped_data_active.print_grouped_data()
-		self._director.common.create_plot_for_tabs("grouped_data")
+		common.create_plot_for_tabs("grouped_data")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Plot")
 		self._director.record_command_as_successfully_completed()
@@ -379,8 +379,6 @@ class ViewIndividualsCommand:
 			"View individuals", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.individuals_active.print_individuals()
-		# self._director.common.create_plot_for_tabs(
-		# "individuals")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -404,7 +402,7 @@ class ViewPointUncertaintyCommand:
 		self.plot_to_show = plot
 
 		director = self._director
-		common = self.common
+		# common = self.common
 		uncertainty_active = director.uncertainty_active
 		point_names = uncertainty_active.point_names
 
@@ -631,7 +629,7 @@ class ViewScoresCommand:
 		common.capture_and_push_undo_state("View scores", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.scores_active.print_scores()
-		self._director.common.create_plot_for_tabs("scores")
+		common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -664,7 +662,7 @@ class ViewSimilaritiesCommand:
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.similarities_active.print_the_similarities(
 			self._width, self._decimals, common)
-		self._director.common.create_plot_for_tabs("heatmap_simi")
+		common.create_plot_for_tabs("heatmap_simi")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -731,7 +729,7 @@ class ViewTargetCommand:
 		common.capture_and_push_undo_state("View target", "passive", params)
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.target_active.print_target()
-		self._director.common.create_plot_for_tabs("target")
+		common.create_plot_for_tabs("target")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -755,7 +753,7 @@ class ViewUncertaintyCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.scores_active.print_scores()
-		self._director.common.create_plot_for_tabs("scores")
+		common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

@@ -124,12 +124,12 @@ class BattlegroundCommand(ASupporterGrouping):
 		self._director.current_command._battleground_groups_to_show = (show)
 
 		# Track passive command with parameters for script generation
-		self._director.common.push_passive_command_to_undo_stack(
+		common.push_passive_command_to_undo_stack(
 			self._director.command,
 			{"show": show})
 
 		self._print_battleground()
-		self._director.common.create_plot_for_tabs("battleground")
+		common.create_plot_for_tabs("battleground")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -191,7 +191,7 @@ class ContestCommand:
 		common.capture_and_push_undo_state("Contest", "passive", params)
 
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.create_plot_for_tabs("contest")
+		common.create_plot_for_tabs("contest")
 		# self._rival_a = rivalry.rival_a
 		# self._rival_b = rivalry.rival_b
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -230,11 +230,11 @@ class ConvertibleCommand(ASupporterGrouping):
 		self._director.current_command._convertible_groups_to_show = (show)
 
 		# Track passive command with parameters for script generation
-		self._director.common.push_passive_command_to_undo_stack(
+		common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
 		self._print_convertible()
-		self._director.common.create_plot_for_tabs("convertible")
+		common.create_plot_for_tabs("convertible")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -307,11 +307,11 @@ class CoreSupportersCommand(ASupporterGrouping):
 		self._director.current_command.core_groups_to_show = show
 
 		# Track passive command with parameters for script generation
-		self._director.common.push_passive_command_to_undo_stack(
+		common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
 		self._print_core()
-		self._director.common.create_plot_for_tabs("core")
+		common.create_plot_for_tabs("core")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -452,7 +452,7 @@ class JointCommand:
 		common.capture_and_push_undo_state("Joint", "passive", params)
 
 		self._director.dependency_checker.detect_dependency_problems()
-		self._director.common.create_plot_for_tabs("joint")
+		common.create_plot_for_tabs("joint")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -489,11 +489,11 @@ class LikelySupportersCommand(ASupporterGrouping):
 		self._director.current_command.likely_groups_to_show = show
 
 		# Track passive command with parameters for script generation
-		self._director.common.push_passive_command_to_undo_stack(
+		common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
 		self._print_likely()
-		self._director.common.create_plot_for_tabs("likely")
+		common.create_plot_for_tabs("likely")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 
@@ -568,11 +568,11 @@ class ReferencePointsCommand:
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_the_configuration()
-		params = self.common.get_command_parameters("Reference points")
+		params = common.get_command_parameters("Reference points")
 		contest: list = params["contest"]
 		new_rival_a_index = point_names.index(contest[0])
 		new_rival_b_index = point_names.index(contest[1])
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Reference points", "active", params)
 
 		# NOW modify the rivalry state with the new reference points
@@ -587,7 +587,7 @@ class ReferencePointsCommand:
 		rivalry.assign_to_segments()
 
 		self._print_reference_points()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -642,14 +642,14 @@ class SampleDesignerCommand:
 		self._director.record_command_as_selected_and_in_process()
 		self._director.optionally_explain_what_command_does()
 		self._director.dependency_checker.detect_dependency_problems()
-		params = self.common.get_command_parameters("Sample designer")
+		params = common.get_command_parameters("Sample designer")
 		probability_of_inclusion: int = params["probability_of_inclusion"]
 		nrepetitions: int = params["nrepetitions"]
 		universe_size = self._director.evaluations_active.nevaluators
 		self._director.uncertainty_active.universe_size = universe_size
 		self._director.uncertainty_active.probability_of_inclusion = probability_of_inclusion
 		self._director.uncertainty_active.nrepetitions = nrepetitions
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Sample designer", "active", params)
 
 		self._create_sample_design()
@@ -657,7 +657,7 @@ class SampleDesignerCommand:
 		universe_size = self._director.uncertainty_active.universe_size
 		probability_of_inclusion = (
 			self._director.uncertainty_active.probability_of_inclusion)
-		self.common.create_sample_design_analysis_table()
+		common.create_sample_design_analysis_table()
 		self._print_sample_design_analysis_results()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -792,7 +792,7 @@ class SampleRepetitionsCommand:
 		# Capture state for undo BEFORE modifications
 		params = {
 			"universe_size": self._director.uncertainty_active.universe_size}
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Sample repetitions", "active", params)
 
 		self._create_sample_repetitions()
@@ -913,16 +913,16 @@ class ScoreIndividualsCommand:
 
 		# Capture state for undo BEFORE modifications
 		params = {}
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Score individuals", "active", params)
 
 		self._calculate_scores()
 
 		self._director.scores_active.summarize_scores()
 		self._director.scores_active.print_scores()
-		if self._director.common.have_reference_points():
+		if common.have_reference_points():
 			self._director.rivalry.assign_to_segments()
-		self._director.common.create_plot_for_tabs("scores")
+		common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1029,11 +1029,11 @@ class SecondDimensionCommand(ASupporterGrouping):
 		self._director.current_command._second_dim_groups_to_show = (show)
 
 		# Track passive command with parameters for script generation
-		self._director.common.push_passive_command_to_undo_stack(
+		common.push_passive_command_to_undo_stack(
 			self._director.command, {"show": show})
 
 		self._print_second_dimension()
-		self._director.common.create_plot_for_tabs("second")
+		common.create_plot_for_tabs("second")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1098,7 +1098,7 @@ class SegmentsCommand:
 		common.capture_and_push_undo_state("Segments", "passive", params)
 
 		self._director.dependency_checker.detect_dependency_problems()
-		if not self._director.common.have_segments():
+		if not common.have_segments():
 			self._director.rivalry.assign_to_segments()
 
 		self._print_segments(width, decimals)

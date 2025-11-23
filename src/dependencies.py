@@ -551,6 +551,8 @@ class DependencyChecking:
 			new: str = "Configuration"
 		elif command == "New grouped data":
 			new: str = "Grouped data"
+		elif command == "Line of sight":
+			new: str = "Similarities"
 		else:
 			new: str = command
 		return new

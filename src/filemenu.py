@@ -41,9 +41,6 @@ if __name__ == "__main__":  # pragma: no cover
 class ConfigurationCommand:
 	"""The Configuration command is used to open a configuration file."""
 
-	# _director: Status
-	# common: Spaces
-
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self.common = common
@@ -61,9 +58,9 @@ class ConfigurationCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Configuration")
+		params = common.get_command_parameters("Configuration")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Configuration", "active", params)
 		self._director.configuration_active = \
 			common.read_configuration_type_file(
@@ -71,11 +68,11 @@ class ConfigurationCommand:
 		self._director.dependency_checker.detect_consistency_issues()
 
 		self._director.configuration_active.inter_point_distances()
-		self.common.rank_when_similarities_match_configuration()
+		common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
 
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -108,15 +105,15 @@ class CorrelationsCommand:
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
 		params = \
-			self.common.get_command_parameters("Correlations")
+			common.get_command_parameters("Correlations")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Correlations", "active", params)
 		self._read_correlations(file_name, common)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.correlations_active.print_the_correlations(
 			width=8, decimals=3, common=common)
-		self._director.common.create_plot_for_tabs("heatmap_corr")
+		common.create_plot_for_tabs("heatmap_corr")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -140,7 +137,7 @@ class CorrelationsCommand:
 			ValueError,
 			SpacesError
 		):
-			restored = self.common.event_driven_optional_restoration(
+			restored = common.event_driven_optional_restoration(
 				"correlations"
 			)
 			# Only raise exception if restoration failed
@@ -187,16 +184,16 @@ class CreateCommand:
 		config_info = self._get_configuration_information_from_user()
 
 		params = {"npoint": config_info["npoint"], "ndim": config_info["ndim"]}
-		self.common.capture_and_push_undo_state("Create", "active", params)
+		common.capture_and_push_undo_state("Create", "active", params)
 
 		self._create_active_configuration(config_info)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.configuration_active.inter_point_distances()
-		self.common.rank_when_similarities_match_configuration()
+		common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
 
 		self._director.configuration_active.print_active_function()
-		self._director.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -273,7 +270,7 @@ class CreateCommand:
 			max_value=100,
 		)
 		if not npoint_dialog.exec():
-			self.common.event_driven_automatic_restoration()
+			common.event_driven_automatic_restoration()
 			raise SpacesError(self._cancel_title, self._cancel_message)
 		return npoint_dialog.get_value()
 
@@ -289,7 +286,7 @@ class CreateCommand:
 			max_value=10,
 		)
 		if not ndim_dialog.exec():
-			self.common.event_driven_automatic_restoration()
+			common.event_driven_automatic_restoration()
 			raise SpacesError(self._cancel_title, self._cancel_message)
 		return ndim_dialog.get_value()
 
@@ -308,7 +305,7 @@ class CreateCommand:
 				f"{self._labels_message}point {each_point + 1}:",
 			)
 			if not label_dialog.exec():
-				self.common.event_driven_automatic_restoration()
+				common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			point_labels.append(label_dialog.get_value())
 
@@ -317,7 +314,7 @@ class CreateCommand:
 				f"{self._names_message}point {each_point + 1}:",
 			)
 			if not name_dialog.exec():
-				self.common.event_driven_automatic_restoration()
+				common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			point_names.append(name_dialog.get_value())
 
@@ -338,7 +335,7 @@ class CreateCommand:
 				f"{self._labels_message}dimension {each_dim + 1}:",
 			)
 			if not label_dialog.exec():
-				self.common.event_driven_automatic_restoration()
+				common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			dim_labels.append(label_dialog.get_value())
 
@@ -347,7 +344,7 @@ class CreateCommand:
 				f"{self._names_message}dimension {each_dim + 1}:",
 			)
 			if not name_dialog.exec():
-				self.common.event_driven_automatic_restoration()
+				common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			dim_names.append(name_dialog.get_value())
 
@@ -368,7 +365,7 @@ class CreateCommand:
 				ndim,
 			)
 			if not coords_dialog.exec():
-				self.common.event_driven_automatic_restoration()
+				common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			coords = coords_dialog.get_values()
 			coords_data.append(coords)
@@ -726,16 +723,16 @@ class EvaluationsCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Evaluations")
+		params = common.get_command_parameters("Evaluations")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Evaluations", "active", params)
 		self._read_evaluations(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._compute_correlations_from_evaluations(common)
 		self._director.evaluations_active.print_the_evaluations()
 		self._director.evaluations_active.summarize_evaluations()
-		self._director.common.create_plot_for_tabs("evaluations")
+		common.create_plot_for_tabs("evaluations")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -953,14 +950,14 @@ class GroupedDataCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Grouped data")
+		params = common.get_command_parameters("Grouped data")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Grouped data", "active", params)
 		self._read_grouped_data(file_name)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.grouped_data_active.print_grouped_data()
-		self._director.common.create_plot_for_tabs("grouped_data")
+		common.create_plot_for_tabs("grouped_data")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1189,9 +1186,9 @@ class IndividualsCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Individuals")
+		params = common.get_command_parameters("Individuals")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Individuals", "active", params)
 		common.read_individuals_file(
 				file_name, self._director.individuals_active)
@@ -1245,14 +1242,14 @@ class NewGroupedDataCommand:
 		group_coords = pd.DataFrame(
 			coords_data, index=group_names, columns=dim_labels)
 		params = {"ngroups": ngroups, "ndim": ndim}
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"New grouped data", "active", params)
 		self._store_grouped_data(
 			ndim, ngroups, dim_labels, dim_names,
 			group_labels, group_names, group_codes, group_coords)
 		self._director.dependency_checker.detect_consistency_issues()
 		self._director.grouped_data_active.print_grouped_data()
-		self._director.common.create_plot_for_tabs("grouped_data")
+		common.create_plot_for_tabs("grouped_data")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1521,9 +1518,9 @@ class OpenSampleDesignCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Open sample design")
+		params = common.get_command_parameters("Open sample design")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Open sample design", "active", params
 		)
 
@@ -1573,9 +1570,9 @@ class OpenSampleRepetitionsCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Open sample repetitions")
+		params = common.get_command_parameters("Open sample repetitions")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Open sample repetitions", "active", params
 		)
 
@@ -1621,9 +1618,9 @@ class OpenSampleSolutionsCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Open sample solutions")
+		params = common.get_command_parameters("Open sample solutions")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Open sample solutions", "active", params
 		)
 		self._read_sample_solutions_file_check_for_errors(file_name)
@@ -1725,9 +1722,9 @@ class OpenScoresCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Open scores")
+		params = common.get_command_parameters("Open scores")
 		file_name: str = params["file"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Open scores", "active", params)
 
 		self._read_scores(file_name)
@@ -1736,7 +1733,7 @@ class OpenScoresCommand:
 			self._director, common)
 		self._director.scores_active.summarize_scores()
 		self._director.scores_active.print_scores()
-		self._director.common.create_plot_for_tabs("scores")
+		common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -1866,8 +1863,8 @@ class OpenScriptCommand:
 		self._display()
 
 		# Store values for title generation
-		self._director.common.commands_executed = commands_executed
-		self._director.common.script_file_name = Path(file_name).name
+		common.commands_executed = commands_executed
+		common.script_file_name = Path(file_name).name
 
 		# Standard completion steps
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2008,49 +2005,6 @@ class OpenScriptCommand:
 			director.progress_spacer.hide()
 
 		return commands_executed
-
-	# ------------------------------------------------------------------------
-
-	# COMMENTED OUT - Logic moved to execute() for standard structure
-	# def _handle_script_completion(
-	# 	self,
-	# 	commands_executed: int,
-	# 	file_name: str,
-	# 	open_script_index: int,
-	# ) -> None:
-	# 	"""Handle completion of script execution.
-	#
-	# 	Args:
-	# 		commands_executed: Number of commands executed
-	# 		file_name: Name of the script file
-	# 		open_script_index: Index in command_exit_code array
-	# 	"""
-	# 	# Reset command name to "Open script" before recording completion
-	# 	# (otherwise it will print success message for the last script command)
-	# 	self._director.command = "Open script"
-	#
-	# 	# Set current_command to self so widget_control calls
-	# 	# this command's _display
-	# 	# (not the last executed command's _display)
-	# 	self._director.current_command = self
-	#
-	# 	# Call _display to create the widget showing executed commands
-	# 	self._display()
-	# 	# Store values for title generation
-	# 	self._director.common.commands_executed = commands_executed
-	# 	self._director.common.script_file_name = Path(file_name).name
-	# 	self._director.create_widgets_for_output_and_log_tabs()
-	# 	self._director.set_focus_on_tab("Output")
-	#
-	# 	# Update the "Open script" command's exit code directly
-	# 	# (can't use record_command_as_successfully_completed because that
-	# 	# would update the last script command's exit code, not Open script's)
-	# 	self._director.command_exit_code[open_script_index] = 0
-	# 	self._director.spaces_statusbar.showMessage(
-	# 		"Completed Open script command", 80000
-	# 	)
-	# 	print("\nSuccessfully completed Open script command.")
-	# 	return
 
 	# ------------------------------------------------------------------------
 
@@ -2223,7 +2177,7 @@ class PrintCorrelationsCommand:
 		self._director.correlations_active.print_the_correlations(
 			width=8,
 			decimals=3,
-			common=self._director.common,
+			common=common,
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -3381,12 +3335,12 @@ class SettingsDisplayCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters(
+		params = common.get_command_parameters(
 			"Settings - display sizing")
 		axis_extra: int = params["axis_extra"]
 		displacement: int = params["displacement"]
 		point_size: int = params["point_size"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Settings - display sizing", "active", params)
 
 		# Apply settings - convert percentages to floats
@@ -3436,12 +3390,12 @@ class SettingsLayoutCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters(
+		params = common.get_command_parameters(
 			"Settings - layout options")
 		max_cols: int = params["max_cols"]
 		width: int = params["width"]
 		decimals: int = params["decimals"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Settings - layout options", "active", params)
 
 		# Apply settings
@@ -3491,12 +3445,12 @@ class SettingsPlaneCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Settings - plane")
+		params = common.get_command_parameters("Settings - plane")
 		horizontal: str = params["horizontal"]
 		vertical: str = params["vertical"]
 		(hor_dim, vert_dim) = \
 			self.detect_acceptability_of_plane_parameters(horizontal, vertical)
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Settings - plane", "active", params)
 
 		# Apply settings
@@ -3506,7 +3460,7 @@ class SettingsPlaneCommand:
 		self._director.configuration_active.vert_axis_name = vertical
 
 		common.print_plane_settings()
-		self.common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("configuration")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -3585,12 +3539,12 @@ class SettingsPlotCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters("Settings - plot settings")
+		params = common.get_command_parameters("Settings - plot settings")
 		bisector: bool = params["bisector"]
 		connector: bool = params["connector"]
 		reference_points: bool = params["reference_points"]
 		just_reference_points: bool = params["just_reference_points"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Settings - plot settings", "active", params)
 
 		# Apply settings
@@ -3645,14 +3599,14 @@ class SettingsPresentationLayerCommand:
 
 	def execute(self, common: Spaces, layer: str | None = None) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters(
+		params = common.get_command_parameters(
 			"Settings - presentation layer", layer=layer)
 		layer: str = params["layer"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Settings - presentation layer", "active", params)
 
 		# Apply presentation layer setting
-		self._director.common.presentation_layer = layer
+		common.presentation_layer = layer
 
 		common.print_presentation_layer_settings()
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -3692,11 +3646,11 @@ class SettingsSegmentCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = self.common.get_command_parameters(
+		params = common.get_command_parameters(
 			"Settings - segment sizing")
 		battleground: int = params["battleground"]
 		core: int = params["core"]
-		self.common.capture_and_push_undo_state(
+		common.capture_and_push_undo_state(
 			"Settings - segment sizing", "active", params)
 
 		# Apply settings (convert from 0-100 to 0.0-1.0)
