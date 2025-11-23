@@ -250,8 +250,7 @@ class StatusCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Status")
 		common.capture_and_push_undo_state("Status", "passive", params)
 		self._print_status()

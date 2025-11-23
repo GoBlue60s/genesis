@@ -22,10 +22,8 @@ class RedoCommand:
 		self.common = common
 		self._director.command = "Redo"
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		self._redo_last_undone_command()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -204,10 +202,8 @@ class UndoCommand:
 		self.common = common
 		self._director.command = "Undo"
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		self._undo_last_command()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")

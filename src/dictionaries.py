@@ -3888,6 +3888,7 @@ title_generator_dict = MappingProxyType({
 		f"Target configuration has {d.target_active.ndim} dimensions and "
 		f"{d.target_active.npoint} points"
 	),
+	"View uncertainty": lambda d: "Uncertainty analysis",
 })
 
 
