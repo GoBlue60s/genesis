@@ -1733,7 +1733,7 @@ class Spaces:
 			values: Lower triangular matrix values as list of lists
 			width: Field width for formatting numbers
 		"""
-		if not labels or not names or not values or nelements <= 0:
+		if len(labels) == 0 or len(names) == 0 or len(values) == 0 or nelements <= 0:
 			return
 
 		label_indent = "  "

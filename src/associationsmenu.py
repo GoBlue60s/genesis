@@ -481,15 +481,35 @@ class RanksDifferencesCommand:
 		"""Print the differences of ranks in lower triangular format."""
 		similarities_active = self._director.similarities_active
 		print("\n\tDifference of Ranks")
+		# Convert flat array to lower triangular list of lists
+		flat_array = similarities_active.differences_of_ranks_as_list
+		lower_triangular = self._build_lower_triangular(
+			flat_array, similarities_active.nreferent)
 		common.print_lower_triangle(
 			0,  # decimals (ranks are integers)
 			similarities_active.item_labels,
 			similarities_active.item_names,
 			similarities_active.nreferent,
-			similarities_active.differences_of_ranks_as_list,
+			lower_triangular,
 			6  # width
 		)
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _build_lower_triangular(
+		self, flat_array: list, nreferent: int
+	) -> list[list]:
+		"""Convert flat array to lower triangular list of lists."""
+		lower_triangular = []
+		next_pair = 0
+		for row in range(1, nreferent):
+			a_row = []
+			for _ in range(row):
+				a_row.append(flat_array[next_pair])
+				next_pair += 1
+			lower_triangular.append(a_row)
+		return lower_triangular
 
 	# ------------------------------------------------------------------------
 
