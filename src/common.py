@@ -192,31 +192,12 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def detect_dependency_problems(self) -> None:
-		"""The Dependencies method is used to determine whether the
-		command being processed has any dependencies that must be
-		satisfied before the command can be executed.
+		"""Check if command's required dependencies are satisfied.
+
+		Delegates to dependency_checker which uses command_dependencies_dict
+		to look up and test required dependencies.
 		"""
-		dependency_checker = self._director.dependency_checker
-
-		n_problems: int = \
-			dependency_checker.detect_dependency_problems_initialize_variables()
-
-		for each_test in range(len(
-			dependency_checker.commands_having_this_dependency
-		)):
-			if (
-				self._director.command.lower()
-				in dependency_checker.commands_having_this_dependency[each_test]
-			):
-				problem_detected: bool = \
-					dependency_checker.test_for_that_dependency_no_parens[
-					each_test
-				](self._director.command)
-				if problem_detected:
-					n_problems += 1
-		if n_problems > 0:
-			raise SpacesError(None, None)
-		return
+		self._director.dependency_checker.detect_dependency_problems()
 
 	# ------------------------------------------------------------------------
 

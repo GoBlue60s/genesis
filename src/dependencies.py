@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from director import Status
 
-from common import Spaces
+from common import Spaces  # noqa: F401
 from constants import MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
 from dialogs import ChoseOptionDialog
+from dictionaries import command_dependencies_dict
 from exceptions import SpacesError
 
 # --------------------------------------------------------------------------
@@ -18,28 +19,7 @@ from exceptions import SpacesError
 
 class DependencyChecking:
 	def __init__(self, director: Status) -> None:
-		# common: Spaces):
-
 		self._director = director
-
-		self.commands_that_need_configuration: set = set()
-		self.commands_that_need_similarities: set = set()
-		self.commands_that_need_reference_points: set = set()
-		self.commands_that_need_correlations: set = set()
-		self.commands_that_need_individual_data: set = set()
-		self.commands_that_need_distances: set = set()
-		self.commands_that_need_ranks_distances: set = set()
-		self.commands_that_need_ranks_similarities: set = set()
-		self.commands_that_need_scores: set = set()
-		self.commands_that_need_evaluations: set = set()
-		self.commands_that_need_target: set = set()
-		self.commands_that_need_grouped_data: set = set()
-		self.commands_that_need_sample_design: set = set()
-		self.commands_that_need_sample_repetitions: set = set()
-		self.commands_having_this_dependency: list[set] = []
-		self.test_for_that_dependency_lambdas: list[list] = []
-		self.test_for_that_dependency_no_parens: list[str] = []
-		# self.a_test_for_that_dependency_orig: list = []
 		self.features: list[str] = []
 		self.new_feature_dict: dict[str, tuple] = {}
 		self.existing_feature_dict: dict[str, tuple] = {}
@@ -48,222 +28,27 @@ class DependencyChecking:
 		self._conflict_options: list[str] = []
 		self.check_label_consistency: bool = False
 
-	# ------------------------------------------------------------------------
-
-	def detect_dependency_problems_initialize_variables(self) -> int:
-		"""Establishes whether the data needed for a command exists"""
-		n_problems = 0
-
-		self.commands_that_need_configuration: set = {
-			"alike",
-			"base",
-			"bisector",
-			"center",
-			"cluster",
-			"compare",
-			"contest",
-			"convertible",
-			"core supporters",
-			"directions",
-			"distances",
-			"first dimension",
-			"invert",
-			"joint",
-			"likely supporters",
-			"battleground",
-			"move",
-			"paired",
-			"plane",
-			"print configuration",
-			"ranks distances",
-			"reference points",
-			"rescale",
-			"rotate",
-			"save configuration",
-			"score individuals",
-			"second dimension",
-			"segments",
-			"settings - plane",
-			"shepard",
-			"stress contribution",
-			"varimax",
-			"vectors",
-			"view configuration",
-			"view custom",
-			"view distances",
-		}
-		self.commands_that_need_similarities: set = {
-			"alike",
-			"mds",
-			"paired",
-			"print similarities",
-			"ranks similarities",
-			"ranks differences",
-			"scree",
-			"save similarities",
-			"shepard",
-			"stress contribution",
-			"view similarities",
-		}
-		self.commands_that_need_reference_points: set = {
-			"base",
-			"bisector",
-			"contest",
-			"convertible",
-			"core supporters",
-			"first dimension",
-			"likely supporters",
-			"battleground",
-			"second dimension",
-			"segments",
-		}
-		self.commands_that_need_correlations: set = {
-			"print correlations",
-			"save correlations",
-			"view correlations",
-		}
-		self.commands_that_need_individual_data: set = {
-			"print individuals",
-			"save individuals",
-			"view individuals",
-		}
-		self.commands_that_need_distances: set = {
-			"ranks distances",
-			"shepard",
-			"view distances",
-		}
-		self.commands_that_need_ranks_distances: set = {
-			"ranks differences",
-			"shepard",
-		}
-		self.commands_that_need_ranks_similarities: set = {
-			"ranks differences",
-			"shepard",
-		}
-		self.commands_that_need_scores: set = {
-			"joint",
-			"print scores",
-			"save scores",
-			"segments",
-			"view scores",
-		}
-		self.commands_that_need_evaluations: set = {
-			"factor analysis",
-			"factor analysis machine learning",
-			"line of sight",
-			"principal components",
-			"print evaluations",
-			"sample designer",
-			"sample repetitions",
-			"uncertainty",
-			"score individuals",
-			"view evaluations",
-		}
-		self.commands_that_need_target: set = {
-			"compare",
-			"print target",
-			"save target",
-			"uncertainty",
-			"view target",
-		}
-		self.commands_that_need_grouped_data: set = {
-			"print grouped data",
-			"save grouped data",
-			"view grouped data",
-		}
-		self.commands_that_need_sample_design: set = {
-			"open sample repetitions",
-			"save sample design",
-			"print sample design",
-			"sample repetitions",
-			"view sample design",
-		}
-		self.commands_that_need_sample_repetitions: set = {
-			"print sample repetitions",
-			"save sample repetitions",
-			"view sample repetitions",
-		}
-		self.commands_that_need_sample_solutions: set = {
-			"print sample solutions",
-			"save sample solutions",
-			"view point uncertainty",
-			"view sample solutions",
-			"view spatial uncertainty",
-		}
-
-		self.commands_having_this_dependency = [
-			self.commands_that_need_configuration,
-			self.commands_that_need_similarities,
-			self.commands_that_need_reference_points,
-			self.commands_that_need_correlations,
-			self.commands_that_need_individual_data,
-			self.commands_that_need_distances,
-			self.commands_that_need_ranks_distances,
-			self.commands_that_need_ranks_similarities,
-			self.commands_that_need_scores,
-			self.commands_that_need_evaluations,
-			self.commands_that_need_target,
-			self.commands_that_need_grouped_data,
-			self.commands_that_need_sample_design,
-			self.commands_that_need_sample_repetitions,
-			self.commands_that_need_sample_solutions,
-		]
-
-		self.test_for_that_dependency_no_parens = [
-			self._director.common.needs_configuration,
-			self._director.common.needs_similarities,
-			self._director.common.needs_reference_points,
-			self._director.common.needs_correlations,
-			self._director.common.needs_individual_data,
-			self._director.common.needs_distances,
-			self._director.common.needs_ranks_distances,
-			self._director.common.needs_ranks_similarities,
-			self._director.common.needs_scores,
-			self._director.common.needs_evaluations,
-			self._director.common.needs_target,
-			self._director.common.needs_grouped_data,
-			self._director.common.needs_sample_design,
-			self._director.common.needs_sample_repetitions,
-			self._director.common.needs_sample_solutions,
-		]
-
-		return n_problems
 
 	# ------------------------------------------------------------------------
 
 	def detect_dependency_problems(self) -> None:
-		"""The Dependencies method is used to determine whether the
-		command being processed has any dependencies that must be
-		satisfied before the command can be executed.
+		"""Check if command's required dependencies are satisfied.
+
+		Uses command_dependencies_dict to look up which dependencies
+		a command requires, then tests each one.
 		"""
-		print(
-			f"DEPRECATED: {self._director.command} uses "
-			"dependency_checker.detect_dependency_problems(). "
-			"Use common.initiate_command_processes() instead."
-		)
+		command = self._director.command
+		deps = command_dependencies_dict.get(command, ())
 
-		n_problems: int = \
-			self.detect_dependency_problems_initialize_variables()
+		n_problems = 0
+		for dep in deps:
+			test_func = getattr(self._director.common, f"needs_{dep}")
+			if test_func(command):
+				n_problems += 1
 
-		for each_test in range(len(self.commands_having_this_dependency)):
-			if (
-				self._director.command.lower()
-				in self.commands_having_this_dependency[each_test]
-			):
-				problem_detected: bool = \
-					self.test_for_that_dependency_no_parens[
-					each_test
-				](self._director.command)
-				if problem_detected:
-					n_problems += 1
 		if n_problems > 0:
-			# raise SpacesError(
-			# f"Command '{self.command}' failed with {n_problems}
-			# dependencies not fulfilled", None)
 			raise SpacesError(None, None)
-		return
 
-	# ------------------------------------------------------------------------
 
 	def detect_consistency_issues_initialize_variables(self) -> None:
 		"""Establishes what information is needed to determine
@@ -972,37 +757,3 @@ class DependencyChecking:
 			)
 		return existing_abandoned
 
-
-# --------------------------------------------------------------------------
-
-
-class PrepareForDependencyTesting:
-	def __init__(self, parent: Status) -> None:
-		self.parent = parent
-		self.common: Spaces = Spaces(parent, parent)
-
-		self.commands_that_need_configuration: set = set()
-		self.commands_that_need_similarities: set = set()
-		self.commands_that_need_reference_points: set = set()
-		self.commands_that_need_correlations: set = set()
-		self.commands_that_need_individual_data: set = set()
-		self.commands_that_need_distances: set = set()
-		self.commands_that_need_ranks_distances: set = set()
-		self.commands_that_need_ranks_similarities: set = set()
-		self.commands_that_need_scores: set = set()
-		self.commands_that_need_evaluations: set = set()
-		self.commands_that_need_target: set = set()
-		self.commands_that_need_grouped_data: set = set()
-		self.commands_that_need_sample_design: set = set()
-		self.commands_that_need_sample_repetitions: set = set()
-		self.commands_having_this_dependency: list[set] = []
-		self.test_for_that_dependency_lambdas: list[list] = []
-		self.test_for_that_dependency_no_parens: list[str] = []
-		# self.a_test_for_that_dependency_orig: list = []
-		self.features: list[str] = []
-		self.new_feature_dict: dict[str, tuple] = {}
-		self.existing_feature_dict: dict[str, tuple] = {}
-		self._conflict_title: str = ""
-		self._conflict_options_title: str = ""
-		self._conflict_options: list[str] = []
-		self.check_label_consistency: bool = False
