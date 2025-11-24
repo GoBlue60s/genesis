@@ -50,10 +50,14 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Base": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["show"]
 	},
 	"Battleground": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["show"]
 	},
 	"Center": {
 		"type": "active",
@@ -105,10 +109,14 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"Convertible": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["show"]
 	},
 	"Core supporters": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["show"]
 	},
 	"Correlations": {
 		"type": "active",
@@ -190,7 +198,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"First dimension": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["show"]
 	},
 	"Grouped data": {
 		"type": "active",
@@ -245,7 +255,9 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"Likely supporters": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["show"]
 	},
 	"Line of sight": {
 		"type": "active",
@@ -676,7 +688,9 @@ command_dict = MappingProxyType({
 		}
 	},
 	"Second dimension": {
-		"type": "passive"
+		"type": "passive",
+		"state_capture": [],
+		"script_parameters": ["show"]
 	},
 	"Segments": {
 		"type": "passive",

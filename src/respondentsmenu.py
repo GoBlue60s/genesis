@@ -36,18 +36,12 @@ class BaseCommand(ASupporterGrouping):
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces, show: str) -> None:
+		
 		director = self._director
-		common = director.common
-		director.record_command_as_selected_and_in_process()
-		director.optionally_explain_what_command_does()
-		director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Base", show=show)
+		common.capture_and_push_undo_state("Base", "passive", params)
 		director.current_command._base_groups_to_show = show
-
-		# Track passive command with parameters for script generation
-		common.push_passive_command_to_undo_stack(
-			director.command,
-			{"show": show})
-
 		self._print_base()
 		common.create_plot_for_tabs("base")
 		director.create_widgets_for_output_and_log_tabs()
@@ -101,11 +95,11 @@ class BattlegroundCommand(ASupporterGrouping):
 	delineating area with battleground individuals.
 	"""
 
-	def __init__(self, director: Status, command: str) -> None:
-		super().__init__(director, director.common)
+	def __init__(self, director: Status, common: Spaces) -> None:
+		super().__init__(director, common)
 
 		self._director = director
-		self.command = command
+		self._common = common
 		self._director.command = "Battleground"
 		self._battleground_groups_to_show = ""
 
@@ -113,21 +107,11 @@ class BattlegroundCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,  # noqa: ARG002
-		show: str,
-	) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._battleground_groups_to_show = (show)
-
-		# Track passive command with parameters for script generation
-		common.push_passive_command_to_undo_stack(
-			self._director.command,
-			{"show": show})
-
+	def execute(self, common: Spaces, show: str) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Battleground", show=show)
+		common.capture_and_push_undo_state("Battleground", "passive", params)
+		self._director.current_command._battleground_groups_to_show = show
 		self._print_battleground()
 		common.create_plot_for_tabs("battleground")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -181,19 +165,11 @@ class ContestCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		rivalry = self._director.rivalry
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-
-		# Get command parameters and capture state
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Contest")
 		common.capture_and_push_undo_state("Contest", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
 		common.create_plot_for_tabs("contest")
-		# self._rival_a = rivalry.rival_a
-		# self._rival_b = rivalry.rival_b
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
@@ -219,20 +195,11 @@ class ConvertibleCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,  # noqa: ARG002
-		show: str,
-	) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._convertible_groups_to_show = (show)
-
-		# Track passive command with parameters for script generation
-		common.push_passive_command_to_undo_stack(
-			self._director.command, {"show": show})
-
+	def execute(self, common: Spaces, show: str) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Convertible", show=show)
+		common.capture_and_push_undo_state("Convertible", "passive", params)
+		self._director.current_command._convertible_groups_to_show = show
 		self._print_convertible()
 		common.create_plot_for_tabs("convertible")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -296,20 +263,12 @@ class CoreSupportersCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,  # noqa: ARG002
-		show: str,
-	) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces, show: str) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Core supporters", show=show)
+		common.capture_and_push_undo_state(
+			"Core supporters", "passive", params)
 		self._director.current_command.core_groups_to_show = show
-
-		# Track passive command with parameters for script generation
-		common.push_passive_command_to_undo_stack(
-			self._director.command, {"show": show})
-
 		self._print_core()
 		common.create_plot_for_tabs("core")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -379,15 +338,11 @@ class FirstDimensionCommand(ASupporterGrouping):
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces, show: str) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._first_dim_groups_to_show = (show)
-
-		# Track passive command with parameters for script generation
-		common.push_passive_command_to_undo_stack(
-			self._director.command, {"show": show})
-
+		common.initiate_command_processes()
+		params = common.get_command_parameters("First dimension", show=show)
+		common.capture_and_push_undo_state(
+			"First dimension", "passive", params)
+		self._director.current_command._first_dim_groups_to_show = show
 		self._print_first_dimension()
 		common.create_plot_for_tabs("first")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -443,15 +398,10 @@ class JointCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-
-		# Get command parameters and capture state
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Joint")
 		common.capture_and_push_undo_state("Joint", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
 		common.create_plot_for_tabs("joint")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -478,20 +428,12 @@ class LikelySupportersCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,  # noqa: ARG002
-		show: str,
-	) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces, show: str) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Likely supporters", show=show)
+		common.capture_and_push_undo_state(
+			"Likely supporters", "passive", params)
 		self._director.current_command.likely_groups_to_show = show
-
-		# Track passive command with parameters for script generation
-		common.push_passive_command_to_undo_stack(
-			self._director.command, {"show": show})
-
 		self._print_likely()
 		common.create_plot_for_tabs("likely")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -559,14 +501,11 @@ class ReferencePointsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-
 		rivalry = self._director.rivalry
 		point_names = self._director.configuration_active.point_names
 		point_labels = self._director.configuration_active.point_labels
 
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		self._director.configuration_active.print_the_configuration()
 		params = common.get_command_parameters("Reference points")
 		contest: list = params["contest"]
@@ -638,10 +577,8 @@ class SampleDesignerCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> QTableWidget:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Sample designer")
 		probability_of_inclusion: int = params["probability_of_inclusion"]
 		nrepetitions: int = params["nrepetitions"]
@@ -782,21 +719,13 @@ class SampleRepetitionsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Sample repetitions")
 		self._check_that_sizes_match()
-
-		# Capture state for undo BEFORE modifications
-		params = {
-			"universe_size": self._director.uncertainty_active.universe_size}
 		common.capture_and_push_undo_state(
 			"Sample repetitions", "active", params)
-
 		self._create_sample_repetitions()
-		universe_size = self._director.uncertainty_active.universe_size
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -906,13 +835,9 @@ class ScoreIndividualsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-
-		# Capture state for undo BEFORE modifications
-		params = {}
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Score individuals")
 		common.capture_and_push_undo_state(
 			"Score individuals", "active", params)
 
@@ -1018,20 +943,12 @@ class SecondDimensionCommand(ASupporterGrouping):
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,  # noqa: ARG002
-		show: str,
-	) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.current_command._second_dim_groups_to_show = (show)
-
-		# Track passive command with parameters for script generation
-		common.push_passive_command_to_undo_stack(
-			self._director.command, {"show": show})
-
+	def execute(self, common: Spaces, show: str) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Second dimension", show=show)
+		common.capture_and_push_undo_state(
+			"Second dimension", "passive", params)
+		self._director.current_command._second_dim_groups_to_show = show
 		self._print_second_dimension()
 		common.create_plot_for_tabs("second")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -1086,18 +1003,13 @@ class SegmentsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		width = self._segs_width
 		decimals = self._segs_decimals
 
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-
-		# Get command parameters and capture state
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Segments")
 		common.capture_and_push_undo_state("Segments", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
 		if not common.have_segments():
 			self._director.rivalry.assign_to_segments()
 
