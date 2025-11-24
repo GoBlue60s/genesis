@@ -70,10 +70,8 @@ class ClusterCommand:
 
 	# ------------------------------------------------------------------------
 		
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 
 		# Step 1: Get data source from user (or script)
 		params_step1 = common.get_command_parameters("Cluster")
@@ -164,8 +162,8 @@ class ClusterCommand:
 
 		# Print cluster results table
 		self._print_cluster_results(cluster_centers, n_clusters)
-		self._director.create_widgets_for_output_and_log_tabs()
 		common.create_plot_for_tabs("clusters")
+		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
 
@@ -502,9 +500,7 @@ class DirectionsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 
 		# Get command parameters and capture state
 		params = common.get_command_parameters("Directions")
@@ -665,12 +661,8 @@ class FactorAnalysisCommand:
 
 	def execute(self, common: Spaces) -> None:
 		director = self._director
-		common = self.common
-
 		configuration_active = director.configuration_active
-		director.record_command_as_selected_and_in_process()
-		director.optionally_explain_what_command_does()
-		director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Factor analysis")
 		ext_fact: int = params["n_factors"]
 		common.capture_and_push_undo_state(
@@ -978,10 +970,8 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Factor analysis machine learning")
 		n_components: int = params["n_components"]
 		common.capture_and_push_undo_state(
@@ -1490,12 +1480,9 @@ class MDSCommand:
 
 	def execute(
 		self,
-		common,  # noqa: ANN001, ARG002
+		common: Spaces,
 		use_metric: bool = False) -> None:  # noqa: FBT001, FBT002
-
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("MDS", use_metric=use_metric)
 		n_comp: int = params["n_components"]
 		use_metric: bool = params["use_metric"]
@@ -1633,10 +1620,8 @@ class PrincipalComponentsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces, n_components: int = None) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Principal components")
 		n_components: int = params["n_components"]
 		common.capture_and_push_undo_state(
@@ -1818,14 +1803,9 @@ class VectorsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-
-		# Get command parameters and capture state
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Vectors")
 		common.capture_and_push_undo_state("Vectors", "passive", params)
-
-		self._director.dependency_checker.detect_dependency_problems()
 		self._director.configuration_active.print_active_function()
 		common.create_plot_for_tabs("vectors")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -1997,14 +1977,10 @@ class UncertaintyCommand:
 
 	def execute(self, common: Spaces) -> None:
 		director = self._director
-		common = self.common
 		uncertainty_active = director.uncertainty_active
 		nreferent = director.evaluations_active.nreferent
 
-		director.record_command_as_selected_and_in_process()
-		director.optionally_explain_what_command_does()
-		director.dependency_checker.detect_dependency_problems()
-
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Uncertainty")
 		probability_of_inclusion: int = params["probability_of_inclusion"]
 		nrepetitions: int = params["nrepetitions"]
@@ -2028,7 +2004,7 @@ class UncertaintyCommand:
 		print(
 			director.uncertainty_active.solutions_stress_df.to_string(
 				index=False))
-		director.common.create_plot_for_tabs("uncertainty")
+		common.create_plot_for_tabs("uncertainty")
 		director.create_widgets_for_output_and_log_tabs()
 		director.record_command_as_successfully_completed()
 
