@@ -71,9 +71,7 @@ class AboutCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("About")
 		common.capture_and_push_undo_state("About", "passive", params)
 		self._print_about()
@@ -222,9 +220,7 @@ class HelpCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Help")
 		common.capture_and_push_undo_state("Help", "passive", params)
 		self._director.create_widgets_for_output_and_log_tabs()

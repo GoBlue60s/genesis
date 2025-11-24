@@ -311,11 +311,9 @@ class MoveCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None: # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
 		rivalry = self._director.rivalry
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Move")
 		dimension_name: str = params["dimension"]
 		decimal_value: float = params["distance"]
@@ -372,10 +370,8 @@ class RescaleCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Rescale")
 		selected_items: list = params["dimensions"]
 		value: float = params["scale_factor"]
@@ -497,16 +493,15 @@ class VarimaxCommand:
 		item_names = self._director.configuration_active.item_names
 		nreferent = self._director.configuration_active.nreferent
 
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Varimax")
 		if len(item_names) == 0:
 			item_names = point_names
 		#
 		# Capture state before making changes (for undo)
 		#
 		common.capture_and_push_undo_state(
-			"Varimax", "active", {}
+			"Varimax", "active", params
 		)
 		#
 		# Now perform the varimax rotation
