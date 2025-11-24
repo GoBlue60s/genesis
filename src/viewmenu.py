@@ -709,8 +709,14 @@ class ViewTargetCommand:
 
 
 class ViewUncertaintyCommand:
+	"""View Uncertainty Command.
+
+	WARNING: This command is not accessible via the menu and is being
+	considered for deprecation. It lacks entries in parameters_dict,
+	request_dict, and explain_dict.
+	"""
+
 	def __init__(self, director: Status, common: Spaces) -> None:
-		"""The View Uncertainty Command...."""
 		self._director = director
 		self.common = common
 		self._director.command = "View uncertainty"
@@ -723,8 +729,8 @@ class ViewUncertaintyCommand:
 		params = common.get_command_parameters("View uncertainty")
 		common.capture_and_push_undo_state(
 			"View uncertainty", "passive", params)
-		self._director.scores_active.print_scores()
-		common.create_plot_for_tabs("scores")
+		# self._director.scores_active.print_scores()
+		# common.create_plot_for_tabs("scores")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
