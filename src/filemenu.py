@@ -1523,9 +1523,19 @@ class OpenSampleDesignCommand:
 		common.capture_and_push_undo_state(
 			"Open sample design", "active", params
 		)
+		self._read_sample_design_file(common, file_name)
+		self._director.uncertainty_active.print_sample_design()
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		return
 
-		# Error handling
-		# If not a sample design file, then return an error message
+	# ------------------------------------------------------------------------
+
+	def _read_sample_design_file(
+		self, common: Spaces, file_name: str
+	) -> None:
+		"""Read sample design file with error handling."""
 		try:
 			common.read_sample_design_file_check_for_errors(
 				file_name, self._director.uncertainty_active
@@ -1535,11 +1545,6 @@ class OpenSampleDesignCommand:
 				self._sample_design_error_bad_input_title,
 				self._sample_design_error_bad_input_message,
 			) from e
-
-		self._director.uncertainty_active.print_sample_design()
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
-		return
 
 	# ------------------------------------------------------------------------
 
@@ -1575,9 +1580,19 @@ class OpenSampleRepetitionsCommand:
 		common.capture_and_push_undo_state(
 			"Open sample repetitions", "active", params
 		)
+		self._read_sample_repetitions_file(common, file_name)
+		self._director.uncertainty_active.print_sample_repetitions()
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
+		self._director.record_command_as_successfully_completed()
+		return
 
-		# Error handling
-		# If not a sample repetitions file, then return an error message
+	# ------------------------------------------------------------------------
+
+	def _read_sample_repetitions_file(
+		self, common: Spaces, file_name: str
+	) -> None:
+		"""Read sample repetitions file with error handling."""
 		try:
 			common.read_sample_repetitions_file_check_for_errors(
 				file_name, self._director.uncertainty_active
@@ -1587,11 +1602,6 @@ class OpenSampleRepetitionsCommand:
 				self._sample_repetitions_error_bad_input_title,
 				self._sample_repetitions_error_bad_input_message,
 			) from e
-
-		self._director.uncertainty_active.print_sample_repetitions()
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
-		return
 
 	# ------------------------------------------------------------------------
 
@@ -1606,12 +1616,10 @@ class OpenSampleSolutionsCommand:
 		self._sample_solutions_caption = "Open sample solutions"
 		self._sample_solutions_filter = "*.txt"
 		self._sample_solutions_error_bad_input_title = (
-			"Sample solutions problem"
-		)
+			"Sample solutions problem")
 		self._sample_solutions_error_bad_input_message = (
 			"Input is inconsistent with a sample solutions file.\nLook at "
-			"the contents of file and try again."
-		)
+			"the contents of file and try again.")
 		return
 
 	# ------------------------------------------------------------------------
@@ -1626,6 +1634,7 @@ class OpenSampleSolutionsCommand:
 		self._read_sample_solutions_file_check_for_errors(file_name)
 		self._director.uncertainty_active.print_sample_solutions()
 		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return
 

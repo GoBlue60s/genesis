@@ -2,15 +2,15 @@ Commands that have been standardized:
 
 About - needs testing - 11/23/2025 
 Alike - 11/22/2025
-Base - tbd
-Battleground - tbd
+Base - 11/24/2025
+Battleground - needs testing - 11/24/2025
 Center - 11/18/2025
 Cluster - needs both refactoring and extensive testing - 11/23/2025
 Compare - 11/18/2025
 Configuration - 11/17/2025
-Contest - tbd
-Convertible - tbd
-Core supporteres- tbd
+Contest - needs testing print? - 11/24/2023
+Convertible - needs testing - 11/24/2025
+Core supporteres- needs testing - 11/24/2025
 Correlations - 11/17/2025
 Create - 11/17/2025
 Deactivate- 11/17/2025
@@ -20,31 +20,31 @@ Evaluations - 11/17/2025
 Exit - 11/17/2025
 Factor analysis - needs testing - 11/23/2025
 Factor analysis machine learning -needs testing - 11/23/2025
-First dim - tbd
+First dim - needs testing - 11/24/2025
 Grouped data - 11/17/2025
 Help - needs testing - 11/23/2025
 History - 11/22/2025
 Individuals- 11/17/2025
 Invert - 11/18/2025
-Joint - tbd
-Likely supporters - tbd
+Joint - needs testing - 11/24/2025
+Likely supporters - needs testing - 11/24/2025
 Line of sight 11/22/2025
 MDS - needs testing - 11/23/2025
 Move - needs testing - 11/23/2025
 New grouped data - 11/18/2025
-Open Sample design - tbd
-Open sample repetitions - tbd
-Open sample solutions - tbd
+Open Sample design - potential deprecation - 11/24/2025
+Open sample repetitions - potential deprecation - 11/24/2025
+Open sample solutions - needs testing - 11/24/2025
 Open scores - 11/18/2025
 Open script - 11/18/2025
 Paired - 11/22/2025
 Principal components - needs testing - 11/23/2025
 Print configuration - 11/18/2025
-Print correlations - tbd
-Print individuals - tbd
-Print sample design - tbd
-Print sample repetitions - tbs
-Print sample solutions - tbd
+Print correlations - needs testing - 11/24/2025
+Print individuals - needs testing - 11/24/2025
+Print sample design - needs testing - 11/24/2025
+Print sample repetitions - needs testing - 11/24/2025
+Print sample solutions - needs testing - 11/24/2025
 Print scores - tbd
 Print similarities - 11/18/2025
 Print target - 11/18/2025
@@ -52,11 +52,11 @@ Ranks distances 11/22/2025
 Ranks of differences 11/22/2025
 Ranks similarities 11/22/2025
 Redo - needs testing - 11/23/2025
-Reference Points - tbd
+Reference Points - needs testing - 11/24/2025
 Rescale - needs testing - 11/23/2025
 Rotate - 11/17/2025
-Sample designer - tbd
-sample repetitions - tbd
+Sample designer - needs testing - 11/24/2025
+sample repetitions - needs testing - 11/24/2025
 Save configuration - 11/20/2025
 Save correlations - 11/20/2025
 Save grouped data - 11/20/2025
@@ -68,10 +68,10 @@ Save scores - 11/21/2025
 Save script - 11/21/2025
 Save similarities - 11/21/2025
 Save target - needs testing - 11/21/2025
-Score individuals - tbd
+Score individuals - needs testing - 11/24/2025
 Scree - consider deprecating - needs testing - 11/22/2025
-Second dimension - tbd
-Segments - tbd
+Second dimension - needs testing - 11/24/2025
+Segments - nees testing - 11/24/2025
 Settings - display - needs testing - 11/21/2025
 Settings - layout - needs testing - 11/21/2025
 Settings - plane - needs testing - 11/21/2025
@@ -103,7 +103,7 @@ View sample design - needs testting - 11/23/2025
 View sample repetitions - needs testing - 11/23/2025
 View sample solutions - needs testing - 11/23/2025
 View scores - needs testing - 11/23/2025
-View similarities - needs testting - 11/23/2025
+View similarities - needs testing - 11/23/2025
 View spatial uncertainty - needs testing - 11/23/2025
 View script - needs extensive testing - 11/23/2025
 View Target - tbd
