@@ -172,13 +172,10 @@ class ViewCorrelationsCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("View correlations")
 		common.capture_and_push_undo_state(
 			"View correlations", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
-		# common.print_lower_triangle(self._director.correlations_active)
 		self._director.correlations_active.print_the_correlations(
 			common.width, common.decimals, common
 		)
@@ -313,12 +310,10 @@ class ViewEvaluationsCommand:
 		# --------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("View evaluations")
 		common.capture_and_push_undo_state(
 			"View evaluations", "passive", params)
-		self._director.dependency_checker.detect_dependency_problems()
 		common.create_plot_for_tabs("evaluations")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -693,9 +688,6 @@ class ViewTargetCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		ndim = self._director.target_active.ndim
-		npoint = self._director.target_active.npoint
-
 		common.initiate_command_processes()
 		params = common.get_command_parameters("View target")
 		common.capture_and_push_undo_state("View target", "passive", params)

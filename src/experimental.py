@@ -517,15 +517,15 @@ class TesterCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(self, common: Spaces) -> None:  # noqa: ARG002
+	def execute(self, common: Spaces) -> None:
+		common.initiate_command_processes()
+		params = common.get_command_parameters("Tester")
+		common.capture_and_push_undo_state("Tester", "passive", params)
 		point_coords = self._director.configuration_active.point_coords
-
-		self._director.record_command_as_selected_and_in_process()
-		#
 		print(point_coords)
-		# app = QDialog()
 		window = DataFrameViewer(point_coords)
 		window.show()
-		self._director.title_for_table_widget = "Tester"
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
 		return

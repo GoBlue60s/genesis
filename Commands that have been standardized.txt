@@ -45,7 +45,7 @@ Print individuals - needs testing - 11/24/2025
 Print sample design - needs testing - 11/24/2025
 Print sample repetitions - needs testing - 11/24/2025
 Print sample solutions - needs testing - 11/24/2025
-Print scores - tbd
+Print scores - needs testing - 11/24/2025
 Print similarities - 11/18/2025
 Print target - 11/18/2025
 Ranks distances 11/22/2025
@@ -61,10 +61,10 @@ Save configuration - 11/20/2025
 Save correlations - 11/20/2025
 Save grouped data - 11/20/2025
 Save individuals - 11/21/2025
-Save sample design - tbd
-Save sample repetitions - tbd
-Save sample solutions - tbd
-Save scores - 11/21/2025
+Save sample design - needs testing - 11/24/2025
+Save sample repetitions - needs testing - 11/24/2025
+Save sample solutions - needs testing - 11/24/2025
+Save scores - needs testing - 11/24/2025
 Save script - 11/21/2025
 Save similarities - 11/21/2025
 Save target - needs testing - 11/21/2025
@@ -84,18 +84,18 @@ Similarities - needs testing - 11/21/2025
 Status - 11/23/2025
 Stress contribution - needs extensive testing - 11/22/2025
 Target - needs testing - 11/21/2025
-Terse - tbd
-Tester - tbd
+Terse - needs testing ??
+Tester - needs testing - 11/24/2025
 Uncertainty - needs testing  potential printing method- 11/23/2025
 Undo - needs testing - 11/23/2025
 Varimax - needs testing - 11/23/2025
 Vectors - nees testing - 11/23/2025
 Verbose - needs testing 11/23/2025
 View configuration - needs testing - 11/22/2025
-View correlations - tbd
+View correlations - needs testing - 11/24/2025
 View custom - needs testing - 11/23/2025
 View distances - needs testing - 11/23/2025
-View evaluations - tbd
+View evaluations - needs testing - 11/24/2025
 View grouped data - needs testing - 11/23/2025
 View individuals - needs testing - 11/23/2025
 View point uncertainty - needs testing - 11/23/2025
@@ -106,5 +106,5 @@ View scores - needs testing - 11/23/2025
 View similarities - needs testing - 11/23/2025
 View spatial uncertainty - needs testing - 11/23/2025
 View script - needs extensive testing - 11/23/2025
-View Target - tbd
+View Target - needs testing - 11/24/2025
 ******View uncertainty - consider removal of command

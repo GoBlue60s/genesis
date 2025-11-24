@@ -2546,7 +2546,6 @@ class SaveCorrelationsCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Save correlations"
 		self._save_correlations_caption = "Save active correlations"
 		self._save_correlations_filter = "*.txt"
@@ -2614,7 +2613,6 @@ class SaveIndividualsCommand:
 
 	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
-		self.common = common
 		self._director.command = "Save individuals"
 		self._save_individuals_filter = "*.csv"
 		self._director.name_of_file_written_to = ""
@@ -2667,7 +2665,6 @@ class SaveIndividualsCommand:
 		)
 		return
 
-
 # ----------------------------------------------------------------------------
 
 
@@ -2679,9 +2676,8 @@ class SaveSampleDesignCommand:
 	version. The Uncertainty command now handles sample design internally.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		self._director.command = "Save sample design"
 		self._save_sample_design_caption = "Save active sample design"
 		self._save_sample_design_filter = "*.txt"
@@ -2756,7 +2752,6 @@ class SaveSampleDesignCommand:
 					f.write(f"{value:8.4f}")
 				f.write("\n")
 
-
 # ----------------------------------------------------------------------------
 
 
@@ -2768,9 +2763,8 @@ class SaveSampleRepetitionsCommand:
 	version. The Uncertainty command now handles sample repetitions internally.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		self._director.command = "Save sample repetitions"
 		self._save_sample_repetitions_caption = (
 			"Save active sample repetitions"
@@ -2846,7 +2840,6 @@ class SaveSampleRepetitionsCommand:
 					f.write(f"{value:8.4f}")
 				f.write("\n")
 
-
 # ----------------------------------------------------------------------------
 
 
@@ -2855,9 +2848,8 @@ class SaveSampleSolutionsCommand:
 	sample solutions to a file.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None:  # noqa: ARG002
 		self._director = director
-		self.common = common
 		self._director.command = "Save sample solutions"
 		self._save_sample_solutions_caption = "Save active sample solutions"
 		self._save_sample_solutions_filter = "*.txt"
@@ -2871,8 +2863,7 @@ class SaveSampleSolutionsCommand:
 		params = common.get_command_parameters("Save sample solutions")
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
-			"Save sample solutions", "passive", params
-		)
+			"Save sample solutions", "passive", params)
 		self._write_sample_solutions_file(file_name)
 		common.name_of_file_written_to = file_name
 		self._print_save_sample_solutions_confirmation(file_name)
