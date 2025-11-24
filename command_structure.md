@@ -1,5 +1,11 @@
 # Command Structure 
-- For each command there is a class, within the class execute determines what will happen.  Execute should not contain any if statements or try/- - except blocks. It should never raise an exception. A command consists of - the following in exactly this order.
+- For each command there is a class, within the class execute determines what will happen.  Execute should not contain any if statements or try/- - except blocks. It should never raise an exception.
+
+## Common 
+All references to common in execute ONLY (not helper methods) should refer to the argumnet common in execute's signature. It should not refer to either self.common or self._director.common.
+
+## Order 
+A command consists of the following in exactly this order. Any order violation should be flagged as non compliant.
 
 ## 1. Initialize variables  this sets the variables needed to do the work of the command.
 1. required
@@ -69,3 +75,8 @@ based on what had been in __init__ or what was in execute
 1. required
 2. record_command_as_successfully_completed
 
+# Compliance report
+The assessment report should have at least three sections. 
+1. A table with one line per step including the step number, an indicator of compliance such as a check mark, and X, or a warning icon, the line number or range, notes such as the reason and/or the code/statement
+2. Overall complaiance of the command
+3. Issues found and potential fixes

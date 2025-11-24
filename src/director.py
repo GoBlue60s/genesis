@@ -181,7 +181,7 @@ class Status(QMainWindow):
 
 		# The following checks the consistency of dictionaries
 		# Do they all handle all commands and are in the same order!!!!!!!!!!!!
-		# self.check_consistency_of_dictionaries_and_arrays()
+		self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
 
@@ -270,7 +270,7 @@ class Status(QMainWindow):
 
 		lowered_commands = []
 		print("\nChecking consistency of dictionaries and arrays \n")
-		element = 103
+		element = 108
 
 		print("Ordering of elements:")
 		print(" request_dict: follows the order of the menu items")
