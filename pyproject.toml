@@ -1,7 +1,7 @@
 [tool.ruff]
 
 line-length = 79  # Match your coding standards
-target-version = "py313"  # Target Python 3.13
+target-version = "py314"  # Target Python 3.14
 
 [tool.ruff.lint]
 select = ["ALL"]  # Enable all available rules for maximum coverage

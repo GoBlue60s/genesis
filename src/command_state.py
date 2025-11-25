@@ -237,100 +237,31 @@ class CommandState:
 			(from command_dict)
 		command_params: Parameters used when command was executed
 		timestamp: When the command was executed
-		state_snapshot: Dictionary containing all captured state data
+		state_snapshot: Dictionary mapping feature names to feature objects
 
 	State Snapshot Structure (for active commands):
+		state_snapshot is a dict[str, Any] containing feature objects:
 		{
-			"configuration": {
-				"point_coords": DataFrame,
-				"point_names": list[str],
-				"point_labels": list[str],
-				"dim_names": list[str],
-				"dim_labels": list[str],
-				"ndim": int,
-				"npoint": int,
-				# ... other configuration attributes
-			},
-			"correlations": {
-				"correlations": list[list[float]],  # Raw lower triangular
-				"item_names": list[str],
-				"item_labels": list[str],
-				"nitem": int,
-				"nreferent": int,
-				"ncorrelations": int,
-				# Derived structures regenerated via duplicate_correlations()
-			},
-			"similarities": {
-				"similarities": list[list[float]],  # Raw lower triangular
-				"item_names": list[str],
-				"item_labels": list[str],
-				"value_type": str,
-				"nitem": int,
-				"nsimilarities": int,
-				# Derived structures regenerated via duplicate_similarities()
-			},
-			"evaluations": {
-				"evaluations": DataFrame,
-				"item_names": list[str],
-				"item_labels": list[str],
-				# ... other evaluation attributes
-			},
-			"individuals": {
-				"ind_vars": DataFrame,
-				"var_names": list[str],
-				"n_individ": int,
-				# ... other individual attributes
-			},
-			"scores": {
-				"scores": DataFrame,
-				"dim_names": list[str],
-				"dim_labels": list[str],
-				"nscored_individ": int,
-				# ... other score attributes
-			},
-			"grouped_data": {
-				"group_coords": DataFrame,
-				"group_names": list[str],
-				"group_labels": list[str],
-				"grouping_var": str,
-				# ... other grouped data attributes
-			},
-			"target": {
-				"point_coords": DataFrame,
-				"point_names": list[str],
-				"point_labels": list[str],
-				"ndim": int,
-				"npoint": int,
-				# ... other target attributes
-			},
-			"uncertainty": {
-				"universe_size": int,
-				"nrepetitions": int,
-				"probability_of_inclusion": float,
-				"sample_design": DataFrame,
-				"sample_design_frequencies": DataFrame,
-				"sample_repetitions": DataFrame,
-				"solutions_stress_df": DataFrame,
-				"sample_solutions": DataFrame,
-				"ndim": int,
-				"npoint": int,
-				"npoints": int,
-				"nsolutions": int,
-				"dim_names": list[str],
-				"dim_labels": list[str],
-				"point_names": list[str],
-				"point_labels": list[str],
-			},
-			"settings": {
-				"hor_dim": int,
-				"vert_dim": int,
-				"presentation_layer": str,
-				# ... other settings
-			},
-			"plot_params": {
-				# Plot configuration parameters
-			}
+			"configuration": ConfigurationFeature object,
+			"correlations": CorrelationsFeature object,
+			"similarities": SimilaritiesFeature object,
+			"evaluations": EvaluationsFeature object,
+			"individuals": IndividualsFeature object,
+			"scores": ScoresFeature object,
+			"grouped_data": GroupedDataFeature object,
+			"target": TargetFeature object,
+			"uncertainty": UncertaintyAnalysis object,
+			"rivalry": Rivalry object,
+			"settings": SimpleNamespace object with settings attributes
 		}
+
+		Each feature object is a deep copy created by _copy_feature_state(),
+		which preserves all attributes except _director references.
+		Access feature attributes directly (e.g., snapshot.npoint),
+		NOT via dictionary access (e.g., snapshot["npoint"]).
+
+		The settings object is a SimpleNamespace containing application
+		settings like hor_dim, vert_dim, presentation_layer, etc.
 	"""
 
 	def __init__(
@@ -421,19 +352,16 @@ class CommandState:
 	def capture_individuals_state(self, director: Status) -> None:
 		"""Capture the current individuals feature state.
 
+		Stores a deep copy of the entire individuals_active object to
+		prevent mutations from affecting the captured state.
+
 		Args:
 			director: The director instance containing individuals_active
 		"""
-		inds = director.individuals_active
-
-		self.state_snapshot["individuals"] = {
-			"ind_vars": inds.ind_vars.copy()
-			if not inds.ind_vars.empty
-			else pd.DataFrame(),
-			"var_names": inds.var_names.copy(),
-			"n_individ": inds.n_individ,
-			"nvar": inds.nvar,
-		}
+		# Use special copy that excludes unpickleable _director reference
+		self.state_snapshot["individuals"] = _copy_feature_state(
+			director.individuals_active
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -649,8 +577,7 @@ class CommandState:
 	def restore_individuals_state(self, director: Status) -> None:
 		"""Restore individuals feature state from snapshot.
 
-		Restores individuals data from the captured dictionary snapshot
-		into the individuals_active object.
+		Restores by reassigning the entire individuals_active object.
 
 		Args:
 			director: The director instance to restore state into
@@ -658,14 +585,10 @@ class CommandState:
 		if "individuals" not in self.state_snapshot:
 			return
 
-		inds_snapshot: dict[str, Any] = self.state_snapshot["individuals"]
-		inds = director.individuals_active
-
-		# Restore all attributes
-		inds.ind_vars = inds_snapshot["ind_vars"].copy()
-		inds.var_names = inds_snapshot["var_names"].copy()
-		inds.n_individ = inds_snapshot["n_individ"]
-		inds.nvar = inds_snapshot["nvar"]
+		# Restore the entire object
+		director.individuals_active = self.state_snapshot["individuals"]
+		# Reconnect the director reference (was set to None during copy)
+		director.individuals_active._director = director
 
 	# ------------------------------------------------------------------------
 

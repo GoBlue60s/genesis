@@ -10,3 +10,4 @@ pyqtgraph
 factor-analyzer
 tabulate
 peek-python
+jinja2

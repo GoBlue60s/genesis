@@ -3857,12 +3857,12 @@ class Spaces:
 		emptiness_checks = {
 			"correlations": lambda s: s.nitem == 0 or not s.correlations,
 			"evaluations": lambda s: s.evaluations.empty,
-			"scores": lambda s: len(s.get("scores", pd.DataFrame())) == 0,
-			"configuration": lambda s: s.get("npoint", 0) == 0,
-			"similarities": lambda s: s.get("nreferent", 0) == 0,
-			"target": lambda s: s.get("npoint", 0) == 0,
-			"grouped_data": lambda s: s.get("ngroups", 0) == 0,
-			"individuals": lambda s: s.get("n_individ", 0) == 0,
+			"scores": lambda s: s.scores.empty,
+			"configuration": lambda s: s.npoint == 0,
+			"similarities": lambda s: s.nreferent == 0,
+			"target": lambda s: s.npoint == 0,
+			"grouped_data": lambda s: s.ngroups == 0,
+			"individuals": lambda s: s.n_individ == 0,
 		}
 
 		check_function = emptiness_checks.get(feature_name)
