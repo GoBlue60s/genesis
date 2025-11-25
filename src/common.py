@@ -2544,10 +2544,7 @@ class Spaces:
 		cmd_info = command_dict.get(command_name, {})
 		expected_params = cmd_info.get("script_parameters", [])
 
-		if (
-			self._director.executing_script
-			and self._director.script_parameters
-		):
+		if self._director.executing_script:
 			# Get from script parameters
 			return self._get_script_parameters(
 				command_name, cmd_info, expected_params

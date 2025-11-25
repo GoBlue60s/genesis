@@ -80,10 +80,10 @@ Settings - presentation layer - needs testing -11/21/2025
 Settings - segment - needs testing - 11/21/2025
 Settings - vector - needs testing - 11/21/2025
 Shepard - needs testing - no print - 11/22/2025
-Similarities - needs testing - 11/21/2025
+Similarities - 11/21/2025
 Status - 11/23/2025
 Stress contribution - needs extensive testing - 11/22/2025
-Target - needs testing - 11/21/2025
+Target - 11/21/2025
 Terse - needs testing ??
 Tester - needs testing - 11/24/2025
 Uncertainty - needs testing  potential printing method- 11/23/2025
