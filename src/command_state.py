@@ -279,7 +279,7 @@ class CommandState:
 		"""
 		self.command_name: str = command_name
 		self.command_type: str = command_type
-		self.command_params: dict[str, Any] = command_params or {}
+		self.command_params: dict[str, Any] = (command_params or {}).copy()
 		self.timestamp: str = ""  # Will be set when state is captured
 		self.state_snapshot: dict[str, Any] = {}
 

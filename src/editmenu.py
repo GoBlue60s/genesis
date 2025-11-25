@@ -51,7 +51,9 @@ class RedoCommand:
 		print(f"\n\tRedoing {cmd_state.command_name} command")
 
 		# Push the current state to undo stack before redoing
-		current_state = CommandState(cmd_state.command_name, "active", {})
+		current_state = CommandState(
+			cmd_state.command_name, "active", cmd_state.command_params
+		)
 		current_state.timestamp = cmd_state.timestamp
 		# Capture all state types that were in the original command
 		for feature_name in cmd_state.state_snapshot:
@@ -232,9 +234,9 @@ class UndoCommand:
 
 		# Push the current state to redo stack before undoing
 		# We need to capture the current state first
-		current_state = \
-			CommandState(cmd_state.command_name,
-				"active", {})
+		current_state = CommandState(
+			cmd_state.command_name, "active", cmd_state.command_params
+		)
 		current_state.timestamp = cmd_state.timestamp
 		# Capture all state types that were in the original command
 		for feature_name in cmd_state.state_snapshot:
