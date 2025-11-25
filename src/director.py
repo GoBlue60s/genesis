@@ -63,6 +63,7 @@ from dictionaries import (
 	respondents_menu_dict,
 	help_menu_dict,
 	tester_menu_dict,
+	command_dependencies_dict,
 )
 from exceptions import SpacesError
 from geometry import Point
@@ -277,19 +278,22 @@ class Status(QMainWindow):
 		print(" commands: alphabetical order of commands")
 		print(" widget_dict: alphabetical order of keys")
 		print(" title_generator_dict: alphabetical order of keys")
-		print(" explain_dict: alphabetical order of keys \n")
+		print(" explain_dict: alphabetical order of keys")
+		print(" command_dependencies_dict: alphabetical order of keys \n")
 
 		print("Lengths of dictionaries and arrays:")
 		print(" request_dict: ", len(self.request_dict))
 		print(" commands: ", len(self.commands))
 		print(" widget_dict: ", len(self.widget_dict))
 		print(" title_generator_dict: ", len(self.title_generator_dict))
-		print(" explain_dict: ", len(explain_dict), "\n")
+		print(" explain_dict: ", len(explain_dict))
+		print(" command_dependencies_dict: ",
+			len(command_dependencies_dict))
 
 		print("Checking that all commands are the same as request_dict keys")
 		print(" after translating self.commands entries to lowercase and"
 			" replacing spaces with _ ")
-		print(" Exceptions are: \n")
+		print(" Exceptions are:")
 		for each_command in self.commands:
 			lowered_commands.append( # noqa: PERF401
 				each_command.lower().replace(" ", "_"))
@@ -308,6 +312,8 @@ class Status(QMainWindow):
 		print(" explain_dict key:", key)
 		key = next(iter(islice(self.title_generator_dict.keys(), element, None)), None)
 		print(" title_generator_dict key:", key)
+		print(" command_dependencies_dict key:",
+			next(iter(islice(command_dependencies_dict.keys(), element, None)), None))
 
 		for element in range(len(self.commands)):
 			if next(
@@ -325,6 +331,9 @@ class Status(QMainWindow):
 				print(" explain_dict key is: ", next(
 					iter(islice(explain_dict.keys(), element, None)),
 					None))
+				print(" command_dependencies_dict key is: ", next(
+					iter(islice(command_dependencies_dict.keys(),
+						element, None)), None))
 				break
 
 		if element == len(self.commands) - 1:

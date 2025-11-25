@@ -537,15 +537,13 @@ class CommandState:
 		"""Restore similarities feature state from snapshot.
 
 		Restores by reassigning the entire similarities_active object.
-		If similarities weren't captured (didn't exist in old state),
-		explicitly clears current similarities.
+		If similarities weren't captured, leaves current state unchanged.
 
 		Args:
 			director: The director instance to restore state into
 		"""
 		if "similarities" not in self.state_snapshot:
-			# Similarities didn't exist in the old state, so clear current
-			director.similarities_active = None
+			# Similarities weren't captured, leave current state unchanged
 			return
 
 		# Restore the entire object
