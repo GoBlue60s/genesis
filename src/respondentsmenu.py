@@ -509,8 +509,28 @@ class ReferencePointsCommand:
 		self._director.configuration_active.print_the_configuration()
 		params = common.get_command_parameters("Reference points")
 		contest: list = params["contest"]
-		new_rival_a_index = point_names.index(contest[0])
-		new_rival_b_index = point_names.index(contest[1])
+
+		# Validate point names and provide helpful error messages
+		try:
+			new_rival_a_index = point_names.index(contest[0])
+		except ValueError:
+			title = "Invalid reference point"
+			detail = (
+				f"Point '{contest[0]}' not found in configuration.\n"
+				f"Valid point names: {', '.join(point_names)}"
+			)
+			raise SpacesError(title, detail) from None
+
+		try:
+			new_rival_b_index = point_names.index(contest[1])
+		except ValueError:
+			title = "Invalid reference point"
+			detail = (
+				f"Point '{contest[1]}' not found in configuration.\n"
+				f"Valid point names: {', '.join(point_names)}"
+			)
+			raise SpacesError(title, detail) from None
+
 		common.capture_and_push_undo_state(
 			"Reference points", "active", params)
 

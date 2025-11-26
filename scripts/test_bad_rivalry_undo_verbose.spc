@@ -9,14 +9,14 @@ Verbose
 Configuration file="C:/PythonProjects/genesis/data/Elections/1976/Post_1976_conf.txt"
 
 # Step 2: Set first pair of reference points (Carter vs Ford)
-Reference points contest=['Carter', 'Ford']
+Reference points contest=['Cart', 'Ford']
 
 # Step 3: Show status and configuration to see rivalry details
 Status
 View configuration
 
 # Step 4: Set second pair of reference points (Reagan vs Mondale)
-Reference points contest=['Reagan', 'Mondale']
+Reference points contest=['Reag', 'Mond']
 
 # Step 5: Show status and configuration to see changed rivalry details
 Status

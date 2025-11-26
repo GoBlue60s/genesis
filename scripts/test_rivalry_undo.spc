@@ -6,10 +6,10 @@
 Configuration file="C:/PythonProjects/genesis/data/Elections/1976/Post_1976_conf.txt"
 
 # Step 2: Set first pair of reference points (Carter vs Ford)
-Reference points contest=['Cart', 'Ford']
+Reference points contest=['Carter', 'Ford']
 
 # Step 3: Set second pair of reference points (Reagan vs Mondale) - should capture state before replacing
-Reference points contest=['Reag', 'Mond']
+Reference points contest=['Reagan', 'Mondale']
 
 # Step 4: Test undo - should restore to first reference points (Carter vs Ford)
 Undo

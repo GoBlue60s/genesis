@@ -9,8 +9,8 @@ Cluster - needs both refactoring and extensive testing - 11/23/2025
 Compare - 11/18/2025
 Configuration - 11/17/2025
 Contest - needs testing print? - 11/24/2023
-Convertible - needs testing - 11/24/2025
-Core supporters- needs testing - 11/24/2025
+Convertible - 11/24/2025
+Core supporters - 11/24/2025
 Correlations - 11/17/2025
 Create - 11/17/2025
 Deactivate- 11/17/2025
