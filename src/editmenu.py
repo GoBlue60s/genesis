@@ -24,6 +24,8 @@ class RedoCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
+		params = common.get_command_parameters("Redo")
+		common.capture_and_push_undo_state("Redo", "active", params)
 		self._redo_last_undone_command()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -43,6 +45,12 @@ class RedoCommand:
 				"Use Undo before using Redo."
 			)
 			raise SpacesError(title_msg, detail_msg)
+
+		# Skip Undo/Redo meta-commands - only redo actual commands
+		# But preserve them in undo stack so they appear in saved scripts
+		if cmd_state.command_name in ("Undo", "Redo"):
+			self._director.push_undo_state(cmd_state, preserve_redo_stack=True)
+			return self._redo_last_undone_command()
 
 		# Skip passive and script commands - only active commands have state to restore
 		# But preserve them in undo stack so they appear in saved scripts
@@ -218,7 +226,9 @@ class UndoCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
+		params = common.get_command_parameters("Undo")
 		self._undo_last_command()
+		common.capture_and_push_undo_state("Undo", "active", params)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -237,6 +247,12 @@ class UndoCommand:
 				"Execute an active command before using Undo."
 			)
 			raise SpacesError(title_msg, detail_msg)
+
+		# Skip Undo/Redo meta-commands - only undo actual commands
+		# But preserve them in redo stack so they appear in saved scripts
+		if cmd_state.command_name in ("Undo", "Redo"):
+			self._director.push_redo_state(cmd_state)
+			return self._undo_last_command()
 
 		# Skip passive and script commands - only active commands have state to restore
 		# But preserve them in redo stack so they appear in saved scripts
