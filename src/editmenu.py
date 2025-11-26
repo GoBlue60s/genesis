@@ -44,8 +44,10 @@ class RedoCommand:
 			)
 			raise SpacesError(title_msg, detail_msg)
 
-		# Skip passive commands - only active commands have state to restore
-		if cmd_state.command_type == "passive":
+		# Skip passive and script commands - only active commands have state to restore
+		# But preserve them in undo stack so they appear in saved scripts
+		if cmd_state.command_type in ("passive", "script"):
+			self._director.push_undo_state(cmd_state, preserve_redo_stack=True)
 			return self._redo_last_undone_command()
 
 		print(f"\n\tRedoing {cmd_state.command_name} command")
@@ -66,6 +68,16 @@ class RedoCommand:
 
 		# Restore all captured state
 		cmd_state.restore_all_state(self._director)
+
+		# After restoring the active command, continue restoring any passive
+		# commands that were skipped over during the original undo
+		while self._director.redo_stack:
+			next_cmd = self._director.peek_redo_state()
+			if next_cmd and next_cmd.command_type in ("passive", "script"):
+				passive_cmd = self._director.pop_redo_state()
+				self._director.push_undo_state(passive_cmd, preserve_redo_stack=True)
+			else:
+				break
 
 		# Enable Undo now that undo stack has an item
 		self._director.enable_undo()
@@ -227,7 +239,9 @@ class UndoCommand:
 			raise SpacesError(title_msg, detail_msg)
 
 		# Skip passive and script commands - only active commands have state to restore
+		# But preserve them in redo stack so they appear in saved scripts
 		if cmd_state.command_type in ("passive", "script"):
+			self._director.push_redo_state(cmd_state)
 			return self._undo_last_command()
 
 		print(f"\n\tUndoing {cmd_state.command_name} command")
