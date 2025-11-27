@@ -828,6 +828,15 @@ class FactorAnalysisCommand:
 		configuration_active.range_points = evaluations_active.range_items
 		configuration_active.inter_point_distances()
 
+		# Set default horizontal and vertical dimensions for plotting
+		self.common.hor_dim = 0
+		self.common.vert_dim = 1
+		# Set axis names from first two dimensions
+		if len(dim_names) >= 1:
+			configuration_active.hor_axis_name = dim_names[0]
+		if len(dim_names) >= 2:
+			configuration_active.vert_axis_name = dim_names[1]
+
 	# ------------------------------------------------------------------------
 
 	def _setup_scores_attributes(
@@ -1144,6 +1153,13 @@ class FactorAnalysisMachineLearningCommand:
 			columns={"index": "Resp no"}, inplace=True
 		)
 		configuration_active.covar = covar
+
+		# Set default horizontal and vertical dimensions for plotting
+		common.hor_dim = 0
+		common.vert_dim = 1
+		# Set axis names from first two dimensions
+		configuration_active.hor_axis_name = self._factor_1_name
+		configuration_active.vert_axis_name = self._factor_2_name
 
 		if configuration_active.ndim > 1:
 			matplotlib_plotter.\

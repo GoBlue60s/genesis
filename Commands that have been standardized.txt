@@ -8,19 +8,19 @@ Center - 11/18/2025
 Cluster - needs both refactoring and extensive testing - 11/23/2025
 Compare - 11/18/2025
 Configuration - 11/17/2025
-Contest - needs testing print? - 11/24/2023
+Contest - print? - 11/24/2023
 Convertible - 11/24/2025
 Core supporters - 11/24/2025
 Correlations - 11/17/2025
 Create - 11/17/2025
 Deactivate- 11/17/2025
-Directions - needs testing - 11/23/2025
+Directions - 11/23/2025
 Distances - 11/22/2025
 Evaluations - 11/17/2025
 Exit - 11/17/2025
-Factor analysis - needs testing - 11/23/2025
+Factor analysis - 11/23/2025
 Factor analysis machine learning -needs testing - 11/23/2025
-First dim - needs testing - 11/24/2025
+First dim 11/24/2025
 Grouped data - 11/17/2025
 Help - needs testing - 11/23/2025
 History - 11/22/2025
@@ -52,7 +52,7 @@ Ranks distances 11/22/2025
 Ranks of differences 11/22/2025
 Ranks similarities 11/22/2025
 Redo - needs testing - 11/23/2025
-Reference Points - needs testing - 11/24/2025
+Reference Points - 11/24/2025
 Rescale - needs testing - 11/23/2025
 Rotate - 11/17/2025
 Sample designer - needs testing - 11/24/2025

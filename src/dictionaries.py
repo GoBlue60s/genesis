@@ -986,7 +986,8 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 	"View script": {
-		"type": "script"  # Meta-command for script operations
+		"type": "script",  # Meta-command for script operations
+		"state_capture": []
 	},
 	"View similarities": {
 		"type": "passive",
