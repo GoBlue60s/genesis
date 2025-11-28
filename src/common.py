@@ -13,6 +13,7 @@ import peek
 
 
 from pyqtgraph.Qt import QtCore
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
 	QDialog,
 	QInputDialog,
@@ -4150,3 +4151,45 @@ class Spaces:
 			) from e
 
 	# ------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
+
+	def print_to_printer(self, text: str) -> None:
+		"""Send text to a physical printer."""
+		from PySide6.QtPrintSupport import QPrinter, QPrintDialog
+		from PySide6.QtGui import QTextDocument
+
+		printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+		dialog = QPrintDialog(printer)
+
+		if dialog.exec() == QDialog.DialogCode.Accepted:
+			document = QTextDocument()
+			# Use a monospaced font for alignment
+			font = document.defaultFont()
+			font.setFamily("Courier New")
+			font.setStyleHint(QFont.StyleHint.Monospace)
+			document.setDefaultFont(font)
+			document.setPlainText(text)
+			document.print_(printer)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def capture_and_print(self, func, *args, **kwargs) -> None:
+		"""Capture stdout from a function and send it to a printer."""
+		import sys
+		import io
+
+		# Capture stdout
+		old_stdout = sys.stdout
+		captured_output = io.StringIO()
+		sys.stdout = captured_output
+
+		try:
+			func(*args, **kwargs)
+		finally:
+			sys.stdout = old_stdout
+
+		text = captured_output.getvalue()
+		if text:
+			self.print_to_printer(text)
+		return

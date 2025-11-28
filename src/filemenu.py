@@ -2159,7 +2159,10 @@ class PrintConfigurationCommand:
 		params = common.get_command_parameters("Print configuration")
 		common.capture_and_push_undo_state(
 			"Print configuration", "passive", params)
-		self._director.print_the_configuration()
+		
+		# Use capture_and_print to redirect output to printer
+		common.capture_and_print(self._director.print_the_configuration)
+		
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2183,10 +2186,10 @@ class PrintCorrelationsCommand:
 		params = common.get_command_parameters("Print correlations")
 		common.capture_and_push_undo_state(
 			"Print correlations", "passive", params)
-		self._director.correlations_active.print_the_correlations(
-			width=8,
-			decimals=3,
-			common=common,
+		common.capture_and_print(
+			lambda: self._director.correlations_active.print_the_correlations(
+				width=8, decimals=3, common=common
+			)
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2211,7 +2214,8 @@ class PrintEvaluationsCommand:
 		params = common.get_command_parameters("Print evaluations")
 		common.capture_and_push_undo_state(
 			"Print evaluations", "passive", params)
-		self._director.evaluations_active.print_evaluations()
+		common.capture_and_print(
+			self._director.evaluations_active.print_the_evaluations)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2235,7 +2239,8 @@ class PrintGroupedDataCommand:
 		params = common.get_command_parameters("Print grouped data")
 		common.capture_and_push_undo_state(
 			"Print grouped data", "passive", params)
-		self._director.grouped_data_active.print_grouped_data()
+		common.capture_and_print(
+			self._director.grouped_data_active.print_grouped_data)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2259,7 +2264,8 @@ class PrintIndividualsCommand:
 		params = common.get_command_parameters("Print individuals")
 		common.capture_and_push_undo_state(
 			"Print individuals", "passive", params)
-		self._director.individuals_active.print_individuals()
+		common.capture_and_print(
+			self._director.individuals_active.print_individuals)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2283,7 +2289,8 @@ class PrintSampleDesignCommand:
 		params = common.get_command_parameters("Print sample design")
 		common.capture_and_push_undo_state(
 			"Print sample design", "passive", params)
-		self._director.uncertainty_active.print_sample_design()
+		common.capture_and_print(
+			self._director.uncertainty_active.print_sample_design)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2307,7 +2314,8 @@ class PrintSampleRepetitionsCommand:
 		params = common.get_command_parameters("Print sample repetitions")
 		common.capture_and_push_undo_state(
 			"Print sample repetitions", "passive", params)
-		self._director.uncertainty_active.print_sample_repetitions()
+		common.capture_and_print(
+			self._director.uncertainty_active.print_sample_repetitions)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2356,7 +2364,8 @@ class PrintScoresCommand:
 		params = common.get_command_parameters("Print scores")
 		common.capture_and_push_undo_state(
 			"Print scores", "passive", params)
-		self._director.scores_active.print_scores()
+		common.capture_and_print(
+			self._director.scores_active.print_scores)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -2383,8 +2392,10 @@ class PrintSimilaritiesCommand:
 		common.capture_and_push_undo_state(
 			"Print similarities", "passive", params
 		)
-		self._director.similarities_active.print_the_similarities(
-			self._width, self._decimals, common
+		common.capture_and_print(
+			lambda: self._director.similarities_active.print_the_similarities(
+				self._width, self._decimals, common
+			)
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
@@ -2408,7 +2419,8 @@ class PrintTargetCommand:
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Print target")
 		common.capture_and_push_undo_state("Print target", "passive", params)
-		self._director.target_active.print_target()
+		common.capture_and_print(
+			self._director.target_active.print_target)
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()

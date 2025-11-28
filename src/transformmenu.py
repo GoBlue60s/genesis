@@ -315,10 +315,14 @@ class MoveCommand:
 		rivalry = self._director.rivalry
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Move")
-		dimension_name: str = params["dimension"]
+		dimension_name: str | int = params["dimension"]
 		decimal_value: float = params["distance"]
 		dim_names = self._director.configuration_active.dim_names
-		selected_option = dim_names.index(dimension_name)
+		
+		if isinstance(dimension_name, int):
+			selected_option = dimension_name
+		else:
+			selected_option = dim_names.index(dimension_name)
 		common.capture_and_push_undo_state("Move", "active", params)
 		# Now perform the move
 		self._move(selected_option, decimal_value)

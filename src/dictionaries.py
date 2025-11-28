@@ -284,7 +284,24 @@ command_dict = MappingProxyType({
 	"Move": {
 		"type": "active",
 		"state_capture": ["configuration", "scores", "rivalry"],
-		"script_parameters": ["dimension", "distance"]
+		"script_parameters": ["dimension", "distance"],
+		"interactive_getters": {
+			"dimension": {
+				"getter_type": "focal_item_dialog",
+				"title": "Select dimension",
+				"label": "Select dimension to move:",
+				"items_source": "configuration_active.dim_names"
+			},
+			"distance": {
+				"getter_type": "set_value_dialog",
+				"title": "Enter move distance",
+				"label": "Value to add to all points on this dimension:",
+				"min_val": -9999.9,
+				"max_val": 9999.9,
+				"is_integer": False,
+				"default": 0.0
+			}
+		}
 	},
 	"New grouped data": {
 		"type": "interactive_only",
@@ -459,12 +476,17 @@ command_dict = MappingProxyType({
 	"Rescale": {
 		"type": "active",
 		"state_capture": ["configuration", "scores", "rivalry"],
-		"script_parameters": ["factors"],
+		"script_parameters": ["dimensions", "scale_factor"],
 		"interactive_getters": {
-			"factors": {
-				"getter_type": "modify_values_dialog",
-				"title": "Rescale configuration",
+			"dimensions": {
+				"getter_type": "modify_items_dialog",
+				"title": "Select dimensions to rescale",
 				"items_source": "configuration_active.dim_names",
+				"default_values": None
+			},
+			"scale_factor": {
+				"getter_type": "set_value_dialog",
+				"title": "Rescale configuration",
 				"label": "Amount by which to multiple every point \non selected dimensions",
 				"min_val": -9999.9,
 				"max_val": 9999.9,
