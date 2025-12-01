@@ -3891,7 +3891,7 @@ title_generator_dict = MappingProxyType({
 	"View distances": lambda d: "Inter-point distances",
 	"View evaluations": lambda d: "Evaluations",
 	"View grouped data": lambda d: (
-		f"Configuration is based on {d.common.grouping_var} and has "
+		f"Configuration is based on {d.grouped_data_active.grouping_var} and has "
 		f"{d.grouped_data_active.ndim} dimensions and "
 		f"{d.grouped_data_active.ngroups} points"
 	),

@@ -53,7 +53,7 @@ Print target - 11/18/2025
 Ranks distances 11/22/2025
 Ranks of differences 11/22/2025
 Ranks similarities 11/22/2025
-Redo - needs testing - 11/23/2025
+Redo - 11/23/2025
 Reference Points - 11/24/2025
 Rescale - 11/23/2025
 Rotate - 11/17/2025
@@ -66,19 +66,19 @@ Save individuals - 11/21/2025
 Save sample design - needs testing - 11/24/2025
 Save sample repetitions - needs testing - 11/24/2025
 Save sample solutions - needs testing - 11/24/2025
-Save scores - needs testing - 11/24/2025 <<<<<<<<<<<<<<<<<<<<<<<<<<<
+Save scores - 11/24/2025 
 Save script - 11/21/2025
 Save similarities - 11/21/2025
-Save target - needs testing - 11/21/2025
-Score individuals - needs testing - 11/24/2025
-Scree - consider deprecating - needs testing - 11/22/2025
-Second dimension - needs testing - 11/24/2025
-Segments - nees testing - 11/24/2025
-Settings - display - needs testing - 11/21/2025
-Settings - layout - needs testing - 11/21/2025
-Settings - plane - needs testing - 11/21/2025
-Settings - plot - needs testing - 11/21/2025
-Settings - presentation layer - needs testing -11/21/2025
+Save target - 11/21/2025 
+Score individuals - 11/24/2025
+Scree - consider deprecating - 11/22/2025
+Second dimension - 11/24/2025 
+Segments - 11/24/2025
+Settings - display - 11/21/2025
+Settings - layout - 11/21/2025
+Settings - plane - 11/21/2025
+Settings - plot - 11/21/2025
+Settings - presentation layer -11/21/2025
 Settings - segment - needs testing - 11/21/2025
 Settings - vector - needs testing - 11/21/2025
 Shepard - needs testing - no print - 11/22/2025
@@ -88,24 +88,24 @@ Stress contribution - needs extensive testing - 11/22/2025
 Target - 11/21/2025
 Terse - needs testing ??
 Tester - needs testing - 11/24/2025
-Uncertainty - needs testing  potential printing method- 11/23/2025
-Undo - needs testing - 11/23/2025
+Uncertainty - potential printing method- 11/23/2025
+Undo - 11/23/2025
 Varimax - needs testing - 11/23/2025
-Vectors - nees testing - 11/23/2025
+Vectors - 11/23/2025
 Verbose - needs testing 11/23/2025
 View configuration - 11/22/2025
-View correlations - needs testing - 11/24/2025
+View correlations - 11/24/2025
 View custom - needs testing - 11/23/2025
 View distances - 11/23/2025
-View evaluations - needs testing - 11/24/2025
-View grouped data - needs testing - 11/23/2025
-View individuals - needs testing - 11/23/2025
+View evaluations - 11/24/2025
+View grouped data - 11/23/2025
+View individuals - 11/23/2025
 View point uncertainty - needs testing - 11/23/2025
-View sample design - needs testting - 11/23/2025
+View sample design - needs testing - 11/23/2025
 View sample repetitions - needs testing - 11/23/2025
 View sample solutions - needs testing - 11/23/2025
-View scores - needs testing - 11/23/2025
-View similarities - needs testing - 11/23/2025
+View scores - 11/23/2025
+View similarities - 11/23/2025
 View spatial uncertainty - needs testing - 11/23/2025
 View script - 11/23/2025
 View Target - 11/24/2025

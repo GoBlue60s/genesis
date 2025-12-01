@@ -622,6 +622,10 @@ class StatusCommand:
 			return self._director.configuration_active.hor_axis_name
 		if self._director.common.have_grouped_data():
 			return self._director.grouped_data_active.hor_axis_name
+		if self._director.common.have_scores():
+			return self._director.scores_active.hor_axis_name
+		if self._director.common.have_target_configuration():
+			return self._director.target_active.hor_axis_name
 		return ""
 
 	# ------------------------------------------------------------------------
@@ -632,6 +636,10 @@ class StatusCommand:
 			return self._director.configuration_active.vert_axis_name
 		if self._director.common.have_grouped_data():
 			return self._director.grouped_data_active.vert_axis_name
+		if self._director.common.have_scores():
+			return self._director.scores_active.vert_axis_name
+		if self._director.common.have_target_configuration():
+			return self._director.target_active.vert_axis_name
 		return ""
 
 	# ------------------------------------------------------------------------

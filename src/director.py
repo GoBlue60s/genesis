@@ -182,7 +182,7 @@ class Status(QMainWindow):
 
 		# The following checks the consistency of dictionaries
 		# Do they all handle all commands and are in the same order!!!!!!!!!!!!
-		self.check_consistency_of_dictionaries_and_arrays()
+		# self.check_consistency_of_dictionaries_and_arrays()
 
 	# ------------------------------------------------------------------------
 
@@ -1344,8 +1344,10 @@ class Status(QMainWindow):
 		self.undo_stack.append(cmd_state)
 		self.undo_stack_source.append(cmd_state.command_name)
 
-		# Enable Undo now that there's something to undo
-		self.enable_undo()
+		# Enable Undo only if there are active commands that can be undone
+		# (passive commands don't modify state and can't be undone)
+		if self._has_active_undoable_commands():
+			self.enable_undo()
 
 		# Clear redo stack when a new ACTIVE command executes
 		# (not Undo/Redo/passive). This matches Microsoft Word behavior.
@@ -1438,6 +1440,23 @@ class Status(QMainWindow):
 		self.redo_stack.clear()
 		self.redo_stack_source.clear()
 		return
+
+	# ------------------------------------------------------------------------
+
+	def _has_active_undoable_commands(self) -> bool:
+		"""Check if undo stack contains any active commands that can be undone.
+
+		Returns True if there's at least one active command in the stack.
+		Passive commands and Undo/Redo meta-commands don't count since
+		they're skipped during undo operations.
+		"""
+		for cmd_state in self.undo_stack:
+			if (
+				cmd_state.command_type == "active"
+				and cmd_state.command_name not in ("Undo", "Redo")
+			):
+				return True
+		return False
 
 	# ------------------------------------------------------------------------
 

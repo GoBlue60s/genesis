@@ -25,8 +25,9 @@ from exceptions import SpacesError
 from rivalry import Rivalry
 from constants import(
 	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
-	MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
-	MINIMUM_NUMBER_OF_ITEMS_IN_EVALUATIONS_FILE
+	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_UNCERTAINTY,
+	MINIMUM_NUMBER_OF_ITEMS_IN_EVALUATIONS_FILE,
+	MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
 )
 
 if __name__ == "__main__":  # pragma: no cover
@@ -270,7 +271,7 @@ class CreateCommand:
 			max_value=100,
 		)
 		if not npoint_dialog.exec():
-			common.event_driven_automatic_restoration()
+			self.common.event_driven_automatic_restoration()
 			raise SpacesError(self._cancel_title, self._cancel_message)
 		return npoint_dialog.get_value()
 
@@ -286,7 +287,7 @@ class CreateCommand:
 			max_value=10,
 		)
 		if not ndim_dialog.exec():
-			common.event_driven_automatic_restoration()
+			self.common.event_driven_automatic_restoration()
 			raise SpacesError(self._cancel_title, self._cancel_message)
 		return ndim_dialog.get_value()
 
@@ -305,7 +306,7 @@ class CreateCommand:
 				f"{self._labels_message}point {each_point + 1}:",
 			)
 			if not label_dialog.exec():
-				common.event_driven_automatic_restoration()
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			point_labels.append(label_dialog.get_value())
 
@@ -314,7 +315,7 @@ class CreateCommand:
 				f"{self._names_message}point {each_point + 1}:",
 			)
 			if not name_dialog.exec():
-				common.event_driven_automatic_restoration()
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			point_names.append(name_dialog.get_value())
 
@@ -335,7 +336,7 @@ class CreateCommand:
 				f"{self._labels_message}dimension {each_dim + 1}:",
 			)
 			if not label_dialog.exec():
-				common.event_driven_automatic_restoration()
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			dim_labels.append(label_dialog.get_value())
 
@@ -344,7 +345,7 @@ class CreateCommand:
 				f"{self._names_message}dimension {each_dim + 1}:",
 			)
 			if not name_dialog.exec():
-				common.event_driven_automatic_restoration()
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			dim_names.append(name_dialog.get_value())
 
@@ -365,7 +366,7 @@ class CreateCommand:
 				ndim,
 			)
 			if not coords_dialog.exec():
-				common.event_driven_automatic_restoration()
+				self.common.event_driven_automatic_restoration()
 				raise SpacesError(self._cancel_title, self._cancel_message)
 			coords = coords_dialog.get_values()
 			coords_data.append(coords)
@@ -415,8 +416,8 @@ class DeactivateCommand:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState("Deactivate", "active", params)
-		cmd_state.timestamp = datetime.now().strftime(
-			"%Y-%m-%d %H:%M:%S") # noqa: DTZ005
+		cmd_state.timestamp = datetime.now().strftime( # noqa: DTZ005
+			"%Y-%m-%d %H:%M:%S")
 
 		# Map item names to their capture methods
 		item_to_capture = {
@@ -756,7 +757,9 @@ class EvaluationsCommand:
 
 			if len(item_names) < MINIMUM_NUMBER_OF_ITEMS_IN_EVALUATIONS_FILE:
 				self.common.event_driven_automatic_restoration()
-				raise ValueError("Evaluations file must have at least 3 items")
+				error_title = "Evaluations file problem"
+				error_message = "Evaluations file must have at least 3 items"
+				raise SpacesError(error_title, error_message) # noqa: TRY301
 
 			# Create a new EvaluationsFeature object
 			# (matching Correlations pattern)
@@ -1654,7 +1657,8 @@ class OpenSampleSolutionsCommand:
 
 				# Line 2: ndim, npoint, nsolutions (4-character integers)
 				dimensions_line = f.readline().strip()
-				if len(dimensions_line) < 12:
+				if len(dimensions_line) < \
+					MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_UNCERTAINTY:
 					raise ValueError("Invalid dimensions line format")
 
 				ndim = int(dimensions_line[0:4])
@@ -1667,7 +1671,11 @@ class OpenSampleSolutionsCommand:
 				for _ in range(ndim):
 					line = f.readline().strip()
 					if ";" not in line:
-						raise ValueError("Invalid dimension format")
+						no_semicolon_title = "Sample solutions format issue"
+						no_semicolon_message = "Invalid dimension format"
+						raise SpacesError(
+							no_semicolon_title,
+							no_semicolon_message)
 					label, name = line.split(";", 1)
 					dim_labels.append(label)
 					dim_names.append(name)
@@ -1789,6 +1797,12 @@ class OpenScoresCommand:
 				elif len(dim_names) == 1:
 					self._director.scores_active.hor_axis_name = dim_names[0]
 					self._director.scores_active.vert_axis_name = "Dimension 2"
+					self._director.scores_active._hor_dim = dim_names.index(
+						self._director.scores_active.hor_axis_name
+					)
+					self._director.scores_active._vert_dim = dim_names.index(
+						self._director.scores_active.vert_axis_name
+					)
 
 				# Set ndim based on number of score columns
 				self._director.scores_active.ndim = len(dim_names)
@@ -1800,6 +1814,9 @@ class OpenScoresCommand:
 					self._director.scores_active.score_1 = (
 						scores[hor_axis_name])
 					self._director.scores_active.score_1_name = dim_names[0]
+					self._director.scores_active._hor_dim = dim_names.index(
+						self._director.scores_active.hor_axis_name
+					)
 
 				if len(dim_names) >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 					vert_axis_name = (
@@ -1807,6 +1824,9 @@ class OpenScoresCommand:
 					self._director.scores_active.score_2 = (
 						scores[vert_axis_name])
 					self._director.scores_active.score_2_name = dim_names[1]
+					self._director.scores_active._vert_dim = dim_names.index(
+						self._director.scores_active.vert_axis_name
+					)
 
 		except (ValueError, SpacesError) as e:
 			# read_csv_with_type_check already handles restoration
@@ -1959,7 +1979,7 @@ class OpenScriptCommand:
 		try:
 			# Parse and execute commands
 			for line_num, line in enumerate(script_lines, 1):
-				line = line.strip()
+				line = line.strip() # noqa: PLW2901
 				# Skip empty lines and comments
 				if not line or line.startswith("#"):
 					continue
@@ -2556,7 +2576,7 @@ class SaveCorrelationsCommand:
 	correlations to a file.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Save correlations"
 		self._save_correlations_caption = "Save active correlations"
@@ -2623,7 +2643,7 @@ class SaveIndividualsCommand:
 	individuals to a file.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Save individuals"
 		self._save_individuals_filter = "*.csv"
@@ -3077,7 +3097,7 @@ class SaveScriptCommand:
 			return False
 		if cmd_state.command_type == "script":
 			return False
-		if cmd_state.command_type == "interactive_only":
+		if cmd_state.command_type == "interactive_only": # noqa: SIM103
 			return False
 		return True
 
@@ -3693,8 +3713,8 @@ class SettingsSegmentCommand:
 		widget.setReadOnly(True)
 		widget.setMinimumHeight(120)
 		settings_text = (
-			f"Battleground size: {self.common.battleground_size}\n"
-			f"Core tolerance: {self.common.core_tolerance}"
+			f"Battleground size: {self.common.battleground_size * 100:.0f}%\n"
+			f"Core tolerance: {self.common.core_tolerance * 100:.0f}%"
 		)
 		widget.setPlainText(settings_text)
 		return widget
@@ -3756,7 +3776,7 @@ class SettingsVectorSizeCommand:
 class SimilaritiesCommand:
 	"""The Similarities command is used to read a similarities file."""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Similarities"
 		self._similarities_error_bad_input_title = "Similarities problem"
@@ -3840,7 +3860,7 @@ class SimilaritiesCommand:
 class TargetCommand:
 	"""The Target command is used to open a target file."""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Target"
 		self._target_error_bad_input_title = "Target problem"

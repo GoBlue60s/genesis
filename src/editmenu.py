@@ -87,8 +87,9 @@ class RedoCommand:
 			else:
 				break
 
-		# Enable Undo now that undo stack has an item
-		self._director.enable_undo()
+		# Enable Undo if there are active commands in the undo stack
+		if self._director._has_active_undoable_commands():
+			self._director.enable_undo()
 
 		# Disable Redo if the redo stack is now empty
 		if not self._director.redo_stack:
@@ -280,8 +281,8 @@ class UndoCommand:
 		# Enable Redo now that redo stack has an item
 		self._director.enable_redo()
 
-		# Disable Undo if the undo stack is now empty
-		if not self._director.undo_stack:
+		# Disable Undo if no active commands remain in the undo stack
+		if not self._director._has_active_undoable_commands():
 			self._director.disable_undo()
 
 		# Restore all captured state
@@ -611,9 +612,11 @@ class UndoCommand:
 	) -> None:
 		"""Add segment sizing details."""
 		details.append(
-			["battleground_size", str(common.battleground_size * 100)]
+			["battleground_size", f"{common.battleground_size * 100:.0f}%"]
 		)
-		details.append(["core_tolerance", str(common.core_tolerance * 100)])
+		details.append(
+			["core_tolerance", f"{common.core_tolerance * 100:.0f}%"]
+		)
 
 	# ------------------------------------------------------------------------
 
