@@ -36,7 +36,7 @@ Open Sample design - potential deprecation - 11/24/2025
 Open sample repetitions - potential deprecation - 11/24/2025
 Open sample solutions - needs testing - 11/24/2025
 Open scores - 11/18/2025
-Open script - 11/18/2025
+Open script - test script after script -11/18/2025
 Paired - 11/22/2025
 Principal components - 11/23/2025
 Print configuration - 11/18/2025
@@ -86,13 +86,13 @@ Similarities - 11/21/2025
 Status - 11/23/2025
 Stress contribution - needs extensive testing - 11/22/2025
 Target - 11/21/2025
-Terse - needs testing ??
+Terse -  ??
 Tester - needs testing - 11/24/2025
 Uncertainty - potential printing method- 11/23/2025
 Undo - 11/23/2025
-Varimax - needs testing - 11/23/2025
+Varimax - 11/23/2025
 Vectors - 11/23/2025
-Verbose - needs testing 11/23/2025
+Verbose - 11/23/2025
 View configuration - 11/22/2025
 View correlations - 11/24/2025
 View custom - needs testing - 11/23/2025
@@ -110,3 +110,16 @@ View spatial uncertainty - needs testing - 11/23/2025
 View script - 11/23/2025
 View Target - 11/24/2025
 ******View uncertainty - consider removal of command
+
+
+Cluster - needs both refactoring and extensive testing - 11/23/2025
+Open script - test script after script -11/18/2025
+Scree - consider deprecating - 11/22/2025
+Settings - segment - needs testing - 11/21/2025
+Settings - vector - needs testing - 11/21/2025
+Shepard - needs testing - no print - 11/22/2025
+Stress contribution - needs extensive testing - 11/22/2025
+Tester - needs testing - 11/24/2025
+View custom - needs testing - 11/23/2025
+
+

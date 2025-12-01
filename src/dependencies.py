@@ -110,11 +110,11 @@ class DependencyChecking:
 			),
 			"Grouped data": (
 				"Grouped data",
-				None,
+				"Points",
 				"Dimensions",
-				None,
-				None,
-				None,
+				grouped_data_active.ngroups,
+				grouped_data_active.group_names,
+				grouped_data_active.group_labels,
 				grouped_data_active.ndim,
 				grouped_data_active.dim_names,
 				grouped_data_active.dim_labels,
@@ -213,15 +213,15 @@ class DependencyChecking:
 			"Grouped data": (
 				"Grouped data",
 				have_grouped_data,
-				None,
+				"Points",
 				"Dimensions",
-				None,
-				None,
-				None,
+				grouped_data_active.ngroups,
+				grouped_data_active.group_names,
+				grouped_data_active.group_labels,
 				grouped_data_active.ndim,
 				grouped_data_active.dim_names,
 				grouped_data_active.dim_labels,
-				"No information in common",
+				"Must match",
 			),
 			"Similarities": (
 				"Similarities",
@@ -308,20 +308,34 @@ class DependencyChecking:
 			if self._skip_when_new_and_existing_are_same_type_of_feature(
 				new, each_feature
 			) and self._check_whether_feature_currently_exists(each_feature):
-				existing_abandoned = \
+				new_abandoned = \
 				self._when_no_information_in_common_get_user_to_resolve_conflict(
 					new, each_feature
 				)
-				if not existing_abandoned:
-					existing_abandoned = (
-						self._check_if_points_match_and_resolve_conflict(
-							new, each_feature
-						)
-					)
-				if not existing_abandoned:
-					self._check_if_dimensions_match_and_resolve_conflict(
+				if new_abandoned:
+					break  # Stop checking - new feature was abandoned
+
+				# If existing was abandoned, skip to next feature
+				if not self._check_whether_feature_currently_exists(each_feature):
+					continue
+
+				new_abandoned = (
+					self._check_if_points_match_and_resolve_conflict(
 						new, each_feature
 					)
+				)
+				if new_abandoned:
+					break  # Stop checking - new feature was abandoned
+
+				# If existing was abandoned, skip to next feature
+				if not self._check_whether_feature_currently_exists(each_feature):
+					continue
+
+				new_abandoned = self._check_if_dimensions_match_and_resolve_conflict(
+					new, each_feature
+				)
+				if new_abandoned:
+					break  # Stop checking - new feature was abandoned
 		return
 
 	# ------------------------------------------------------------------------
@@ -356,10 +370,16 @@ class DependencyChecking:
 	def _check_if_dimensions_match_and_resolve_conflict(
 		self, new: str, each_feature: str
 	) -> bool:
+		"""Check if dimensions match and resolve conflict if not.
+
+		Returns:
+			True if new feature was abandoned (stop checking),
+			False otherwise (continue checking)
+		"""
 		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
 		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
-		existing_abandoned: bool = False
+		new_abandoned: bool = False
 		if (
 			new_feature_dict[new][2] == "Dimensions"
 			and existing_feature_dict[each_feature][3] == "Dimensions"
@@ -374,23 +394,28 @@ class DependencyChecking:
 			)
 			if not dimensions_match:
 				nothing_in_common: bool = False
-				existing_abandoned = self.resolve_conflict_w_existing_data(
+				new_abandoned = self.resolve_conflict_w_existing_data(
 					existing_feature_dict[each_feature][0],
 					new_feature_dict[new][0],
 					no_common_information=nothing_in_common,
 				)
-		return existing_abandoned
+		return new_abandoned
 
 	# ------------------------------------------------------------------------
 
 	def _check_if_points_match_and_resolve_conflict(
 		self, new: str, each_feature: str
 	) -> bool:
+		"""Check if points match and resolve conflict if not.
+
+		Returns:
+			True if new feature was abandoned (stop checking),
+			False otherwise (continue checking)
+		"""
 		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
 		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
-		existing_abandoned: bool = False
-		# points_match = False
+		new_abandoned: bool = False
 		if (
 			new_feature_dict[new][1] == "Points"
 			and existing_feature_dict[each_feature][2] == "Points"
@@ -405,12 +430,12 @@ class DependencyChecking:
 			)
 			if not points_match:
 				nothing_in_common = False
-				existing_abandoned = self.resolve_conflict_w_existing_data(
+				new_abandoned = self.resolve_conflict_w_existing_data(
 					existing_feature_dict[each_feature][0],
 					new_feature_dict[new][0],
 					no_common_information=nothing_in_common,
 				)
-		return existing_abandoned
+		return new_abandoned
 
 	# ------------------------------------------------------------------------
 
@@ -579,7 +604,12 @@ class DependencyChecking:
 	def resolve_conflict_w_existing_data(
 		self, existing: str, new: str, *, no_common_information: bool
 	) -> bool:
+		"""Resolve conflict between existing and new features.
 
+		Returns:
+			True if NEW feature was abandoned (stop checking),
+			False if existing was abandoned or conflict ignored (continue checking)
+		"""
 		existing_abandoned: bool = False
 		abandon_dict = {
 			"Configuration": self._director.abandon_configuration,
@@ -631,10 +661,12 @@ class DependencyChecking:
 
 			match selected_option:
 				case 0:
+					# Abandon existing - continue checking other features
 					abandon_dict[existing]()
 					existing_abandoned: bool = True
+					return False  # Continue checking
 				case 1:
-					# Ask user to restore or clear the new feature
+					# Abandon new - stop checking
 					feature_name = feature_name_map.get(
 						new, new.lower().replace(" ", "_")
 					)
@@ -645,9 +677,8 @@ class DependencyChecking:
 					)
 					# Raise appropriate error based on what happened
 					if restored:
-						# Feature was restored - don't say "abandoned"
-						# Just stop command execution silently
-						return existing_abandoned
+						# Feature was restored - stop checking
+						return True  # Stop checking
 					else:
 						# Feature was cleared - inform user it's abandoned
 						abandon_needed_error_title: str = (
@@ -660,7 +691,8 @@ class DependencyChecking:
 							abandon_needed_error_message,
 						)
 				case 2:
-					existing_abandoned: bool = False
+					# Ignore - continue checking
+					return False  # Continue checking
 				case _:
 					# Unexpected case - ask user to restore or clear new
 					feature_name = feature_name_map.get(
@@ -673,9 +705,8 @@ class DependencyChecking:
 					)
 					# Raise appropriate error based on what happened
 					if restored:
-						# Feature was restored - don't say "abandoned"
-						# Just stop command execution silently
-						return existing_abandoned
+						# Feature was restored - stop checking
+						return True  # Stop checking
 					else:
 						# Feature was cleared - inform user
 						inconsistency_error_title: str = \
@@ -730,13 +761,20 @@ class DependencyChecking:
 	def _when_no_information_in_common_get_user_to_resolve_conflict(
 		self, new: str, each_feature: str
 	) -> bool:
+		"""Check if features have nothing in common and resolve conflict.
+
+		Returns:
+			True if new feature was abandoned (stop checking),
+			False otherwise (continue checking)
+		"""
 		existing_feature_dict: dict[str, tuple] = self.existing_feature_dict
 		new_feature_dict: dict[str, tuple] = self.new_feature_dict
 
-		existing_abandoned: bool = False
+		new_abandoned: bool = False
 		feature_group_1: list[str] = \
 			["Similarities", "Correlations", "Evaluations"]
 		feature_group_2: list[str] = ["Grouped data", "Scores"]
+
 		if existing_feature_dict[each_feature][
 			10
 		] == "No information in common" and (
@@ -750,10 +788,10 @@ class DependencyChecking:
 			)
 		):
 			nothing_in_common: bool = True
-			existing_abandoned: bool = self.resolve_conflict_w_existing_data(
+			new_abandoned: bool = self.resolve_conflict_w_existing_data(
 				existing_feature_dict[each_feature][0],
 				new_feature_dict[new][0],
-				nothing_in_common,
+				no_common_information=nothing_in_common,
 			)
-		return existing_abandoned
+		return new_abandoned
 

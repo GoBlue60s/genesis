@@ -58,7 +58,8 @@ class RedoCommand:
 			self._director.push_undo_state(cmd_state, preserve_redo_stack=True)
 			return self._redo_last_undone_command()
 
-		print(f"\n\tRedoing {cmd_state.command_name} command")
+		# Print what features are being restored
+		self.common.print_restoration_summary(cmd_state, is_undo=False)
 
 		# Push the current state to undo stack before redoing
 		current_state = CommandState(
@@ -110,10 +111,13 @@ class RedoCommand:
 		# Store the command state for _display() to use
 		self._restored_cmd_state = cmd_state
 
-		# If configuration was restored, recreate the plot
-		if self._director.common.have_active_configuration():
-			self._director.configuration_active.print_active_function()
-			self._director.common.create_plot_for_tabs("configuration")
+		# Print only what was actually restored
+		# Use UndoCommand's method to avoid code duplication
+		# Save command name since UndoCommand.__init__ overwrites it
+		saved_command = self._director.command
+		temp_undo = UndoCommand(self._director, self.common)
+		temp_undo._print_restored_features(cmd_state)
+		self._director.command = saved_command
 
 		return
 
@@ -261,7 +265,8 @@ class UndoCommand:
 			self._director.push_redo_state(cmd_state)
 			return self._undo_last_command()
 
-		print(f"\n\tUndoing {cmd_state.command_name} command")
+		# Print what features are being undone
+		self.common.print_restoration_summary(cmd_state, is_undo=True)
 
 		# Push the current state to redo stack before undoing
 		# We need to capture the current state first
@@ -303,10 +308,8 @@ class UndoCommand:
 		# Store the command state for _display() to use
 		self._restored_cmd_state = cmd_state
 
-		# If configuration was restored, recreate the plot
-		if self._director.common.have_active_configuration():
-			self._director.configuration_active.print_active_function()
-			self._director.common.create_plot_for_tabs("configuration")
+		# Print only what was actually restored
+		self._print_restored_features(cmd_state)
 
 		return
 
@@ -677,3 +680,97 @@ class UndoCommand:
 			if pct_types:
 				pct_list: str = ", ".join(pct_types)
 				details.append(["Percentages", f"{pct_list} restored"])
+
+	# ------------------------------------------------------------------------
+
+	def _print_restored_features(self, cmd_state: CommandState) -> None:
+		"""Print only the features that were actually restored.
+
+		Args:
+			cmd_state: The CommandState containing restoration information
+		"""
+		restored_types = cmd_state.state_snapshot.keys()
+
+		# Print and plot configuration if it was restored
+		if "configuration" in restored_types:
+			if self.common.have_active_configuration():
+				self._director.configuration_active.print_active_function()
+				self.common.create_plot_for_tabs("configuration")
+
+		# Print target if it was restored
+		if "target" in restored_types:
+			if self.common.have_target_configuration():
+				self._director.target_active.print_target()
+				self.common.create_plot_for_tabs("target")
+
+		# Print correlations if they were restored
+		if "correlations" in restored_types:
+			self._director.correlations_active.print_the_correlations(
+				self.common.width, self.common.decimals, self.common
+			)
+
+		# Print evaluations if they were restored
+		if "evaluations" in restored_types:
+			self._director.evaluations_active.print_the_evaluations()
+
+		# Print grouped data if it was restored
+		if "grouped_data" in restored_types:
+			self._director.grouped_data_active.print_grouped_data()
+
+		# Print individuals if they were restored
+		if "individuals" in restored_types:
+			self._director.individuals_active.print_individuals()
+
+		# Print scores if they were restored
+		if "scores" in restored_types:
+			self._director.scores_active.print_scores()
+
+		# Print similarities if they were restored
+		if "similarities" in restored_types:
+			self._director.similarities_active.print_the_similarities(
+				self.common.width, self.common.decimals, self.common
+			)
+
+		# Print settings if they were restored (based on command name)
+		if "settings" in restored_types:
+			self._print_restored_settings(cmd_state.command_name)
+
+		# Print rivalry if it was restored
+		if "rivalry" in restored_types:
+			self._print_restored_rivalry()
+
+	# ------------------------------------------------------------------------
+
+	def _print_restored_settings(self, command_name: str) -> None:
+		"""Print settings based on which settings command was executed.
+
+		Args:
+			command_name: Name of the settings command
+		"""
+		common = self._director.common
+
+		if command_name == "Settings - plane":
+			common.print_plane_settings()
+		elif command_name == "Settings - presentation layer":
+			print(f"\tPresentation layer: {common.presentation_layer}")
+		elif command_name == "Settings - plot settings":
+			common.print_plot_settings()
+		elif command_name == "Settings - display sizing":
+			common.print_display_settings()
+		elif command_name == "Settings - vector sizing":
+			common.print_vector_sizing_settings()
+		elif command_name == "Settings - segment sizing":
+			common.print_segment_sizing_settings()
+		elif command_name == "Settings - layout options":
+			common.print_layout_options_settings()
+
+	# ------------------------------------------------------------------------
+
+	def _print_restored_rivalry(self) -> None:
+		"""Print restored rivalry information."""
+		riv = self._director.rivalry
+		print(f"\n\tReference points restored:")
+		print(f"\t  Rival A: {riv.rival_a.name if riv.rival_a.name else 'unknown'}")
+		print(f"\t  Rival B: {riv.rival_b.name if riv.rival_b.name else 'unknown'}")
+		if riv.seg is not None and not riv.seg.empty:
+			print(f"\t  Segments: {len(riv.seg)} segments restored")

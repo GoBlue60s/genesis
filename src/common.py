@@ -1856,6 +1856,68 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
+	def print_restoration_summary(
+		self, cmd_state: object, is_undo: bool
+	) -> None:
+		"""Print summary of what features are being undone or restored.
+
+		Args:
+			cmd_state: The CommandState containing restoration information
+			is_undo: True for Undo (use "Undoing"), False for Redo (use "Restoring")
+		"""
+		restored_types = list(cmd_state.state_snapshot.keys())
+
+		if not restored_types:
+			action = "undo" if is_undo else "restore"
+			print(f"\n\tNo features to {action}")
+			return
+
+		# Create feature names list with proper formatting
+		feature_names = []
+		for feature_type in restored_types:
+			if feature_type == "settings":
+				feature_names.append(
+					self.format_settings_name(cmd_state.command_name)
+				)
+			else:
+				feature_names.append(feature_type)
+
+		# Format the output with appropriate verb
+		action_verb = "Undoing" if is_undo else "Restoring"
+		if len(feature_names) == 1:
+			print(f"\n\t{action_verb} {feature_names[0]}")
+		else:
+			features_str = ", ".join(feature_names)
+			print(f"\n\t{action_verb} {features_str}")
+
+	# ------------------------------------------------------------------------
+
+	def format_settings_name(self, command_name: str) -> str:
+		"""Format settings name with detail about which type.
+
+		Args:
+			command_name: The settings command name
+
+		Returns:
+			Formatted settings name string
+		"""
+		settings_map = {
+			"segment": "settings (segment sizing)",
+			"vector": "settings (vector sizing)",
+			"display": "settings (display sizing)",
+			"plane": "settings (plane)",
+			"plot": "settings (plot)",
+			"layout": "settings (layout)",
+			"presentation": "settings (presentation layer)",
+		}
+
+		for key, value in settings_map.items():
+			if key in command_name:
+				return value
+		return "settings"
+
+	# ------------------------------------------------------------------------
+
 	def read_lower_triangular_matrix_initialize_variables(self) -> None:
 		self.unexpected_eof_lower_triangular_error_title = (
 			"Unexpected End of File"
