@@ -103,7 +103,9 @@ class Spaces:
 		self.decimals: int = 2  # had been 2 in other class
 
 		self._use_metric = None
-		self._min_stress: pd.DataFrame = pd.DataFrame()
+		self._min_stress: pd.DataFrame = pd.DataFrame(
+			columns=["Dimensionality", "Best Stress"]
+		)
 		self.shepard_axis: str = ""
 		self.point_to_plot_index: int = 0
 

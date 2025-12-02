@@ -25,9 +25,9 @@ Needs to be checked against command's entry in title_generator_dict - report and
 2. initiate_command_processes()
 
 ## 4. Display plot to supply information user needs to set setting
-1. extremely rare - only Alike command
+1. extremely rare - only Alike and MDS commands
 2. should not be shown if mode is script
-3. create_plot_for_tabs("cutoff")
+3. create_plot_for_tabs("cutoff") or scree_interactively()
 
 ## 5. Get any needed settings from user
 1. optional

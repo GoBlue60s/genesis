@@ -573,16 +573,14 @@ class RanksSimilaritiesCommand:
 class ScreeCommand:
 	"""The Scree command creates diagram showing stress vs. dimensionality."""
 
-	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
+	def __init__(self, director: Status, common: Spaces) -> None:
 		self._director = director
 		self._director.command = "Scree"
-		self._director.configuration_active.min_stress = pd.DataFrame(
-			columns=["Dimensionality", "Best Stress"])
 		self._dim_names: list[str] = []
 		self._dim_labels: list[str] = []
 		self._use_metric: bool = False
-		self._min_stress: pd.DataFrame = (
-			self._director.configuration_active.min_stress)
+		# Use common._min_stress directly instead of creating new DataFrame
+		self._min_stress: pd.DataFrame = common._min_stress
 		return
 
 	# ------------------------------------------------------------------------
@@ -654,6 +652,8 @@ class ScreeCommand:
 		similarities_as_square = (
 			self._director.similarities_active.similarities_as_square
 		)
+		# Clear the DataFrame before populating with new data
+		self._min_stress.drop(self._min_stress.index, inplace=True)
 		min_stress: pd.DataFrame = self._min_stress
 
 		dim_names: list[str] = []

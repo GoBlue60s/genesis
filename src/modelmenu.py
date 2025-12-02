@@ -13,6 +13,7 @@ from PySide6 import QtCore
 from PySide6.QtWidgets import QApplication, QTableWidget, QTableWidgetItem
 from scipy.spatial import procrustes
 
+from sklearn import manifold
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 from sklearn.decomposition import FactorAnalysis
@@ -1499,16 +1500,26 @@ class MDSCommand:
 		common: Spaces,
 		use_metric: bool = False) -> None:  # noqa: FBT001, FBT002
 		common.initiate_command_processes()
+		# Set use_metric from menu choice for scree calculation
+		self._director.configuration_active.use_metric = use_metric
+		# Interactive: show scree plot before getting parameters
+		self._scree_interactively(common)
 		params = common.get_command_parameters("MDS", use_metric=use_metric)
 		n_comp: int = params["n_components"]
 		use_metric: bool = params["use_metric"]
-		common.capture_and_push_undo_state(
-			"MDS", "active", params)
-		#
-		# Now perform MDS - set use_metric, n_comp and continue
-		#
+		# Update with user's final choice (may differ from menu choice)
 		self._director.configuration_active.use_metric = use_metric
 		self._director.configuration_active.n_comp = n_comp
+		common.capture_and_push_undo_state(
+			"MDS", "active", params)
+		# Script: show scree plot for documentation after capturing state
+		self._scree_from_script(common)
+		# Update status for MDS computation
+		if not self._director.executing_script:
+			self._director.progress_label.setText(
+				"Computing MDS solution..."
+			)
+			QApplication.processEvents()
 		self._perform_mds_pick_up_point_labelling_from_similarities()
 
 		self._director.configuration_active.inter_point_distances()
@@ -1524,7 +1535,109 @@ class MDSCommand:
 			self._director.configuration_active.best_stress
 		)
 		self._director.create_widgets_for_output_and_log_tabs()
+		# Hide progress bar and label when command completes
+		if not self._director.executing_script:
+			self._director.progress_bar.hide()
+			self._director.progress_label.hide()
+			self._director.progress_spacer.hide()
 		self._director.record_command_as_successfully_completed()
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _scree_interactively(self, common: Spaces) -> None:
+		"""Show scree plot before getting parameters (interactive mode only).
+
+		In interactive mode, compute scree data and show plot to help user
+		choose n_components. In script mode, do nothing (plot shown later).
+		"""
+		if not self._director.executing_script:
+			use_metric = self._director.configuration_active.use_metric
+			self._compute_scree_data(common, use_metric)
+			common.create_plot_for_tabs("scree")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _scree_from_script(self, common: Spaces) -> None:
+		"""Show scree plot for documentation (script mode only).
+
+		In script mode, compute scree data and show plot for output/gallery.
+		In interactive mode, do nothing (plot already shown earlier).
+		"""
+		if self._director.executing_script:
+			use_metric = self._director.configuration_active.use_metric
+			self._compute_scree_data(common, use_metric)
+			common.create_plot_for_tabs("scree")
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _compute_scree_data(
+		self,
+		common: Spaces,
+		use_metric: bool  # noqa: FBT001
+	) -> None:
+		"""Compute scree data (stress for dimensions 1-10) for plot."""
+		similarities_as_square = (
+			self._director.similarities_active.similarities_as_square
+		)
+		# Clear the DataFrame before populating with new data
+		common._min_stress.drop(common._min_stress.index, inplace=True)
+		common._use_metric = use_metric
+
+		# Setup progress bar for scree computation
+		if not self._director.executing_script:
+			self._director.progress_bar.setRange(0, 10)
+			self._director.progress_bar.setValue(0)
+			self._director.progress_bar.setStyleSheet("")
+			self._director.progress_label.setText(
+				"Computing scree for dimension 0 of 10"
+			)
+			self._director.progress_label.show()
+			self._director.progress_spacer.show()
+			self._director.progress_bar.show()
+
+		range_ncomps = range(1, 11)
+		for each_n_comp in range_ncomps:
+			nmds = manifold.MDS(
+				n_components=each_n_comp,
+				metric=use_metric,
+				dissimilarity="precomputed",
+				n_init=20,
+				verbose=0,
+				normalized_stress="auto",
+			)
+			nmds.fit_transform(X=similarities_as_square)
+			best_stress = nmds.stress_
+			common._min_stress.loc[len(common._min_stress)] = [
+				each_n_comp, best_stress
+			]
+
+			# Update progress bar after each dimension
+			if not self._director.executing_script:
+				self._director.progress_bar.setValue(each_n_comp)
+				self._director.progress_label.setText(
+					f"Computing scree for dimension {each_n_comp} of 10"
+				)
+				QApplication.processEvents()
+
+		# Print scree data as formatted table
+		print("\n\tBest stress\n")
+		# Format: Dimensionality as int, Stress width 10, 4 decimals
+		table_data = [
+			[int(row[0]), f"{row[1]:10.4f}"]
+			for row in common._min_stress.to_numpy()
+		]
+		print(
+			tabulate(
+				table_data,
+				headers=["Dimensionality", "Stress"],
+				tablefmt="plain"
+			)
+		)
+		print()  # Blank line after table
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -1604,7 +1717,7 @@ class MDSCommand:
 	def _print_best_stress(self) -> None:
 		ndim = self._director.configuration_active.ndim
 		best_stress = self._director.configuration_active.best_stress
-		print(f"Best stress in {ndim} dimensions:    {best_stress: 6.4}\n")
+		print(f"Best stress in {ndim} dimensions: {best_stress:10.4f}\n")
 
 		return
 

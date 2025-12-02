@@ -80,7 +80,7 @@ Settings - plane - 11/21/2025
 Settings - plot - 11/21/2025
 Settings - presentation layer -11/21/2025
 Settings - segment - 11/21/2025
-Settings - vector - needs testing - 11/21/2025
+Settings - vector - 11/21/2025
 Shepard - 11/22/2025
 Similarities - 11/21/2025
 Status - 11/23/2025
@@ -114,7 +114,6 @@ View Target - 11/24/2025
 
 Cluster - needs both refactoring and extensive testing - 11/23/2025
 Open script - test script after script -11/18/2025
-Settings - vector - needs testing - 11/21/2025
 Tester - needs testing - 11/24/2025
 View custom - needs testing - 11/23/2025
 
