@@ -7,7 +7,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from PySide6.QtWidgets import QTableWidget
+from PySide6.QtWidgets import QTableWidget, QDialog
 from sklearn import manifold
 
 from dialogs import ChoseOptionDialog
@@ -36,7 +36,7 @@ class AlikeCommand:
 	the cutoff having a line joining the points.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Alike"
 		# Store alike-specific data in command instance, not in feature
@@ -242,7 +242,7 @@ class AlikeCommand:
 
 
 class DistancesCommand:
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		"""Distances command - displays a matrix of inter-point distances."""
 		self._director = director
 		self._director.command = "Distances"
@@ -268,7 +268,7 @@ class DistancesCommand:
 
 
 class LineOfSightCommand:
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		"""The Line of Sight command computes the line of sight measure
 		of association
 		"""
@@ -327,7 +327,7 @@ class PairedCommand:
 	interpoint distance and similarity for pairs of points.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Paired"
 		return
@@ -456,7 +456,7 @@ class PairedCommand:
 
 
 class RanksDifferencesCommand:
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Ranks differences"
 		return
@@ -515,7 +515,7 @@ class RanksDifferencesCommand:
 
 
 class RanksDistancesCommand:
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Ranks distances"
 		return
@@ -543,7 +543,7 @@ class RanksDistancesCommand:
 
 
 class RanksSimilaritiesCommand:
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Ranks similarities"
 		return
@@ -573,7 +573,7 @@ class RanksSimilaritiesCommand:
 class ScreeCommand:
 	"""The Scree command creates diagram showing stress vs. dimensionality."""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Scree"
 		self._director.configuration_active.min_stress = pd.DataFrame(
@@ -701,7 +701,7 @@ class ShepardCommand:
 	distance against rank or similarity
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Shepard"
 		return
@@ -719,14 +719,23 @@ class ShepardCommand:
 		axis_for_similarities = params["axis_for_similarities"]
 		common.capture_and_push_undo_state("Shepard", "passive", params)
 		common.shepard_axis = axis_for_similarities
+		_print_shepard_diagram_confirmation(axis_for_similarities)
 		common.create_plot_for_tabs("shepard")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return
 
-
 # --------------------------------------------------------------------------
 
+def _print_shepard_diagram_confirmation(axis_for_similarities: str) -> None:
+
+	print(
+		f"\n\tShepard diagram created with similarities on "
+		f"{axis_for_similarities} axis."
+	)
+	return
+
+# --------------------------------------------------------------------------
 
 class StressContributionCommand:
 	"""The Stress contribution command assesses
@@ -737,7 +746,7 @@ class StressContributionCommand:
 	showing rank of similarity and rank of distance between the points.
 	"""
 
-	def __init__(self, director: Status, common: Spaces) -> None:
+	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Stress contribution"
 		return
@@ -757,9 +766,12 @@ class StressContributionCommand:
 		self.stress_contribution_df = (
 			self._create_stress_contribution_df(index, worst_fit))
 		point_labels = self._director.configuration_active.point_labels
+		point_names = self._director.configuration_active.point_names
 		self._point_to_plot_label = point_labels[index]
 		self._point_to_plot_index = index
-		self._print_highest_stress_contributions(worst_fit)
+		self._print_stress_contribution_table(
+			point_names[index], self.stress_contribution_df
+		)
 		common.create_plot_for_tabs("stress_contribution")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -916,9 +928,21 @@ class StressContributionCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _print_highest_stress_contributions(
-		self, worst_fit: pd.DataFrame
+	def _print_stress_contribution_table(
+		self, focal_point_name: str, stress_df: pd.DataFrame
 	) -> None:
-		print("\n\tThe following pairs contribute the most to Stress: \n")
-		print(worst_fit.head(n=20).to_string(index=False))
+		"""Print stress contribution table matching the widget display.
+
+		Args:
+			focal_point_name: Name of the selected focal point
+			stress_df: DataFrame with Item and Stress Contribution columns
+		"""
+		print(
+			f"\n\tStress contribution of {focal_point_name} "
+			f"with other points:\n"
+		)
+		formatted_output = stress_df.to_string(
+			index=False, float_format=lambda x: f"{x:.2f}"
+		)
+		print(formatted_output)
 		return

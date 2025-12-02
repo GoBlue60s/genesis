@@ -137,6 +137,7 @@ class Spaces:
 		)
 		self._director.commands_used.append(self._director.command)
 		self._director.command_exit_code.append(-1)  # -1 command is in process
+		self._director.command_states.append(None)  # Updated when state pushed
 		print(f"\nStarting {self._director.command} command: \n")
 
 		active_commands = (

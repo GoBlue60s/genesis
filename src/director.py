@@ -127,6 +127,7 @@ class Status(QMainWindow):
 		self.current_command = _structure.current_command
 		self.commands_used = _structure.commands_used
 		self.command_exit_code = _structure.command_exit_code
+		self.command_states = _structure.command_states
 		self.command = _structure.command
 		self.undo_stack = _structure.undo_stack
 		self.undo_stack_source = _structure.undo_stack_source
@@ -961,6 +962,7 @@ class Status(QMainWindow):
 		)
 		self.commands_used.append(self.command)
 		self.command_exit_code.append(-1)  # -1  command is in process
+		self.command_states.append(None)  # Will be updated when state pushed
 		print(f"\nStarting {self.command} command: \n")
 
 		active_commands = (
@@ -1344,6 +1346,11 @@ class Status(QMainWindow):
 		self.undo_stack.append(cmd_state)
 		self.undo_stack_source.append(cmd_state.command_name)
 
+		# Update command_states for script generation
+		# Store this CommandState in the most recent entry
+		if self.command_states:
+			self.command_states[-1] = cmd_state
+
 		# Enable Undo only if there are active commands that can be undone
 		# (passive commands don't modify state and can't be undone)
 		if self._has_active_undoable_commands():
@@ -1533,6 +1540,7 @@ class EstablishSpacesStructure:
 		self.current_command: Spaces = Spaces(parent, parent)
 		self.commands_used: list[str] = ["Initialize"]
 		self.command_exit_code: list[int] = [0]
+		self.command_states: list[CommandState | None] = [None]
 		self.command: str = ""
 		self.undo_stack: list[CommandState] = []
 		self.undo_stack_source: list[str] = ["Initialize"]

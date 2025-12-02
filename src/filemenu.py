@@ -3065,16 +3065,20 @@ class SaveScriptCommand:
 	# ------------------------------------------------------------------------
 
 	def _collect_script_lines(self) -> list[str]:
-		"""Collect command lines from undo stack for script."""
-		undo_stack = self._director.undo_stack
-
-		# Sort by timestamp to preserve original execution order
-		# (undo/redo operations can change the order in undo_stack)
-		sorted_stack = sorted(undo_stack, key=lambda cmd: cmd.timestamp)
+		"""Collect command lines from command history for script."""
+		command_states = self._director.command_states
+		command_exit_code = self._director.command_exit_code
 
 		script_lines = []
-		for each_cmd_state in sorted_stack:
-			cmd_line = self._build_command_line(each_cmd_state)
+		for i, cmd_state in enumerate(command_states):
+			# Skip if command failed or still in process
+			if command_exit_code[i] != 0:
+				continue
+			# Skip if no CommandState (command had no parameters)
+			if cmd_state is None:
+				continue
+			# Build and add command line
+			cmd_line = self._build_command_line(cmd_state)
 			self._add_command_line_if_valid(cmd_line, script_lines)
 		return script_lines
 
