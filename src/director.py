@@ -14,7 +14,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (
 	QFileDialog,
-	QHBoxLayout,
+	# QHBoxLayout,
 	QLabel,
 	QMainWindow,
 	QMenu,
@@ -42,6 +42,7 @@ from pyqtgraph_common import PyQtGraphCommon
 if TYPE_CHECKING:
 	from collections.abc import Callable
 	from matplotlib import pyplot as plt
+	from command_state import CommandState
 
 from constants import TEST_IF_ACTION_OR_SUBMENU_HAS_THREE_ITEMS
 from dependencies import DependencyChecking
@@ -75,7 +76,7 @@ from table_builder import (
 	RivalryTableWidget,
 )
 from common import Spaces
-from command_state import CommandState
+
 from matplotlib_plots import MatplotlibMethods
 from pyqtgraph_plots import PyQtGraphMethods
 
@@ -311,10 +312,12 @@ class Status(QMainWindow):
 		print(" widget_dict key:", key)
 		key = next(iter(islice(explain_dict.keys(), element, None)), None)
 		print(" explain_dict key:", key)
-		key = next(iter(islice(self.title_generator_dict.keys(), element, None)), None)
+		key = next(iter(islice(self.title_generator_dict.keys(),
+			element, None)), None)
 		print(" title_generator_dict key:", key)
 		print(" command_dependencies_dict key:",
-			next(iter(islice(command_dependencies_dict.keys(), element, None)), None))
+			next(iter(islice(command_dependencies_dict.keys(),
+			element, None)), None))
 
 		for element in range(len(self.commands)):
 			if next(

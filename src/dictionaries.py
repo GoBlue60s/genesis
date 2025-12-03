@@ -19,7 +19,8 @@ FrozenDict = MappingProxyType
 
 # ----------------------------------------------------------------------------
 # Dictionary: command_dict
-# Source: director.py lines 936-977 (active_commands, interactive_only_commands, script_commands, passive_commands)
+# Source: director.py lines 936-977 (active_commands,
+#  interactive_only_commands, script_commands, passive_commands)
 # Purpose: Command classification and undo metadata for all 108 commands
 #          (40 active + 2 interactive_only + 3 script + 63 passive)
 # ----------------------------------------------------------------------------
@@ -66,14 +67,17 @@ command_dict = MappingProxyType({
 	},
 	"Cluster": {
 		"type": "active",
-		"state_capture": ["conditional"],  # Conditional: scores + (configuration|evaluations|similarities) based on user's data source
+		"state_capture": ["conditional"],  # Conditio
+		# based on user's data source
 		"script_parameters": ["data_source", "n_clusters"],
 		"interactive_getters": {
 			"data_source": {
 				"getter_type": "chose_option_dialog",
 				"title": "Select Data Source for Clustering",
-				"options_title": "Choose which data source to use for clustering",
-				"options": ["distances", "evaluations", "scores", "similarities"]
+				"options_title": \
+					"Choose which data source to use for clustering",
+				"options": \
+					["distances", "evaluations", "scores", "similarities"]
 			},
 			"n_clusters": {
 				"getter_type": "set_value_dialog",
@@ -136,7 +140,8 @@ command_dict = MappingProxyType({
 	},
 	"Deactivate": {
 		"type": "active",
-		"state_capture": ["conditional"]  # Conditional: captures state for each item user selects to deactivate
+		"state_capture": ["conditional"]  # Conditional:
+		# captures state for each item user selects to deactivate
 	},
 	"Directions": {
 		"type": "passive",
@@ -487,7 +492,9 @@ command_dict = MappingProxyType({
 			"scale_factor": {
 				"getter_type": "set_value_dialog",
 				"title": "Rescale configuration",
-				"label": "Amount by which to multiple every point \non selected dimensions",
+				"label": \
+					"Amount by which to multiple every point \non "
+					"selected dimensions",
 				"min_val": -9999.9,
 				"max_val": 9999.9,
 				"is_integer": False,
@@ -727,8 +734,10 @@ command_dict = MappingProxyType({
 			"axis_extra": {
 				"getter_type": "modify_values_dialog",
 				"title": "Display sizing settings",
-				"labels": ["Axis extra margin (percent of axis):", "Label displacement (percent of axis):", "Point size:"],
-				"defaults_source": ["axis_extra", "displacement", "point_size"],
+				"labels": ["Axis extra margin (percent of axis):",
+					"Label displacement (percent of axis):", "Point size:"],
+				"defaults_source": [
+					"axis_extra", "displacement", "point_size"],
 				"defaults_multiplier": [100, 100, 1],
 				"min_val": 0,
 				"max_val": 50,
@@ -745,7 +754,8 @@ command_dict = MappingProxyType({
 			"layout": {
 				"getter_type": "modify_values_dialog",
 				"title": "Layout options settings",
-				"labels": ["Maximum columns:", "Column width:", "Decimal places:"],
+				"labels": [
+					"Maximum columns:", "Column width:", "Decimal places:"],
 				"min_val": 0,
 				"max_val": 20,
 				"is_integer": True,
@@ -776,10 +786,13 @@ command_dict = MappingProxyType({
 			"_plot_settings_checkboxes": {
 				"getter_type": "modify_items_dialog",
 				"title": "Plot settings",
-				"items": ["Show bisector", "Show connector", "Show reference points", "Show just reference points"],
-				"defaults_source": ["show_bisector", "show_connector", "show_reference_points", "show_just_reference_points"],
+				"items": ["Show bisector", "Show connector",
+					"Show reference points", "Show just reference points"],
+				"defaults_source": ["show_bisector", "show_connector",
+					"show_reference_points", "show_just_reference_points"],
 				"converts_to_booleans": True,
-				"boolean_params": ["bisector", "connector", "reference_points", "just_reference_points"]
+				"boolean_params": ["bisector", "connector",
+					"reference_points", "just_reference_points"]
 			}
 		}
 	},
@@ -824,7 +837,8 @@ command_dict = MappingProxyType({
 			"vectors": {
 				"getter_type": "modify_values_dialog",
 				"title": "Vector sizing settings",
-				"labels": ["Vector head width (in inches)", "Vector width (in inches)"],
+				"labels": ["Vector head width (in inches)",
+					"Vector width (in inches)"],
 				"min_val": 0.0,
 				"max_val": 1.0,
 				"is_integer": False,
@@ -1712,7 +1726,8 @@ button_dict = MappingProxyType({
 
 
 # ----------------------------------------------------------------------------
-# Dictionary: request_dict (renamed from menu_item_dict, originally traffic_dict)
+# Dictionary: request_dict (renamed from menu_item_dict,
+# originally traffic_dict)
 # Source: director.py lines 2703-2883
 # Purpose: Maps menu item request IDs to command classes and parameters
 # ----------------------------------------------------------------------------
@@ -3645,7 +3660,8 @@ title_generator_dict = MappingProxyType({
 	),
 	"Compare": lambda d: (
 		f"After procrustean rotation active configuration matches "
-		f"target configuration with disparity of {d.target_active.disparity:8.4f}"
+		"target configuration with disparity of "
+		f"{d.target_active.disparity:8.4f}"
 	),
 	"Configuration": lambda d: (
 		f"Configuration has {d.configuration_active.ndim} "
@@ -3891,7 +3907,8 @@ title_generator_dict = MappingProxyType({
 	"View distances": lambda d: "Inter-point distances",
 	"View evaluations": lambda d: "Evaluations",
 	"View grouped data": lambda d: (
-		f"Configuration is based on {d.grouped_data_active.grouping_var} and has "
+		f"Configuration is based on {d.grouped_data_active.grouping_var} "
+		"and has "
 		f"{d.grouped_data_active.ndim} dimensions and "
 		f"{d.grouped_data_active.ngroups} points"
 	),
@@ -3933,10 +3950,11 @@ title_generator_dict = MappingProxyType({
 # Source: dependencies.py (inverted from dependency-centric to command-centric)
 # Purpose: Maps each command to its required dependencies (tuple of strings)
 #          Empty tuple () means no dependencies required
-# Dependency types: configuration, similarities, reference_points, correlations,
-#                   individual_data, distances, ranks_distances, ranks_similarities,
-#                   scores, evaluations, target, grouped_data, sample_design,
-#                   sample_repetitions, sample_solutions
+# Dependency types: configuration, similarities, reference_points,
+#  correlations,
+#          individual_data, distances, ranks_distances, ranks_similarities,
+#          scores, evaluations, target, grouped_data, sample_design,
+#          sample_repetitions, sample_solutions
 # ----------------------------------------------------------------------------
 
 command_dependencies_dict = MappingProxyType({
@@ -3990,7 +4008,8 @@ command_dependencies_dict = MappingProxyType({
 	"Print scores": ("scores",),
 	"Print similarities": ("similarities",),
 	"Print target": ("target",),
-	"Ranks differences": ("similarities", "ranks_distances", "ranks_similarities"),
+	"Ranks differences": ("similarities", "ranks_distances",
+		"ranks_similarities"),
 	"Ranks distances": ("configuration", "distances"),
 	"Ranks similarities": ("similarities",),
 	"Redo": (),
@@ -4021,7 +4040,8 @@ command_dependencies_dict = MappingProxyType({
 	"Settings - presentation layer": (),
 	"Settings - segment sizing": (),
 	"Settings - vector sizing": (),
-	"Shepard": ("configuration", "similarities", "distances", "ranks_distances", "ranks_similarities"),
+	"Shepard": ("configuration", "similarities", "distances",
+		"ranks_distances", "ranks_similarities"),
 	"Similarities": (),
 	"Status": (),
 	"Stress contribution": ("configuration", "similarities"),

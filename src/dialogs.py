@@ -283,7 +283,8 @@ class ModifyValuesDialog(QDialog):
 			spinbox = QSpinBox() if integers else QDoubleSpinBox()
 			spinbox.setMinimum(0)
 			spinbox.setMaximum(1000)
-			# Integer spinboxes need integer step, double spinboxes need decimal step
+			# Integer spinboxes need integer step,
+			#  double spinboxes need decimal step
 			if integers:
 				spinbox.setSingleStep(1)
 			else:

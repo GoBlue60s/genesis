@@ -52,8 +52,10 @@ class RedoCommand:
 			self._director.push_undo_state(cmd_state, preserve_redo_stack=True)
 			return self._redo_last_undone_command()
 
-		# Skip passive and script commands - only active commands have state to restore
-		# But preserve them in undo stack so they appear in saved scripts
+		# Skip passive and script commands -
+		# only active commands have state to restore
+		# But preserve them in undo stack so they appear
+		# in saved scripts
 		if cmd_state.command_type in ("passive", "script"):
 			self._director.push_undo_state(cmd_state, preserve_redo_stack=True)
 			return self._redo_last_undone_command()
@@ -84,7 +86,8 @@ class RedoCommand:
 			next_cmd = self._director.peek_redo_state()
 			if next_cmd and next_cmd.command_type in ("passive", "script"):
 				passive_cmd = self._director.pop_redo_state()
-				self._director.push_undo_state(passive_cmd, preserve_redo_stack=True)
+				self._director.push_undo_state(
+					passive_cmd, preserve_redo_stack=True)
 			else:
 				break
 
@@ -259,7 +262,8 @@ class UndoCommand:
 			self._director.push_redo_state(cmd_state)
 			return self._undo_last_command()
 
-		# Skip passive and script commands - only active commands have state to restore
+		# Skip passive and script commands -
+		#  only active commands have state to restore
 		# But preserve them in redo stack so they appear in saved scripts
 		if cmd_state.command_type in ("passive", "script"):
 			self._director.push_redo_state(cmd_state)
@@ -692,14 +696,14 @@ class UndoCommand:
 		restored_types = cmd_state.state_snapshot.keys()
 
 		# Print and plot configuration if it was restored
-		if "configuration" in restored_types:
-			if self.common.have_active_configuration():
+		if "configuration" in restored_types and \
+			self.common.have_active_configuration():
 				self._director.configuration_active.print_active_function()
 				self.common.create_plot_for_tabs("configuration")
 
 		# Print target if it was restored
-		if "target" in restored_types:
-			if self.common.have_target_configuration():
+		if "target" in restored_types and \
+			self.common.have_target_configuration():
 				self._director.target_active.print_target()
 				self.common.create_plot_for_tabs("target")
 
@@ -769,8 +773,10 @@ class UndoCommand:
 	def _print_restored_rivalry(self) -> None:
 		"""Print restored rivalry information."""
 		riv = self._director.rivalry
-		print(f"\n\tReference points restored:")
-		print(f"\t  Rival A: {riv.rival_a.name if riv.rival_a.name else 'unknown'}")
-		print(f"\t  Rival B: {riv.rival_b.name if riv.rival_b.name else 'unknown'}")
+		print("\n\tReference points restored:")
+		print(f"\t  Rival A:"
+			f" {riv.rival_a.name if riv.rival_a.name else 'unknown'}")
+		print(f"\t  Rival B:"
+			f" {riv.rival_b.name if riv.rival_b.name else 'unknown'}")
 		if riv.seg is not None and not riv.seg.empty:
 			print(f"\t  Segments: {len(riv.seg)} segments restored")

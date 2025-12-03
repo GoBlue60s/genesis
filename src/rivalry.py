@@ -2787,7 +2787,7 @@ class Rivalry:
 		right_includes_upper_left_as_pairs: np.array,
 		left_includes_lower_right_as_pairs: np.array,
 		left_includes_lower_right_and_upper_left_as_pairs: np.array,
-		left_includes_upper_right_and_lower_left_as_pairs: np.array,
+		# left_includes_upper_right_and_lower_left_as_pairs: np.array,
 		right_includes_upper_left_and_lower_right_as_pairs: np.array,
 		right_includes_upper_right_and_lower_left_as_pairs: np.array
 	) -> tuple[np.array, np.array]:

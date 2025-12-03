@@ -98,7 +98,8 @@ class AboutCommand:
 			"\n\n\tAmong those who have contributed (in alphabetical order)"
 			" are:\n"
 		)
-		# Print acknowledgements in 2 columns, preserving newlines within entries
+		# Print acknowledgements in 2 columns,
+		# preserving newlines within entries
 		acknowledgements = self._director.acknowledgements
 		# Calculate column width based on longest LINE (not entry)
 		max_line_len = max(
@@ -119,8 +120,11 @@ class AboutCommand:
 			max_lines = max(len(left_lines), len(right_lines))
 
 			for line_num in range(max_lines):
-				left = left_lines[line_num] if line_num < len(left_lines) else ""
-				right = right_lines[line_num] if line_num < len(right_lines) else ""
+				left = \
+					left_lines[line_num] if line_num < len(left_lines) else ""
+				right = \
+					right_lines[line_num] if line_num < len(
+						right_lines) else ""
 				print(f"\t  {left:<{col_width}}{right}")
 		return
 

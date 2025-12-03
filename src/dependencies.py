@@ -316,7 +316,8 @@ class DependencyChecking:
 					break  # Stop checking - new feature was abandoned
 
 				# If existing was abandoned, skip to next feature
-				if not self._check_whether_feature_currently_exists(each_feature):
+				if not self._check_whether_feature_currently_exists(
+					each_feature):
 					continue
 
 				new_abandoned = (
@@ -328,10 +329,12 @@ class DependencyChecking:
 					break  # Stop checking - new feature was abandoned
 
 				# If existing was abandoned, skip to next feature
-				if not self._check_whether_feature_currently_exists(each_feature):
+				if not self._check_whether_feature_currently_exists(
+					each_feature):
 					continue
 
-				new_abandoned = self._check_if_dimensions_match_and_resolve_conflict(
+				new_abandoned = \
+					self._check_if_dimensions_match_and_resolve_conflict(
 					new, each_feature
 				)
 				if new_abandoned:
@@ -545,7 +548,8 @@ class DependencyChecking:
 		if self.check_label_consistency:
 			# Fall back to name matching if either label list is empty
 			if not existing_dim_labels or not new_dim_labels:
-				if existing_ndim == new_ndim and existing_dim_names == new_dim_names:
+				if existing_ndim == \
+					new_ndim and existing_dim_names == new_dim_names:
 					dimensions_match = True
 				else:
 					dimensions_match = False
@@ -608,7 +612,8 @@ class DependencyChecking:
 
 		Returns:
 			True if NEW feature was abandoned (stop checking),
-			False if existing was abandoned or conflict ignored (continue checking)
+			False if existing was abandoned or conflict ignored
+				(continue checking)
 		"""
 		existing_abandoned: bool = False
 		abandon_dict = {
@@ -679,17 +684,17 @@ class DependencyChecking:
 					if restored:
 						# Feature was restored - stop checking
 						return True  # Stop checking
-					else:
-						# Feature was cleared - inform user it's abandoned
-						abandon_needed_error_title: str = (
-							self._director.command
-						)
-						abandon_needed_error_message: str = \
-							f"{new} has been abandoned"
-						raise SpacesError(
-							abandon_needed_error_title,
-							abandon_needed_error_message,
-						)
+					# else:
+					# Feature was cleared - inform user it's abandoned
+					abandon_needed_error_title: str = (
+						self._director.command
+					)
+					abandon_needed_error_message: str = \
+						f"{new} has been abandoned"
+					raise SpacesError(
+						abandon_needed_error_title,
+						abandon_needed_error_message,
+					)
 				case 2:
 					# Ignore - continue checking
 					return False  # Continue checking
@@ -707,18 +712,18 @@ class DependencyChecking:
 					if restored:
 						# Feature was restored - stop checking
 						return True  # Stop checking
-					else:
-						# Feature was cleared - inform user
-						inconsistency_error_title: str = \
-							f"{new} has been abandoned"
-						inconsistency_error_message: str = (
-							f"Inconsistency between {new.lower()} "
-							f"and {existing.lower()} was not resolved"
-						)
-						raise SpacesError(
-							inconsistency_error_title,
-							inconsistency_error_message
-						)
+					#else:
+					# Feature was cleared - inform user
+					inconsistency_error_title: str = \
+						f"{new} has been abandoned"
+					inconsistency_error_message: str = (
+						f"Inconsistency between {new.lower()} "
+						f"and {existing.lower()} was not resolved"
+					)
+					raise SpacesError(
+						inconsistency_error_title,
+						inconsistency_error_message
+					)
 		else:
 			# Dialog cancelled or failed - ask user to restore or clear new
 			feature_name = feature_name_map.get(
@@ -734,18 +739,18 @@ class DependencyChecking:
 				# Feature was restored - don't say "abandoned"
 				# Just stop command execution silently
 				return existing_abandoned
-			else:
-				# Feature was cleared - inform user
-				inconsistency_unresolved_error_title: str = \
-					f"{new} has been abandoned"
-				inconsistency_unresolved_error_message: str = (
-					f"Inconsistency between {new.lower()} "
-					f"and {existing.lower()} was not resolved"
-				)
-				raise SpacesError(
-					inconsistency_unresolved_error_title,
-					inconsistency_unresolved_error_message,
-				)
+			# else:
+			# Feature was cleared - inform user
+			inconsistency_unresolved_error_title: str = \
+				f"{new} has been abandoned"
+			inconsistency_unresolved_error_message: str = (
+				f"Inconsistency between {new.lower()} "
+				f"and {existing.lower()} was not resolved"
+			)
+			raise SpacesError(
+				inconsistency_unresolved_error_title,
+				inconsistency_unresolved_error_message,
+			)
 
 		return existing_abandoned
 

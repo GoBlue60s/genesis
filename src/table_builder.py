@@ -37,7 +37,8 @@ class BuildOutputForGUI(QWidget):
 		)
 		gui_output_layout = QVBoxLayout(self)
 		if director.include_explanation_when_verbosity_last_set_to_verbose():
-			explain = QLabel(director.common.optionally_explain_what_command_does())
+			explain = QLabel(
+				director.common.optionally_explain_what_command_does())
 			gui_output_layout.addWidget(explain)
 		if director.command in title_generator_dict:
 			title = title_generator_dict[director.command](director)

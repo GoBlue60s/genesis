@@ -5,6 +5,7 @@ import copy
 import pickle
 import pandas as pd
 import weakref
+from types import SimpleNamespace
 
 # Import for type checking unpickleable objects
 try:
@@ -50,13 +51,12 @@ def _handle_basic_types_and_memo(
 		return (True, None)
 
 	# Handle matplotlib objects (figures, canvases) - skip them
-	if MATPLOTLIB_AVAILABLE:
-		if isinstance(obj, (FigureCanvasQTAgg, Figure)):
+	if MATPLOTLIB_AVAILABLE and \
+		isinstance(obj, (FigureCanvasQTAgg, Figure)):
 			return (True, None)
 
 	# Handle Qt widgets - skip them
-	if QT_AVAILABLE:
-		if isinstance(obj, QWidget):
+	if QT_AVAILABLE and isinstance(obj, QWidget):
 			return (True, None)
 
 	# Check memo to avoid infinite recursion
@@ -457,7 +457,7 @@ class CommandState:
 		- hor_dim, vert_dim (Settings - plane)
 		- presentation_layer (Settings - presentation layer)
 		- show_bisector, show_connector, show_just_reference_points,
-		  show_reference_points (Settings - plot settings)
+		- show_reference_points (Settings - plot settings)
 		- point_size, axis_extra, displacement (Settings - display sizing)
 		- vector_head_width, vector_width (Settings - vector sizing)
 		- battleground_size, core_tolerance (Settings - segment sizing)
@@ -466,7 +466,6 @@ class CommandState:
 		Args:
 			director: The director instance containing settings
 		"""
-		from types import SimpleNamespace
 
 		common = director.common
 

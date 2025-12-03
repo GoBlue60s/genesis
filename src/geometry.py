@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 
 from typing import NamedTuple
-
+from exceptions import SpacesError
 
 import numpy as np
 import peek  # noqa: F401
@@ -454,7 +454,7 @@ class LineInPlot:
 		point_on_line: Point,
 		potential_extremes: TheoreticalExtremes,
 	) -> tuple[Point, Point]:
-		from exceptions import SpacesError
+
 
 		start = Point()
 		end = Point()
@@ -485,14 +485,15 @@ class LineInPlot:
 		}
 
 		if case not in end_dict:
-			raise SpacesError(
+			line_case_title = "Line Case Error"
+			line_case_message = (
 				"Line Case Error",
 				f"Unhandled line case: '{case}'. "
 				f"Direction: {self._direction}, "
 				f"Intersects: left={self._left_side}, "
 				f"right={self._right_side}, top={self._top}, "
-				f"bottom={self._bottom}"
-			)
+				f"bottom={self._bottom}")
+			raise SpacesError(line_case_title, line_case_message)
 
 		start.x = end_dict[case][0]
 		start.y = end_dict[case][1]

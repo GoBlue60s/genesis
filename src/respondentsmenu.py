@@ -2,21 +2,19 @@ from __future__ import annotations
 
 import random
 import pandas as pd
-import peek
+import peek # noqa: F401
 from typing import TYPE_CHECKING
 
-from PySide6.QtWidgets import QDialog, QTableWidget
 
-from common import Spaces
-
-from dialogs import ModifyValuesDialog, PairofPointsDialog
+# from dialogs import ModifyValuesDialog, PairofPointsDialog
 from exceptions import SpacesError
 
 from supporters import ASupporterGrouping
 
 if TYPE_CHECKING:
 	from director import Status
-
+	from common import Spaces
+	from PySide6.QtWidgets import QTableWidget
 # ---------------------------------------------------------------------------
 
 
@@ -68,7 +66,8 @@ class BaseCommand(ASupporterGrouping):
 
 		# Calculate counts from percentages
 		# Access base_pcts directly from rivalry (it's a pandas Series)
-		# nscored comes from scores_active, not rivalry (rivalry.nscored_individ is 0)
+		# nscored comes from scores_active, not rivalry
+		# (rivalry.nscored_individ is 0)
 		nscored = director.scores_active.nscored_individ
 		base_pcts = rivalry.base_pcts
 		base_left_count = int((base_pcts[1] / 100) * nscored)
@@ -134,7 +133,8 @@ class BattlegroundCommand(ASupporterGrouping):
 
 		# Calculate counts from percentages
 		# Access battleground_pcts directly from rivalry (it's a pandas Series)
-		# nscored comes from scores_active, not rivalry (rivalry.nscored_individ is 0)
+		# nscored comes from scores_active, not rivalry
+		# (rivalry.nscored_individ is 0)
 		nscored = director.scores_active.nscored_individ
 		battleground_pcts = rivalry.battleground_pcts
 		battleground_count = int(
@@ -604,7 +604,8 @@ class SampleDesignerCommand:
 		nrepetitions: int = params["nrepetitions"]
 		universe_size = self._director.evaluations_active.nevaluators
 		self._director.uncertainty_active.universe_size = universe_size
-		self._director.uncertainty_active.probability_of_inclusion = probability_of_inclusion
+		self._director.uncertainty_active.probability_of_inclusion = \
+			probability_of_inclusion
 		self._director.uncertainty_active.nrepetitions = nrepetitions
 		common.capture_and_push_undo_state(
 			"Sample designer", "active", params)

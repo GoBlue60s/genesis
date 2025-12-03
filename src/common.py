@@ -25,10 +25,11 @@ from scipy.stats import spearmanr
 from sklearn import manifold
 
 # Local application imports
-
+from dialogs import SetValueDialog
 
 from constants import (
 	EXHAUSTED_EVALUATIONS,
+	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 	MAXIMUM_NUMBER_OF_EVALUATORS,
 	MINIMUM_SIZE_FOR_PLOT,
 	MUST_HAVE_TWO_FIELDS,
@@ -516,7 +517,7 @@ class Spaces:
 		# Initialize horizontal and vertical axis names to first two dimensions
 		if ndim >= 1:
 			destination.hor_axis_name = dim_names[0]
-		if ndim >= 2:
+		if ndim >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			destination.vert_axis_name = dim_names[1]
 		# peek("Was Meghan right - did it get here?"
 		# 	" This is ok when no problem"
@@ -792,7 +793,8 @@ class Spaces:
 	def create_plot_for_tabs(self, plot_type: str) -> None:
 		# Skip plots needed for user choice when running a script
 		plots_needed_for_choice = ["cutoff", "sorted_stress_contributions"]
-		if plot_type in plots_needed_for_choice and self._director.executing_script:
+		if plot_type in plots_needed_for_choice and \
+			self._director.executing_script:
 			return
 		common_plot_types = ["differences", "scree", "scree_factor", "shepard"]
 		if self._director.common.presentation_layer == "PyQtGraph":
@@ -1718,7 +1720,8 @@ class Spaces:
 			values: Lower triangular matrix values as list of lists
 			width: Field width for formatting numbers
 		"""
-		if len(labels) == 0 or len(names) == 0 or len(values) == 0 or nelements <= 0:
+		if len(labels) == 0 or len(names) == 0 or len(values) == 0 \
+			or nelements <= 0:
 			return
 
 		label_indent = "  "
@@ -1866,7 +1869,8 @@ class Spaces:
 
 		Args:
 			cmd_state: The CommandState containing restoration information
-			is_undo: True for Undo (use "Undoing"), False for Redo (use "Restoring")
+			is_undo: True for Undo (use "Undoing"), False for Redo
+			(use "Restoring")
 		"""
 		restored_types = list(cmd_state.state_snapshot.keys())
 
@@ -2615,11 +2619,11 @@ class Spaces:
 			return self._get_script_parameters(
 				command_name, cmd_info, expected_params
 			)
-		else:
-			# Get from interactive dialogs using metadata
-			return self._get_interactive_parameters(
-				command_name, cmd_info, expected_params, kwargs
-			)
+		# else:
+		# Get from interactive dialogs using metadata
+		return self._get_interactive_parameters(
+			command_name, cmd_info, expected_params, kwargs
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -2695,13 +2699,13 @@ class Spaces:
 		# Convert name to index
 		if param_value in items:
 			return items.index(param_value)
-		else:
-			title = f"{command_name} script parameter error"
-			message = (
-				f"Invalid value for {param_name}: '{param_value}'\n"
-				f"Must be one of: {', '.join(items)}"
-			)
-			raise SpacesError(title, message)
+		# else:
+		title = f"{command_name} script parameter error"
+		message = (
+			f"Invalid value for {param_name}: '{param_value}'\n"
+			f"Must be one of: {', '.join(items)}"
+		)
+		raise SpacesError(title, message)
 
 	# ------------
 
@@ -3220,10 +3224,10 @@ class Spaces:
 			return self._convert_to_boolean_params(
 				getter_info, items, selected_list
 			)
-		else:
-			# Normal behavior: return the list
-			self._director.obtained_parameters[param_name] = selected_list
-			return {param_name: selected_list}
+		# else:
+		# Normal behavior: return the list
+		self._director.obtained_parameters[param_name] = selected_list
+		return {param_name: selected_list}
 
 	# ------------
 
@@ -3286,9 +3290,9 @@ class Spaces:
 				params[each_param] = value
 				obtained[each_param] = value
 			return params
-		else:
-			self._director.obtained_parameters[param_name] = values
-			return {param_name: values}
+		# else:
+		self._director.obtained_parameters[param_name] = values
+		return {param_name: values}
 
 	# ------------
 
@@ -3414,8 +3418,8 @@ class Spaces:
 			for attr_name in items_source.split("."):
 				obj = getattr(obj, attr_name)
 			return obj
-		else:
-			return getter_info.get("items", [])
+		# else:
+		return getter_info.get("items", [])
 
 	# ------------
 
@@ -4014,25 +4018,25 @@ class Spaces:
 				if cmd_state is not None:
 					cmd_state.restore_all_state(self._director)
 				return True  # Feature was restored
-			else:
-				# User chose No - clear the feature by reinitializing it
-				# The caller is expected to have the appropriate Feature class
-				# imported and will pass the feature_name that corresponds to
-				# an attribute like "{feature_name}_active" on director
-				attr_name = f"{feature_name}_active"
+			# else:
+			# User chose No - clear the feature by reinitializing it
+			# The caller is expected to have the appropriate Feature class
+			# imported and will pass the feature_name that corresponds to
+			# an attribute like "{feature_name}_active" on director
+			attr_name = f"{feature_name}_active"
 
-				# Get the current feature's class and reinitialize
-				current_feature = getattr(self._director, attr_name)
-				feature_class = type(current_feature)
-				setattr(
-					self._director,
-					attr_name,
-					feature_class(self._director)
-				)
+			# Get the current feature's class and reinitialize
+			current_feature = getattr(self._director, attr_name)
+			feature_class = type(current_feature)
+			setattr(
+				self._director,
+				attr_name,
+				feature_class(self._director)
+			)
 
-				# Pop the undo state to keep the stack consistent
-				self._director.pop_undo_state()
-				return False  # Feature was cleared, not restored
+			# Pop the undo state to keep the stack consistent
+			self._director.pop_undo_state()
+			return False  # Feature was cleared, not restored
 
 		except Exception:
 			# Dialog failed - automatically restore to be safe
@@ -4170,52 +4174,57 @@ class Spaces:
 				first_line = f.readline().strip()
 				if not first_line.startswith("# TYPE:"):
 					self.event_driven_automatic_restoration()
-					raise SpacesError(
-						"Missing File Type",
-						f"This file does not have a type identifier.\n"
+					file_type_title="Missing File Type"
+					file_type_message=(
+						"This file does not have a type identifier.\n"
 						f"Expected '# TYPE: {expected_type.upper()}' "
 						"as first line."
 					)
+					raise SpacesError(file_type_title, file_type_message)
 
 				file_type = first_line.split(":", 1)[1].strip()
 				if file_type != expected_type.upper():
 					self.event_driven_automatic_restoration()
-					raise SpacesError(
-						"Wrong File Type",
-						f"This file is type '{file_type}' but expected "
-						f"'{expected_type.upper()}'."
+					
+					wrong_type_title = "Wrong File Type"
+					wrong_type_message = (
+						"This file has an incorrect type identifier.\n"
+						f"Expected '# TYPE: {expected_type.upper()}' "
 					)
-
+					raise SpacesError(wrong_type_title, wrong_type_message)
 			# Read the data (comments are automatically skipped)
 			return pd.read_csv(file_name, comment='#')
 
 		except FileNotFoundError:
 			self.event_driven_automatic_restoration()
-			raise SpacesError(
-				"File Not Found",
-				f"Could not find file: {file_name}"
-			) from None
+			file_not_found_title = "File Not Found"
+			file_not_found_message = f"Could not find file: {file_name}"
+			raise SpacesError(file_not_found_title, file_not_found_message
+				) from None
 		except PermissionError:
 			self.event_driven_automatic_restoration()
+			
+			permission_denied_title = "Permission Denied"
+			permission_denied_message = f"Cannot read file: {file_name}"
 			raise SpacesError(
-				"Permission Denied",
-				f"Cannot read file: {file_name}"
-			) from None
+				permission_denied_title,
+				permission_denied_message
+				) from None
 		except pd.errors.EmptyDataError:
 			self.event_driven_automatic_restoration()
-			raise SpacesError(
-				"Empty File",
-				f"The file is empty or contains only the type header: "
-				f"{file_name}"
-			) from None
+			
+			empty_file_title = "Empty File"
+			empty_file_message = \
+			"The file is empty or contains only the type header: "
+			f"{file_name}"
+			raise SpacesError(empty_file_title, empty_file_message) from None
 		except pd.errors.ParserError as e:
 			self.event_driven_automatic_restoration()
-			raise SpacesError(
-				"CSV Parse Error",
-				f"Unable to parse CSV file: {file_name}\n{e}"
+			cvs_parse_title = "CSV Parse Error"
+			cvs_parse_message = f"Unable to parse CSV file: {file_name}\n{e}"
+			raise SpacesError(cvs_parse_title, cvs_parse_message
 			) from e
 
-	# ------------------------------------------------------------------------
 	# ------------------------------------------------------------------------
 
 	def print_to_printer(self, text: str) -> None:

@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 	QTextEdit,
 )
 
+from features import UncertaintyFeature
 
 if TYPE_CHECKING:
 	from common import Spaces
@@ -1648,8 +1649,6 @@ class OpenSampleSolutionsCommand:
 	) -> None:
 		"""Read sample solutions file and validate format."""
 		try:
-			from pathlib import Path
-			from features import UncertaintyFeature  # noqa: PLC0415
 
 			with Path(file_name).open("r", encoding="utf-8") as f:
 				# Line 1: Comment line (skip)

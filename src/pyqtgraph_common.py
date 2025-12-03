@@ -345,9 +345,9 @@ class PyQtGraphCommon:
 
 		return graphics_layout_widget
 
-	# --------------------------------------------------------------------------
+	# ------------------------------------------------------------------------
 
-	def _plot_scree_factor_using_pyqtgraph(self):
+	def _plot_scree_factor_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
 
 		evaluations = self._director.evaluations_active.evaluations
 		eigen = self._director.configuration_active.eigen

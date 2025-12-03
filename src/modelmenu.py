@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from factor_analyzer import FactorAnalyzer
 import numpy as np
 import pandas as pd
-import peek
+import peek # noqa: F401
 import random
 
 
@@ -30,10 +30,10 @@ if TYPE_CHECKING:
 
 from constants import (
 	DEFAULT_NUMBER_OF_CLUSTERS,
-	# MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
+	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 	MINIMAL_DIFFERENCE_FROM_ZERO,
 )
-from exceptions import MissingInformationError, SpacesError
+from exceptions import SpacesError
 from features import EvaluationsFeature, SimilaritiesFeature, TargetFeature
 
 # --------------------------------------------------------------------------
@@ -89,12 +89,16 @@ class ClusterCommand:
 			self.number_clusters_max_allowed = \
 				min(15, len(self.data_for_clustering) - 1)
 			# Update metadata temporarily for this call
-			original_max = command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"]
-			command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"] = \
+			original_max = \
+				command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"]
+			command_dict[
+				"Cluster"]["interactive_getters"]["n_clusters"]["max_val"] = \
 				self.number_clusters_max_allowed
 			params_step2 = common.get_command_parameters("Cluster")
 			# Restore original max_val
-			command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"] = original_max
+			command_dict[
+				"Cluster"]["interactive_getters"]["n_clusters"][
+				"max_val"] = original_max
 			n_clusters = params_step2["n_clusters"]
 		else:
 			# Script mode: use parameter from script
@@ -123,7 +127,8 @@ class ClusterCommand:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState("Cluster", "active", params)
-		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		cmd_state.timestamp = datetime.now().strftime(
+			"%Y-%m-%d %H:%M:%S")
 
 		for item in state_to_capture:
 			if item == "configuration":
@@ -191,13 +196,14 @@ class ClusterCommand:
 				self._director.configuration_active.distances_as_dataframe
 			)
 			if data_for_clustering.empty:
-				raise SpacesError(
-					"No distance data available for clustering. "
-					"The distances DataFrame is empty."
-				)
+				empty_title = "No distance data available for clustering"
+				empty_message = ("The distances DataFrame is empty.")
+				raise SpacesError(empty_title, empty_message)
+
 			# Set axis names from configuration
 			dim_names = self._director.configuration_active.dim_names
-			if dim_names and len(dim_names) >= 2:
+			if dim_names and len(dim_names) >= \
+				MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 				self._director.scores_active.hor_axis_name = dim_names[0]
 				self._director.scores_active.vert_axis_name = dim_names[1]
 			else:
@@ -330,7 +336,8 @@ class ClusterCommand:
 			)
 
 			# Use only first 2 dimensions to match reference point coords
-			if cluster_point_coords.shape[1] > 2:
+			if cluster_point_coords.shape[1] > \
+				MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 				cluster_point_coords = cluster_point_coords[:, :2]
 
 			# Calculate distances to each reference point for
@@ -835,7 +842,8 @@ class FactorAnalysisCommand:
 		# Set axis names from first two dimensions
 		if len(dim_names) >= 1:
 			configuration_active.hor_axis_name = dim_names[0]
-		if len(dim_names) >= 2:
+		if len(dim_names) >= \
+			MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			configuration_active.vert_axis_name = dim_names[1]
 
 	# ------------------------------------------------------------------------
@@ -982,7 +990,8 @@ class FactorAnalysisMachineLearningCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
-		params = common.get_command_parameters("Factor analysis machine learning")
+		params = common.get_command_parameters(
+			"Factor analysis machine learning")
 		n_components: int = params["n_components"]
 		common.capture_and_push_undo_state(
 			"Factor analysis machine learning", "active", params)
@@ -1702,7 +1711,7 @@ class MDSCommand:
 			self._director.configuration_active.hor_axis_name = (
 				configuration_instance.dim_names[0]
 			)
-		if ndim >= 2:
+		if ndim >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			self._director.configuration_active.vert_axis_name = (
 				configuration_instance.dim_names[1]
 			)
@@ -1781,13 +1790,15 @@ class PrincipalComponentsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _perform_principal_component_analysis(self, n_components: int) -> tuple:
+	def _perform_principal_component_analysis(
+		self, n_components: int) -> tuple:
 
 
 		item_names = self._director.evaluations_active.item_names
 
 		X_pca = self._director.evaluations_active.evaluations  # noqa: N806
-		pca_transformer = PCA(n_components=n_components, copy=True, random_state=0)
+		pca_transformer = PCA(
+			n_components=n_components, copy=True, random_state=0)
 		X_pca_transformed = pca_transformer.fit_transform(X_pca)  # noqa: N806
 		pd.set_option("display.max_columns", None)
 		pd.set_option("display.precision", 2)
@@ -1904,7 +1915,8 @@ class PrincipalComponentsCommand:
 			transpose.to_string(float_format="{:.2f}".format))
 		print("\nPoint_coords: \n",
 			point_coords.to_string(float_format="{:.2f}".format))
-		print(f"\nScores from components\n ",scores.to_string(float_format='{:.2f}'.format))
+		print("\nScores from components\n ",scores.to_string(
+			float_format='{:.2f}'.format))
 		return
 
 

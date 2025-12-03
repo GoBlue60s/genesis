@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import peek
+import peek # noqa: F401
 
 import scipy.stats as ss
 
@@ -866,10 +866,9 @@ class GroupedDataFeature:
 					file_handle.write("\n")
 
 		except Exception as exc:
-			raise SpacesError(
-				"File write error",
-				"Error writing grouped data file",
-			) from exc
+			write_error_title = "File write error"
+			write_error_message = "Error writing grouped data file"
+			raise SpacesError(write_error_title, write_error_message) from exc
 		return
 
 
