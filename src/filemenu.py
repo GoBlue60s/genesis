@@ -16,7 +16,8 @@ from PySide6.QtWidgets import (
 	QTextEdit,
 )
 
-from features import UncertaintyFeature
+# from features import UncertaintyFeature
+from modelmenu import UncertaintyAnalysis
 
 if TYPE_CHECKING:
 	from common import Spaces
@@ -1691,7 +1692,8 @@ class OpenSampleSolutionsCommand:
 					point_names.append(name)
 
 				# Create new UncertaintyFeature object
-				self._director.uncertainty_active = UncertaintyFeature(
+				#self._director.uncertainty_active = UncertaintyFeature(
+				self._director.uncertainty_active = UncertaintyAnalysis(
 					self._director
 				)
 

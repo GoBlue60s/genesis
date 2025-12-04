@@ -576,20 +576,20 @@ class SampleDesignerCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "Sample designer"
-		self._director.uncertainty_active.universe_size = 0
-		self._director.uncertainty_active.probability_of_inclusion = 0
-		self._director.uncertainty_active.nrepetitions = 0
+		# self._director.uncertainty_active.universe_size = 0
+		# self._director.uncertainty_active.probability_of_inclusion = 0
+		# self._director.uncertainty_active.nrepetitions = 0
 		self._director.uncertainty_active.sample_design = pd.DataFrame(
 			columns=["RespId", "Repetition", "Selected"])
 		self._director.uncertainty_active.sample_design_frequencies = (
 			pd.DataFrame(columns=["Repetition", "Selected", "Count"]))
-		self._designer_title = "Set sample parameters.."
-		self._designer_items = [
-			"Probability of inclusion",
-			"Number of repetitions",
-		]
-		self._designer_integers = [True, True]
-		self._designer_default_values = [50, 2]
+		# self._designer_title = "Set sample parameters.."
+		# self._designer_items = [
+		# 	"Probability of inclusion",
+		# 	"Number of repetitions",
+		# ]
+		# self._designer_integers = [True, True]
+		# self._designer_default_values = [50, 2]
 		self._director.uncertainty_active.sample_design_frequencies_as_json = (
 			""
 		)
@@ -600,6 +600,9 @@ class SampleDesignerCommand:
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Sample designer")
+		common.capture_and_push_undo_state(
+			"Sample designer", "active", params)
+
 		probability_of_inclusion: int = params["probability_of_inclusion"]
 		nrepetitions: int = params["nrepetitions"]
 		universe_size = self._director.evaluations_active.nevaluators
@@ -607,14 +610,8 @@ class SampleDesignerCommand:
 		self._director.uncertainty_active.probability_of_inclusion = \
 			probability_of_inclusion
 		self._director.uncertainty_active.nrepetitions = nrepetitions
-		common.capture_and_push_undo_state(
-			"Sample designer", "active", params)
-
 		self._create_sample_design()
 
-		universe_size = self._director.uncertainty_active.universe_size
-		probability_of_inclusion = (
-			self._director.uncertainty_active.probability_of_inclusion)
 		common.create_sample_design_analysis_table()
 		self._print_sample_design_analysis_results()
 		self._director.create_widgets_for_output_and_log_tabs()

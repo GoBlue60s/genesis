@@ -57,7 +57,7 @@ Redo - 11/23/2025
 Reference Points - 11/24/2025
 Rescale - 11/23/2025
 Rotate - 11/17/2025
-Sample designer - needs testing - 11/24/2025
+Sample designer - needs testing - 12/4/2025
 sample repetitions - needs testing - 11/24/2025
 Save configuration - 11/20/2025
 Save correlations - 11/20/2025

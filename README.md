@@ -41,7 +41,7 @@ Spaces is a feature-rich desktop application built with PySide6 that enables use
 
 ### Prerequisites
 
-- Python 3.13 (recommended)
+- Python 3.14 (recommended)
 - Virtual environment (recommended)
 
 ### Dependencies

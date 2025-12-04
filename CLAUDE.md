@@ -229,6 +229,7 @@ When proposing code changes using the Edit tool, ALWAYS include:
 "I'm modifying the `_execute_script_command` method in the `OpenScriptCommand` class in `filemenu.py` (around line 1455) to add a check for interactive_only commands."
 
 **Why this matters:**
+
 - Large files have many classes and functions
 - Line numbers alone are insufficient for navigation
 - User needs to quickly locate the change in their editor
@@ -253,6 +254,7 @@ When the user rejects a proposed change:
 "I understand. I was proposing to add a check in the `_execute_script_command` method of the `OpenScriptCommand` class to reject interactive_only commands before attempting to execute them. My reasoning was to fail early with a clear error message.
 
 What aspect of this approach would you like me to reconsider? Should I:
+
 - Place the check in a different location?
 - Use a different error handling approach?
 - Reconsider whether this check is needed at all?"
