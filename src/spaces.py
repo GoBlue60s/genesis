@@ -4,12 +4,13 @@ from __future__ import annotations
 import sys
 
 # from dataclasses import dataclass
-from peek import peek
+# from peek import peek
 from PySide6.QtGui import QFont
 from PySide6.QtCore import QFile, QIODevice
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QTextEdit
 from director import Status, SplashWindow
+
 
 # end of imports
 
@@ -69,7 +70,7 @@ class MyApplication:
 			f"and {len(self.director.commands)} commands "
 			f"available."
 		)
-		peek("Peek seems to be working") # ty: ignore[call-non-callable]
+		# peek("Peek seems to be working") # ty: ignore[call-non-callable]
 		self.start_event_loop()
 		self.print_debug_logs()
 		sys.exit()
@@ -107,9 +108,9 @@ class MyApplication:
 		return self.spaces_app.exec()
 
 	def print_debug_logs(self) -> None:
-		peek(f"{self.director.commands_used=}") # ty: ignore[call-non-callable]
-		peek(f"{self.director.command_exit_code=}") # ty: ignore[call-non-callable]
-		peek(f"{self.director.undo_stack_source=}\n") # ty: ignore[call-non-callable]
+		print(f"{self.director.commands_used=}") # ty: ignore[call-non-callable]
+		print(f"{self.director.command_exit_code=}") # ty: ignore[call-non-callable]
+		print(f"{self.director.undo_stack_source=}\n") # ty: ignore[call-non-callable]
 
 	@staticmethod
 	def exit_with_error(error_message: str) -> None:
@@ -121,5 +122,8 @@ class MyApplication:
 
 
 if __name__ == "__main__":
+
 	my_app = MyApplication()
+	print("DEBUG: MyApplication initialized")
 	my_app.execute()
+	print("DEBUG: execute returned")

@@ -3793,11 +3793,11 @@ title_generator_dict = MappingProxyType({
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
 	"Sample designer": lambda d: (
-		f"Sample design - Size of universe: {d.common.universe_size}, "
-		f"Probability of inclusion: {d.common.probability_of_inclusion}"
+		f"Sample design - Size of universe: {d.uncertainty_active.universe_size}, "
+		f"Probability of inclusion: {d.uncertainty_active.probability_of_inclusion}"
 	),
 	"Sample repetitions": lambda d: (
-		f"Sample repetitions - Size of universe: {d.common.universe_size}"
+		f"Sample repetitions - Size of universe: {d.uncertainty_active.universe_size}"
 	),
 	"Save configuration": lambda d: (
 		f"The active configuration has been written to: \n"
@@ -3915,8 +3915,8 @@ title_generator_dict = MappingProxyType({
 	"View individuals": lambda d: "Individuals",
 	"View point uncertainty": lambda d: "Point Uncertainty ",
 	"View sample design": lambda d: (
-		f"Sample design - Size of universe: {d.common.universe_size}, "
-		f"Probability of inclusion: {d.common.probability_of_inclusion}"
+		f"Sample design - Size of universe: {d.uncertainty_active.universe_size}, "
+		f"Probability of inclusion: {d.uncertainty_active.probability_of_inclusion}"
 	),
 	"View sample repetitions": lambda d: "Sample repetitions",
 	"View sample solutions": lambda d: (

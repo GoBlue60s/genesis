@@ -2133,6 +2133,9 @@ class UncertaintyCommand:
 		self._create_sample_design(
 			director,
 			probability_of_inclusion, nrepetitions, universe_size)
+		common.create_sample_design_analysis_table()
+		common._print_sample_design_analysis_results()
+		
 		self._create_sample_repetitions(director)
 		sample_repetitions = uncertainty_active.sample_repetitions
 		self.target_out, self.active_out = self._get_solutions_from_mds(

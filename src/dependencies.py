@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import peek  # noqa: F401
 from PySide6.QtWidgets import QDialog
 
@@ -19,6 +18,7 @@ from exceptions import SpacesError
 
 class DependencyChecking:
 	def __init__(self, director: Status) -> None:
+
 		self._director = director
 		self.features: list[str] = []
 		self.new_feature_dict: dict[str, tuple] = {}

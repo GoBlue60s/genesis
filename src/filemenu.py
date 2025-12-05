@@ -2750,15 +2750,15 @@ class SaveSampleDesignCommand:
 
 		ndim = uncertainty_active.ndim
 		npoint = uncertainty_active.npoint
-		nfacets = uncertainty_active.nfacets
+		# nfacets = uncertainty_active.nfacets
 
 		with Path(file_name).open("w", encoding="utf-8") as f:
 			# Line 1: Comment line
 			f.write("# Sample design file created: ")
 
 			# Line 2: Basic dimensions (I4 format)
-			f.write(f"{ndim:4d}{npoint:4d}{nfacets:4d}\n")
-
+			# f.write(f"{ndim:4d}{npoint:4d}{nfacets:4d}\n")
+			f.write(f"{ndim:4d}{npoint:4d}\n")
 			# Section: Description of dimensions
 			for i in range(ndim):
 				dim_label = uncertainty_active.dim_labels[i]
@@ -2772,13 +2772,15 @@ class SaveSampleDesignCommand:
 				f.write(f"{point_label};{point_name}\n")
 
 			# Section: Description of facets
-			for i in range(nfacets):
-				facet_label = uncertainty_active.facet_labels[i]
-				facet_name = uncertainty_active.facet_names[i]
-				f.write(f"{facet_label};{facet_name}\n")
+			# for i in range(nfacets):
+			# 	facet_label = uncertainty_active.facet_labels[i]
+			# 	facet_name = uncertainty_active.facet_names[i]
+			# 	f.write(f"{facet_label};{facet_name}\n")
 
 			# Section: Sample design data
-			design_df = uncertainty_active.sample_design_df
+			# design_df = uncertainty_active.sample_design_df
+			design_df = uncertainty_active.sample_design
+
 			for row_idx in range(len(design_df)):
 				for col_idx in range(len(design_df.columns)):
 					value = design_df.iloc[row_idx, col_idx]
@@ -2842,6 +2844,8 @@ class SaveSampleRepetitionsCommand:
 		ndim = uncertainty_active.ndim
 		npoint = uncertainty_active.npoint
 		nrepetitions = uncertainty_active.nrepetitions
+		repetitions_df = uncertainty_active.sample_repetitions
+
 
 		with Path(file_name).open("w", encoding="utf-8") as f:
 			# Line 1: Comment line
@@ -2866,7 +2870,7 @@ class SaveSampleRepetitionsCommand:
 				f.write(f"{point_label};{point_name}\n")
 
 			# Section: Repetitions data
-			repetitions_df = uncertainty_active.repetitions_df
+			# repetitions_df = uncertainty_active.repetitions_df
 			for row_idx in range(len(repetitions_df)):
 				for col_idx in range(len(repetitions_df.columns)):
 					value = repetitions_df.iloc[row_idx, col_idx]

@@ -1,0 +1,4 @@
+# Sample repetitions file created: 2025-12-05 11:55:42
+   2   0  12
+Dim1;Dimension 1
+Dim2;Dimension 2

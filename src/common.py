@@ -282,6 +282,35 @@ class Spaces:
 		)
 		return sample_design_analysis_df
 
+# ------------------------------------------------------------------------
+	def _print_sample_design_analysis_results(self) -> None:
+		"""Print sample design analysis results with fixed-width columns
+		and proper alignment.
+		"""
+
+		df = self._director.uncertainty_active.sample_design_analysis_df
+
+		# Fixed-width string constants
+		header1 = "                Selected       Not Selected      "
+		header2 = "Repetition      N      %        N      %      "
+		separator = "-------------------------------------------"
+
+		# Print headers and separator
+		print("\n" + header1)
+		print(header2)
+		print(separator)
+
+		# Print each row of data with fixed spacing
+		for _, row in df.iterrows():
+			print(
+				f"{int(row['Repetition']):10d}  "
+				f"{int(row['Selected Count']):6d}  "
+				f"{row['Selected Percent']:5.2f}   "
+				f"{int(row['Not Selected Count']):6d}  "
+				f"{row['Not Selected Percent']:5.2f}"
+			)
+
+		return
 	# ------------------------------------------------------------------------
 
 	def create_solutions_table(self) -> pd.DataFrame:

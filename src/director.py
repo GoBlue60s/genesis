@@ -8,8 +8,9 @@ from itertools import islice
 # from dataclasses import dataclass
 
 import pandas as pd
+
 # import pyqtgraph as pg
-import peek # noqa: F401
+# import peek # noqa: F401
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (
@@ -221,7 +222,8 @@ class Status(QMainWindow):
 	def create_tabs(self) -> None:
 		self.tab_height: int = 600  # 1000
 		self.tab_width: int = 800  # 1000
-		self.setGeometry(1500, 300, self.tab_width, self.tab_height)
+		self.setGeometry(1500, 800, self.tab_width, self.tab_height)
+		# 100, 100
 		# 1500, 800
 		#
 		self.tab_widget = QTabWidget(self)
@@ -1565,8 +1567,8 @@ class SplashWindow(QWidget):
 	def __init__(self) -> None:
 		super().__init__()
 
-		splash_position_x = 1375
-		splash_position_y = 300
+		splash_position_x = 150
+		splash_position_y = 150
 
 		self.setWindowTitle("Welcome")
 		self.move(splash_position_x, splash_position_y)
