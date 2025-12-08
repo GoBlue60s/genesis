@@ -1,3 +1,0 @@
-# Sample design file created:    2   0
-Dim1;Dimension 1
-Dim2;Dimension 2

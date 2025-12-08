@@ -686,6 +686,7 @@ class FactorAnalysisCommand:
 		self._print_factor_analysis_results()
 		# Scree plot temporarily disabled - needs eigenvalue support
 		common.create_plot_for_tabs("scree_factor")
+		common.create_plot_for_tabs("configuration")
 		director.create_widgets_for_output_and_log_tabs()
 		director.record_command_as_successfully_completed()
 		return
@@ -1002,6 +1003,7 @@ class FactorAnalysisMachineLearningCommand:
 		# Scree plot temporarily disabled - needs eigenvalue support
 		# common.create_plot_for_tabs("scree")
 		common.create_plot_for_tabs("scree_factor")
+		common.create_plot_for_tabs("configuration")
 		self._display()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
@@ -2156,109 +2158,107 @@ class UncertaintyCommand:
 
 	# ------------------------------------------------------------------------
 
+	def _setup_progress_bar(self, nrepetitions: int) -> None:
+		"""Setup progress bar for uncertainty analysis."""
+		if not self._director.executing_script:
+			self._director.progress_bar.setRange(0, nrepetitions)
+			self._director.progress_bar.setValue(0)
+			self._director.progress_bar.setStyleSheet("")
+			self._director.progress_label.setText(
+				f"Solving for repetition 0 of {nrepetitions}"
+			)
+			self._director.progress_bar.show()
+
+	# ------------------------------------------------------------------------
+
+	def _update_progress_bar(
+		self, repetition_n: int, nrepetitions: int
+	) -> None:
+		"""Update progress bar during uncertainty analysis."""
+		if not self._director.executing_script:
+			self._director.progress_bar.setValue(repetition_n)
+			self._director.progress_label.setText(
+				f"Solving for repetition {repetition_n} of {nrepetitions}"
+			)
+			QApplication.processEvents()
+
+	# ------------------------------------------------------------------------
+
+	def _hide_progress_bar(self) -> None:
+		"""Hide progress bar after uncertainty analysis."""
+		if not self._director.executing_script:
+			self._director.progress_bar.hide()
+			self._director.progress_label.hide()
+			self._director.progress_spacer.hide()
+
+	# ------------------------------------------------------------------------
+
 	def _get_solutions_from_mds(
 		self, common: Spaces, sample_repetitions: pd.DataFrame, nreferent: int
 	) -> tuple[np.array, np.array]:
 		director = self._director
-		configuration_active = director.configuration_active
 		target_active = director.target_active
 		uncertainty_active = director.uncertainty_active
-		dim_names = target_active.dim_names
-		# dim_labels = target_active.dim_labels
+
 		self.ndim = target_active.ndim
-		repetition_freqs = uncertainty_active.sample_design_frequencies
 		nrepetitions = uncertainty_active.nrepetitions
-		range_repetitions = range(nrepetitions)
-		# current_repetition: EvaluationsFeature = \
-		# EvaluationsFeature(self._director)
-		line_of_sight = SimilaritiesFeature(self._director)
-		# the_loadings = ConfigurationFeature(self._director)
-		line_of_sight.nreferent = 0
-		line_of_sight.value_type = "dissimilarities"
-		use_metric = configuration_active.use_metric
-		item_names = uncertainty_active.item_names
-		item_labels = uncertainty_active.item_labels
+		use_metric = director.configuration_active.use_metric
 
 		repetition_sizes = self.get_repetition_sizes(
-			range_repetitions, repetition_freqs
+			range(nrepetitions), uncertainty_active.sample_design_frequencies
 		)
+
+		line_of_sight = SimilaritiesFeature(self._director)
+		line_of_sight.nreferent = 0
+		line_of_sight.value_type = "dissimilarities"
 
 		start_case = 0
 		extract_ndim = 2
-		repetition_n = 1
 		stress_data = []
 
-		# Setup progress bar only if not executing a script
-		if not director.executing_script:
-			director.progress_bar.setRange(0, nrepetitions)
-			director.progress_bar.setValue(0)
-			director.progress_bar.setStyleSheet("")
-			director.progress_label.setText(
-				f"Solving for repetition 0 of {nrepetitions}"
-			)
-			director.progress_bar.show()
+		self._setup_progress_bar(nrepetitions)
 
-		for repetition_size in repetition_sizes:
-			(current_repetition, start_case) = self.get_current_repetition(
+		for repetition_n, repetition_size in enumerate(
+			repetition_sizes, start=1
+		):
+			current_repetition, start_case = self.get_current_repetition(
 				start_case,
 				repetition_size,
 				sample_repetitions,
 				nreferent,
-				item_names,
-				item_labels,
+				uncertainty_active.item_names,
+				uncertainty_active.item_labels,
 			)
 
-			line_of_sight = self._director.common.los(current_repetition)
+			line_of_sight = director.common.los(current_repetition)
 			self.duplicate_repetition_line_of_sight(common, line_of_sight)
 
-			the_loadings = self._director.common.mds(
+			the_loadings = director.common.mds(
 				extract_ndim, use_metric, line_of_sight
 			)
 
 			stress_data.append([repetition_n, the_loadings.best_stress])
 
-			active_in = np.array(the_loadings.point_coords)
-
-			target_in = np.array(target_active.point_coords)
-
 			target_out, active_out, _disparity = procrustes(
-				target_in, active_in
+				np.array(target_active.point_coords),
+				np.array(the_loadings.point_coords)
 			)
 
-			active_out_as_df = pd.DataFrame(active_out)
 			self.solutions = pd.concat(
-				[self.solutions, active_out_as_df], ignore_index=True
+				[self.solutions, pd.DataFrame(active_out)], ignore_index=True
 			)
 
-			# Update progress bar and label only if not executing a script
-			if not director.executing_script:
-				director.progress_bar.setValue(repetition_n)
-				director.progress_label.setText(
-					f"Solving for repetition {repetition_n} of {nrepetitions}"
-				)
-				QApplication.processEvents()
+			self._update_progress_bar(repetition_n, nrepetitions)
 
-			# start_case = end_case
-			repetition_n += 1
+		self._hide_progress_bar()
 
-		# Hide progress bar and label only if not executing a script
-		if not director.executing_script:
-			director.progress_bar.hide()
-			director.progress_label.hide()
-			director.progress_spacer.hide()
-
-		# Create solutions_stress_df from the collected stress data
 		uncertainty_active.solutions_stress_df = pd.DataFrame(
 			stress_data, columns=["Solution", "Stress"]
 		)
 
-		solutions_columns = dim_names
-
+		self.solutions.columns = target_active.dim_names
 		self.target_out = target_out
 		self.active_out = active_out
-
-		self.solutions.columns = solutions_columns
-		target_active = self._director.target_active
 
 		self.establish_sample_solutions_info()
 

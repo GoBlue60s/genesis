@@ -453,11 +453,7 @@ class ViewSampleDesignCommand:
 			"View sample design", "passive", params)
 		# sample_design = self._director.uncertainty_active.sample_design
 
-		universe_size = self._director.uncertainty_active.universe_size
-		probability_of_inclusion = (
-			self._director.uncertainty_active.probability_of_inclusion)
-		print(f"Sample design - Size of universe: {universe_size},"
-			f" Probability of inclusion: {probability_of_inclusion}")
+		common._print_sample_design_analysis_results()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -508,12 +504,17 @@ class ViewSampleRepetitionsCommand:
 		params = common.get_command_parameters("View sample repetitions")
 		common.capture_and_push_undo_state(
 			"View sample repetitions", "passive", params)
-		# print(self._director.uncertainty_active.sample_repetitions)
-		n_repetitions = self._director.uncertainty_active.nrepetitions
-		print(f"Sample repetitions - number of repetitions: {n_repetitions}")
+		self._print_sample_repetitions()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
+		return
+	
+	# ------------------------------------------------------------------------
+
+	def _print_sample_repetitions(self) -> None:
+		n_repetitions = self._director.uncertainty_active.nrepetitions
+		print(f"Sample repetitions - number of repetitions: {n_repetitions}")
 		return
 
 	# ------------------------------------------------------------------------

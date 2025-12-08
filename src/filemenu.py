@@ -1659,7 +1659,10 @@ class OpenSampleSolutionsCommand:
 				dimensions_line = f.readline().strip()
 				if len(dimensions_line) < \
 					MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_UNCERTAINTY:
-					raise ValueError("Invalid dimensions line format")
+					invalid_format_title = "Sample solutions format issue"
+					invalid_format_message = "Invalid dimensions line format"
+					raise SpacesError(
+						invalid_format_title, invalid_format_message)
 
 				ndim = int(dimensions_line[0:4])
 				npoint = int(dimensions_line[4:8])
@@ -1674,8 +1677,7 @@ class OpenSampleSolutionsCommand:
 						no_semicolon_title = "Sample solutions format issue"
 						no_semicolon_message = "Invalid dimension format"
 						raise SpacesError(
-							no_semicolon_title,
-							no_semicolon_message)
+							no_semicolon_title, no_semicolon_message)
 					label, name = line.split(";", 1)
 					dim_labels.append(label)
 					dim_names.append(name)
@@ -1686,7 +1688,11 @@ class OpenSampleSolutionsCommand:
 				for _ in range(npoint):
 					line = f.readline().strip()
 					if ";" not in line:
-						raise ValueError("Invalid point format")
+						invalid_point_title = "Sample solutions format issue"
+						invalid_point_message = "Invalid point format"
+						raise SpacesError(
+							invalid_point_title,
+							invalid_point_message)
 					label, name = line.split(";", 1)
 					point_labels.append(label)
 					point_names.append(name)
@@ -1766,7 +1772,11 @@ class OpenScoresCommand:
 
 			if scores.empty:
 				self.common.event_driven_automatic_restoration()
-				raise ValueError("Scores file is empty")
+				empty_file_title = "Empty scores file"
+				empty_file_message = "Scores file is empty"
+				raise SpacesError(
+					empty_file_title,
+					empty_file_message)
 
 			# Create a new ScoresFeature object (matching Evaluations pattern)
 			from features import ScoresFeature  # noqa: PLC0415

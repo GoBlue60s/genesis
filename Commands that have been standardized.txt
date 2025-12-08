@@ -32,9 +32,9 @@ Line of sight 11/22/2025
 MDS - 11/23/2025
 Move - 11/23/2025
 New grouped data - 11/18/2025
-Open Sample design - potential deprecation - 11/24/2025
-Open sample repetitions - potential deprecation - 11/24/2025
-Open sample solutions - needs testing - 11/24/2025
+Open Sample design - potential deprecation - 12/4/2025
+Open sample repetitions - potential deprecation - 12/4/2025
+Open sample solutions - needs testing - 12/6/2025
 Open scores - 11/18/2025
 Open script - test script after script -11/18/2025
 Paired - 11/22/2025
@@ -44,8 +44,8 @@ Print correlations - 11/24/2025
 Print Evaluations
 Print Grouped data
 Print individuals - 11/24/2025
-Print sample design - needs testing - 11/24/2025
-Print sample repetitions - needs testing - 11/24/2025
+Print sample design - needs testing - 12/6/2025
+Print sample repetitions - needs testing - 12/6/2025
 Print sample solutions - needs testing - 11/24/2025
 Print scores - 11/24/2025
 Print similarities - 11/18/2025
@@ -63,9 +63,9 @@ Save configuration - 11/20/2025
 Save correlations - 11/20/2025
 Save grouped data - 11/20/2025
 Save individuals - 11/21/2025
-Save sample design - needs testing - 11/24/2025
-Save sample repetitions - needs testing - 11/24/2025
-Save sample solutions - needs testing - 11/24/2025
+Save sample design - needs testing - 12/6/2025
+Save sample repetitions - needs testing - 12/6/2025
+Save sample solutions - needs testing - 12/6/2025
 Save scores - 11/24/2025 
 Save script - 11/21/2025
 Save similarities - 11/21/2025
@@ -101,9 +101,9 @@ View evaluations - 11/24/2025
 View grouped data - 11/23/2025
 View individuals - 11/23/2025
 View point uncertainty - needs testing - 11/23/2025
-View sample design - needs testing - 11/23/2025
-View sample repetitions - needs testing - 11/23/2025
-View sample solutions - needs testing - 11/23/2025
+View sample design - needs testing - 12/4/2025
+View sample repetitions - needs testing - 12/4/2025
+View sample solutions - needs testing - 12/4/2025
 View scores - 11/23/2025
 View similarities - 11/23/2025
 View spatial uncertainty - needs testing - 11/23/2025

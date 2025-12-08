@@ -17,7 +17,7 @@ A command consists of the following in exactly this order. Any order violation s
 3. sets the name of the command.  
 4. deprecated - sets the title for the output using string or lambda expression with  - variables
 Needs to be checked against command's entry in title_generator_dict - report and discrepancy
-5. sets the description of errors
+5. sets the description of errors as long as the error does not refer to runtaime variables. 
 6. __init__
 
 ## 2. Deprecated statements
@@ -53,7 +53,7 @@ Needs to be checked against command's entry in title_generator_dict - report and
 
 ## 8. Check for consistency with existing features
 
-1. conditional - only use when command, other than open script,
+1. conditional - only use when command, other than open script, open sample design, open sample repetitions, open sample solutions
  has a read file or creates a feature
 2. detect_consistency_issues
 

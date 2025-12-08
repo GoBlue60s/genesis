@@ -740,10 +740,12 @@ class SampleRepetitionsCommand:
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Sample repetitions")
-		self._check_that_sizes_match()
 		common.capture_and_push_undo_state(
 			"Sample repetitions", "active", params)
+		self._check_that_sizes_match()
 		self._create_sample_repetitions()
+		common.create_sample_design_analysis_table()
+		self._print_sample_repetitions()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.set_focus_on_tab("Output")
 		self._director.record_command_as_successfully_completed()
@@ -811,6 +813,14 @@ class SampleRepetitionsCommand:
 			sample_repetitions
 		)
 
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _print_sample_repetitions(self) -> None:
+		"""Print confirmation of sample repetitions creation."""
+		nrepetitions = self._director.uncertainty_active.nrepetitions
+		print(f"\n\t{nrepetitions} sample repetitions created.")
 		return
 
 	# ------------------------------------------------------------------------
