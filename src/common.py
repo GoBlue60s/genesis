@@ -3092,7 +3092,7 @@ class Spaces:
 
 		hor_axis_name = dim_names[hor_dialog.selected_option]
 
-		if ndim == 2:
+		if ndim == MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			# For 2D, vertical is automatic (the other dimension)
 			vert_axis_name = (
 				dim_names[1] if hor_dialog.selected_option == 0
@@ -3818,9 +3818,7 @@ class Spaces:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState(command_name, command_type, parameters)
-		cmd_state.timestamp = datetime.now(tz=datetime.UTC).strftime(
-			"%Y-%m-%d %H:%M:%S"
-		)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		# Capture all required feature states
 		state_capture_list = command_dict[command_name]["state_capture"]
@@ -3908,9 +3906,7 @@ class Spaces:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState(command_name, "passive", parameters or {})
-		cmd_state.timestamp = datetime.now(tz=datetime.UTC).strftime(
-			"%Y-%m-%d %H:%M:%S"
-		)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		# Passive commands don't clear redo stack - they're read-only
 		# and shouldn't affect undo/redo navigation

@@ -2719,7 +2719,6 @@ class Rivalry:
 			right_includes_upper_left_as_pairs,
 			left_includes_lower_right_as_pairs,
 			left_includes_lower_right_and_upper_left_as_pairs,
-			left_includes_upper_right_and_lower_left_as_pairs,
 			right_includes_upper_left_and_lower_right_as_pairs,
 			right_includes_upper_right_and_lower_left_as_pairs
 		)
