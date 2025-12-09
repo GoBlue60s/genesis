@@ -1337,7 +1337,8 @@ class Status(QMainWindow):
 		self,
 		cmd_state: CommandState,
 		*,
-		preserve_redo_stack: bool = False
+		preserve_redo_stack: bool = False,
+		update_command_states: bool = True
 	) -> None:
 		"""Push a CommandState onto the undo stack.
 
@@ -1348,13 +1349,16 @@ class Status(QMainWindow):
 		Args:
 			cmd_state: The CommandState to push onto the stack
 			preserve_redo_stack: If True, preserve redo stack (used by Redo)
+			update_command_states: If True, update command_states for script
+				generation. Set to False when restoring commands from redo stack
+				to prevent overwriting the current command's entry.
 		"""
 		self.undo_stack.append(cmd_state)
 		self.undo_stack_source.append(cmd_state.command_name)
 
 		# Update command_states for script generation
-		# Store this CommandState in the most recent entry
-		if self.command_states:
+		# Only update for new commands, not when restoring from redo stack
+		if self.command_states and update_command_states:
 			self.command_states[-1] = cmd_state
 
 		# Enable Undo only if there are active commands that can be undone

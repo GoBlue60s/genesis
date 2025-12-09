@@ -49,7 +49,11 @@ class RedoCommand:
 		# Skip Undo/Redo meta-commands - only redo actual commands
 		# But preserve them in undo stack so they appear in saved scripts
 		if cmd_state.command_name in ("Undo", "Redo"):
-			self._director.push_undo_state(cmd_state, preserve_redo_stack=True)
+			self._director.push_undo_state(
+				cmd_state,
+				preserve_redo_stack=True,
+				update_command_states=False
+			)
 			return self._redo_last_undone_command()
 
 		# Skip passive and script commands -
@@ -57,7 +61,11 @@ class RedoCommand:
 		# But preserve them in undo stack so they appear
 		# in saved scripts
 		if cmd_state.command_type in ("passive", "script"):
-			self._director.push_undo_state(cmd_state, preserve_redo_stack=True)
+			self._director.push_undo_state(
+				cmd_state,
+				preserve_redo_stack=True,
+				update_command_states=False
+			)
 			return self._redo_last_undone_command()
 
 		# Print what features are being restored
@@ -75,7 +83,11 @@ class RedoCommand:
 			)
 			if capture_method:
 				capture_method(self._director)
-		self._director.push_undo_state(current_state, preserve_redo_stack=True)
+		self._director.push_undo_state(
+			current_state,
+			preserve_redo_stack=True,
+			update_command_states=False
+		)
 
 		# Restore all captured state
 		cmd_state.restore_all_state(self._director)
@@ -87,7 +99,10 @@ class RedoCommand:
 			if next_cmd and next_cmd.command_type in ("passive", "script"):
 				passive_cmd = self._director.pop_redo_state()
 				self._director.push_undo_state(
-					passive_cmd, preserve_redo_stack=True)
+					passive_cmd,
+					preserve_redo_stack=True,
+					update_command_states=False
+				)
 			else:
 				break
 
