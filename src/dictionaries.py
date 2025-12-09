@@ -10,6 +10,133 @@ from constants import (
 	IS_CUTOFF_AN_INTEGER,
 )
 
+# Command class imports for request_dict and widget_dict
+from associationsmenu import (
+	AlikeCommand,
+	DistancesCommand,
+	LineOfSightCommand,
+	PairedCommand,
+	RanksDifferencesCommand,
+	RanksDistancesCommand,
+	RanksSimilaritiesCommand,
+	ScreeCommand,
+	ShepardCommand,
+	StressContributionCommand,
+)
+from editmenu import (
+	RedoCommand,
+	UndoCommand,
+)
+from experimental import TesterCommand
+from filemenu import (
+	ConfigurationCommand,
+	CorrelationsCommand,
+	CreateCommand,
+	DeactivateCommand,
+	EvaluationsCommand,
+	ExitCommand,
+	GroupedDataCommand,
+	IndividualsCommand,
+	NewGroupedDataCommand,
+	OpenSampleDesignCommand,
+	OpenSampleRepetitionsCommand,
+	OpenSampleSolutionsCommand,
+	OpenScoresCommand,
+	OpenScriptCommand,
+	PrintConfigurationCommand,
+	PrintCorrelationsCommand,
+	PrintEvaluationsCommand,
+	PrintGroupedDataCommand,
+	PrintIndividualsCommand,
+	PrintSampleDesignCommand,
+	PrintSampleRepetitionsCommand,
+	PrintSampleSolutionsCommand,
+	PrintScoresCommand,
+	PrintSimilaritiesCommand,
+	PrintTargetCommand,
+	SaveConfigurationCommand,
+	SaveCorrelationsCommand,
+	SaveGroupedDataCommand,
+	SaveIndividualsCommand,
+	SaveSampleDesignCommand,
+	SaveSampleRepetitionsCommand,
+	SaveSampleSolutionsCommand,
+	SaveScoresCommand,
+	SaveScriptCommand,
+	SaveSimilaritiesCommand,
+	SaveTargetCommand,
+	SettingsDisplayCommand,
+	SettingsLayoutCommand,
+	SettingsPlaneCommand,
+	SettingsPlotCommand,
+	SettingsPresentationLayerCommand,
+	SettingsSegmentCommand,
+	SettingsVectorSizeCommand,
+	SimilaritiesCommand,
+	TargetCommand,
+)
+from helpmenu import (
+	AboutCommand,
+	HelpCommand,
+	StatusCommand,
+	TerseCommand,
+	VerboseCommand,
+)
+from modelmenu import (
+	ClusterCommand,
+	DirectionsCommand,
+	FactorAnalysisCommand,
+	FactorAnalysisMachineLearningCommand,
+	MDSCommand,
+	PrincipalComponentsCommand,
+	UncertaintyCommand,
+	VectorsCommand,
+)
+from respondentsmenu import (
+	BaseCommand,
+	BattlegroundCommand,
+	ContestCommand,
+	ConvertibleCommand,
+	CoreSupportersCommand,
+	FirstDimensionCommand,
+	JointCommand,
+	LikelySupportersCommand,
+	ReferencePointsCommand,
+	SampleDesignerCommand,
+	SampleRepetitionsCommand,
+	ScoreIndividualsCommand,
+	SecondDimensionCommand,
+	SegmentsCommand,
+)
+from transformmenu import (
+	CenterCommand,
+	CompareCommand,
+	InvertCommand,
+	MoveCommand,
+	RescaleCommand,
+	RotateCommand,
+	VarimaxCommand,
+)
+from viewmenu import (
+	HistoryCommand,
+	ViewConfigurationCommand,
+	ViewCorrelationsCommand,
+	ViewCustomCommand,
+	ViewDistancesCommand,
+	ViewEvaluationsCommand,
+	ViewGroupedDataCommand,
+	ViewIndividualsCommand,
+	ViewPointUncertaintyCommand,
+	ViewSampleDesignCommand,
+	ViewSampleRepetitionsCommand,
+	ViewSampleSolutionsCommand,
+	ViewScoresCommand,
+	ViewScriptCommand,
+	ViewSimilaritiesCommand,
+	ViewSpatialUncertaintyCommand,
+	ViewTargetCommand,
+)
+
 if TYPE_CHECKING:
 	from director import Status
 
@@ -1042,134 +1169,6 @@ command_dict = MappingProxyType({
 		"script_parameters": []
 	},
 })
-
-
-# Command class imports for request_dict and widget_dict
-from associationsmenu import (
-	AlikeCommand,
-	DistancesCommand,
-	LineOfSightCommand,
-	PairedCommand,
-	RanksDifferencesCommand,
-	RanksDistancesCommand,
-	RanksSimilaritiesCommand,
-	ScreeCommand,
-	ShepardCommand,
-	StressContributionCommand,
-)
-from editmenu import (
-	RedoCommand,
-	UndoCommand,
-)
-from experimental import TesterCommand
-from filemenu import (
-	ConfigurationCommand,
-	CorrelationsCommand,
-	CreateCommand,
-	DeactivateCommand,
-	EvaluationsCommand,
-	ExitCommand,
-	GroupedDataCommand,
-	IndividualsCommand,
-	NewGroupedDataCommand,
-	OpenSampleDesignCommand,
-	OpenSampleRepetitionsCommand,
-	OpenSampleSolutionsCommand,
-	OpenScoresCommand,
-	OpenScriptCommand,
-	PrintConfigurationCommand,
-	PrintCorrelationsCommand,
-	PrintEvaluationsCommand,
-	PrintGroupedDataCommand,
-	PrintIndividualsCommand,
-	PrintSampleDesignCommand,
-	PrintSampleRepetitionsCommand,
-	PrintSampleSolutionsCommand,
-	PrintScoresCommand,
-	PrintSimilaritiesCommand,
-	PrintTargetCommand,
-	SaveConfigurationCommand,
-	SaveCorrelationsCommand,
-	SaveGroupedDataCommand,
-	SaveIndividualsCommand,
-	SaveSampleDesignCommand,
-	SaveSampleRepetitionsCommand,
-	SaveSampleSolutionsCommand,
-	SaveScoresCommand,
-	SaveScriptCommand,
-	SaveSimilaritiesCommand,
-	SaveTargetCommand,
-	SettingsDisplayCommand,
-	SettingsLayoutCommand,
-	SettingsPlaneCommand,
-	SettingsPlotCommand,
-	SettingsPresentationLayerCommand,
-	SettingsSegmentCommand,
-	SettingsVectorSizeCommand,
-	SimilaritiesCommand,
-	TargetCommand,
-)
-from helpmenu import (
-	AboutCommand,
-	HelpCommand,
-	StatusCommand,
-	TerseCommand,
-	VerboseCommand,
-)
-from modelmenu import (
-	ClusterCommand,
-	DirectionsCommand,
-	FactorAnalysisCommand,
-	FactorAnalysisMachineLearningCommand,
-	MDSCommand,
-	PrincipalComponentsCommand,
-	UncertaintyCommand,
-	VectorsCommand,
-)
-from respondentsmenu import (
-	BaseCommand,
-	BattlegroundCommand,
-	ContestCommand,
-	ConvertibleCommand,
-	CoreSupportersCommand,
-	FirstDimensionCommand,
-	JointCommand,
-	LikelySupportersCommand,
-	ReferencePointsCommand,
-	SampleDesignerCommand,
-	SampleRepetitionsCommand,
-	ScoreIndividualsCommand,
-	SecondDimensionCommand,
-	SegmentsCommand,
-)
-from transformmenu import (
-	CenterCommand,
-	CompareCommand,
-	InvertCommand,
-	MoveCommand,
-	RescaleCommand,
-	RotateCommand,
-	VarimaxCommand,
-)
-from viewmenu import (
-	HistoryCommand,
-	ViewConfigurationCommand,
-	ViewCorrelationsCommand,
-	ViewCustomCommand,
-	ViewDistancesCommand,
-	ViewEvaluationsCommand,
-	ViewGroupedDataCommand,
-	ViewIndividualsCommand,
-	ViewPointUncertaintyCommand,
-	ViewSampleDesignCommand,
-	ViewSampleRepetitionsCommand,
-	ViewSampleSolutionsCommand,
-	ViewScoresCommand,
-	ViewScriptCommand,
-	ViewSimilaritiesCommand,
-	ViewSpatialUncertaintyCommand,
-	ViewTargetCommand,
-)
 
 
 # ----------------------------------------------------------------------------
@@ -3793,8 +3792,10 @@ title_generator_dict = MappingProxyType({
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
 	"Sample designer": lambda d: (
-		f"Sample design - Size of universe: {d.uncertainty_active.universe_size}, "
-		f"Probability of inclusion: {d.uncertainty_active.probability_of_inclusion}"
+		"Sample design - Size of universe: "
+		f"{d.uncertainty_active.universe_size}, "
+		"Probability of inclusion: "
+		f"{d.uncertainty_active.probability_of_inclusion}"
 	),
 	"Sample repetitions": lambda d: (
 		f"Sample repetitions - Size of universe: {d.uncertainty_active.universe_size}"

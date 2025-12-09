@@ -1839,11 +1839,9 @@ class OpenScoresCommand:
 						self._director.scores_active.vert_axis_name
 					)
 
-		except (ValueError, SpacesError) as e:
-			# read_csv_with_type_check already handles restoration
-			# for SpacesError. Handle restoration for ValueError here.
-			if isinstance(e, ValueError):
-				self.common.event_driven_optional_restoration("scores")
+		except ValueError as e:
+			# Handle restoration for ValueError
+			self.common.event_driven_optional_restoration("scores")
 			# Raise exception to stop command execution
 			raise SpacesError(
 				self._scores_error_bad_input_title,

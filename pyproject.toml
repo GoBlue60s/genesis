@@ -40,6 +40,7 @@ ignore = [
     # --- Code cleanliness / style issues ---
     "ERA001",  # Found commented-out code
     "RET504",  # Unnecessary variable assignment before return (intentionally ignored for preferred return style)
+    "RET505",  # Unnecessary else after return (conflicts with TRY300; prefer explicit else in try/except blocks)
     # "PLR0913", # Too many arguments in fuction definition - more than 5
     "PLR1711", # Useless `return` statement (e.g., return None at end of function)
     "PLR2044", # Line with empty comment 

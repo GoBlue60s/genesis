@@ -1336,6 +1336,7 @@ class Status(QMainWindow):
 	def push_undo_state(
 		self,
 		cmd_state: CommandState,
+		*,
 		preserve_redo_stack: bool = False
 	) -> None:
 		"""Push a CommandState onto the undo stack.

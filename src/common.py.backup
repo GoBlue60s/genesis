@@ -14,8 +14,8 @@ import pandas as pd
 import peek
 
 from pyqtgraph.Qt import QtCore
-from PySide6.QtPrintSupport import QPrinter, QPrintDialog
 from PySide6.QtGui import QFont, QTextDocument
+from PySide6.QtPrintSupport import QPrinter, QPrintDialog
 from PySide6.QtWidgets import (
 	QDialog,
 	QInputDialog,
@@ -48,7 +48,7 @@ from exceptions import (
 )
 
 from geometry import PlotExtremes
-from typing import Any, TextIO, TYPE_CHECKING
+from typing import TextIO, TYPE_CHECKING
 
 if TYPE_CHECKING:
 	# from collections.abc import Callable
@@ -2415,11 +2415,12 @@ class Spaces:
 			]
 			file_handle.write("".join(lines))
 			lines = [
-				" ".join(
-					str(source.point_coords.iloc[each_point].iloc[each_dim]) \
-						+ " "
+				"".join(
+					str(source.point_coords.iloc[each_point].iloc[each_dim])
+					+ " "
 					for each_dim in source.range_dims
-				) + "\n"
+				) + "
+"
 				for each_point in source.range_points
 			]
 			file_handle.write("".join(lines))
@@ -2609,8 +2610,8 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def get_command_parameters(
-		self, command_name: str, **kwargs: object
-	) -> dict[str, Any]:
+		self, command_name: str, **kwargs
+	) -> dict[str, any]:
 		"""Get command parameters from script or interactive dialogs.
 
 		This helper function consolidates the repetitive pattern of checking
@@ -2940,7 +2941,7 @@ class Spaces:
 		caption = getter_info.get("caption", "Open file")
 		file_filter = getter_info.get("filter", "*.*")
 		mode = getter_info.get("mode", "open")
-		directory = getter_info.get("directory")
+		directory = getter_info.get("directory", None)
 
 		# Use appropriate dialog based on mode
 		if mode == "save":
@@ -3041,7 +3042,7 @@ class Spaces:
 		options = getter_info.get("options", [])
 
 		# Support dynamic options building
-		options_builder = getter_info.get("options_builder")
+		options_builder = getter_info.get("options_builder", None)
 		if options_builder:
 			options = self._build_dynamic_options(
 				options_builder, getter_info
@@ -3157,7 +3158,7 @@ class Spaces:
 		message = getter_info.get("message", "")
 		min_value = getter_info.get("min_value", 1)
 		max_value = getter_info.get("max_value", 100)
-		default_value = getter_info.get("default_value")
+		default_value = getter_info.get("default_value", None)
 
 		dialog = GetIntegerDialog(
 			title, message, min_value, max_value, default_value
@@ -3317,7 +3318,7 @@ class Spaces:
 		if boolean_params:
 			params = {}
 			obtained = self._director.obtained_parameters
-			for each_param, (_, value) in zip(
+			for each_param, (label, value) in zip(
 				boolean_params, values, strict=True
 			):
 				params[each_param] = value
@@ -3444,7 +3445,7 @@ class Spaces:
 		Returns:
 			List of items
 		"""
-		items_source = getter_info.get("items_source")
+		items_source = getter_info.get("items_source", None)
 		if items_source:
 			# Handle dotted attribute paths
 			obj = self._director
@@ -3465,10 +3466,10 @@ class Spaces:
 		Returns:
 			List of default values or None
 		"""
-		default_values = getter_info.get("default_values")
+		default_values = getter_info.get("default_values", None)
 
 		# Resolve dynamic defaults if defaults_source is specified
-		defaults_source = getter_info.get("defaults_source")
+		defaults_source = getter_info.get("defaults_source", None)
 		if defaults_source:
 			# Get current values from common instance
 			default_values = [
@@ -3492,7 +3493,7 @@ class Spaces:
 		defaults = getter_info.get("defaults", [])
 
 		# Resolve dynamic defaults if defaults_source is specified
-		defaults_source = getter_info.get("defaults_source")
+		defaults_source = getter_info.get("defaults_source", None)
 		if defaults_source:
 			# Get current values from common instance
 			multiplier = getter_info.get("defaults_multiplier", 1)
@@ -3530,7 +3531,7 @@ class Spaces:
 		"""
 		builder_method = getattr(self, options_builder, None)
 		if builder_method:
-			options_source = getter_info.get("options_source")
+			options_source = getter_info.get("options_source", None)
 			if options_source:
 				# Get source data (e.g., dim_names from configuration)
 				obj = self._director
@@ -3621,7 +3622,7 @@ class Spaces:
 
 			# Convert index to name for focal_item_dialog parameters
 			if getter_type == "focal_item_dialog":
-				items_source = getter_info.get("items_source")
+				items_source = getter_info.get("items_source", None)
 				if items_source:
 					# Handle dotted attribute paths
 					# like "configuration_active.point_names"
@@ -3669,7 +3670,7 @@ class Spaces:
 
 		# Find all commands that match the beginning of the line
 		matching_commands = [
-			cmd for cmd in command_dict
+			cmd for cmd in command_dict.keys()
 			if line_text.startswith(cmd + " ") or line_text == cmd
 		]
 
@@ -3818,9 +3819,7 @@ class Spaces:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState(command_name, command_type, parameters)
-		cmd_state.timestamp = datetime.now(tz=datetime.UTC).strftime(
-			"%Y-%m-%d %H:%M:%S"
-		)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		# Capture all required feature states
 		state_capture_list = command_dict[command_name]["state_capture"]
@@ -3840,7 +3839,7 @@ class Spaces:
 
 	def _capture_feature_states(
 		self,
-		cmd_state: CommandState,
+		cmd_state,
 		state_capture_list: list[str],
 		command_name: str
 	) -> None:
@@ -3908,9 +3907,7 @@ class Spaces:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState(command_name, "passive", parameters or {})
-		cmd_state.timestamp = datetime.now(tz=datetime.UTC).strftime(
-			"%Y-%m-%d %H:%M:%S"
-		)
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		# Passive commands don't clear redo stack - they're read-only
 		# and shouldn't affect undo/redo navigation
@@ -4055,32 +4052,34 @@ class Spaces:
 				if cmd_state is not None:
 					cmd_state.restore_all_state(self._director)
 				return True  # Feature was restored
-			else:
-				# User chose No - clear the feature by reinitializing it
-				# The caller is expected to have the appropriate Feature class
-				# imported and will pass the feature_name that corresponds to
-				# an attribute like "{feature_name}_active" on director
-				attr_name = f"{feature_name}_active"
+			# else:
+			# User chose No - clear the feature by reinitializing it
+			# The caller is expected to have the appropriate Feature class
+			# imported and will pass the feature_name that corresponds to
+			# an attribute like "{feature_name}_active" on director
+			attr_name = f"{feature_name}_active"
 
-				# Get the current feature's class and reinitialize
-				current_feature = getattr(self._director, attr_name)
-				feature_class = type(current_feature)
-				setattr(
-					self._director,
-					attr_name,
-					feature_class(self._director)
-				)
+			# Get the current feature's class and reinitialize
+			current_feature = getattr(self._director, attr_name)
+			feature_class = type(current_feature)
+			setattr(
+				self._director,
+				attr_name,
+				feature_class(self._director)
+			)
 
-				# Pop the undo state to keep the stack consistent
-				self._director.pop_undo_state()
-				return False  # Feature was cleared, not restored
+			# Pop the undo state to keep the stack consistent
+			self._director.pop_undo_state()
+			return False  # Feature was cleared, not restored
 
-		except RuntimeError:
+		except Exception:
 			# Dialog failed - automatically restore to be safe
 			cmd_state = self._director.pop_undo_state()
 			if cmd_state is not None:
 				cmd_state.restore_all_state(self._director)
 			return True
+
+		return True
 
 	# ------------------------------------------------------------------------
 
@@ -4155,7 +4154,7 @@ class Spaces:
 		df: pd.DataFrame,
 		file_name: str,
 		file_type: str,
-		**kwargs: object
+		**kwargs
 	) -> None:
 		"""Write CSV file with type identification header.
 
@@ -4175,7 +4174,7 @@ class Spaces:
 			label1,label2,label3
 			1.0,2.0,3.0
 		"""
-		with Path(file_name).open('w', encoding='utf-8') as f:
+		with open(file_name, 'w', encoding='utf-8') as f:
 			f.write(f"# TYPE: {file_type.upper()}\n")
 		df.to_csv(file_name, mode='a', **kwargs)
 		return
@@ -4205,7 +4204,7 @@ class Spaces:
 		"""
 		try:
 			# Check type header
-			with Path(file_name).open('r', encoding='utf-8') as f:
+			with open(file_name, 'r', encoding='utf-8') as f:
 				first_line = f.readline().strip()
 				if not first_line.startswith("# TYPE:"):
 					self.event_driven_automatic_restoration()
@@ -4265,6 +4264,7 @@ class Spaces:
 	def print_to_printer(self, text: str) -> None:
 		"""Send text to a physical printer."""
 
+
 		printer = QPrinter(QPrinter.PrinterMode.HighResolution)
 		dialog = QPrintDialog(printer)
 
@@ -4281,9 +4281,7 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def capture_and_print(
-	self, func: object, *args: object, **kwargs: object
-) -> None:
+	def capture_and_print(self, func, *args, **kwargs) -> None:
 		"""Capture stdout from a function and send it to a printer."""
 
 		# Capture stdout

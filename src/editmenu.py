@@ -134,7 +134,7 @@ class RedoCommand:
 		"""
 		# Build and return restoration details table
 		table_widget = self._build_restoration_table(self._restored_cmd_state)
-		self._director.output_widget_type: str = "Table"
+		self._director.output_widget_type = "Table"
 		return table_widget
 
 	# ------------------------------------------------------------------------
@@ -327,7 +327,7 @@ class UndoCommand:
 		"""
 		# Build and return restoration details table
 		table_widget = self._build_restoration_table(self._restored_cmd_state)
-		self._director.output_widget_type: str = "Table"
+		self._director.output_widget_type = "Table"
 		return table_widget
 
 	# ------------------------------------------------------------------------
@@ -695,51 +695,42 @@ class UndoCommand:
 		"""
 		restored_types = cmd_state.state_snapshot.keys()
 
-		# Print and plot configuration if it was restored
-		if "configuration" in restored_types and \
-			self.common.have_active_configuration():
-				self._director.configuration_active.print_active_function()
-				self.common.create_plot_for_tabs("configuration")
+		# Handle features with common parameters
+		features_with_params = {
+			"correlations":
+				self._director.correlations_active.print_the_correlations,
+			"similarities":
+				self._director.similarities_active.print_the_similarities,
+		}
+		for feature_name, print_method in features_with_params.items():
+			if feature_name in restored_types:
+				print_method(
+					self.common.width, self.common.decimals, self.common
+				)
 
-		# Print target if it was restored
-		if "target" in restored_types and \
-			self.common.have_target_configuration():
-				self._director.target_active.print_target()
-				self.common.create_plot_for_tabs("target")
+		# Handle simple features
+		simple_features = {
+			"configuration":
+				self._director.configuration_active.print_active_function,
+			"target":
+				self._director.target_active.print_target,
+			"evaluations":
+				self._director.evaluations_active.print_the_evaluations,
+			"grouped_data":
+				self._director.grouped_data_active.print_grouped_data,
+			"individuals":
+				self._director.individuals_active.print_individuals,
+			"scores":
+				self._director.scores_active.print_scores,
+		}
+		for feature_name, print_method in simple_features.items():
+			if feature_name in restored_types:
+				print_method()
 
-		# Print correlations if they were restored
-		if "correlations" in restored_types:
-			self._director.correlations_active.print_the_correlations(
-				self.common.width, self.common.decimals, self.common
-			)
-
-		# Print evaluations if they were restored
-		if "evaluations" in restored_types:
-			self._director.evaluations_active.print_the_evaluations()
-
-		# Print grouped data if it was restored
-		if "grouped_data" in restored_types:
-			self._director.grouped_data_active.print_grouped_data()
-
-		# Print individuals if they were restored
-		if "individuals" in restored_types:
-			self._director.individuals_active.print_individuals()
-
-		# Print scores if they were restored
-		if "scores" in restored_types:
-			self._director.scores_active.print_scores()
-
-		# Print similarities if they were restored
-		if "similarities" in restored_types:
-			self._director.similarities_active.print_the_similarities(
-				self.common.width, self.common.decimals, self.common
-			)
-
-		# Print settings if they were restored (based on command name)
+		# Handle special cases
 		if "settings" in restored_types:
 			self._print_restored_settings(cmd_state.command_name)
 
-		# Print rivalry if it was restored
 		if "rivalry" in restored_types:
 			self._print_restored_rivalry()
 
