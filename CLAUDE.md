@@ -42,7 +42,7 @@ python src/spaces.py
 ### Python Environment
 
 - This project uses a virtual environment (`venv/`)
-- Target Python version: 3.13
+- Target Python version: 3.14
 - Activate the virtual environment before running commands
 
 ## Code Architecture
@@ -83,7 +83,7 @@ This project follows specific coding standards defined in `.github/copilot-instr
 
 ### Formatting (Enforced by Ruff)
 
-- **Indentation**: Use tabs (not spaces)
+- **Indentation**: Use 2 spaces
 - **Line length**: 79 characters maximum
 - **Quotes**: Double quotes for string literals
 - **Imports**: Standard library, third-party, then local imports

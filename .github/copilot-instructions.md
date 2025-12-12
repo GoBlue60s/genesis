@@ -8,7 +8,7 @@
 - Use double quotes for **string literals**
 
 ## PEP 8 Compliance
-- **Indentation** Use **tabs** per indentation level. No spaces.
+- **Indentation** Use **2 spaces** per indentation level. No tabs.
 - **Line length** - limit lines to **79 characters**. 
   Use Parentheses (not backslashes) for line continuation.
 - **Blank lines:**
