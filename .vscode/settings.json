@@ -1,0 +1,19 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
+    "search.exclude": {
+        "**": true,
+        "src/**": false
+    },
+    "editor.find.seedSearchStringFromSelection": "never",
+    "editor.find.autoFindInSelection": "never",
+    "workbench.colorCustomizations": {
+        // For the hint text color
+        "editorInlayHint.foreground": "#666666", // Dim gray — adjust to taste
+        "editorInlayHint.background": "#00000000", // Transparent background
+        // You can also set separate colors for parameter vs type hints
+        "editorInlayHint.typeForeground": "#777777",
+        "editorInlayHint.parameterForeground": "#888888"
+    },
+    "ruff.organizeImports": false,
+    "ruff.lint.enable": true
+}

@@ -220,8 +220,8 @@ class Status(QMainWindow):
 	# ------------------------------------------------------------------------
 
 	def create_tabs(self) -> None:
-		self.tab_height: int = 600  # 1000
-		self.tab_width: int = 800  # 1000
+		self.tab_height: int = 800  # 1000
+		self.tab_width: int = 1200  # 1000
 		self.setGeometry(1500, 300, self.tab_width, self.tab_height)
 		# 100, 100
 		# 1500, 800

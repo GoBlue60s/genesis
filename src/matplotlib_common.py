@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 	from director import Status
 
 from exceptions import SelectionError
+from constants import MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
 
 # ------------------------------------------------------------------------
 
@@ -304,6 +305,62 @@ class MatplotlibCommon:
 
 		fig = self._director.current_command.plot_a_heatmap_using_matplotlib()
 		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		return
+
+	# ------------------------------------------------------------------------
+
+	def plot_conf_w_scree(self) -> plt.Figure | None:
+		director = self._director
+		matplotlib_common = self
+		configuration_active = director.configuration_active
+		ndim = configuration_active.ndim
+
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			director.set_focus_on_tab("Output")
+			return None
+
+		fig, (ax1, ax2) = plt.subplots(1, 2)
+		fig.set_size_inches(10, 5)
+
+		# Configuration Plot (ax1)
+		# Replicating logic from plot_a_configuration_using_matplotlib
+		# fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(None) -> Already have ax1
+		# Note: begin_matplotlib_plot_with_title sets title, here we skip setting title or set None
+		# ax1.set_title(None) 
+		
+		ax1 = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax1)
+		matplotlib_common.add_axes_labels_to_matplotlib_plot(ax1)
+		matplotlib_common.set_ranges_for_matplotlib_plot(ax1)
+		matplotlib_common.add_connector_to_matplotlib_plot(ax1)
+		matplotlib_common.add_bisector_to_matplotlib_plot(ax1)
+		matplotlib_common.add_configuration_to_matplotlib_plot(ax1)
+
+		# Scree Factor Plot (ax2)
+		# Replicating logic from _plot_scree_factor_using_matplotlib
+		evaluations = director.evaluations_active.evaluations
+		eigen = director.configuration_active.eigen
+		
+		ax2.set_title("Scree Diagram")
+		xvals = range(1, evaluations.shape[1] + 1)
+		ax2.scatter(xvals, eigen)
+		ax2.plot(xvals, eigen)
+		ax2.set_xlabel("Factors")
+		ax2.set_ylabel("Eigenvalue")
+		ax2.grid(True)
+
+		fig.tight_layout()
+		return fig
+
+	# ------------------------------------------------------------------------
+
+	def request_conf_w_scree_plot_for_tabs_using_matplotlib(self) -> None:
+		point_coords = self._director.configuration_active.point_coords
+		self._director.common.set_axis_extremes_based_on_coordinates(point_coords)
+
+		fig = self.plot_conf_w_scree()
+		if fig is not None:
+			self.plot_to_gui_using_matplotlib(fig)
+			self._director.set_focus_on_tab("Plot")
 		return
 
 	# ------------------------------------------------------------------------

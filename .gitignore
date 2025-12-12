@@ -161,7 +161,7 @@ cython_debug/
 .idea/
 
 # VS Code
-.vscode/
+# .vscode/
 
 # Ruff cache
 .ruff_cache/

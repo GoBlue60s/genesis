@@ -366,6 +366,90 @@ class PyQtGraphCommon:
 		line = pg.PlotDataItem(x_coords, y_coords, pen=pen)
 		plot.addItem(line)
 		return graphics_layout_widget
+	# ------------------------------------------------------------------------
+	
+	def request_conf_w_scree_plot_for_tabs_using_pyqtgraph(self) -> None:
+		point_coords = self._director.configuration_active.point_coords
+		self._director.common.set_axis_extremes_based_on_coordinates(point_coords)
+		
+		tab_plot_widget = self.plot_conf_w_scree()
+		tab_gallery_widget = self.plot_conf_w_scree()
+		self.plot_to_gui_using_pyqtgraph(
+			tab_plot_widget, tab_gallery_widget
+		)
+		self._director.set_focus_on_tab("Plot")
+		return
+
+	def plot_conf_w_scree(self) -> pg.GraphicsLayoutWidget:
+		graphics_layout_widget = pg.GraphicsLayoutWidget()
+		graphics_layout_widget.setBackground("w")
+
+		# --- Configuration Plot (Left) ---
+		point_coords = self._director.configuration_active.point_coords
+		director = self._director
+		common = director.common
+		hor_dim = common.hor_dim
+		vert_dim = common.vert_dim
+		configuration_active = director.configuration_active
+		point_labels = configuration_active.point_labels
+		range_points = configuration_active.range_points
+		point_size = common.point_size
+		
+		plot_conf = graphics_layout_widget.addPlot(title=None)
+		plot_conf = self.set_aspect_and_grid_in_pyqtgraph_plot(plot_conf)
+		self.add_axes_labels_to_pyqtgraph_plot(plot_conf)
+		self.set_ranges_for_pyqtgraph_plot(plot_conf)
+		self.add_connector_to_pyqtgraph_plot(plot_conf)
+		self.add_bisector_to_pyqtgraph_plot(plot_conf)
+		
+		# Add configuration points
+		x_coords = []
+		y_coords = []
+		for each_point in range_points:
+			x_coords.append(point_coords.iloc[each_point, hor_dim])
+			y_coords.append(point_coords.iloc[each_point, vert_dim])
+			a_label = pg.TextItem(
+				text=point_labels[each_point], color="k", border="w", fill=None
+			)
+			a_label.setPos(
+				point_coords.iloc[each_point, hor_dim],
+				point_coords.iloc[each_point, vert_dim],
+			)
+			plot_conf.addItem(a_label)
+		
+		pen = pg.mkPen(color="black")
+		plot_conf.scatterPlot(
+			x_coords,
+			y_coords,
+			pen=pen,
+			symbol="o",
+			symbolSize=point_size,
+			symbolBrush="k",
+		)
+
+		# --- Scree Factor Plot (Right) ---
+		evaluations = self._director.evaluations_active.evaluations
+		eigen = self._director.configuration_active.eigen
+		
+		plot_scree = graphics_layout_widget.addPlot(title="Scree Diagram")
+		plot_scree.showGrid(x=True, y=True)
+		plot_scree.setLabel('bottom', "Number of Factors", color="k", size='15pt')
+		plot_scree.setLabel('left', "Eigenvalue", color="k", size='15pt')
+		
+		pen_scree = pg.mkPen(color=(255, 0, 0))
+		x_coords_scree = range(1, evaluations.shape[1] + 1)
+		y_coords_scree = eigen["Eigenvalue"].tolist()
+		max_eigen = math.ceil(eigen.iloc[0])
+		
+		plot_scree.disableAutoRange("xy")
+		plot_scree.setYRange(0, max_eigen, padding=0)
+		plot_scree.setXRange(1, len(x_coords_scree), padding=None)
+		
+		line = pg.PlotDataItem(x_coords_scree, y_coords_scree, pen=pen_scree)
+		plot_scree.addItem(line)
+		
+		return graphics_layout_widget
+
 	# -----------------------------------------------------------------------
 
 	def plot_shep_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:

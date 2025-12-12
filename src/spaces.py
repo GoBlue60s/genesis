@@ -63,12 +63,12 @@ class MyApplication:
 		self.welcome_splash = SplashWindow()
 		self.welcome_splash.show()
 		print(
-			f"\nIn this version of Spaces there are "
-			f"{len(self.director.request_dict)} "
-			f"menu items, "
-			f"{len(self.director.widget_dict)} widgets, "
-			f"and {len(self.director.commands)} commands "
-			f"available."
+			f"\nIn this version of {self.director.right_statusbar_message} "
+			f"there are {len(self.director.request_dict)} menu items, "
+			f"\n{len(self.director.widget_dict)} widgets, "
+			f"{len(self.director.commands)} commands and "
+			f"{len(self.director.title_generator_dict)} tables available."
+			"\n\nHave fun - Go boldly where no man has gone before!!!!!!! \n"
 		)
 		# peek("Peek seems to be working") # ty: ignore[call-non-callable]
 		self.start_event_loop()
@@ -124,6 +124,5 @@ class MyApplication:
 if __name__ == "__main__":
 
 	my_app = MyApplication()
-	print("DEBUG: MyApplication initialized")
 	my_app.execute()
-	print("DEBUG: execute returned")
+	

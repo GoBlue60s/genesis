@@ -827,7 +827,13 @@ class Spaces:
 		if plot_type in plots_needed_for_choice and \
 			self._director.executing_script:
 			return
-		common_plot_types = ["differences", "scree", "scree_factor", "shepard"]
+		common_plot_types = [
+		"differences",
+		"scree",
+		"scree_factor",
+		"shepard",
+		"conf_w_scree",
+	]
 		if self._director.common.presentation_layer == "PyQtGraph":
 			try:
 				if plot_type in common_plot_types:

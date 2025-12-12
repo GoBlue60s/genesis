@@ -65,7 +65,4 @@ ignore = [
 [tool.ruff.lint.pylint]
 max-args = 10
 
-[tool.ruff.format]
-# Use tabs for indentation as per your coding style
-indent-style = "tab"
-quote-style = "double"
+

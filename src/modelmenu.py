@@ -685,8 +685,9 @@ class FactorAnalysisCommand:
 		self._fill_configuration()
 		self._print_factor_analysis_results()
 		# Scree plot temporarily disabled - needs eigenvalue support
-		common.create_plot_for_tabs("scree_factor")
-		common.create_plot_for_tabs("configuration")
+		# common.create_plot_for_tabs("scree_factor")
+		# common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("conf_w_scree")
 		director.create_widgets_for_output_and_log_tabs()
 		director.record_command_as_successfully_completed()
 		return
@@ -1002,8 +1003,9 @@ class FactorAnalysisMachineLearningCommand:
 		self._perform_factor_analysis_m_l_and_setup(n_components)
 		# Scree plot temporarily disabled - needs eigenvalue support
 		# common.create_plot_for_tabs("scree")
-		common.create_plot_for_tabs("scree_factor")
-		common.create_plot_for_tabs("configuration")
+		# common.create_plot_for_tabs("scree_factor")
+		# common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("conf_w_scree")
 		self._display()
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
