@@ -439,7 +439,7 @@ class PyQtGraphCommon:
 		pen_scree = pg.mkPen(color=(255, 0, 0))
 		x_coords_scree = range(1, evaluations.shape[1] + 1)
 		y_coords_scree = eigen["Eigenvalue"].tolist()
-		max_eigen = math.ceil(eigen.iloc[0])
+		max_eigen = math.ceil(eigen["Eigenvalue"].iloc[0])
 		
 		plot_scree.disableAutoRange("xy")
 		plot_scree.setYRange(0, max_eigen, padding=0)

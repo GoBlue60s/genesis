@@ -666,8 +666,9 @@ class ScreeCommand:
 		for each_n_comp in range_ncomps:
 			nmds = manifold.MDS(
 				n_components=each_n_comp,
-				metric=self._use_metric,
-				dissimilarity="precomputed",
+				metric='precomputed',
+				metric_mds=self._use_metric,
+				init='random',
 				n_init=20,
 				verbose=0,
 				normalized_stress="auto",

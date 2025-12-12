@@ -1182,7 +1182,9 @@ class PyQtGraphMethods:
 		avg_eval = evaluations_active.avg_eval
 		names_eval_sorted = evaluations_active.names_eval_sorted
 
-		graphics_layout_widget = PlotWidget()
+		graphics_layout_widget = pg.GraphicsLayoutWidget()
+		graphics_layout_widget.setBackground("w")
+		plot = graphics_layout_widget.addPlot()
 
 		# Get the mean values in sorted order (highest to lowest)
 		# Use names_eval_sorted to get the correct order
@@ -1197,15 +1199,14 @@ class PyQtGraphMethods:
 		bar_graph_item = BarGraphItem(
 			x=centers, height=0.6, width=widths, y=indices, brush="b", pen="k"
 		)
-		graphics_layout_widget.addItem(bar_graph_item)
+		plot.addItem(bar_graph_item)
 
 		# Custom ticks (labels) on the y-axis
-		y_axis = graphics_layout_widget.getAxis("left")
+		y_axis = plot.getAxis("left")
 		y_labels = names_eval_sorted[::-1]  # Reverse order-match mean_values
 
 		y_axis.setTicks([[(i, label) for i, label in enumerate(y_labels)]])
-		graphics_layout_widget.getAxis("bottom").setLabel("Average Evaluation")
-		graphics_layout_widget.setBackground("w")
+		plot.getAxis("bottom").setLabel("Average Evaluation")
 
 		director.set_focus_on_tab("Plot")
 

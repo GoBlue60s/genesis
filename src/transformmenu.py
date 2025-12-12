@@ -41,10 +41,7 @@ class CompareCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
-		self._director.dependency_checker.detect_limitations_violations()
+		common.initiate_command_processes()
 		common.capture_and_push_undo_state("Compare", "active", {})
 
 		self._director.target_active.disparity = self._compare()
@@ -152,9 +149,7 @@ class CenterCommand:
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces) -> None:
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		common.capture_and_push_undo_state("Center", "active", {})
 		self._center_by_subtracting_mean_from_coordinates()
 		self._director.scores_active.scores = pd.DataFrame()
@@ -201,9 +196,7 @@ class InvertCommand:
 
 	def execute(self, common: Spaces) -> None:
 		rivalry = self._director.rivalry
-		self._director.record_command_as_selected_and_in_process()
-		self._director.optionally_explain_what_command_does()
-		self._director.dependency_checker.detect_dependency_problems()
+		common.initiate_command_processes()
 		params = common.get_command_parameters("Invert")
 		selected_items: list = params["dimensions"]
 		dim_names = self._director.configuration_active.dim_names

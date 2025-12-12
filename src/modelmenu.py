@@ -306,7 +306,7 @@ class ClusterCommand:
 	def _calculate_reference_point_proximity(
 		self,
 		cluster_centers: np.ndarray,
-		n_clusters: int,  # noqa: ARG002
+		n_clusters: int,
 	) -> tuple[list[str], list[list[str]]]:
 		"""Calculate percentage closer to each reference point"""
 		if not self._director.common.have_reference_points():
@@ -1398,10 +1398,10 @@ class FactorAnalysisMachineLearningCommand:
 	def _print_factor_analysis_m_l_results(
 		self,
 		scaler: object,
-		X: pd.DataFrame,
-		transformer: object,  # noqa: N803
-		X_transformed: pd.DataFrame,
-		x_trans: pd.DataFrame,  # noqa: N803
+		X: pd.DataFrame, # noqa: N803
+		transformer: object,
+		X_transformed: pd.DataFrame, # noqa: N803
+		x_trans: pd.DataFrame,
 		covar: pd.DataFrame,
 		trans: pd.DataFrame,
 		nreferent: int,
@@ -1735,8 +1735,9 @@ class MDSCommand:
 		for each_n_comp in range_ncomps:
 			nmds = manifold.MDS(
 				n_components=each_n_comp,
-				metric=use_metric,
-				dissimilarity="precomputed",
+				metric='precomputed',
+				metric_mds=use_metric,
+				init='random',
 				n_init=20,
 				verbose=0,
 				normalized_stress="auto",
@@ -1924,14 +1925,14 @@ class PrincipalComponentsCommand:
 		# evaluations = self._director.evaluations_active.evaluations
 		X_pca = self._director.evaluations_active.evaluations  # noqa: N806
 		#
-		# Fit PCA with 10 components to get eigenvalues
+		# Fit PCA with  to get eigenvalues
 		#
 		pca_for_eigenvalues = PCA(
 			n_components=len(item_names), copy=True, random_state=0
 		)
 		pca_for_eigenvalues.fit(X_pca)
-		self._director.configuration_active.eigen = (
-			pca_for_eigenvalues.explained_variance_
+		self._director.configuration_active.eigen = pd.DataFrame(
+			pca_for_eigenvalues.explained_variance_, columns=["Eigenvalue"]
 		)
 		#
 		# Fit PCA with requested n_components for main analysis
@@ -2529,7 +2530,8 @@ class UncertaintyCommand:
 		"""Create sample design with random selections for each repetition.
 
 		Args:
-				probability_of_inclusion: Percentage chance of including each case
+				probability_of_inclusion: Percentage chance of including each
+					case
 				nrepetitions: Number of repetitions to generate
 				universe_size: Total number of cases in the universe
 		"""

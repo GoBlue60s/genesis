@@ -1385,8 +1385,9 @@ class Spaces:
 		configuration.dim_labels = []
 		nmds = manifold.MDS(
 			n_components=extract_ndim,
-			metric=use_metric,
-			dissimilarity="precomputed",
+			metric='precomputed',
+			metric_mds=use_metric,
+			init='random',
 			n_init=10,
 			verbose=0,
 			normalized_stress="auto",
