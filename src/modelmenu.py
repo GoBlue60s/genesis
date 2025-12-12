@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from factor_analyzer import FactorAnalyzer
 import numpy as np
 import pandas as pd
-import peek # noqa: F401
+import peek  # noqa: F401
 import random
 
 
@@ -47,13 +47,14 @@ class ClusterCommand:
 		self.common = common
 		self._director.command = "Cluster"
 		self.selection_title = "Select Data Source for Clustering"
-		self.selection_message = \
+		self.selection_message = (
 			"Choose which data source to use for clustering"
+		)
 		self.data_source_options = [
 			"distances",
 			"evaluations",
 			"scores",
-			"similarities"
+			"similarities",
 		]
 		self.selection_required_title = "Selection required"
 		self.selection_required_message = (
@@ -70,7 +71,7 @@ class ClusterCommand:
 		return
 
 	# ------------------------------------------------------------------------
-		
+
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
 
@@ -85,20 +86,23 @@ class ClusterCommand:
 		# For interactive mode, need to update max_val based on data size
 		if not self._director.executing_script:
 			from dictionaries import command_dict  # noqa: PLC0415
+
 			# Temporarily update the max_val for n_clusters based on data
-			self.number_clusters_max_allowed = \
-				min(15, len(self.data_for_clustering) - 1)
+			self.number_clusters_max_allowed = min(
+				15, len(self.data_for_clustering) - 1
+			)
 			# Update metadata temporarily for this call
-			original_max = \
-				command_dict["Cluster"]["interactive_getters"]["n_clusters"]["max_val"]
-			command_dict[
-				"Cluster"]["interactive_getters"]["n_clusters"]["max_val"] = \
-				self.number_clusters_max_allowed
+			original_max = command_dict["Cluster"]["interactive_getters"][
+				"n_clusters"
+			]["max_val"]
+			command_dict["Cluster"]["interactive_getters"]["n_clusters"][
+				"max_val"
+			] = self.number_clusters_max_allowed
 			params_step2 = common.get_command_parameters("Cluster")
 			# Restore original max_val
-			command_dict[
-				"Cluster"]["interactive_getters"]["n_clusters"][
-				"max_val"] = original_max
+			command_dict["Cluster"]["interactive_getters"]["n_clusters"][
+				"max_val"
+			] = original_max
 			n_clusters = params_step2["n_clusters"]
 		else:
 			# Script mode: use parameter from script
@@ -117,18 +121,14 @@ class ClusterCommand:
 		# Note: if name_source == "scores", we already capture scores
 
 		# Build parameters dict for redo/scripting
-		params = {
-			"data_source": name_source,
-			"n_clusters": n_clusters
-		}
+		params = {"data_source": name_source, "n_clusters": n_clusters}
 
 		# Capture state using helper - manually iterate state_to_capture
 		from command_state import CommandState  # noqa: PLC0415
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState("Cluster", "active", params)
-		cmd_state.timestamp = datetime.now().strftime(
-			"%Y-%m-%d %H:%M:%S")
+		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 		for item in state_to_capture:
 			if item == "configuration":
@@ -155,12 +155,14 @@ class ClusterCommand:
 
 		# Store original data for plotting when clustering scores
 		if name_source == "scores":
-			self._director.scores_active.original_clustered_data = \
+			self._director.scores_active.original_clustered_data = (
 				self.data_for_clustering.copy()
+			)
 		else:
 			# For non-score clustering, store the data for plotting
-			self._director.scores_active.original_clustered_data = \
+			self._director.scores_active.original_clustered_data = (
 				self.data_for_clustering.copy()
+			)
 
 		# Note: Cluster centers are NOT scores - they are centroids
 		# Do not set scores_active.scores to cluster centers
@@ -179,14 +181,14 @@ class ClusterCommand:
 		"""Get clustering data based on selected source.
 
 		Args:
-			selected_source: One of "distances", "evaluations", "scores",
-				"similarities"
+				selected_source: One of "distances", "evaluations", "scores",
+						"similarities"
 
 		Returns:
-			DataFrame containing data for clustering
+				DataFrame containing data for clustering
 
 		Raises:
-			SpacesError: If required data is not available
+				SpacesError: If required data is not available
 		"""
 		data_for_clustering: pd.DataFrame
 		# Check if the selected data source is available
@@ -197,13 +199,15 @@ class ClusterCommand:
 			)
 			if data_for_clustering.empty:
 				empty_title = "No distance data available for clustering"
-				empty_message = ("The distances DataFrame is empty.")
+				empty_message = "The distances DataFrame is empty."
 				raise SpacesError(empty_title, empty_message)
 
 			# Set axis names from configuration
 			dim_names = self._director.configuration_active.dim_names
-			if dim_names and len(dim_names) >= \
-				MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			if (
+				dim_names
+				and len(dim_names) >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
+			):
 				self._director.scores_active.hor_axis_name = dim_names[0]
 				self._director.scores_active.vert_axis_name = dim_names[1]
 			else:
@@ -211,8 +215,7 @@ class ClusterCommand:
 				self._director.scores_active.vert_axis_name = "Dimension 2"
 		elif selected_source == "evaluations":
 			self.common.needs_evaluations("cluster")
-			data_for_clustering = \
-				self._director.evaluations_active.evaluations
+			data_for_clustering = self._director.evaluations_active.evaluations
 			# Set axis names from configuration if available, else generic
 			if self._director.configuration_active.dim_names:
 				dim_names = self._director.configuration_active.dim_names
@@ -227,12 +230,14 @@ class ClusterCommand:
 			# Remove index columns
 			# (unnamed columns or columns that are just row numbers)
 			data_for_clustering = scores_df.loc[
-				:, ~scores_df.columns.str.contains('^Unnamed')]
+				:, ~scores_df.columns.str.contains("^Unnamed")
+			]
 			# Axis names already set by scores command - keep existing
 		elif selected_source == "similarities":
 			self.common.needs_similarities("cluster")
-			data_for_clustering = \
+			data_for_clustering = (
 				self._director.similarities_active.similarities
+			)
 			# Set axis names from configuration if available, else generic
 			if self._director.configuration_active.dim_names:
 				dim_names = self._director.configuration_active.dim_names
@@ -246,12 +251,9 @@ class ClusterCommand:
 
 	# ------------------------------------------------------------------------
 
-
 	def _find_optimal_clusters(self, data: pd.DataFrame) -> int:
 		"""Find optimal number of clusters using elbow method and
 		silhouette analysis"""
-
-
 
 		# Test cluster counts from 2 to min(15, n_samples-1) for
 		# case clustering
@@ -259,47 +261,52 @@ class ClusterCommand:
 		if max_k < DEFAULT_NUMBER_OF_CLUSTERS:
 			# Not enough data points to form multiple clusters
 			return DEFAULT_NUMBER_OF_CLUSTERS
-			
+
 		k_range = range(2, max_k + 1)
 		inertias = []
 		silhouette_scores = []
-		
+
 		for k in k_range:
 			kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
 			cluster_labels = kmeans.fit_predict(data)
 			inertias.append(kmeans.inertia_)
-			
+
 			# Calculate silhouette score
 			sil_score = silhouette_score(data, cluster_labels)
 			silhouette_scores.append(sil_score)
-		
+
 		# Find optimal k using elbow method (look for biggest
 		#  decrease in inertia)
 		if len(inertias) >= 2:
 			# Calculate the rate of decrease in inertia
-			decreases = [inertias[i] - inertias[i+1]\
-				for i in range(len(inertias)-1)]
+			decreases = [
+				inertias[i] - inertias[i + 1] for i in range(len(inertias) - 1)
+			]
 			# Find the elbow point (where decrease starts to level off)
 			elbow_k = k_range[decreases.index(max(decreases))]
 		else:
 			elbow_k = 2
-			
+
 		# Find k with highest silhouette score
 		best_sil_k = k_range[silhouette_scores.index(max(silhouette_scores))]
-		
+
 		# Choose the smaller of the two (more conservative clustering)
 		optimal_k = min(elbow_k, best_sil_k)
-		
-		print(f"Cluster analysis: elbow method suggests k={elbow_k}, "
+
+		print(
+			f"Cluster analysis: elbow method suggests k={elbow_k}, "
 			f"silhouette analysis suggests k={best_sil_k}, "
-			f"using k={optimal_k}")
-		
+			f"using k={optimal_k}"
+		)
+
 		return optimal_k
 
 	# ------------------------------------------------------------------------
 
 	def _calculate_reference_point_proximity(
-		self, cluster_centers: np.ndarray, n_clusters: int  # noqa: ARG002
+		self,
+		cluster_centers: np.ndarray,
+		n_clusters: int,  # noqa: ARG002
 	) -> tuple[list[str], list[list[str]]]:
 		"""Calculate percentage closer to each reference point"""
 		if not self._director.common.have_reference_points():
@@ -321,7 +328,8 @@ class ClusterCommand:
 
 		# Create column headers
 		ref_headers = [
-			f"Closer to {rival_a_name}", f"Closer to {rival_b_name}"
+			f"Closer to {rival_a_name}",
+			f"Closer to {rival_b_name}",
 		]
 
 		# Calculate percentages for each cluster
@@ -331,13 +339,15 @@ class ClusterCommand:
 		for i in range(n_clusters):
 			# Get all points in this cluster
 			cluster_mask = cluster_labels == i
-			cluster_point_coords = (
-				self.data_for_clustering[cluster_mask].to_numpy()
-			)
+			cluster_point_coords = self.data_for_clustering[
+				cluster_mask
+			].to_numpy()
 
 			# Use only first 2 dimensions to match reference point coords
-			if cluster_point_coords.shape[1] > \
-				MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			if (
+				cluster_point_coords.shape[1]
+				> MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
+			):
 				cluster_point_coords = cluster_point_coords[:, :2]
 
 			# Calculate distances to each reference point for
@@ -357,16 +367,18 @@ class ClusterCommand:
 			# Calculate percentages
 			percent_closer_to_a = (
 				(closer_to_a / total_in_cluster) * 100
-				if total_in_cluster > 0 else 0
+				if total_in_cluster > 0
+				else 0
 			)
 			percent_closer_to_b = (
 				(closer_to_b / total_in_cluster) * 100
-				if total_in_cluster > 0 else 0
+				if total_in_cluster > 0
+				else 0
 			)
 
-			ref_percentages.append([
-				f"{percent_closer_to_a:.1f}%", f"{percent_closer_to_b:.1f}%"
-			])
+			ref_percentages.append(
+				[f"{percent_closer_to_a:.1f}%", f"{percent_closer_to_b:.1f}%"]
+			)
 
 		return ref_headers, ref_percentages
 
@@ -378,13 +390,25 @@ class ClusterCommand:
 		"""Print cluster results table to console"""
 		# Get column names for headers
 		all_columns = self.data_for_clustering.columns.tolist()
-		column_names = [col for col in all_columns
-						if not (str(col).isdigit()
-								or str(col).startswith('Unnamed'))]
+		column_names = [
+			col
+			for col in all_columns
+			if not (str(col).isdigit() or str(col).startswith("Unnamed"))
+		]
 
 		# Define colors
-		colors = ['red', 'blue', 'green', 'orange', 'purple', 'brown', 'pink',
-				'gray', 'olive', 'cyan']
+		colors = [
+			"red",
+			"blue",
+			"green",
+			"orange",
+			"purple",
+			"brown",
+			"pink",
+			"gray",
+			"olive",
+			"cyan",
+		]
 
 		# Calculate cluster counts and percentages
 		cluster_labels = self._director.scores_active.cluster_labels
@@ -392,9 +416,10 @@ class ClusterCommand:
 		cluster_counts = np.bincount(cluster_labels)
 
 		# Get reference point proximity data if available
-		ref_headers, ref_percentages = \
+		ref_headers, ref_percentages = (
 			self._calculate_reference_point_proximity(
-			cluster_centers, n_clusters
+				cluster_centers, n_clusters
+			)
 		)
 
 		# Create table data
@@ -404,7 +429,7 @@ class ClusterCommand:
 		for i in range(n_clusters):
 			count = cluster_counts[i]
 			percent = (count / total_points) * 100
-			row = [str(i+1), colors[i % len(colors)], f"{percent:.1f}%"]
+			row = [str(i + 1), colors[i % len(colors)], f"{percent:.1f}%"]
 			# Format coordinates without parentheses, fixed format
 			for coord in cluster_centers[i]:
 				row.append(f"{coord:.3f}")
@@ -429,14 +454,26 @@ class ClusterCommand:
 		all_columns = self.data_for_clustering.columns.tolist()
 		# Filter out numeric-only column names (likely indices)
 		#  and unnamed columns
-		column_names = [col for col in all_columns
-						if not (str(col).isdigit()
-								or str(col).startswith('Unnamed'))]
+		column_names = [
+			col
+			for col in all_columns
+			if not (str(col).isdigit() or str(col).startswith("Unnamed"))
+		]
 
 		# Create DataFrame with cluster centers including cluster
 		# names and colors
-		colors = ['red', 'blue', 'green', 'orange', 'purple', 'brown', 'pink',
-				'gray', 'olive', 'cyan']
+		colors = [
+			"red",
+			"blue",
+			"green",
+			"orange",
+			"purple",
+			"brown",
+			"pink",
+			"gray",
+			"olive",
+			"cyan",
+		]
 
 		# Calculate cluster counts and percentages
 		cluster_labels = self._director.scores_active.cluster_labels
@@ -444,9 +481,10 @@ class ClusterCommand:
 		cluster_counts = np.bincount(cluster_labels)
 
 		# Get reference point proximity data if available
-		ref_headers, ref_percentages = \
+		ref_headers, ref_percentages = (
 			self._calculate_reference_point_proximity(
-			cluster_centers, n_clusters
+				cluster_centers, n_clusters
+			)
 		)
 
 		# Build the data with cluster numbers, colors, percentages,
@@ -455,10 +493,11 @@ class ClusterCommand:
 		for i in range(n_clusters):
 			count = cluster_counts[i]
 			percent = (count / total_points) * 100
-			row = (
-				[i+1, colors[i % len(colors)], f"{percent:.1f}%"]
-				+ cluster_centers[i].tolist()
-			)
+			row = [
+				i + 1,
+				colors[i % len(colors)],
+				f"{percent:.1f}%",
+			] + cluster_centers[i].tolist()
 			# Add reference point proximity percentages if available
 			if ref_percentages:
 				row.extend(ref_percentages[i])
@@ -466,7 +505,11 @@ class ClusterCommand:
 
 		# Create DataFrame with all columns
 		all_columns = [
-			"Cluster", "Color", "Percent", *column_names, *ref_headers
+			"Cluster",
+			"Color",
+			"Percent",
+			*column_names,
+			*ref_headers,
 		]
 		cluster_df = pd.DataFrame(cluster_data, columns=all_columns)
 
@@ -481,7 +524,6 @@ class ClusterCommand:
 		return gui_output_as_widget
 
 	# ------------------------------------------------------------------------
-
 
 
 class DirectionsCommand:
@@ -673,8 +715,7 @@ class FactorAnalysisCommand:
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Factor analysis")
 		ext_fact: int = params["n_factors"]
-		common.capture_and_push_undo_state(
-			"Factor analysis", "active", params)
+		common.capture_and_push_undo_state("Factor analysis", "active", params)
 		#
 		# Now perform factor analysis - set ndim and continue
 		#
@@ -702,19 +743,38 @@ class FactorAnalysisCommand:
 
 		fa = self._perform_factor_analysis(ndim, evaluations)
 
-		(dim_names, _dim_labels, range_dims, range_items,
-			range_points) = self._generate_dimension_data(ndim, nreferent)
+		(dim_names, _dim_labels, range_dims, range_items, range_points) = (
+			self._generate_dimension_data(ndim, nreferent)
+		)
 
-		(loadings, point_coords, eigen, eigen_common, commonalities,
-			factor_variance, uniquenesses, scores, score_1,
-			score_2) = self._extract_factor_results(
+		(
+			loadings,
+			point_coords,
+			eigen,
+			eigen_common,
+			commonalities,
+			factor_variance,
+			uniquenesses,
+			scores,
+			score_1,
+			score_2,
+		) = self._extract_factor_results(
 			fa, dim_names, item_names, evaluations
 		)
 
 		self._setup_configuration_attributes(
-			range_dims, point_coords, dim_names, eigen, eigen_common,
-			commonalities, factor_variance, uniquenesses, range_items,
-			range_points, fa, loadings
+			range_dims,
+			point_coords,
+			dim_names,
+			eigen,
+			eigen_common,
+			commonalities,
+			factor_variance,
+			uniquenesses,
+			range_items,
+			range_points,
+			fa,
+			loadings,
 		)
 
 		self._setup_scores_attributes(scores, score_1, score_2)
@@ -755,11 +815,23 @@ class FactorAnalysisCommand:
 	# ------------------------------------------------------------------------
 
 	def _extract_factor_results(
-		self, fa: FactorAnalyzer, dim_names: list[str], item_names: list[str],
-		evaluations: pd.DataFrame
-	) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame,
-		pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame,
-		pd.DataFrame, pd.DataFrame]:
+		self,
+		fa: FactorAnalyzer,
+		dim_names: list[str],
+		item_names: list[str],
+		evaluations: pd.DataFrame,
+	) -> tuple[
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+		pd.DataFrame,
+	]:
 		"""Extract all results from the factor analysis."""
 		the_loadings = fa.loadings_
 		loadings = pd.DataFrame(
@@ -797,18 +869,35 @@ class FactorAnalysisCommand:
 		score_1 = scores[score_1_name]
 		score_2 = scores[score_2_name]
 
-		return (loadings, point_coords, eigen, eigen_common, commonalities,
-			factor_variance, uniquenesses, scores, score_1, score_2)
+		return (
+			loadings,
+			point_coords,
+			eigen,
+			eigen_common,
+			commonalities,
+			factor_variance,
+			uniquenesses,
+			scores,
+			score_1,
+			score_2,
+		)
 
 	# ------------------------------------------------------------------------
 
-	def _setup_configuration_attributes( # noqa: PLR0913
-		self, range_dims: range, point_coords: pd.DataFrame,
-		dim_names: list[str], eigen: pd.DataFrame,
-		eigen_common: pd.DataFrame, commonalities: pd.DataFrame,
-		factor_variance: pd.DataFrame, uniquenesses: pd.DataFrame,
-		range_items: range, range_points: range, fa: FactorAnalyzer,
-		loadings: pd.DataFrame
+	def _setup_configuration_attributes(  # noqa: PLR0913
+		self,
+		range_dims: range,
+		point_coords: pd.DataFrame,
+		dim_names: list[str],
+		eigen: pd.DataFrame,
+		eigen_common: pd.DataFrame,
+		commonalities: pd.DataFrame,
+		factor_variance: pd.DataFrame,
+		uniquenesses: pd.DataFrame,
+		range_items: range,
+		range_points: range,
+		fa: FactorAnalyzer,
+		loadings: pd.DataFrame,
 	) -> None:
 		"""Set up all configuration_active attributes."""
 		configuration_active = self._director.configuration_active
@@ -816,6 +905,7 @@ class FactorAnalysisCommand:
 
 		# Factor analysis creates a new configuration, so clear old rivalry
 		from rivalry import Rivalry  # noqa: PLC0415
+
 		self._director.rivalry = Rivalry(self._director)
 
 		configuration_active.range_dims = range_dims
@@ -844,15 +934,16 @@ class FactorAnalysisCommand:
 		# Set axis names from first two dimensions
 		if len(dim_names) >= 1:
 			configuration_active.hor_axis_name = dim_names[0]
-		if len(dim_names) >= \
-			MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if len(dim_names) >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			configuration_active.vert_axis_name = dim_names[1]
 
 	# ------------------------------------------------------------------------
 
 	def _setup_scores_attributes(
-		self, scores: pd.DataFrame, score_1: pd.DataFrame,
-		score_2: pd.DataFrame
+		self,
+		scores: pd.DataFrame,
+		score_1: pd.DataFrame,
+		score_2: pd.DataFrame,
 	) -> None:
 		"""Set up all scores_active attributes."""
 		scores_active = self._director.scores_active
@@ -886,7 +977,6 @@ class FactorAnalysisCommand:
 
 	# ------------------------------------------------------------------------
 
-
 	def _print_factor_analysis_results(self) -> None:
 		loadings = self._director.configuration_active.loadings
 		point_coords = self._director.configuration_active.point_coords
@@ -918,9 +1008,9 @@ class FactorAnalysisCommand:
 		with all relevant columns.
 
 		Returns:
-			pd.DataFrame: Combined DataFrame with eigenvalues,
-			common factor eigenvalues, communalities, uniquenesses,
-			item names, and factor loadings.
+				pd.DataFrame: Combined DataFrame with eigenvalues,
+				common factor eigenvalues, communalities, uniquenesses,
+				item names, and factor loadings.
 		"""
 		source = self._director.configuration_active
 		item_names = source.point_names
@@ -971,7 +1061,8 @@ class FactorAnalysisMachineLearningCommand:
 
 		self._director.evaluations_active.item_labels = []
 		self._director.evaluations_active.range_items = range(
-			self._director.evaluations_active.nitem)
+			self._director.evaluations_active.nitem
+		)
 		self._get_ncomponents_title = "Factor Analysis"
 		self._get_ncomponents_label = "Number of factors to extract:"
 		self._get_ncomponents_default = 2
@@ -993,10 +1084,12 @@ class FactorAnalysisMachineLearningCommand:
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
 		params = common.get_command_parameters(
-			"Factor analysis machine learning")
+			"Factor analysis machine learning"
+		)
 		n_components: int = params["n_components"]
 		common.capture_and_push_undo_state(
-			"Factor analysis machine learning", "active", params)
+			"Factor analysis machine learning", "active", params
+		)
 		#
 		# Now perform factor analysis
 		#
@@ -1013,10 +1106,10 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _perform_factor_analysis_m_l_and_setup(self, n_components: int) \
-		-> None:
+	def _perform_factor_analysis_m_l_and_setup(
+		self, n_components: int
+	) -> None:
 		"""Perform factor analysis and set up all configuration and scores."""
-
 
 		evaluations = self._director.evaluations_active.evaluations
 		item_names = self._director.evaluations_active.item_names
@@ -1061,16 +1154,20 @@ class FactorAnalysisMachineLearningCommand:
 		trans = pd.DataFrame(transpose)
 
 		self._setup_dimension_and_item_data(trans)
-		self._setup_configuration_from_factor_analysis_m_l(
-			trans, x_new, covar
-		)
+		self._setup_configuration_from_factor_analysis_m_l(trans, x_new, covar)
 		self._setup_scores_from_factor_analysis_m_l()
 		self._store_sklearn_results_for_display(
 			transformer, X, item_names, nreferent
 		)
 		self._print_factor_analysis_m_l_results(
-			scaler, X, transformer, X_transformed, x_trans, covar, trans,
-			nreferent
+			scaler,
+			X,
+			transformer,
+			X_transformed,
+			x_trans,
+			covar,
+			trans,
+			nreferent,
 		)
 
 	# ------------------------------------------------------------------------
@@ -1117,7 +1214,6 @@ class FactorAnalysisMachineLearningCommand:
 	) -> None:
 		"""Set up configuration from factor analysis results."""
 
-
 		director = self._director
 		common = director.common
 		configuration_active = director.configuration_active
@@ -1126,6 +1222,7 @@ class FactorAnalysisMachineLearningCommand:
 
 		# Factor analysis creates a new configuration, so clear old rivalry
 		from rivalry import Rivalry  # noqa: PLC0415
+
 		director.rivalry = Rivalry(director)
 
 		common.show_bisector = False
@@ -1135,9 +1232,7 @@ class FactorAnalysisMachineLearningCommand:
 		scaler2 = StandardScaler()
 		scaler2.fit(trans)
 		new_trans = scaler2.transform(trans)
-		configuration_active.point_coords = pd.DataFrame(
-			new_trans
-		)
+		configuration_active.point_coords = pd.DataFrame(new_trans)
 
 		configuration_active.point_coords.columns = [
 			self._factor_1_name,
@@ -1147,7 +1242,7 @@ class FactorAnalysisMachineLearningCommand:
 			self._factor_1_name,
 			self._factor_2_name,
 		]
-		
+
 		configuration_active.dim_labels = [
 			self._factor_1_label,
 			self._factor_2_label,
@@ -1176,8 +1271,7 @@ class FactorAnalysisMachineLearningCommand:
 		configuration_active.vert_axis_name = self._factor_2_name
 
 		if configuration_active.ndim > 1:
-			matplotlib_plotter.\
-				request_configuration_plot_for_tabs_using_matplotlib()
+			matplotlib_plotter.request_configuration_plot_for_tabs_using_matplotlib()
 
 	# ------------------------------------------------------------------------
 
@@ -1232,14 +1326,18 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.configuration_active.score_2_name = self._factor_2_name
 		self._director.scores_active.hor_axis_name = self._factor_1_name
 		self._director.scores_active.vert_axis_name = self._factor_2_name
-		self._director.scores_active.ndim = \
+		self._director.scores_active.ndim = (
 			self._director.configuration_active.ndim
+		)
 
 	# ------------------------------------------------------------------------
 
 	def _store_sklearn_results_for_display(
-		self, transformer: object, X: pd.DataFrame, # noqa: N803
-		item_names: list[str], nreferent: int
+		self,
+		transformer: object,
+		X: pd.DataFrame,  # noqa: N803
+		item_names: list[str],
+		nreferent: int,
 	) -> None:
 		"""Store sklearn results in format expected by table widget."""
 		ndim = self._director.configuration_active.ndim
@@ -1278,14 +1376,18 @@ class FactorAnalysisMachineLearningCommand:
 
 		self._director.configuration_active.loadings = pd.DataFrame(
 			loadings_matrix,
-			columns=[f"Factor {i+1}" for i in range(transformer.n_components)],
-			index=item_names
+			columns=[
+				f"Factor {i + 1}" for i in range(transformer.n_components)
+			],
+			index=item_names,
 		)
 
-		self._director.configuration_active.\
-			transformer_mean = transformer.mean_
-		self._director.configuration_active.\
-			transformer_noise_variance = transformer.noise_variance_
+		self._director.configuration_active.transformer_mean = (
+			transformer.mean_
+		)
+		self._director.configuration_active.transformer_noise_variance = (
+			transformer.noise_variance_
+		)
 
 		self._director.configuration_active.nreferent = nreferent
 		self._director.configuration_active.dim_names = self._dim_names
@@ -1294,9 +1396,15 @@ class FactorAnalysisMachineLearningCommand:
 	# ------------------------------------------------------------------------
 
 	def _print_factor_analysis_m_l_results(
-		self, scaler: object, X: pd.DataFrame, transformer: object, # noqa: N803
-		X_transformed: pd.DataFrame, x_trans: pd.DataFrame, # noqa: N803
-		covar: pd.DataFrame, trans: pd.DataFrame, nreferent: int
+		self,
+		scaler: object,
+		X: pd.DataFrame,
+		transformer: object,  # noqa: N803
+		X_transformed: pd.DataFrame,
+		x_trans: pd.DataFrame,  # noqa: N803
+		covar: pd.DataFrame,
+		trans: pd.DataFrame,
+		nreferent: int,
 	) -> None:
 		"""Print factor analysis results using existing helper method."""
 
@@ -1311,8 +1419,17 @@ class FactorAnalysisMachineLearningCommand:
 		scaler2 = StandardScaler()
 
 		self._print_factor_analysis_m_l(
-			scaler, X, transformer, X_transformed, x_trans, covar, trans,
-			scaler2, new_trans, eigenvalues, nreferent
+			scaler,
+			X,
+			transformer,
+			X_transformed,
+			x_trans,
+			covar,
+			trans,
+			scaler2,
+			new_trans,
+			eigenvalues,
+			nreferent,
 		)
 
 	# ------------------------------------------------------------------------
@@ -1326,19 +1443,19 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _print_factor_analysis_m_l( # noqa: PLR0913
+	def _print_factor_analysis_m_l(  # noqa: PLR0913
 		self,
 		scaler: StandardScaler,
-		X: np.ndarray, # noqa: N803
+		X: np.ndarray,  # noqa: N803
 		transformer: FactorAnalysis,
-		X_transformed: np.ndarray, # noqa: N803
+		X_transformed: np.ndarray,  # noqa: N803
 		x_trans: pd.DataFrame,
 		covar: pd.DataFrame,
 		trans: pd.DataFrame,
 		scaler2: StandardScaler,
 		new_trans: np.ndarray,
 		eigenvalues: np.ndarray,
-		nreferent: int
+		nreferent: int,
 	) -> None:
 		"""Print all Factor Analysis Machine Learning debug and
 		output information."""
@@ -1377,11 +1494,14 @@ class FactorAnalysisMachineLearningCommand:
 		print("\nnew_trans: ", new_trans)
 		print(
 			"\nPoint_coords: \n",
-			self._director.configuration_active.point_coords.to_string(float_format="{:.2f}".format))
-		
+			self._director.configuration_active.point_coords.to_string(
+				float_format="{:.2f}".format
+			),
+		)
+
 		print("\nEigenvalues:")
 		for i, eigenvalue in enumerate(eigenvalues[:nreferent]):
-			print(f"  Component {i+1}: {eigenvalue:.4f}")
+			print(f"  Component {i + 1}: {eigenvalue:.4f}")
 
 		return
 
@@ -1418,7 +1538,7 @@ class FactorAnalysisMachineLearningCommand:
 		from the machine learning approach.
 
 		Returns:
-			QTableWidget: Table widget populated with factor analysis data.
+				QTableWidget: Table widget populated with factor analysis data.
 		"""
 		# Define number of columns
 		# Eigenvalues, Mean, Noise Variance, Item, Factor 1, Factor 2
@@ -1426,61 +1546,69 @@ class FactorAnalysisMachineLearningCommand:
 		table_widget = QTableWidget(
 			self._director.evaluations_active.nreferent, ncols
 		)
-		
+
 		# Get the transformer from the execute method context (stored earlier)
 		# Access eigenvalues, mean_, noise_variance_, item_names, and loadings
 		eigenvalues = self._director.configuration_active.eigen[
-			"Eigenvalue"].to_numpy()
+			"Eigenvalue"
+		].to_numpy()
 		item_names = self._director.evaluations_active.item_names
 		loadings = self._director.configuration_active.loadings
-		
+
 		# We need to access the transformer to get mean_ and noise_variance_
 		# These should be stored during execution - let's access from
 		#  the current context
-		
+
 		# Populate the QTableWidget with the DataFrame data
 		for row in range(self._director.evaluations_active.nreferent):
 			# Column 0: Eigenvalues
 			item = QTableWidgetItem(f"{eigenvalues[row]:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+			)
 			table_widget.setItem(row, 0, item)
-			
+
 			# Column 1: Mean (we'll need to store this from transformer)
-			mean_val = self._director.configuration_active.\
-				transformer_mean[row]
+			mean_val = self._director.configuration_active.transformer_mean[
+				row
+			]
 			item = QTableWidgetItem(f"{mean_val:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+			)
 			table_widget.setItem(row, 1, item)
-			
+
 			# Column 2: Noise Variance (scalar value, same for all rows)
-			noise_val = self._director.configuration_active.\
-				transformer_noise_variance
+			noise_val = (
+				self._director.configuration_active.transformer_noise_variance
+			)
 			# Take mean of noise variances across features for display
 			noise_val = float(noise_val.mean())
 			item = QTableWidgetItem(f"{noise_val:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+			)
 			table_widget.setItem(row, 2, item)
-			
+
 			# Column 3: Item names
 			item = QTableWidgetItem(item_names[row])
 			item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 			table_widget.setItem(row, 3, item)
-			
+
 			# Column 4: Factor 1 components (loadings)
 			item = QTableWidgetItem(f"{loadings.iloc[row, 0]:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+			)
 			table_widget.setItem(row, 4, item)
-			
+
 			# Column 5: Factor 2 components (loadings)
 			item = QTableWidgetItem(f"{loadings.iloc[row, 1]:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+			)
 			table_widget.setItem(row, 5, item)
-			
+
 		return table_widget
 
 	# ------------------------------------------------------------------------
@@ -1508,10 +1636,7 @@ class MDSCommand:
 
 	# ------------------------------------------------------------------------
 
-	def execute(
-		self,
-		common: Spaces,
-		use_metric: bool = False) -> None:  # noqa: FBT001, FBT002
+	def execute(self, common: Spaces, use_metric: bool = False) -> None:  # noqa: FBT001, FBT002
 		common.initiate_command_processes()
 		# Set use_metric from menu choice for scree calculation
 		self._director.configuration_active.use_metric = use_metric
@@ -1523,15 +1648,12 @@ class MDSCommand:
 		# Update with user's final choice (may differ from menu choice)
 		self._director.configuration_active.use_metric = use_metric
 		self._director.configuration_active.n_comp = n_comp
-		common.capture_and_push_undo_state(
-			"MDS", "active", params)
+		common.capture_and_push_undo_state("MDS", "active", params)
 		# Script: show scree plot for documentation after capturing state
 		self._scree_from_script(common)
 		# Update status for MDS computation
 		if not self._director.executing_script:
-			self._director.progress_label.setText(
-				"Computing MDS solution..."
-			)
+			self._director.progress_label.setText("Computing MDS solution...")
 			QApplication.processEvents()
 		self._perform_mds_pick_up_point_labelling_from_similarities()
 
@@ -1544,9 +1666,7 @@ class MDSCommand:
 		self._director.configuration_active.print_active_function()
 		common.create_plot_for_tabs("configuration")
 		# Store best_stress for title generation
-		common.best_stress = (
-			self._director.configuration_active.best_stress
-		)
+		common.best_stress = self._director.configuration_active.best_stress
 		self._director.create_widgets_for_output_and_log_tabs()
 		# Hide progress bar and label when command completes
 		if not self._director.executing_script:
@@ -1589,7 +1709,7 @@ class MDSCommand:
 	def _compute_scree_data(
 		self,
 		common: Spaces,
-		use_metric: bool  # noqa: FBT001
+		use_metric: bool,  # noqa: FBT001
 	) -> None:
 		"""Compute scree data (stress for dimensions 1-10) for plot."""
 		similarities_as_square = (
@@ -1624,7 +1744,8 @@ class MDSCommand:
 			nmds.fit_transform(X=similarities_as_square)
 			best_stress = nmds.stress_
 			common._min_stress.loc[len(common._min_stress)] = [
-				each_n_comp, best_stress
+				each_n_comp,
+				best_stress,
 			]
 
 			# Update progress bar after each dimension
@@ -1646,7 +1767,7 @@ class MDSCommand:
 			tabulate(
 				table_data,
 				headers=["Dimensionality", "Stress"],
-				tablefmt="plain"
+				tablefmt="plain",
 			)
 		)
 		print()  # Blank line after table
@@ -1656,7 +1777,6 @@ class MDSCommand:
 	# ------------------------------------------------------------------------
 
 	def _perform_mds_pick_up_point_labelling_from_similarities(self) -> None:
-
 		ndim = self._director.configuration_active.ndim
 		n_comp = self._director.configuration_active.n_comp
 		use_metric = self._director.configuration_active.use_metric
@@ -1687,6 +1807,7 @@ class MDSCommand:
 
 		# MDS creates a new configuration, so clear old rivalry
 		from rivalry import Rivalry  # noqa: PLC0415
+
 		self._director.rivalry = Rivalry(self._director)
 
 		self._director.configuration_active.ndim = ndim
@@ -1767,7 +1888,8 @@ class PrincipalComponentsCommand:
 		params = common.get_command_parameters("Principal components")
 		n_components: int = params["n_components"]
 		common.capture_and_push_undo_state(
-			"Principal components", "active", params)
+			"Principal components", "active", params
+		)
 		#
 		# Now perform PCA
 		#
@@ -1786,7 +1908,8 @@ class PrincipalComponentsCommand:
 		# Display scree diagram showing eigenvalues by dimensionality
 		# Ask user how many dimensions to be retained
 		# Display configuration with vectors from origin to each point
-		common.create_plot_for_tabs("configuration")
+		# common.create_plot_for_tabs("configuration")
+		common.create_plot_for_tabs("conf_w_scree")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 
@@ -1795,14 +1918,27 @@ class PrincipalComponentsCommand:
 	# ------------------------------------------------------------------------
 
 	def _perform_principal_component_analysis(
-		self, n_components: int) -> tuple:
-
-
+		self, n_components: int
+	) -> tuple:
 		item_names = self._director.evaluations_active.item_names
-
+		# evaluations = self._director.evaluations_active.evaluations
 		X_pca = self._director.evaluations_active.evaluations  # noqa: N806
+		#
+		# Fit PCA with 10 components to get eigenvalues
+		#
+		pca_for_eigenvalues = PCA(
+			n_components=len(item_names), copy=True, random_state=0
+		)
+		pca_for_eigenvalues.fit(X_pca)
+		self._director.configuration_active.eigen = (
+			pca_for_eigenvalues.explained_variance_
+		)
+		#
+		# Fit PCA with requested n_components for main analysis
+		#
 		pca_transformer = PCA(
-			n_components=n_components, copy=True, random_state=0)
+			n_components=n_components, copy=True, random_state=0
+		)
 		X_pca_transformed = pca_transformer.fit_transform(X_pca)  # noqa: N806
 		pd.set_option("display.max_columns", None)
 		pd.set_option("display.precision", 2)
@@ -1838,6 +1974,7 @@ class PrincipalComponentsCommand:
 		"""Establish the principal components as the active configuration."""
 		# PCA creates a new configuration, so clear old rivalry
 		from rivalry import Rivalry  # noqa: PLC0415
+
 		self._director.rivalry = Rivalry(self._director)
 
 		ndim = trans.shape[1]
@@ -1873,7 +2010,8 @@ class PrincipalComponentsCommand:
 	# ------------------------------------------------------------------------
 
 	def _establish_pca_results_as_scores(
-		self, X_pca_transformed: np.array # noqa: N803
+		self,
+		X_pca_transformed: np.array,  # noqa: N803
 	) -> None:
 		score_1_name = self._director.configuration_active.dim_names[0]
 		score_2_name = self._director.configuration_active.dim_names[1]
@@ -1905,6 +2043,7 @@ class PrincipalComponentsCommand:
 		pca_covar = self._director.configuration_active.pca_covar
 		point_coords = self._director.configuration_active.point_coords
 		scores = self._director.configuration_active.scores
+		eigen = self._director.configuration_active.eigen
 
 		print("\n\t", pca_transformer)
 		print("X_pca_transformed.shape: ", X_pca_transformed.shape)
@@ -1915,12 +2054,17 @@ class PrincipalComponentsCommand:
 			pca_transformer.get_feature_names_out(),
 		)
 		print("PCA Covariance: \n", pca_covar)
-		print("\nTranspose: \n",
-			transpose.to_string(float_format="{:.2f}".format))
-		print("\nPoint_coords: \n",
-			point_coords.to_string(float_format="{:.2f}".format))
-		print("\nScores from components\n ",scores.to_string(
-			float_format='{:.2f}'.format))
+		print("\nEigenvalues: \n", eigen)
+		print(
+			"\nTranspose: \n",
+			transpose.to_string(float_format="{:.2f}".format),
+		)
+		print(
+			"\nPoint_coords: \n",
+			point_coords.to_string(float_format="{:.2f}".format),
+		)
+		print("\nScores from components:")
+		print(scores)
 		return
 
 
@@ -2100,7 +2244,8 @@ class UncertaintyCommand:
 		self._director.command = "Uncertainty"
 
 		self.solutions: pd.DataFrame = pd.DataFrame(
-			columns=[self._director.target_active.dim_names])
+			columns=[self._director.target_active.dim_names]
+		)
 		self.solutions: pd.DataFrame = pd.DataFrame()
 		self._director.uncertainty_active.sample_solutions = pd.DataFrame()
 		self.target_out: np.array = np.array([])
@@ -2131,19 +2276,19 @@ class UncertaintyCommand:
 		nrepetitions: int = params["nrepetitions"]
 		universe_size = director.evaluations_active.nevaluators
 
-		common.capture_and_push_undo_state(
-			"Uncertainty", "active", params)
+		common.capture_and_push_undo_state("Uncertainty", "active", params)
 
 		self._create_sample_design(
-			director,
-			probability_of_inclusion, nrepetitions, universe_size)
+			director, probability_of_inclusion, nrepetitions, universe_size
+		)
 		common.create_sample_design_analysis_table()
 		common._print_sample_design_analysis_results()
-		
+
 		self._create_sample_repetitions(director)
 		sample_repetitions = uncertainty_active.sample_repetitions
 		self.target_out, self.active_out = self._get_solutions_from_mds(
-			common, sample_repetitions, nreferent)
+			common, sample_repetitions, nreferent
+		)
 		uncertainty_active.target_out = self.target_out
 		uncertainty_active.solutions = self.solutions
 		uncertainty_active.sample_solutions = self.solutions
@@ -2151,7 +2296,9 @@ class UncertaintyCommand:
 
 		print(
 			director.uncertainty_active.solutions_stress_df.to_string(
-				index=False))
+				index=False
+			)
+		)
 		common.create_plot_for_tabs("uncertainty")
 		director.create_widgets_for_output_and_log_tabs()
 		director.record_command_as_successfully_completed()
@@ -2243,7 +2390,7 @@ class UncertaintyCommand:
 
 			target_out, active_out, _disparity = procrustes(
 				np.array(target_active.point_coords),
-				np.array(the_loadings.point_coords)
+				np.array(the_loadings.point_coords),
 			)
 
 			self.solutions = pd.concat(
@@ -2316,21 +2463,21 @@ class UncertaintyCommand:
 		Parameters:
 		-----------
 		start_case : int
-			The starting index for the current repetition
+				The starting index for the current repetition
 		repetition_size : int
-			The number of cases in this repetition
+				The number of cases in this repetition
 		sample_repetitions : pandas.DataFrame
-			The data for all repetitions
+				The data for all repetitions
 		nreferent : int
-			Number of referents in the evaluation
+				Number of referents in the evaluation
 		item_names_and_labels : tuple
-			Tuple containing (item_names, item_labels)
+				Tuple containing (item_names, item_labels)
 
 		Returns:
 		--------
 		tuple
-			(EvaluationsFeature instance for current repetition, new start
-			case)
+				(EvaluationsFeature instance for current repetition, new start
+				case)
 		"""
 		# item_names, item_labels = item_names_and_labels
 
@@ -2353,7 +2500,6 @@ class UncertaintyCommand:
 	def duplicate_repetition_line_of_sight(
 		self, common: Spaces, line_of_sight: SimilaritiesFeature
 	) -> None:
-
 		(
 			line_of_sight.similarities_as_dataframe,
 			line_of_sight.similarities_as_dict,
@@ -2378,14 +2524,14 @@ class UncertaintyCommand:
 		director: Status,
 		probability_of_inclusion: int,
 		nrepetitions: int,
-		universe_size: int
+		universe_size: int,
 	) -> None:
 		"""Create sample design with random selections for each repetition.
 
 		Args:
-			probability_of_inclusion: Percentage chance of including each case
-			nrepetitions: Number of repetitions to generate
-			universe_size: Total number of cases in the universe
+				probability_of_inclusion: Percentage chance of including each case
+				nrepetitions: Number of repetitions to generate
+				universe_size: Total number of cases in the universe
 		"""
 		uncertainty_active = self._director.uncertainty_active
 
@@ -2395,7 +2541,7 @@ class UncertaintyCommand:
 			director.progress_label.show()
 			director.progress_spacer.show()
 			QApplication.processEvents()
-		
+
 		sample_design = pd.DataFrame(
 			columns=["RespId", "Repetition", "Selected"]
 		)
@@ -2456,7 +2602,8 @@ class UncertaintyCommand:
 
 		if not director.executing_script:
 			director.progress_label.setText(
-				"Starting generation of repetitions")
+				"Starting generation of repetitions"
+			)
 			QApplication.processEvents()
 
 		# Validate universe size matches evaluations
