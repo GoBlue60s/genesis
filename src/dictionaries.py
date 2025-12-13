@@ -3597,7 +3597,7 @@ rivalry_table_dict = MappingProxyType({
 # ----------------------------------------------------------------------------
 
 title_generator_dict = MappingProxyType({
-	"About": lambda d: (
+	"About": lambda _: (
 		"Spaces was developed by Ed Schneider."
 		"\n\nIt is based on programs he developed in the 1970s as "
 		"a graduate student at "
@@ -3614,7 +3614,7 @@ title_generator_dict = MappingProxyType({
 		f"Base supporters of {d.rivalry.rival_a.name} and "
 		f"{d.rivalry.rival_b.name}"
 	),
-	"Battleground": lambda d: "Size of battleground",
+	"Battleground": lambda _: "Size of battleground",
 	"Center": lambda d: (
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
@@ -3651,30 +3651,30 @@ title_generator_dict = MappingProxyType({
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
-	"Deactivate": lambda d: "Deactivate",
+	"Deactivate": lambda _: "Deactivate",
 	"Directions": lambda d: (
 		f"Directions are based on the active configuration which has "
 		f"{d.configuration_active.ndim} dimensions and "
 		f"{d.configuration_active.npoint} points"
 	),
-	"Distances": lambda d: "Inter-point distances",
-	"Evaluations": lambda d: (
+	"Distances": lambda _: "Inter-point distances",
+	"Evaluations": lambda _: (
 		"Evaluations have been read and correlations computed"
 	),
-	"Exit": lambda d: "Exiting Spaces",
-	"Factor analysis": lambda d: "Factor analysis",
-	"Factor analysis machine learning": lambda d: (
+	"Exit": lambda _: "Exiting Spaces",
+	"Factor analysis": lambda _: "Factor analysis",
+	"Factor analysis machine learning": lambda _: (
 		"Factor Analysis - Machine Learning"
 	),
-	"First dimension": lambda d: "Party oriented segments",
+	"First dimension": lambda _: "Party oriented segments",
 	"Grouped data": lambda d: (
 		f"Grouped data has {d.grouped_data_active.ndim} dimensions and "
 		f"{d.grouped_data_active.ngroups} groups"
 	),
-	"Help": lambda d: (
+	"Help": lambda _: (
 		"Help command under construction - stay tuned, please"
 	),
-	"History": lambda d: "Commands used",
+	"History": lambda _: "Commands used",
 	"Individuals": lambda d: (
 		f"Individuals data has been read "
 		f"({len(d.individuals_active.ind_vars)} rows)"
@@ -3683,7 +3683,7 @@ title_generator_dict = MappingProxyType({
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
-	"Joint": lambda d: (
+	"Joint": lambda _: (
 		"Warning: Make sure the scores match the \n"
 		"dimensions AND orientation of the active configuration."
 	),
@@ -3709,11 +3709,11 @@ title_generator_dict = MappingProxyType({
 		f"Grouped data has {d.grouped_data_active.ndim} dimensions and "
 		f"{d.grouped_data_active.ngroups} groups"
 	),
-	"Open sample design": lambda d: "Sample design has been read",
-	"Open sample repetitions": lambda d: (
+	"Open sample design": lambda _: "Sample design has been read",
+	"Open sample repetitions": lambda _: (
 		"Sample repetitions have been read"
 	),
-	"Open sample solutions": lambda d: "Sample solutions have been read",
+	"Open sample solutions": lambda _: "Sample solutions have been read",
 	"Open scores": lambda d: (
 		f"Scores have been read ({len(d.scores_active.scores)} rows)"
 	),
@@ -3726,24 +3726,24 @@ title_generator_dict = MappingProxyType({
 		f"{d.configuration_active.point_names[d.common.focal_index]} "
 		f"and other points"
 	),
-	"Principal components": lambda d: "Principal components",
-	"Print configuration": lambda d: "Active configuration",
-	"Print correlations": lambda d: "Active correlations",
-	"Print evaluations": lambda d: "Active evaluations",
-	"Print grouped data": lambda d: "Active grouped data",
-	"Print individuals": lambda d: "Active individuals",
-	"Print sample design": lambda d: "Active sample design",
-	"Print sample repetitions": lambda d: "Active sample repetitions",
-	"Print sample solutions": lambda d: "Active sample solutions",
-	"Print scores": lambda d: "Active scores",
-	"Print similarities": lambda d: "Active similarities",
+	"Principal components": lambda _: "Principal components",
+	"Print configuration": lambda _: "Active configuration",
+	"Print correlations": lambda _: "Active correlations",
+	"Print evaluations": lambda _: "Active evaluations",
+	"Print grouped data": lambda _: "Active grouped data",
+	"Print individuals": lambda _: "Active individuals",
+	"Print sample design": lambda _: "Active sample design",
+	"Print sample repetitions": lambda _: "Active sample repetitions",
+	"Print sample solutions": lambda _: "Active sample solutions",
+	"Print scores": lambda _: "Active scores",
+	"Print similarities": lambda _: "Active similarities",
 	"Print target": lambda d: (
 		f"Target configuration has {d.target_active.ndim} dimensions and "
 		f"{d.target_active.npoint} points"
 	),
-	"Ranks differences": lambda d: "Difference of Ranks",
-	"Ranks distances": lambda d: "Rank of Distances",
-	"Ranks similarities": lambda d: "Rank of Similarities",
+	"Ranks differences": lambda _: "Difference of Ranks",
+	"Ranks distances": lambda _: "Rank of Distances",
+	"Ranks similarities": lambda _: "Rank of Similarities",
 	"Redo": lambda d: f"Redid {d.common.redone_command_name} command",
 	"Reference points": lambda d: (
 		f"Reference points will be {d.rivalry.rival_a.name} and "
@@ -3764,7 +3764,8 @@ title_generator_dict = MappingProxyType({
 		f"{d.uncertainty_active.probability_of_inclusion}"
 	),
 	"Sample repetitions": lambda d: (
-		f"Sample repetitions - Size of universe: {d.uncertainty_active.universe_size}"
+		f"Sample repetitions - Size of universe: "
+		f"{d.uncertainty_active.universe_size}"
 	),
 	"Save configuration": lambda d: (
 		f"The active configuration has been written to: \n"
@@ -3814,21 +3815,21 @@ title_generator_dict = MappingProxyType({
 		f"There are {d.scores_active.nscores} active scores for "
 		f"{d.scores_active.nscored_individ} individuals."
 	),
-	"Second dimension": lambda d: "Social oriented segments",
+	"Second dimension": lambda _: "Social oriented segments",
 	"Segments": lambda d: (
 		f"Segments defined by contest between {d.rivalry.rival_a.name} "
 		f"and {d.rivalry.rival_b.name}"
 	),
-	"Settings - display sizing": lambda d: "Display sizing settings updated",
-	"Settings - layout options": lambda d: "Layout options updated",
-	"Settings - plane": lambda d: "Plane settings updated",
-	"Settings - plot settings": lambda d: "Plot settings updated",
-	"Settings - presentation layer": lambda d: "Presentation layer updated",
-	"Settings - segment sizing": lambda d: (
+	"Settings - display sizing": lambda _: "Display sizing settings updated",
+	"Settings - layout options": lambda _: "Layout options updated",
+	"Settings - plane": lambda _: "Plane settings updated",
+	"Settings - plot settings": lambda _: "Plot settings updated",
+	"Settings - presentation layer": lambda _: "Presentation layer updated",
+	"Settings - segment sizing": lambda _: (
 		"Segment sizing settings updated"
 	),
-	"Settings - vector sizing": lambda d: "Vector sizing settings updated",
-	"Shepard": lambda d: (
+	"Settings - vector sizing": lambda _: "Vector sizing settings updated",
+	"Shepard": lambda _: (
 		"Rank of similarity above diagonal, "
 		"rank of distance below diagonal"
 	),
@@ -3836,7 +3837,7 @@ title_generator_dict = MappingProxyType({
 		f"The {d.similarities_active.value_type} matrix has "
 		f"{d.similarities_active.nreferent} items"
 	),
-	"Status": lambda d: "Status of current session",
+	"Status": lambda _: "Status of current session",
 	"Stress contribution": lambda d: (
 		f"Stress contribution of "
 		f"{d.configuration_active.point_names[d.common.point_index]}"
@@ -3845,20 +3846,20 @@ title_generator_dict = MappingProxyType({
 		f"Target configuration has {d.target_active.ndim} dimensions and "
 		f"{d.target_active.npoint} points"
 	),
-	"Terse": lambda d: "Output will not include explanations",
-	"Tester": lambda d: "Tester",
-	"Uncertainty": lambda d: (
+	"Terse": lambda _: "Output will not include explanations",
+	"Tester": lambda _: "Tester",
+	"Uncertainty": lambda : (
 		"An ellipse around each point delineates with 95% confidence "
 		"that the point lies within that point's ellipse"
 	),
 	"Undo": lambda d: f"Undid {d.common.undone_command_name} command",
-	"Varimax": lambda d: "Varimax rotation of active configuration",
+	"Varimax": lambda _: "Varimax rotation of active configuration",
 	"Vectors": lambda d: (
 		f"Vectors are based on the active configuration which has "
 		f"{d.configuration_active.ndim} dimensions and "
 		f"{d.configuration_active.npoint} points"
 	),
-	"Verbose": lambda d: "Output will include explanations",
+	"Verbose": lambda _: "Output will include explanations",
 	"View configuration": lambda d: (
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
@@ -3870,21 +3871,23 @@ title_generator_dict = MappingProxyType({
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
-	"View distances": lambda d: "Inter-point distances",
-	"View evaluations": lambda d: "Evaluations",
+	"View distances": lambda _: "Inter-point distances",
+	"View evaluations": lambda _: "Evaluations",
 	"View grouped data": lambda d: (
 		f"Configuration is based on {d.grouped_data_active.grouping_var} "
 		"and has "
 		f"{d.grouped_data_active.ndim} dimensions and "
 		f"{d.grouped_data_active.ngroups} points"
 	),
-	"View individuals": lambda d: "Individuals",
-	"View point uncertainty": lambda d: "Point Uncertainty ",
+	"View individuals": lambda _: "Individuals",
+	"View point uncertainty": lambda _: "Point Uncertainty ",
 	"View sample design": lambda d: (
-		f"Sample design - Size of universe: {d.uncertainty_active.universe_size}, "
-		f"Probability of inclusion: {d.uncertainty_active.probability_of_inclusion}"
+		f"Sample design - Size of universe: "
+		f"{d.uncertainty_active.universe_size}, "
+		f"Probability of inclusion: "
+		f"{d.uncertainty_active.probability_of_inclusion}"
 	),
-	"View sample repetitions": lambda d: "Sample repetitions",
+	"View sample repetitions": lambda _: "Sample repetitions",
 	"View sample solutions": lambda d: (
 		f"{d.uncertainty_active.nsolutions} solutions have "
 		f"{d.uncertainty_active.ndim} dimensions and "
@@ -3894,7 +3897,7 @@ title_generator_dict = MappingProxyType({
 		f"There are {d.scores_active.nscores} active scores for "
 		f"{d.scores_active.nscored_individ} individuals."
 	),
-	"View script": lambda d: "Script commands",
+	"View script": lambda _: "Script commands",
 	"View similarities": lambda d: (
 		f"The {d.similarities_active.value_type} matrix has "
 		f"{d.similarities_active.nreferent} items"

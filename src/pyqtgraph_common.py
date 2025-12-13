@@ -433,7 +433,8 @@ class PyQtGraphCommon:
 		
 		plot_scree = graphics_layout_widget.addPlot(title="Scree Diagram")
 		plot_scree.showGrid(x=True, y=True)
-		plot_scree.setLabel('bottom', "Number of Factors", color="k", size='15pt')
+		plot_scree.setLabel(
+			'bottom', "Number of Factors", color="k", size='15pt')
 		plot_scree.setLabel('left', "Eigenvalue", color="k", size='15pt')
 		
 		pen_scree = pg.mkPen(color=(255, 0, 0))

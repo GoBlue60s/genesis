@@ -7,8 +7,6 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from PySide6.QtWidgets import QTableWidget
-
 from exceptions import (
 	SelectionError,
 	# UnderDevelopmentError,
@@ -18,6 +16,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from common import Spaces
 	from director import Status
+	from PySide6.QtWidgets import QTableWidget
+
 
 
 # --------------------------------------------------------------------------

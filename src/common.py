@@ -145,7 +145,7 @@ class Spaces:
 		self._director.command_states.append(None)  # Updated when state pushed
 		print(f"\nStarting {self._director.command} command: \n")
 
-		active_commands = (
+		active_commands = ( # noqa: F841
 			"Center", "Cluster", "Compare", "Configuration", "Correlations",
 			"Deactivate", "Evaluations", "Factor analysis",
 			"Factor analysis machine learning", "Grouped data", "Individuals",
@@ -160,11 +160,11 @@ class Spaces:
 			"Settings - presentation layer", "Settings - segment sizing",
 			"Settings - vector sizing", "Similarities",
 			"Target", "Tester", "Uncertainty", "Undo", "Varimax")
-		interactive_only_commands = (
+		interactive_only_commands = ( # noqa: F841
 			"Create", "New grouped data")
-		script_commands = (
+		script_commands = ( # noqa: F841
 			"Open script", "Save script", "View script")
-		passive_commands = (
+		passive_commands = ( # noqa: F841
 			"About", "Alike", "Base", "Battleground", "Contest",
 			"Convertible", "Core supporters", "Directions",
 			"Distances", "Exit", "First dimension","Help", "History", "Joint",
@@ -3825,7 +3825,8 @@ class Spaces:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState(command_name, command_type, parameters)
-		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		cmd_state.timestamp = \
+			datetime.now().strftime("%Y-%m-%d %H:%M:%S") # noqa: DTZ005
 
 		# Capture all required feature states
 		state_capture_list = command_dict[command_name]["state_capture"]
@@ -3913,7 +3914,8 @@ class Spaces:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState(command_name, "passive", parameters or {})
-		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		cmd_state.timestamp = \
+			datetime.now().strftime("%Y-%m-%d %H:%M:%S") # noqa: DTZ005
 
 		# Passive commands don't clear redo stack - they're read-only
 		# and shouldn't affect undo/redo navigation

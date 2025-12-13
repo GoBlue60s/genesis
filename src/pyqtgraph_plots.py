@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pyqtgraph as pg
-from pyqtgraph import BarGraphItem, PlotWidget
+from pyqtgraph import BarGraphItem
 from PySide6 import QtGui, QtWidgets
 
 from constants import (

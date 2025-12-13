@@ -128,7 +128,8 @@ class ClusterCommand:
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState("Cluster", "active", params)
-		cmd_state.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		cmd_state.timestamp = \
+			datetime.now().strftime("%Y-%m-%d %H:%M:%S") # noqa: DTZ005
 
 		for item in state_to_capture:
 			if item == "configuration":
@@ -431,8 +432,7 @@ class ClusterCommand:
 			percent = (count / total_points) * 100
 			row = [str(i + 1), colors[i % len(colors)], f"{percent:.1f}%"]
 			# Format coordinates without parentheses, fixed format
-			for coord in cluster_centers[i]:
-				row.append(f"{coord:.3f}")
+			row.extend(f"{coord:.3f}" for coord in cluster_centers[i])
 			# Add reference point proximity percentages if available
 			if ref_percentages:
 				row.extend(ref_percentages[i])
@@ -497,7 +497,8 @@ class ClusterCommand:
 				i + 1,
 				colors[i % len(colors)],
 				f"{percent:.1f}%",
-			] + cluster_centers[i].tolist()
+				*cluster_centers[i].tolist(),
+			]
 			# Add reference point proximity percentages if available
 			if ref_percentages:
 				row.extend(ref_percentages[i])
@@ -2023,6 +2024,7 @@ class PrincipalComponentsCommand:
 		scores = pd.DataFrame(X_pca_transformed, columns=dim_names)
 		scores.reset_index(inplace=True)
 		scores.rename(columns={"index": "Resp no"}, inplace=True)
+
 
 		self._director.configuration_active.score_1_name = score_1_name
 		self._director.configuration_active.score_2_name = score_2_name
