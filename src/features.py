@@ -428,7 +428,7 @@ class ConfigurationFeature:
 		# create distances-as-square a full, upper and lower, matrix,
 		#
 		# self.range_items = range(len(self.item_labels))
-		# range_points = range(nreferent)
+		range_points = range(nreferent)
 
 		for each_point in range_points:
 			distances_as_square.append([])
@@ -560,7 +560,7 @@ class ConfigurationFeature:
 				key = str(point_labels[to_pts] + "_" + point_labels[from_pts])
 				ranked_distances_as_dict[key] = rank
 			ranked_distances.append(a_row)
-		# self.range_points = range(nreferent)
+		range_points = range(npoint)
 		for each_point in range_points:
 			ranked_distances_as_square.append([])
 			for other_point in range_points:

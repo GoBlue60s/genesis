@@ -178,7 +178,7 @@ class Spaces:
 			"Save configuration",
 			"Save correlations", "Save individuals", "Save sample design",
 			"Save sample repetitions", "Save sample solutions",
-			"Save scores", "Save similarities","Save target", "Scree",
+			"Save scores", "Save similarities","Save target",
 			"Second dimension", "Segments","Shepard",
 			"Status", "Stress contribution", "Terse", "Vectors", "Verbose",
 			"View configuration", "View correlations", "View custom",

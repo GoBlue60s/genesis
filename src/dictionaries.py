@@ -19,7 +19,6 @@ from associationsmenu import (
 	RanksDifferencesCommand,
 	RanksDistancesCommand,
 	RanksSimilaritiesCommand,
-	ScreeCommand,
 	ShepardCommand,
 	StressContributionCommand,
 )
@@ -828,21 +827,6 @@ command_dict = MappingProxyType({
 		"state_capture": ["scores", "rivalry"],
 		"script_parameters": []
 	},
-	"Scree": {
-		"type": "passive",
-		"state_capture": [],
-		"script_parameters": ["use_metric"],
-		"execute_parameters": ["use_metric"],
-		"interactive_getters": {
-			"use_metric": {
-				"getter_type": "option",
-				"title": "MDS model",
-				"prompt": "Model to use",
-				"options": ["Non-metric", "Metric"],
-				"map_to_bool": True
-			}
-		}
-	},
 	"Second dimension": {
 		"type": "passive",
 		"state_capture": [],
@@ -1453,12 +1437,6 @@ explain_dict = MappingProxyType({
 	"The user will be asked for a file name.\n",
 	"Score individuals": "Score individuals is used to create "
 	"scores for individuals based on evaluations.",
-	"Scree": "Scree displays a diagram showing stress vs."
-	" dimensionality.\n"
-	"The Scree diagram is used to help decide how many dimensions"
-	" to fit the similarities.\n"
-	"The number of dimensions is on the x-axis and stress is on "
-	"the y-axis.",
 	"Second dimension": "Second dimension identifies regions "
 	"defined by the second dimension.",
 	"Segments": "Segments identifies regions defined by the"
@@ -1653,7 +1631,6 @@ button_dict = MappingProxyType({
 		"rotate",
 		"Rotate dimensions",
 	),
-	"scree": ("spaces_scree_icon.jpg", "scree", "Show Scree diagram"),
 	"shepard": (
 		"spaces_shepard_icon.jpg",
 		"shepard_similarities_on_x",
@@ -1857,7 +1834,6 @@ request_dict = MappingProxyType({
 	"ranks_distances": (RanksDistancesCommand, None),
 	"ranks_similarities": (RanksSimilaritiesCommand, None),
 	"ranks_differences": (RanksDifferencesCommand, None),
-	"scree": (ScreeCommand, None),
 	"shepard_similarities_on_x": (ShepardCommand, "X"),
 	"shepard_similarities_on_y": (ShepardCommand, "Y"),
 	"stress_contribution": (StressContributionCommand, None),
@@ -2252,11 +2228,6 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 			ScoreIndividualsCommand,
 			"shared",
 			lambda: parent.statistics.display_table("scores"),
-		],
-		"Scree": [
-			ScreeCommand,
-			"shared",
-			lambda: parent.statistics.display_table("scree"),
 		],
 		"Second dimension": [
 			SecondDimensionCommand,
@@ -2923,11 +2894,6 @@ associations_menu_dict = MappingProxyType({
 			],
 		},
 	},
-	"Scree diagram": [
-		"spaces_scree_icon.jpg",
-		"scree",
-		"Create a scree diagram",
-	],
 	"Shepard diagram": {
 		"icon": "spaces_shepard_icon.jpg",
 		"items": {
@@ -3848,7 +3814,6 @@ title_generator_dict = MappingProxyType({
 		f"There are {d.scores_active.nscores} active scores for "
 		f"{d.scores_active.nscored_individ} individuals."
 	),
-	"Scree": lambda d: "Best stress by dimensionality",
 	"Second dimension": lambda d: "Social oriented segments",
 	"Segments": lambda d: (
 		f"Segments defined by contest between {d.rivalry.rival_a.name} "
@@ -4031,7 +3996,6 @@ command_dependencies_dict = MappingProxyType({
 	"Save target": ("target",),
 	"Save script": (),
 	"Score individuals": ("configuration", "evaluations"),
-	"Scree": ("similarities",),
 	"Second dimension": ("configuration", "reference_points"),
 	"Segments": ("configuration", "reference_points", "scores"),
 	"Settings - display sizing": (),

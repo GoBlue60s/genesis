@@ -7,14 +7,10 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from PySide6.QtWidgets import QTableWidget, QDialog
-from sklearn import manifold
-
-from dialogs import ChoseOptionDialog
+from PySide6.QtWidgets import QTableWidget
 
 from exceptions import (
 	SelectionError,
-	SpacesError,
 	# UnderDevelopmentError,
 )
 from typing import TYPE_CHECKING
@@ -568,134 +564,6 @@ class RanksSimilaritiesCommand:
 		return
 
 	# ------------------------------------------------------------------------
-
-
-class ScreeCommand:
-	"""The Scree command creates diagram showing stress vs. dimensionality."""
-
-	def __init__(self, director: Status, common: Spaces) -> None:
-		self._director = director
-		self._director.command = "Scree"
-		self._dim_names: list[str] = []
-		self._dim_labels: list[str] = []
-		self._use_metric: bool = False
-		# Use common._min_stress directly instead of creating new DataFrame
-		self._min_stress: pd.DataFrame = common._min_stress
-		return
-
-	# ------------------------------------------------------------------------
-
-	def execute(
-		self, common: Spaces, use_metric: bool = False  # noqa: FBT001, FBT002
-	) -> None:
-		common.initiate_command_processes()
-		params = common.get_command_parameters("Scree", use_metric=use_metric)
-		use_metric = params["use_metric"]
-		common.capture_and_push_undo_state("Scree", "passive", params)
-		self._use_metric = use_metric
-		self._scree()
-		common.create_plot_for_tabs("scree")
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
-		return
-
-	# ------------------------------------------------------------------------
-
-	def _get_model_for_scree_diagram_initialize_variables(self) -> None:
-		self.need_model_for_scree_error_title = self._director.command
-		self.need_model_for_scree_error_message: str = (
-			"A model is needed to use in creating scree diagram.")
-
-	# ------------------------------------------------------------------------
-
-	def _get_model_for_scree_diagram(
-		self,
-		scree_title: str,
-		scree_options_title: str,
-		scree_options: list[str],
-	) -> None:
-		self._get_model_for_scree_diagram_initialize_variables()
-
-		# use_metric = self._use_metric
-
-		dialog = ChoseOptionDialog(
-			scree_title, scree_options_title, scree_options
-		)
-		result = dialog.exec()
-		if result == QDialog.Accepted: # ty: ignore[unresolved-attribute]
-			selected_option = dialog.selected_option  # + 1
-			match selected_option:
-				case 0:
-					use_metric: bool = False
-				case 1:
-					use_metric: bool = True
-				case _:
-					raise SpacesError(
-						self.need_model_for_scree_error_title,
-						self.need_model_for_scree_error_message,
-					)
-
-		else:
-			raise SpacesError(
-				self.need_model_for_scree_error_title,
-				self.need_model_for_scree_error_message,
-			)
-
-		self._use_metric: bool = use_metric
-		self._director.common._use_metric = use_metric
-
-		return
-
-	# -------------------------------------------------------------------------
-
-	def _scree(self) -> None:
-		similarities_as_square = (
-			self._director.similarities_active.similarities_as_square
-		)
-		# Clear the DataFrame before populating with new data
-		self._min_stress.drop(self._min_stress.index, inplace=True)
-		min_stress: pd.DataFrame = self._min_stress
-
-		dim_names: list[str] = []
-		dim_labels: list[str] = []
-
-		dim_names.append("Dimension 1")
-		dim_labels.append("Dim1")
-		#
-		range_ncomps = range(1, 11)
-		for each_n_comp in range_ncomps:
-			nmds = manifold.MDS(
-				n_components=each_n_comp,
-				metric='precomputed',
-				metric_mds=self._use_metric,
-				init='random',
-				n_init=20,
-				verbose=0,
-				normalized_stress="auto",
-			)
-			npos = nmds.fit_transform(X=similarities_as_square)
-			point_coords = pd.DataFrame(npos.tolist())
-			dim_names.append("Dimension " + str(each_n_comp))
-			dim_labels.append("Di" + str(each_n_comp))
-			#
-			best_stress = nmds.stress_
-			min_stress.loc[len(min_stress)] = [each_n_comp, best_stress]
-
-			print(
-				f"\tBest stress in {each_n_comp} dimensions: {best_stress:.4f}"
-			)
-
-		self.point_coords: pd.DataFrame = point_coords
-		self._dim_names: list[str] = dim_names
-		self._dim_labels: list[str] = dim_labels
-		self.best_stress: float = best_stress
-		self._min_stress: pd.DataFrame = min_stress
-		self._director.common._min_stress = min_stress
-
-		return
-
-	# ------------------------------------------------------------------------
-
 
 class ShepardCommand:
 	"""The Shepard command creates shepard diagram - rank of
