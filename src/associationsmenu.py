@@ -589,6 +589,7 @@ class ShepardCommand:
 		common.capture_and_push_undo_state("Shepard", "passive", params)
 		common.shepard_axis = axis_for_similarities
 		_print_shepard_diagram_confirmation(axis_for_similarities)
+		self._director.similarities_active.prepare_for_shepard_diagram()
 		common.create_plot_for_tabs("shepard")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()

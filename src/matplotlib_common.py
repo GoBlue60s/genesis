@@ -324,9 +324,11 @@ class MatplotlibCommon:
 
 		# Configuration Plot (ax1)
 		# Replicating logic from plot_a_configuration_using_matplotlib
-		# fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(None) -> Already have ax1
-		# Note: begin_matplotlib_plot_with_title sets title, here we skip setting title or set None
-		# ax1.set_title(None) 
+		# fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(None)
+		#  -> Already have ax1
+		# Note: begin_matplotlib_plot_with_title sets title, here we skip
+		#  setting title or set None
+		# ax1.set_title(None)
 		
 		ax1 = matplotlib_common.set_aspect_and_grid_in_matplotlib_plot(ax1)
 		matplotlib_common.add_axes_labels_to_matplotlib_plot(ax1)
@@ -346,7 +348,7 @@ class MatplotlibCommon:
 		ax2.plot(xvals, eigen)
 		ax2.set_xlabel("Factors")
 		ax2.set_ylabel("Eigenvalue")
-		ax2.grid(True)
+		ax2.grid(visible=True)
 
 		fig.tight_layout()
 		return fig

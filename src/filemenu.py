@@ -1027,10 +1027,20 @@ class GroupedDataCommand:
 				self._grouped_data_error_bad_input_title,
 				self._grouped_data_error_bad_input_message,
 			) from e
-		self._store_grouped_data_to_active(
-			grouping_var, expected_dim, expected_groups,
-			dim_names, dim_labels, group_names, group_labels,
-			group_codes, group_coords, range_groups, range_dims)
+		grouped_data_params = {
+			"grouping_var": grouping_var,
+			"expected_dim": expected_dim,
+			"expected_groups": expected_groups,
+			"dim_names": dim_names,
+			"dim_labels": dim_labels,
+			"group_names": group_names,
+			"group_labels": group_labels,
+			"group_codes": group_codes,
+			"group_coords": group_coords,
+			"range_groups": range_groups,
+			"range_dims": range_dims
+		}
+		self._store_grouped_data_to_active(grouped_data_params)
 		return
 
 	# ------------------------------------------------------------------------
@@ -1133,43 +1143,41 @@ class GroupedDataCommand:
 
 	def _store_grouped_data_to_active(
 		self,
-		grouping_var: str,
-		expected_dim: int,
-		expected_groups: int,
-		dim_names: list[str],
-		dim_labels: list[str],
-		group_names: list[str],
-		group_labels: list[str],
-		group_codes: list[str],
-		group_coords: pd.DataFrame,
-		range_groups: range,
-		range_dims: range
+		params: dict
 	) -> None:
 		"""Store all grouped data to the active feature."""
-		self._director.grouped_data_active.grouping_var = grouping_var
-		self._director.grouped_data_active.ndim = expected_dim
-		self._director.grouped_data_active.dim_names = dim_names
-		self._director.grouped_data_active.dim_labels = dim_labels
-		self._director.grouped_data_active.npoint = expected_groups
-		self._director.grouped_data_active.ngroups = expected_groups
-		self._director.grouped_data_active.range_groups = range_groups
-		self._director.grouped_data_active.group_names = group_names
-		self._director.grouped_data_active.group_labels = group_labels
-		self._director.grouped_data_active.group_codes = group_codes
-		self._director.grouped_data_active.group_coords = group_coords
-		self._director.grouped_data_active.range_dims = range_dims
+		self._director.grouped_data_active.grouping_var = params[
+			"grouping_var"]
+		self._director.grouped_data_active.ndim = params["expected_dim"]
+		self._director.grouped_data_active.dim_names = params["dim_names"]
+		self._director.grouped_data_active.dim_labels = params["dim_labels"]
+		self._director.grouped_data_active.npoint = params["expected_groups"]
+		self._director.grouped_data_active.ngroups = params["expected_groups"]
+		self._director.grouped_data_active.range_groups = params[
+			"range_groups"]
+		self._director.grouped_data_active.group_names = params["group_names"]
+		self._director.grouped_data_active.group_labels = params[
+			"group_labels"]
+		self._director.grouped_data_active.group_codes = params["group_codes"]
+		self._director.grouped_data_active.group_coords = params[
+			"group_coords"]
+		self._director.grouped_data_active.range_dims = params["range_dims"]
 
 		# Initialize horizontal and vertical axis names and dimension indices
-		if expected_dim >= MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			self._director.grouped_data_active.hor_axis_name = dim_names[0]
-			self._director.grouped_data_active._hor_dim = dim_names.index(
-				self._director.grouped_data_active.hor_axis_name
-			)
-		if expected_dim >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			self._director.grouped_data_active.vert_axis_name = dim_names[1]
-			self._director.grouped_data_active._vert_dim = dim_names.index(
-				self._director.grouped_data_active.vert_axis_name
-			)
+		if params["expected_dim"] >= MINIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			self._director.grouped_data_active.hor_axis_name = params[
+				"dim_names"][0]
+			self._director.grouped_data_active._hor_dim = params[
+				"dim_names"].index(
+					self._director.grouped_data_active.hor_axis_name
+				)
+		if params["expected_dim"] >= MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+			self._director.grouped_data_active.vert_axis_name = params[
+				"dim_names"][1]
+			self._director.grouped_data_active._vert_dim = params[
+				"dim_names"].index(
+					self._director.grouped_data_active.vert_axis_name
+				)
 		return
 
 	# ------------------------------------------------------------------------

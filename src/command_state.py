@@ -30,6 +30,20 @@ if TYPE_CHECKING:
 # ----------------------------------------------------------------------------
 
 
+SKIP_TYPES = (
+	weakref.ref,
+	weakref.WeakMethod,
+	weakref.ProxyType,
+	weakref.CallableProxyType,
+)
+
+if MATPLOTLIB_AVAILABLE:
+	SKIP_TYPES += (FigureCanvasQTAgg, Figure)
+
+if QT_AVAILABLE:
+	SKIP_TYPES += (QWidget,)
+
+
 def _handle_basic_types_and_memo(
 	obj: object, memo: dict
 ) -> tuple[bool, object] | None:
@@ -42,22 +56,9 @@ def _handle_basic_types_and_memo(
 	if isinstance(obj, (type(None), int, float, str, bool)):
 		return (True, obj)
 
-	# Handle weakref types (WeakMethod, weakref, etc.) - skip them
-	if isinstance(obj, (weakref.ref, weakref.WeakMethod)):
+	# Handle types to skip (weakrefs, UI objects)
+	if isinstance(obj, SKIP_TYPES):
 		return (True, None)
-
-	# Handle callable types that can't be pickled
-	if isinstance(obj, (weakref.ProxyType, weakref.CallableProxyType)):
-		return (True, None)
-
-	# Handle matplotlib objects (figures, canvases) - skip them
-	if MATPLOTLIB_AVAILABLE and \
-		isinstance(obj, (FigureCanvasQTAgg, Figure)):
-			return (True, None)
-
-	# Handle Qt widgets - skip them
-	if QT_AVAILABLE and isinstance(obj, QWidget):
-			return (True, None)
 
 	# Check memo to avoid infinite recursion
 	obj_id = id(obj)

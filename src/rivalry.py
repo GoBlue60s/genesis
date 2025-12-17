@@ -2478,23 +2478,37 @@ class Rivalry:
 			right_includes_upper_right_and_lower_left_as_pairs
 		) = self._define_convertible_regions(bisector, west, east)
 
+		params = {
+			"right_includes_upper_right_as_pairs":
+				right_includes_upper_right_as_pairs,
+			"right_includes_lower_right_as_pairs":
+				right_includes_lower_right_as_pairs,
+			"right_includes_upper_left_as_pairs":
+				right_includes_upper_left_as_pairs,
+			"right_includes_lower_left_as_pairs":
+				right_includes_lower_left_as_pairs,
+			"left_includes_lower_left_as_pairs":
+				left_includes_lower_left_as_pairs,
+			"left_includes_upper_left_as_pairs":
+				left_includes_upper_left_as_pairs,
+			"left_includes_lower_right_as_pairs":
+				left_includes_lower_right_as_pairs,
+			"left_includes_upper_right_as_pairs":
+				left_includes_upper_right_as_pairs,
+			"left_includes_lower_right_and_upper_left_as_pairs":
+				left_includes_lower_right_and_upper_left_as_pairs,
+			"left_includes_upper_right_and_lower_left_as_pairs":
+				left_includes_upper_right_and_lower_left_as_pairs,
+			"right_includes_upper_left_and_lower_right_as_pairs":
+				right_includes_upper_left_and_lower_right_as_pairs,
+			"right_includes_upper_right_and_lower_left_as_pairs":
+				right_includes_upper_right_and_lower_left_as_pairs
+		}
+
 		(
 			self.convertible_to_left.outline,
 			self.convertible_to_right.outline,
-		) = self._define_convertible_vertices(
-			right_includes_upper_right_as_pairs,
-			right_includes_lower_right_as_pairs,
-			right_includes_upper_left_as_pairs,
-			right_includes_lower_left_as_pairs,
-			left_includes_lower_left_as_pairs,
-			left_includes_upper_left_as_pairs,
-			left_includes_lower_right_as_pairs,
-			left_includes_upper_right_as_pairs,
-			left_includes_lower_right_and_upper_left_as_pairs,
-			left_includes_upper_right_and_lower_left_as_pairs,
-			right_includes_upper_left_and_lower_right_as_pairs,
-			right_includes_upper_right_and_lower_left_as_pairs
-		)
+		) = self._define_convertible_vertices(params)
 
 		# convertible_to_left.outline and convertible_to_right.outline
 		# assigned above
@@ -2664,20 +2678,10 @@ class Rivalry:
 
 	def _define_convertible_vertices(
 		self,
-		right_includes_upper_right_as_pairs: np.array,
-		right_includes_lower_right_as_pairs: np.array,
-		right_includes_upper_left_as_pairs: np.array,
-		right_includes_lower_left_as_pairs: np.array,
-		left_includes_lower_left_as_pairs: np.array,
-		left_includes_upper_left_as_pairs: np.array,
-		left_includes_lower_right_as_pairs: np.array,
-		left_includes_upper_right_as_pairs: np.array,
-		left_includes_lower_right_and_upper_left_as_pairs: np.array,
-		left_includes_upper_right_and_lower_left_as_pairs: np.array,
-		right_includes_upper_left_and_lower_right_as_pairs: np.array,
-		right_includes_upper_right_and_lower_left_as_pairs: np.array
-		
+		params: dict
 	) -> tuple:
+
+
 		#
 		# Establish default areas
 		#
@@ -2710,17 +2714,7 @@ class Rivalry:
 			east,
 			convertible_to_left_vertices_as_pairs,
 			convertible_to_right_vertices_as_pairs,
-			right_includes_upper_right_as_pairs,
-			left_includes_lower_left_as_pairs,
-			left_includes_upper_right_as_pairs,
-			right_includes_lower_left_as_pairs,
-			right_includes_lower_right_as_pairs,
-			left_includes_upper_left_as_pairs,
-			right_includes_upper_left_as_pairs,
-			left_includes_lower_right_as_pairs,
-			left_includes_lower_right_and_upper_left_as_pairs,
-			right_includes_upper_left_and_lower_right_as_pairs,
-			right_includes_upper_right_and_lower_left_as_pairs
+			params
 		)
 
 		return (
@@ -2777,19 +2771,32 @@ class Rivalry:
 		east: East,
 		convertible_to_left_vertices_as_pairs: np.array,
 		convertible_to_right_vertices_as_pairs: np.array,
-		right_includes_upper_right_as_pairs: np.array,
-		left_includes_lower_left_as_pairs: np.array,
-		left_includes_upper_right_as_pairs: np.array,
-		right_includes_lower_left_as_pairs: np.array,
-		right_includes_lower_right_as_pairs: np.array,
-		left_includes_upper_left_as_pairs: np.array,
-		right_includes_upper_left_as_pairs: np.array,
-		left_includes_lower_right_as_pairs: np.array,
-		left_includes_lower_right_and_upper_left_as_pairs: np.array,
-		# left_includes_upper_right_and_lower_left_as_pairs: np.array,
-		right_includes_upper_left_and_lower_right_as_pairs: np.array,
-		right_includes_upper_right_and_lower_left_as_pairs: np.array
+		params: dict
 	) -> tuple[np.array, np.array]:
+		right_includes_upper_right_as_pairs = params[
+			"right_includes_upper_right_as_pairs"]
+		left_includes_lower_left_as_pairs = params[
+			"left_includes_lower_left_as_pairs"]
+		left_includes_upper_right_as_pairs = params[
+			"left_includes_upper_right_as_pairs"]
+		right_includes_lower_left_as_pairs = params[
+			"right_includes_lower_left_as_pairs"]
+		right_includes_lower_right_as_pairs = params[
+			"right_includes_lower_right_as_pairs"]
+		left_includes_upper_left_as_pairs = params[
+			"left_includes_upper_left_as_pairs"]
+		right_includes_upper_left_as_pairs = params[
+			"right_includes_upper_left_as_pairs"]
+		left_includes_lower_right_as_pairs = params[
+			"left_includes_lower_right_as_pairs"]
+		left_includes_lower_right_and_upper_left_as_pairs = params[
+			"left_includes_lower_right_and_upper_left_as_pairs"]
+		# left_includes_upper_right_and_lower_left_as_pairs = params[
+		# 	"left_includes_upper_right_and_lower_left_as_pairs"]
+		right_includes_upper_left_and_lower_right_as_pairs = params[
+			"right_includes_upper_left_and_lower_right_as_pairs"]
+		right_includes_upper_right_and_lower_left_as_pairs = params[
+			"right_includes_upper_right_and_lower_left_as_pairs"]
 		"""Establish convertible region vertices for all slope cases."""
 
 		# Establish keys for case combinations with their respective

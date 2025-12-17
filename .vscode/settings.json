@@ -1,0 +1,19 @@
+{
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+
+  "[python]": {
+    "editor.defaultFormatter": null,
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "never",
+      "source.organizeImports": "never"
+    }
+  },
+
+  "ruff.enable": true,
+  "ruff.lint.enable": true,
+  "ruff.organizeImports": false,
+  "ruff.fixAll": false
+}

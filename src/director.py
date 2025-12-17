@@ -10,7 +10,7 @@ from itertools import islice
 import pandas as pd
 
 # import pyqtgraph as pg
-# import peek # noqa: F401
+# import peek # noqa: RUF100
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QAction, QBrush, QFont, QIcon, QPalette, QPixmap
 from PySide6.QtWidgets import (
@@ -969,7 +969,7 @@ class Status(QMainWindow):
 		self.command_states.append(None)  # Will be updated when state pushed
 		print(f"\nStarting {self.command} command: \n")
 
-		active_commands = (
+		active_commands = ( # noqa: F841
 			"Center", "Cluster", "Compare", "Configuration", "Correlations",
 			"Deactivate", "Evaluations", "Factor analysis",
 			"Factor analysis machine learning", "Grouped data", "Individuals",
@@ -984,11 +984,11 @@ class Status(QMainWindow):
 			"Settings - presentation layer", "Settings - segment sizing",
 			"Settings - vector sizing", "Similarities",
 			"Target", "Tester", "Uncertainty", "Undo", "Varimax")
-		interactive_only_commands = (
+		interactive_only_commands = ( # noqa: F841
 			"Create", "New grouped data")
-		script_commands = (
+		script_commands = ( # noqa: F841
 			"Open script", "Save script", "View script")
-		passive_commands = (
+		passive_commands = ( # noqa: F841
 			"About", "Alike", "Base", "Battleground", "Contest",
 			"Convertible", "Core supporters", "Directions",
 			"Distances", "Exit", "First dimension","Help", "History", "Joint",
@@ -1349,8 +1349,8 @@ class Status(QMainWindow):
 			cmd_state: The CommandState to push onto the stack
 			preserve_redo_stack: If True, preserve redo stack (used by Redo)
 			update_command_states: If True, update command_states for script
-				generation. Set to False when restoring commands from redo stack
-				to prevent overwriting the current command's entry.
+				generation. Set to False when restoring commands from redo
+				stack to prevent overwriting the current command's entry.
 		"""
 		self.undo_stack.append(cmd_state)
 		self.undo_stack_source.append(cmd_state.command_name)

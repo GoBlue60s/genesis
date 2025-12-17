@@ -3,6 +3,11 @@
 line-length = 79  # Match your coding standards
 target-version = "py314"  # Target Python 3.14
 
+[tool.ruff.format]
+# Explicitly disable ruff formatting - we use ruff only as a linter
+# This ensures ruff format commands will not modify files
+exclude = ["*"]  # Exclude all files from formatting
+
 [tool.ruff.lint]
 select = ["ALL"]  # Enable all available rules for maximum coverage
 

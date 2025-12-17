@@ -121,7 +121,7 @@ Testing framework setup is planned using PyTest (not yet implemented).
 
 ### Coding Standards
 
-- **Indentation**: Tabs (not spaces)
+- **Indentation**:  2 spaces
 - **Line length**: 79 characters maximum
 - **Quotes**: Double quotes for string literals
 - **Type hints**: Required for all function parameters and return values

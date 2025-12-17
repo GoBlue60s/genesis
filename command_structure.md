@@ -22,7 +22,7 @@ Needs to be checked against command's entry in title_generator_dict - report and
 
 ## 2. Deprecated statements
 
-1. optional
+1. Should not be present
 2. If any of the calls on record_command_as_selected_and_in_process(), optionally_explain_what_command_does(), and detect_dependency_problem() appear, they should all be removed
 
 ## 3. Record command as initiated
