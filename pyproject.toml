@@ -1,6 +1,7 @@
 [tool.ruff]
 
 line-length = 79  # Match your coding standards
+indent-width = 4
 target-version = "py314"  # Target Python 3.14
 
 [tool.ruff.format]

@@ -83,7 +83,7 @@ This project follows specific coding standards defined in `.github/copilot-instr
 
 ### Formatting (Enforced by Ruff)
 
-- **Indentation**: Use 2 spaces
+- **Indentation**: Use 4 spaces
 - **Line length**: 79 characters maximum
 - **Quotes**: Double quotes for string literals
 - **Imports**: Standard library, third-party, then local imports

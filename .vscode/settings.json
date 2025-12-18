@@ -1,8 +1,8 @@
 {
-  "editor.formatOnSave": false,
-  "editor.formatOnPaste": false,
+  "editor.tabSize": 4,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
   "editor.formatOnType": false,
-
   "[python]": {
     "editor.defaultFormatter": null,
     "editor.formatOnSave": false,
@@ -11,7 +11,6 @@
       "source.organizeImports": "never"
     }
   },
-
   "ruff.enable": true,
   "ruff.lint.enable": true,
   "ruff.organizeImports": false,
