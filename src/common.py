@@ -112,6 +112,8 @@ class Spaces:
 		self.shepard_axis: str = ""
 		self.point_to_plot_index: int = 0
 		self.cutoff: float = 0.0
+		self.redone_command_name: str = ""
+		self.undone_command_name: str = ""
 
 		return
 

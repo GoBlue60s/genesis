@@ -71,7 +71,31 @@ class RedoCommand:
 		# Print what features are being restored
 		self.common.print_restoration_summary(cmd_state, is_undo=False)
 
-		# Push the current state to undo stack before redoing
+		# Capture and push current state, then restore the command state
+		self._capture_and_push_current_state(cmd_state)
+		cmd_state.restore_all_state(self._director)
+
+		# Restore any passive commands that follow
+		self._restore_following_passive_commands()
+
+		# Update undo/redo button states
+		self._update_undo_redo_states()
+
+		# Build appropriate output and title based on restored state
+		self._build_redo_output(cmd_state)
+
+		return None
+
+	# ------------------------------------------------------------------------
+
+	def _capture_and_push_current_state(
+		self, cmd_state: CommandState
+	) -> None:
+		"""Capture current state and push to undo stack before redoing.
+
+		Args:
+			cmd_state: The command state being redone
+		"""
 		current_state = CommandState(
 			cmd_state.command_name, "active", cmd_state.command_params
 		)
@@ -89,23 +113,27 @@ class RedoCommand:
 			update_command_states=False
 		)
 
-		# Restore all captured state
-		cmd_state.restore_all_state(self._director)
+	# ------------------------------------------------------------------------
 
-		# After restoring the active command, continue restoring any passive
-		# commands that were skipped over during the original undo
+	def _restore_following_passive_commands(self) -> None:
+		"""Restore any passive commands that follow the active command."""
 		while self._director.redo_stack:
 			next_cmd = self._director.peek_redo_state()
 			if next_cmd and next_cmd.command_type in ("passive", "script"):
 				passive_cmd = self._director.pop_redo_state()
-				self._director.push_undo_state(
-					passive_cmd,
-					preserve_redo_stack=True,
-					update_command_states=False
-				)
+				if passive_cmd is not None:
+					self._director.push_undo_state(
+						passive_cmd,
+						preserve_redo_stack=True,
+						update_command_states=False
+					)
 			else:
 				break
 
+	# ------------------------------------------------------------------------
+
+	def _update_undo_redo_states(self) -> None:
+		"""Update the enabled/disabled state of undo/redo buttons."""
 		# Enable Undo if there are active commands in the undo stack
 		if self._director._has_active_undoable_commands():
 			self._director.enable_undo()
@@ -113,11 +141,6 @@ class RedoCommand:
 		# Disable Redo if the redo stack is now empty
 		if not self._director.redo_stack:
 			self._director.disable_redo()
-
-		# Build appropriate output and title based on restored state
-		self._build_redo_output(cmd_state)
-
-		return None
 
 	# ------------------------------------------------------------------------
 
@@ -178,7 +201,9 @@ class RedoCommand:
 
 		# Create DataFrame for the table
 		columns: list[str] = ["Items Restored", "Details"]
-		df: pd.DataFrame = pd.DataFrame(restoration_data, columns=columns)
+		df: pd.DataFrame = pd.DataFrame(
+			restoration_data, columns=pd.Index(columns)
+		)
 
 		# Create table widget
 		table_widget: QTableWidget = QTableWidget(df.shape[0], df.shape[1])
@@ -212,7 +237,7 @@ class RedoCommand:
 		"""
 		restoration_details: list[list[str]] = []
 		# Get list of what was restored from the snapshot keys
-		restored_types = cmd_state.state_snapshot.keys()
+		restored_types = list(cmd_state.state_snapshot.keys())
 
 		# Use the same helper methods from UndoCommand
 		# We can create a temporary UndoCommand instance to reuse methods
@@ -371,7 +396,9 @@ class UndoCommand:
 
 		# Create DataFrame for the table
 		columns: list[str] = ["Items Restored", "Details"]
-		df: pd.DataFrame = pd.DataFrame(restoration_data, columns=columns)
+		df: pd.DataFrame = pd.DataFrame(
+			restoration_data, columns=pd.Index(columns)
+		)
 
 		# Create table widget
 		table_widget: QTableWidget = QTableWidget(df.shape[0], df.shape[1])
@@ -405,7 +432,7 @@ class UndoCommand:
 		"""
 		restoration_details: list[list[str]] = []
 		# Get list of what was restored from the snapshot keys
-		restored_types = cmd_state.state_snapshot.keys()
+		restored_types = list(cmd_state.state_snapshot.keys())
 
 		# Report on current state for each restored type
 		self._add_current_config_details(restored_types, restoration_details)
@@ -658,12 +685,8 @@ class UndoCommand:
 		"""Add current rivalry details to restoration list."""
 		if "rivalry" in restored_types:
 			riv = self._director.rivalry
-			rival_a_name: str = (
-				riv.rival_a.name if riv.rival_a.name else "unknown"
-			)
-			rival_b_name: str = (
-				riv.rival_b.name if riv.rival_b.name else "unknown"
-			)
+			rival_a_name = riv.rival_a.name or "unknown"
+			rival_b_name = riv.rival_b.name or "unknown"
 			details.append(
 				["Reference points", f"{rival_a_name} vs {rival_b_name}"]
 			)
