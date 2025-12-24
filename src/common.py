@@ -1746,7 +1746,7 @@ class Spaces:
 		labels: list[str],
 		names: list[str],
 		nelements: int,
-		values: list[float],
+		values: list[list[float]],
 		width: int,
 	) -> None:
 		"""Print values in lower triangular matrix format.

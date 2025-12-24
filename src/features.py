@@ -55,7 +55,7 @@ class ConfigurationFeature:
 
 		_min: float = 0.0  # the vertical minimum for plot
 
-		self.distances: list[float] = []
+		self.distances: list[list[float]] = []
 		self.range_distances: range = range(0)
 		self.distances_as_dict: dict = {}
 		self.distances_as_list: list[float] = []
@@ -64,8 +64,8 @@ class ConfigurationFeature:
 		# self.sorted_distances_w_pairs: list = []
 		self.sorted_distances = {}
 		self.sorted_distances_in_numpy = []
-		self.ranked_distances: list[int] = []
-		self.ranked_distances_as_list: list = [int]
+		self.ranked_distances: list[list[int | float]] = []
+		self.ranked_distances_as_list: np.ndarray = np.array([])
 		self.ranked_distances_as_square: list[list[int]] = []
 		self.ranked_distances_as_dict: dict = {}
 		self.ranked_distances_as_dataframe = pd.DataFrame()
@@ -218,9 +218,9 @@ class ConfigurationFeature:
 		director = self._director
 		common = director.common
 		segments = director.rivalry.seg
-		score_1_name = director.current_command._score_1_name
-		score_2_name = director.current_command._score_2_name
-		nscored = director.current_command._nscored_individ
+		score_1_name = getattr(director.current_command, "_score_1_name", "")
+		score_2_name = getattr(director.current_command, "_score_2_name", "")
+		nscored = getattr(director.current_command, "_nscored_individ", 0)
 		in_group = common.in_group
 
 		if core_groups_to_show == "regions":
@@ -375,7 +375,7 @@ class ConfigurationFeature:
 		self.distances_as_square.clear()
 		self.distances_as_dataframe = pd.DataFrame()
 		self.ranked_distances.clear()
-		self.ranked_distances_as_list = []
+		self.ranked_distances_as_list = np.array([])
 		self.ranked_distances_as_square.clear()
 		self.ranked_distances_as_dict = {}
 		self.ranked_distances_as_dataframe = pd.DataFrame()
@@ -456,7 +456,9 @@ class ConfigurationFeature:
 					)
 		#
 		self.distances_as_dataframe = pd.DataFrame(
-			distances_as_square, columns=point_names, index=point_names
+			distances_as_square,
+			columns=pd.Index(point_names),
+			index=pd.Index(point_names)
 		)
 
 		self.distances_as_list = distances_as_list  # this is the fix
@@ -588,7 +590,9 @@ class ConfigurationFeature:
 					)
 
 		ranked_distances_as_dataframe = pd.DataFrame(
-			ranked_distances_as_square, columns=point_names, index=point_names
+			ranked_distances_as_square,
+			columns=pd.Index(point_names),
+			index=pd.Index(point_names)
 		)
 
 		self.distances = distances
@@ -958,7 +962,7 @@ class ScoresFeature:
 		for i in range(len(cols) - 1):
 			print("\t\t", cols[i + 1])
 			self.var_names = [] if self.var_names is None else self.var_names
-			self.var_names = self.var_names.append(pd.Index([cols[i + 1]]))
+			self.var_names.append(cols[i + 1])
 		print(scores.head(10).to_string(index=False))
 
 		return
@@ -1036,9 +1040,9 @@ class SimilaritiesFeature:
 		self.sorted_similarities: dict = {}  # kept from previous
 		self.sorted_similarities_w_pairs: list = []
 		# the similarities sorted by value with a and b labels
-		self.ranked_similarities: list[int] = []
-		self.ranked_similarities_as_list: list[int] = []
-		self.ranked_similarities_as_square: list[list[int]] = []
+		self.ranked_similarities: list[list[int | float]] = []
+		self.ranked_similarities_as_list: np.ndarray = np.array([])
+		self.ranked_similarities_as_square: list[list[int | float]] = []
 		self.ranked_similarities_as_dict: dict = {}
 		self.ranked_similarities_as_dataframe: pd.DataFrame = pd.DataFrame()
 		self.sorted_ranked_similarities_w_pairs: list = []
@@ -1107,8 +1111,8 @@ class SimilaritiesFeature:
 		differences_of_ranks_as_square = square
 		differences_of_ranks_as_dataframe = pd.DataFrame(
 			differences_of_ranks_as_square,
-			columns=item_names,
-			index=item_names,
+			columns=pd.Index(item_names),
+			index=pd.Index(item_names),
 		)
 
 		self._director.similarities_active.differences_of_ranks_as_list = (
@@ -1170,7 +1174,7 @@ class SimilaritiesFeature:
 		item_names = self._director.similarities_active.item_names
 
 		pd.set_option("display.float_format", lambda x: f"{x:.2f}")
-		shepard_square = np.empty((nreferent, nreferent))
+		shepard_square: np.ndarray = np.empty((nreferent, nreferent))
 		next_dist = 0
 		next_simi = 0
 		for each_item in range(nreferent):
@@ -1188,8 +1192,8 @@ class SimilaritiesFeature:
 		shepard_diagram_table_as_square = shepard_square
 		shepard_diagram_table_as_dataframe = pd.DataFrame(
 			shepard_diagram_table_as_square,
-			columns=item_names,
-			index=item_names,
+			columns=pd.Index(item_names),
+			index=pd.Index(item_names),
 		)
 
 		self._director.similarities_active.shepard_diagram_table_as_square = (
@@ -1243,7 +1247,9 @@ class SimilaritiesFeature:
 
 		ranks_df = pd.DataFrame(
 			sorted_similarities_w_pairs,
-			columns=["Similarity", "A_label", "B_label", "A_name", "B_name"],
+			columns=pd.Index(
+				["Similarity", "A_label", "B_label", "A_name", "B_name"]
+			),
 		)
 		a_label_index = 1
 		b_label_index = 2
@@ -1385,7 +1391,9 @@ class SimilaritiesFeature:
 					)
 
 		ranked_similarities_as_dataframe = pd.DataFrame(
-			ranked_similarities_as_square, columns=item_names, index=item_names
+			ranked_similarities_as_square,
+			columns=pd.Index(item_names),
+			index=pd.Index(item_names)
 		)
 
 		self.ranked_similarities = ranked_similarities
@@ -1406,7 +1414,7 @@ class SimilaritiesFeature:
 		(
 			self.ranked_similarities_as_dataframe,
 			self.ranked_similarities_as_dict,
-			self.ranked_similarities_as_list,
+			ranked_similarities_as_list_temp,
 			self.ranked_similarities_as_square,
 			self.sorted_ranked_similarities_w_pairs,
 			self.ndyad,
@@ -1418,6 +1426,9 @@ class SimilaritiesFeature:
 			self.item_labels,
 			self.nreferent,
 			self.value_type,
+		)
+		self.ranked_similarities_as_list = np.array(
+			ranked_similarities_as_list_temp
 		)
 
 # --------------------------------------------------------------------------
