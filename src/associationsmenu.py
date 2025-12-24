@@ -54,7 +54,7 @@ class AlikeCommand:
 		params = common.get_command_parameters("Alike")
 		common.capture_and_push_undo_state("Alike", "passive", params)
 		self.cutoff = params["cutoff"]
-		self._determine_alike_pairs()
+		self._determine_alike_pairs(common)
 		self._print_alike_pairs()
 		self._create_alike_table()
 		common.create_plot_for_tabs("alike")
@@ -73,14 +73,14 @@ class AlikeCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _determine_alike_pairs(self) -> None:
+	def _determine_alike_pairs(self, common: Spaces) -> None:
 		"""Determine which pairs meet the alike criteria based on cutoff.
 
 		Raises:
 			SelectionError: If no pairs satisfy the cutoff criteria
 		"""
 		self._determine_alike_pairs_initialize_variables()
-		self._director.common.cutoff = self.cutoff
+		common.cutoff = self.cutoff
 		value_type: str = self._director.similarities_active.value_type
 		sorted_pairs: list[list] = (
 			self._director.similarities_active.sorted_similarities_w_pairs
@@ -212,7 +212,7 @@ class AlikeCommand:
 		)
 		value_type: str = similarities_active.value_type
 		# Filter pairs that meet the cutoff criteria
-		alike_pairs: list[tuple] = []
+		alike_pairs: list[tuple[str, str, float]] = []
 		for pair in sorted_similarities_w_pairs:
 			similarity: float = pair[0]
 			item_a: str = pair[1]

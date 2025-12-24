@@ -149,6 +149,9 @@ class Status(QMainWindow):
 		# multiple times (e.g., when later parameters depend on earlier ones)
 		self.obtained_parameters: dict[str, any] = {}
 
+		# Track number of similar pairs for alike command
+		self.n_similar_pairs: int = 0
+
 	# ------------------------------------------------------------------------
 
 	def directories_being_used_for_data(self) -> None:
