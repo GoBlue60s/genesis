@@ -65,10 +65,18 @@ ignore = [
     # --- Object-oriented and encapsulation ---
     "PD002",   # Use of inplace=True parameter in pandas methods
     "SLF001",  # Accessing private members (e.g., `_internal_attr`)
-
 ]
 
 [tool.ruff.lint.pylint]
 max-args = 10
+
+[tool.ty]
+
+[[tool.ty.overrides]]
+include = ["src/dialogs.py"]
+rules = { unresolved-attribute = "ignore", possibly-missing-attribute = "ignore" }
+
+
+
 
 

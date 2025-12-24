@@ -85,7 +85,7 @@ class MatrixDialog(QDialog):
 	) -> None:
 		super().__init__(parent)
 
-		self.spin_boxes: object = None
+		self.spin_boxes: list[list[QDoubleSpinBox]] = []
 		self.column_labels = column_labels
 		self.row_labels = row_labels
 		self.setWindowTitle(title)
@@ -167,7 +167,7 @@ class ModifyItemsDialog(QDialog):
 		self.setFixedWidth(225)
 		self.items = items
 		self.checkboxes = []
-		self.layout = QVBoxLayout()
+		self.main_layout = QVBoxLayout()
 		for i, item in enumerate(items):
 			default_value = (
 				default_values[i]
@@ -177,7 +177,7 @@ class ModifyItemsDialog(QDialog):
 			checkbox = QCheckBox(item)
 			self.checkboxes.append(checkbox)
 			checkbox.setChecked(default_value)
-			self.layout.addWidget(checkbox)
+			self.main_layout.addWidget(checkbox)
 		self.checkbox_box = QDialogButtonBox(
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 		)
@@ -189,8 +189,8 @@ class ModifyItemsDialog(QDialog):
 		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
 		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
 		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.layout.addLayout(checkbox_layout)
-		self.setLayout(self.layout)
+		self.main_layout.addLayout(checkbox_layout)
+		self.setLayout(self.main_layout)
 
 	def selected_items(self) -> list[str]:
 		selected = [
@@ -218,7 +218,7 @@ class ModifyTextDialog(QDialog):
 		self.setFixedWidth(325)
 		self.items = items
 		self.spinboxes = []
-		self.layout = QVBoxLayout()
+		self.main_layout = QVBoxLayout()
 		for item, default_value in zip(
 			items, default_values or [], strict=False
 		):
@@ -234,7 +234,7 @@ class ModifyTextDialog(QDialog):
 
 			self.spinboxes.append(spinbox)
 
-			self.layout.addLayout(hbox)
+			self.main_layout.addLayout(hbox)
 		self.checkbox_box = QDialogButtonBox(
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 		)
@@ -246,8 +246,8 @@ class ModifyTextDialog(QDialog):
 		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
 		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
 		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.layout.addLayout(checkbox_layout)
-		self.setLayout(self.layout)
+		self.main_layout.addLayout(checkbox_layout)
+		self.setLayout(self.main_layout)
 
 	def selected_items(self) -> list[tuple[str, int]]:
 		selected = [
@@ -274,7 +274,7 @@ class ModifyValuesDialog(QDialog):
 		self.setFixedWidth(325)
 		self.items = items
 		self.spinboxes = []
-		self.layout = QVBoxLayout()
+		self.main_layout = QVBoxLayout()
 		for item, default_value in zip(
 			items, default_values or [], strict=False
 		):
@@ -288,7 +288,7 @@ class ModifyValuesDialog(QDialog):
 			if integers:
 				spinbox.setSingleStep(1)
 			else:
-				spinbox.setSingleStep(0.01)
+				spinbox.setSingleStep(0.01)  # type: ignore[arg-type]
 			spinbox.setValue(default_value)
 			# spinbox.setGeometry(10,20,51,22)
 			spinbox.setAlignment(QtCore.Qt.AlignRight)
@@ -297,7 +297,7 @@ class ModifyValuesDialog(QDialog):
 
 			self.spinboxes.append(spinbox)
 
-			self.layout.addLayout(hbox)
+			self.main_layout.addLayout(hbox)
 		self.checkbox_box = QDialogButtonBox(
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 		)
@@ -309,8 +309,8 @@ class ModifyValuesDialog(QDialog):
 		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
 		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
 		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.layout.addLayout(checkbox_layout)
-		self.setLayout(self.layout)
+		self.main_layout.addLayout(checkbox_layout)
+		self.setLayout(self.main_layout)
 
 	# ------------------------------------------------------------------------
 
@@ -369,11 +369,12 @@ class MoveDialog(QDialog):
 	) -> None:
 		if checked:
 			sender = self.sender()
-			self.selected_option = self.options.index(sender.text())
+			self.selected_option = self.options.index(
+				sender.text())
 
 	# ------------------------------------------------------------------------
 
-	def getSelectedOption(self) -> int:  # noqa: N802
+	def getSelectedOption(self) -> int | None:  # noqa: N802
 		return self.selected_option
 
 	# ------------------------------------------------------------------------
@@ -395,11 +396,11 @@ class PairofPointsDialog(QDialog):
 		self.setMinimumWidth(250)  # Allows wider but sets minimum
 		self.items = items
 		self.checkboxes = []
-		self.layout = QVBoxLayout()
+		self.main_layout = QVBoxLayout()
 		for item in items:
 			checkbox = QCheckBox(item)
 			self.checkboxes.append(checkbox)
-			self.layout.addWidget(checkbox)
+			self.main_layout.addWidget(checkbox)
 		self.checkbox_box = QDialogButtonBox(
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 		)
@@ -411,8 +412,8 @@ class PairofPointsDialog(QDialog):
 		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
 		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
 		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.layout.addLayout(checkbox_layout)
-		self.setLayout(self.layout)
+		self.main_layout.addLayout(checkbox_layout)
+		self.setLayout(self.main_layout)
 		self.selection_error_title = "Selection Error"
 		self.selection_error_message = (
 			"Exactly 2 points must be selected for this operation."
@@ -445,11 +446,11 @@ class SelectItemsDialog(QDialog):
 		self.setFixedWidth(225)
 		self.items = items
 		self.checkboxes = []
-		self.layout = QVBoxLayout()
+		self.main_layout = QVBoxLayout()
 		for item in items:
 			checkbox = QCheckBox(item)
 			self.checkboxes.append(checkbox)
-			self.layout.addWidget(checkbox)
+			self.main_layout.addWidget(checkbox)
 
 		self.checkbox_box = QDialogButtonBox(
 			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
@@ -464,9 +465,9 @@ class SelectItemsDialog(QDialog):
 		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
 
 		# THIS LINE WAS MISSING - add the button layout to the main layout
-		self.layout.addLayout(checkbox_layout)
+		self.main_layout.addLayout(checkbox_layout)
 
-		self.setLayout(self.layout)
+		self.setLayout(self.main_layout)
 
 	def selected_items(self) -> list[str]:
 		selected = [
@@ -572,19 +573,19 @@ class SetValueDialog(QDialog):
 		layout = QVBoxLayout(self)
 
 		# Create a label and spin box to allow the user to set a value
-		label = QLabel(label, self)
+		label_widget = QLabel(label, self)
 		if an_integer:  # == True
 			self.spin_box = QSpinBox(self)
 		else:
 			self.spin_box = QDoubleSpinBox(self)
 		self.spin_box.setFixedWidth(100)
 		self.spin_box.setAlignment(QtCore.Qt.AlignHCenter)
-		self.spin_box.setMinimum(min_val)
-		self.spin_box.setMaximum(max_val)
-		self.spin_box.setValue(default_value)
+		self.spin_box.setMinimum(min_val)  # type: ignore[arg-type]
+		self.spin_box.setMaximum(max_val)  # type: ignore[arg-type]
+		self.spin_box.setValue(default_value)  # type: ignore[arg-type]
 
 		# Add the label and spin box to the layout
-		layout.addWidget(label)
+		layout.addWidget(label_widget)
 		layout.addWidget(self.spin_box)
 		layout.setAlignment(QtCore.Qt.AlignHCenter)
 
