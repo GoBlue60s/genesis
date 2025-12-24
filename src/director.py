@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 # Typing imports
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from matplotlib_common import MatplotlibCommon
 from pyqtgraph_common import PyQtGraphCommon
@@ -147,7 +147,7 @@ class Status(QMainWindow):
 		# Track parameters already obtained for current command
 		# Used to prevent re-prompting when get_command_parameters is called
 		# multiple times (e.g., when later parameters depend on earlier ones)
-		self.obtained_parameters: dict[str, any] = {}
+		self.obtained_parameters: dict[str, Any] = {}
 
 		# Track number of similar pairs for alike command
 		self.n_similar_pairs: int = 0
@@ -278,7 +278,7 @@ class Status(QMainWindow):
 
 		lowered_commands = []
 		print("\nChecking consistency of dictionaries and arrays \n")
-		element = 108
+		element = 107
 
 		print("Ordering of elements:")
 		print(" request_dict: follows the order of the menu items")
@@ -359,7 +359,7 @@ class Status(QMainWindow):
 		gui_output_as_widget = None
 		if next_output in widget_dict:
 			if widget_dict[next_output][1] == "unique":
-				gui_output_as_widget = self.current_command._display()
+				gui_output_as_widget = self.current_command._display()  # type: ignore[possibly-missing-attribute]
 			else:
 				which_shared = widget_dict[next_output][2]
 				if callable(which_shared):
@@ -439,10 +439,8 @@ class Status(QMainWindow):
 
 	# ------------------------------------------------------------------------
 
-	# ------------------------------------------------------------------------
-
 	def plot_to_gui(self, fig: plt.Figure) -> None:
-		self.plot_to_gui_using_matplotlib(fig)
+		self.matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 	# ------------------------------------------------------------------------
 
@@ -577,7 +575,7 @@ class Status(QMainWindow):
 		]
 	# ------------------------------------------------------------------------
 
-	def add_submenus(self, menu: QMenu, submenus: dict) -> None:
+	def add_submenus(self, menu: QMenu, submenus: dict | FrozenDict) -> None:
 		"""Add submenus and menu items recursively"""
 		self.add_menus_initialize_variables()
 
@@ -1217,7 +1215,9 @@ class Status(QMainWindow):
 		_tab_log_layout = self.tab_log_layout
 
 		for i in reversed(range(_tab_output_layout.count())):
-			_tab_output_layout.itemAt(i).widget().setParent(None)
+			widget = _tab_output_layout.itemAt(i).widget()
+			if widget is not None:
+				widget.setParent(None)
 		table_to_output = BuildOutputForGUI(self)
 		_tab_output_layout.addWidget(table_to_output)
 		table_to_log = BuildOutputForGUI(self)
@@ -1313,7 +1313,8 @@ class Status(QMainWindow):
 
 		if isinstance(self.current_command, OpenScriptCommand):
 			script_index = self.current_command.index_of_script_in_command_used
-			command_exit_code[script_index] = 0
+			if script_index is not None:
+				command_exit_code[script_index] = 0
 		else:
 			command_exit_code[-1] = 0
 
