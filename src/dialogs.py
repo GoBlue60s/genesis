@@ -78,7 +78,7 @@ class MatrixDialog(QDialog):
 	def __init__(
 		self,
 		title: str,
-		label: list[str],
+		label: str,
 		column_labels: list[str],
 		row_labels: list[str],
 		parent: QWidget | None = None,

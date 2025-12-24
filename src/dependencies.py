@@ -47,7 +47,11 @@ class DependencyChecking:
 				n_problems += 1
 
 		if n_problems > 0:
-			raise SpacesError(None, None)
+			dependency_error_title: str = "Dependency Error"
+			dependency_error_message: str = (
+				"One or more required dependencies are not satisfied"
+			)
+			raise SpacesError(dependency_error_title, dependency_error_message)
 
 
 	def detect_consistency_issues_initialize_variables(self) -> None:
@@ -661,7 +665,7 @@ class DependencyChecking:
 			self._conflict_options,
 		)
 		result = dialog.exec()
-		if result == QDialog.Accepted:
+		if result == QDialog.Accepted:  # type: ignore[attr-defined]
 			selected_option = dialog.selected_option  # + 1
 
 			match selected_option:

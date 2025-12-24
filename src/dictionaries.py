@@ -3848,7 +3848,7 @@ title_generator_dict = MappingProxyType({
 	),
 	"Terse": lambda _: "Output will not include explanations",
 	"Tester": lambda _: "Tester",
-	"Uncertainty": lambda : (
+	"Uncertainty": lambda _: (
 		"An ellipse around each point delineates with 95% confidence "
 		"that the point lies within that point's ellipse"
 	),

@@ -237,7 +237,7 @@ class ClusterCommand:
 		elif selected_source == "similarities":
 			self.common.needs_similarities("cluster")
 			data_for_clustering = (
-				self._director.similarities_active.similarities
+				self._director.similarities_active.similarities_as_dataframe
 			)
 			# Set axis names from configuration if available, else generic
 			if self._director.configuration_active.dim_names:
@@ -2143,6 +2143,7 @@ class UncertaintyAnalysis:
 		self.probability_of_inclusion: float = 0.0
 		self.sample_design: pd.DataFrame = pd.DataFrame()
 		self.sample_design_frequencies: pd.DataFrame = pd.DataFrame()
+		self.sample_design_analysis_df: pd.DataFrame = pd.DataFrame()
 		self.sample_repetitions: pd.DataFrame = pd.DataFrame()
 		self.solutions_stress_df: pd.DataFrame = pd.DataFrame()
 		self.sample_solutions: pd.DataFrame = pd.DataFrame()

@@ -1439,6 +1439,8 @@ class TargetFeature:
 		self.point_names: list[str] = []
 		self.point_labels: list[str] = []
 		self.point_coords: pd.DataFrame = pd.DataFrame()
+		self.hor_axis_name: str = ""
+		self.vert_axis_name: str = ""
 
 		self.distances: list[float] = []
 		self.seg: pd.DataFrame = pd.DataFrame()

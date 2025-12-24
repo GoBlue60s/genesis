@@ -107,7 +107,7 @@ class Spaces:
 
 		self._use_metric = None
 		self._min_stress: pd.DataFrame = pd.DataFrame(
-			columns=["Dimensionality", "Best Stress"]
+			columns=pd.Index(["Dimensionality", "Best Stress"])
 		)
 		self.shepard_axis: str = ""
 		self.point_to_plot_index: int = 0
@@ -226,13 +226,13 @@ class Spaces:
 
 		# Initialize our results DataFrame
 		sample_design_analysis_df = pd.DataFrame(
-			columns=[
+			columns=pd.Index([
 				"Repetition",
 				"Selected Count",
 				"Selected Percent",
 				"Not Selected Count",
 				"Not Selected Percent",
-			]
+			])
 		)
 
 		# Get the frequencies data
@@ -792,13 +792,15 @@ class Spaces:
 				simple_values = [coord[0] for coord in coords_data]
 				point_coords = pd.DataFrame(
 					simple_values,  # Use the extracted values directly
-					index=point_names,
-					columns=dim_labels,
+					index=pd.Index(point_names),
+					columns=pd.Index(dim_labels),
 				)
 			else:
 				# For multi-dimensional data, use standard approach
 				point_coords = pd.DataFrame(
-					coords_data, index=point_names, columns=dim_labels
+					coords_data,
+				index=pd.Index(point_names),
+				columns=pd.Index(dim_labels)
 				)
 		except Exception as e:
 			self.event_driven_automatic_restoration()
