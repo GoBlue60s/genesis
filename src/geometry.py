@@ -33,7 +33,7 @@ class Region:
 		color: str = "None",
 		thickness: int = 1,
 		style: str = "None",
-		points: PeoplePoints = None,
+		points: PeoplePoints | None = None,
 	) -> None:
 		self._name: str = name
 		self._fill: str = fill
@@ -135,7 +135,7 @@ class LineInPlot:
 
 	def _get_line_direction_and_intercept(
 		self, slope: float, point_on_line: Point
-	) -> tuple[str, Point]:
+	) -> tuple[str, float]:
 		direction = self._line_direction(slope)
 		intercept = self._line_intercept(point_on_line, slope)
 
@@ -153,7 +153,7 @@ class LineInPlot:
 		direction: str,
 		point_on_line: Point
 	) -> TheoreticalExtremes:
-		theoretical_extremes = self._theoretical_extremes(
+		theoretical_extremes = self._calculate_theoretical_extremes(
 			slope, intercept, point_on_line
 		)
 
@@ -175,12 +175,12 @@ class LineInPlot:
 	def _sides_line_goes_through(
 		self, direction: str, potential_extremes: TheoreticalExtremes
 	) -> Sides:
-		right_side = self._right_side(
+		right_side = self._check_right_side(
 			direction, potential_extremes.y_at_hor_max
 		)
-		left_side = self._left_side(direction, potential_extremes)
-		top = self._top(direction, potential_extremes)
-		bottom = self._bottom(direction, potential_extremes)
+		left_side = self._check_left_side(direction, potential_extremes)
+		top = self._check_top(direction, potential_extremes)
+		bottom = self._check_bottom(direction, potential_extremes)
 		goes_through = Sides(left_side, right_side, top, bottom)
 
 		intersects = self._handle_corners(goes_through, potential_extremes)
@@ -238,16 +238,22 @@ class LineInPlot:
 
 	def _line_intercept(self, point_on_line: Point, slope: float) -> float:
 		"""Calculates the y-intercept, c,  of a line."""
+		x = point_on_line.x
+		y = point_on_line.y
+		if x is None or y is None:
+			error_title = "Invalid Point"
+			error_message = "Point must have coordinates for line calculations"
+			raise SpacesError(error_title, error_message)
 
 		if abs(slope) < MINIMAL_DIFFERENCE_FROM_ZERO or slope == float("inf"):
-			c = point_on_line.y
+			c = y
 		else:
-			c = point_on_line.y - (slope * point_on_line.x)
+			c = y - (slope * x)
 		return c
 
 	# ------------------------------------------------------------------------
 
-	def _theoretical_extremes(
+	def _calculate_theoretical_extremes(
 		self, slope: float, intercept: float, point_on_line: Point
 	) -> TheoreticalExtremes:
 		(hor_max, hor_min, vert_max, vert_min) = (
@@ -256,6 +262,10 @@ class LineInPlot:
 
 		if slope == float("inf") or slope == float("-inf"):
 			x_value = point_on_line.x
+			if x_value is None:
+				error_title = "Invalid Point"
+				error_message = "Point must have x coordinate"
+				raise SpacesError(error_title, error_message)
 			return TheoreticalExtremes(
 				float("NaN"), float("NaN"), x_value, x_value
 			)
@@ -316,7 +326,7 @@ class LineInPlot:
 
 	# ------------------------------------------------------------------------
 
-	def _right_side(self, direction: str, y_at_hor_max: float) -> bool:
+	def _check_right_side(self, direction: str, y_at_hor_max: float) -> bool:
 		vert_max = self._director.common.plot_ranges.vert_max
 		vert_min = self._director.common.plot_ranges.vert_min
 
@@ -329,7 +339,7 @@ class LineInPlot:
 
 	# ------------------------------------------------------------------------
 
-	def _left_side(
+	def _check_left_side(
 		self, direction: str, potential_extremes: TheoreticalExtremes
 	) -> bool:
 		vert_max = self._director.common.plot_ranges.vert_max
@@ -344,7 +354,7 @@ class LineInPlot:
 
 	# ------------------------------------------------------------------------
 
-	def _top(
+	def _check_top(
 		self, direction: str, potential_extremes: TheoreticalExtremes
 	) -> bool:
 		hor_max = self._director.common.plot_ranges.hor_max
@@ -361,7 +371,7 @@ class LineInPlot:
 
 	# ------------------------------------------------------------------------
 
-	def _bottom(
+	def _check_bottom(
 		self, direction: str, potential_extremes: TheoreticalExtremes
 	) -> bool:
 		hor_max = self._director.common.plot_ranges.hor_max
@@ -487,12 +497,12 @@ class LineInPlot:
 		if case not in end_dict:
 			line_case_title = "Line Case Error"
 			line_case_message = (
-				"Line Case Error",
 				f"Unhandled line case: '{case}'. "
 				f"Direction: {self._direction}, "
 				f"Intersects: left={self._left_side}, "
 				f"right={self._right_side}, top={self._top}, "
-				f"bottom={self._bottom}")
+				f"bottom={self._bottom}"
+			)
 			raise SpacesError(line_case_title, line_case_message)
 
 		start.x = end_dict[case][0]
@@ -500,7 +510,7 @@ class LineInPlot:
 		end.x = end_dict[case][2]
 		end.y = end_dict[case][3]
 
-		return [start, end]
+		return (start, end)
 
 
 # -------------------------------------------------------------------------
@@ -561,7 +571,9 @@ class PlotExtremes(NamedTuple):
 
 
 class Point:
-	def __init__(self, *args: float, **kwargs: object) -> None:
+	def __init__(
+		self, *args: float, **kwargs: float | str | None
+	) -> None:
 		"""Represents a point in n-dimensional space with dimension-neutral
 		coordinate naming.
 
@@ -607,13 +619,13 @@ class Point:
 
 		"""
 		# Store metadata attributes
-		self.index = kwargs.pop("index", None)
-		self.name = kwargs.pop("name", "")
-		self.label = kwargs.pop("label", "")
-		self.color = kwargs.pop("color", "black")
-		self.size = kwargs.pop("size", 1)
-		self.style = kwargs.pop("style", "dot")
-		self.kind = kwargs.pop("kind", "")
+		self.index: int | None = kwargs.pop("index", None)
+		self.name: str = kwargs.pop("name", "")
+		self.label: str = kwargs.pop("label", "")
+		self.color: str = kwargs.pop("color", "black")
+		self.size: int = kwargs.pop("size", 1)
+		self.style: str = kwargs.pop("style", "dot")
+		self.kind: str = kwargs.pop("kind", "")
 
 		# Store coordinates with dimension-neutral naming
 		self._coords = {}
@@ -625,11 +637,12 @@ class Point:
 
 		# Handle named coordinates from kwargs
 		for key, value in kwargs.items():
-			self._coords[key] = float(value)
+			if value is not None:
+				self._coords[key] = float(value)
 
 	# x, y, z properties as convenience accessors that map to dimensions
 	@property
-	def x(self) -> float:
+	def x(self) -> float | None:
 		"""First coordinate, regardless of its semantic meaning."""
 		if "dim_1" in self._coords:
 			return self._coords["dim_1"]
@@ -651,7 +664,7 @@ class Point:
 			self._coords["dim_1"] = float(value)
 
 	@property
-	def y(self) -> float:
+	def y(self) -> float | None:
 		"""Second coordinate, regardless of its semantic meaning."""
 
 		if "dim_2" in self._coords:
@@ -674,7 +687,7 @@ class Point:
 			self._coords["dim_2"] = float(value)
 
 	@property
-	def z(self) -> float:
+	def z(self) -> float | None:
 		"""Third coordinate, regardless of its semantic meaning."""
 		if "dim_3" in self._coords:
 			return self._coords["dim_3"]
@@ -743,7 +756,7 @@ class Point:
 class Polygon(Region):
 	def __init__(
 		self,
-		outline: np.array | None = None,
+		outline: np.ndarray | None = None,
 		vertices: CoordinateLists | None = None,
 		corners: Corners | None = None,
 		name: str = "",
