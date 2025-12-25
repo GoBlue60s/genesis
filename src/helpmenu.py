@@ -4,6 +4,9 @@ import math
 import peek  # noqa: F401
 from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+	from collections.abc import Sequence
+
 from pyqtgraph import QtCore
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
@@ -160,7 +163,9 @@ class AboutCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _create_table_widget_for_about(self, names: list[str]) -> QTableWidget:
+	def _create_table_widget_for_about(
+		self, names: Sequence[str]
+	) -> QTableWidget:
 		combined_faux_header = "Contributors"
 		faux_header_shade = self._director.column_header_color
 		#

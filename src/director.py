@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 # Typing imports
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from matplotlib_common import MatplotlibCommon
 from pyqtgraph_common import PyQtGraphCommon
@@ -151,6 +151,12 @@ class Status(QMainWindow):
 
 		# Track number of similar pairs for alike command
 		self.n_similar_pairs: int = 0
+
+		# Acknowledgements for About dialog
+		self.acknowledgements: tuple[str, ...] = ()
+
+		# Verbosity toggle state
+		self.verbosity_alternative: Literal["Terse", "Verbose"] = "Terse"
 
 	# ------------------------------------------------------------------------
 
