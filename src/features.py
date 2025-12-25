@@ -652,6 +652,7 @@ class CorrelationsFeature:
 		self.nreferent: int = 0
 		self.npoints: int = 0
 		self.nitem: int = 0  # replaces self.nitem_corr
+		self.nvar: int = 0
 		self.range_items: range = range(0)
 		# replaces self.range_correlations & self.range_items_corr
 		self.item_names: list[str] = []  # replaces self.item_names_corr
@@ -798,13 +799,14 @@ class EvaluationsFeature:
 class GroupedDataFeature:
 	def __init__(self, director: Status) -> None:
 		self._director = director
-		# self._hor_dim = director.common.hor_dim
-		# self._vert_dim = director.common.vert_dim
-		# NOTE: _hor_dim and _vert_dim should be set when grouped data is
-		# loaded, not at Director initialization
+		self._hor_dim = director.common.hor_dim
+		self._vert_dim = director.common.vert_dim
+		# NOTE: _hor_dim and _vert_dim may be updated when grouped data is
+		# loaded
 		self.file_handle: str = ""
 		# the handle of the grouped configuration file
 		self.grouping_var: str = ""
+		self.npoint: int = 0
 		self.ngroups: int = 0  # replaces npoint_grpd
 		self.group_codes: list = []  # replaces point_codes_grpd
 		self.range_groups: range = range(0)  # replaces range_points_grpd
@@ -915,10 +917,12 @@ class ScoresFeature:
 		self._director = director
 		self._hor_dim = self._director.common.hor_dim
 		self._vert_dim = self._director.common.vert_dim
+		self.file_handle: str = ""
 		self.scores: pd.DataFrame = pd.DataFrame()
 		self.nscores: int = 0
 		self.range_scores: range = range(0)
 		self.nscored_individ: int = 0
+		self.n_individ: int = 0
 		self.ndim: int = 0
 		self.dim_labels: list[str] = []
 		self.dim_names: list[str] = []
@@ -1031,7 +1035,7 @@ class SimilaritiesFeature:
 		self.item_labels: list[str] = []  # replaces self.item_labels_sims
 		self.nsimilarities: int = 0  # replaces self.n_similarities
 		self.similarities: list[list[float]] = []  # kept from previous
-		self.similarities_as_list: list[int] = []  # kept from previous
+		self.similarities_as_list: list[float] = []  # kept from previous
 		self.similarities_as_dict: dict = {}  # kept from previous
 		self.similarities_as_square: list[list[float]] = []
 		# kept from previous

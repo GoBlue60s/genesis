@@ -2240,6 +2240,35 @@ class UncertaintyAnalysis:
 
 	# ------------------------------------------------------------------------
 
+	def print_sample_design(self) -> None:
+		"""Print sample design information."""
+		print("\nSample design information")
+
+	# ------------------------------------------------------------------------
+
+	def print_sample_repetitions(self) -> None:
+		"""Print sample repetitions information."""
+		print("\nSample repetitions information")
+
+	# ------------------------------------------------------------------------
+
+	def print_sample_solutions(self) -> None:
+		"""Print sample solutions information."""
+		npoint = self.npoints
+		point_labels = self.point_labels
+		point_names = self.point_names
+
+		points = range(npoint)
+		print("\nSample solutions points\n")
+		for each_point in points:
+			print(f"\t{point_labels[each_point]}, {point_names[each_point]}")
+		print("\nStress for each solution\n")
+		print(self.solutions_stress_df.to_string(index=False))
+		print("\nCoordinates for all points for all solutions\n")
+		print(self.sample_solutions)
+
+	# ------------------------------------------------------------------------
+
 
 class UncertaintyCommand:
 	def __init__(self, director: Status, common: Spaces) -> None:

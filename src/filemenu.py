@@ -4,18 +4,20 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TextIO
 
 import pandas as pd
 import peek # noqa: F401
 from PySide6.QtWidgets import (
 	QApplication,
+	QDialog,
 	QMessageBox,
 	QTableWidget,
 	QTableWidgetItem,
 	QTextEdit,
 )
 
+from command_state import CommandState
 # from features import UncertaintyFeature
 from modelmenu import UncertaintyAnalysis
 
@@ -214,7 +216,9 @@ class CreateCommand:
 		)
 
 		point_coords = pd.DataFrame(
-			coords_data, index=point_labels, columns=dim_labels
+			coords_data,
+			index=pd.Index(point_labels),
+			columns=pd.Index(dim_labels)
 		)
 
 		return {
@@ -414,7 +418,6 @@ class DeactivateCommand:
 		self, selected_items: list[str], params: dict
 	) -> None:
 		"""Capture state for selected items only."""
-		from command_state import CommandState  # noqa: PLC0415
 		from datetime import datetime  # noqa: PLC0415
 
 		cmd_state = CommandState("Deactivate", "active", params)
@@ -654,7 +657,7 @@ class DeactivateCommand:
 
 	def _validate_dialog_executed(
 		self,
-		dialog: object
+		dialog: QDialog
 	) -> None:
 		"""Validate that dialog was not cancelled."""
 		if not dialog.exec():
@@ -1045,7 +1048,7 @@ class GroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _validate_header(self, file_handle: object) -> None:
+	def _validate_header(self, file_handle: TextIO) -> None:
 		"""Validate the file header is 'grouped'."""
 		header = file_handle.readline()
 		if len(header) == 0:
@@ -1064,7 +1067,7 @@ class GroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _read_grouping_var(self, file_handle: object) -> str:
+	def _read_grouping_var(self, file_handle: TextIO) -> str:
 		"""Read and validate the grouping variable name."""
 		grouping_var = file_handle.readline()
 		if len(grouping_var) == 0:
@@ -1077,7 +1080,7 @@ class GroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _read_dimensions(self, file_handle: object) -> tuple[int, int]:
+	def _read_dimensions(self, file_handle: TextIO) -> tuple[int, int]:
 		"""Read the number of dimensions and groups."""
 		dim = file_handle.readline()
 		dim_list = dim.strip("\n").split()
@@ -1089,7 +1092,7 @@ class GroupedDataCommand:
 
 	def _read_dimension_data(
 		self,
-		file_handle: object,
+		file_handle: TextIO,
 		expected_dim: int
 	) -> tuple[list[str], list[str]]:
 		"""Read dimension labels and names."""
@@ -1105,7 +1108,7 @@ class GroupedDataCommand:
 
 	def _read_group_data(
 		self,
-		file_handle: object,
+		file_handle: TextIO,
 		expected_groups: int
 	) -> tuple[list[str], list[str], list[str]]:
 		"""Read group labels, codes, and names."""
@@ -1124,7 +1127,7 @@ class GroupedDataCommand:
 
 	def _read_group_coordinates(
 		self,
-		file_handle: object,
+		file_handle: TextIO,
 		expected_groups: int,
 		group_names: list[str],
 		dim_labels: list[str]
@@ -1136,8 +1139,9 @@ class GroupedDataCommand:
 		]
 		return pd.DataFrame(
 			coords_data,
-			index=group_names,
-			columns=dim_labels)
+			index=pd.Index(group_names),
+			columns=pd.Index(dim_labels)
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -1224,7 +1228,7 @@ class NewGroupedDataCommand:
 		self._director.command = "New grouped data"
 		self._group_title = "Grouping variable"
 		self._group_label = "Enter name of grouping variable"
-		self._group_default = {"Grouping variable"}
+		self._group_default = ["Grouping variable"]
 		self._group_max_chars = 32
 		self._number_of_groups_title = "Specify the number of groups"
 		self._number_of_groups_message = (
@@ -1253,7 +1257,10 @@ class NewGroupedDataCommand:
 		coords_data = self._get_coordinates_for_groups(
 			ngroups, ndim, group_names)
 		group_coords = pd.DataFrame(
-			coords_data, index=group_names, columns=dim_labels)
+			coords_data,
+			index=pd.Index(group_names),
+			columns=pd.Index(dim_labels)
+		)
 		params = {"ngroups": ngroups, "ndim": ndim}
 		common.capture_and_push_undo_state(
 			"New grouped data", "active", params)
@@ -1420,7 +1427,7 @@ class NewGroupedDataCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _validate_dialog_executed(self, dialog: object) -> None:
+	def _validate_dialog_executed(self, dialog: QDialog) -> None:
 		"""Validate that dialog was not cancelled."""
 		if not dialog.exec():
 			self.common.event_driven_automatic_restoration()
@@ -2614,7 +2621,7 @@ class SaveCorrelationsCommand:
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
 			"Save correlations", "passive", params)
-		self._write_correlations_file(file_name)
+		self._write_correlations_file(file_name, common)
 		common.name_of_file_written_to = file_name
 		self._print_save_correlations_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2624,10 +2631,10 @@ class SaveCorrelationsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _write_correlations_file(self, file_name: str) -> None:
+	def _write_correlations_file(self, file_name: str, common: Spaces) -> None:
 		"""Write correlations to lower triangular file with error handling."""
 		try:
-			self.common.write_lower_triangle(
+			common.write_lower_triangle(
 				file_name,
 				self._director.correlations_active.correlations_as_list,
 				self._director.correlations_active.nitem,
@@ -2680,7 +2687,7 @@ class SaveIndividualsCommand:
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
 			"Save individuals", "passive", params)
-		self._write_individuals_file(file_name)
+		self._write_individuals_file(file_name, common)
 		common.name_of_file_written_to = file_name
 		self._print_save_individuals_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -2690,10 +2697,10 @@ class SaveIndividualsCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _write_individuals_file(self, file_name: str) -> None:
+	def _write_individuals_file(self, file_name: str, common: Spaces) -> None:
 		"""Write individuals to CSV file with error handling."""
 		try:
-			self.common.write_csv_with_type_header(
+			common.write_csv_with_type_header(
 				self._director.individuals_active.ind_vars,
 				file_name,
 				"INDIVIDUALS",
@@ -3105,7 +3112,7 @@ class SaveScriptCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _build_command_line(self, cmd_state: object) -> str:
+	def _build_command_line(self, cmd_state: CommandState) -> str:
 		"""Build command line with parameters from command state."""
 		if not self._is_valid_command_for_script(cmd_state):
 			return ""
@@ -3116,7 +3123,7 @@ class SaveScriptCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _is_valid_command_for_script(self, cmd_state: object) -> bool:
+	def _is_valid_command_for_script(self, cmd_state: CommandState) -> bool:
 		"""Check if command should be included in script."""
 		if not cmd_state.command_name:
 			return False
@@ -3131,7 +3138,7 @@ class SaveScriptCommand:
 	def _add_parameters_to_command_line(
 		self,
 		cmd_line: str,
-		cmd_state: object
+		cmd_state: CommandState
 	) -> str:
 		"""Add formatted parameters to command line."""
 		if not cmd_state.command_params:
@@ -3211,7 +3218,7 @@ class SaveScriptCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _write_header(self, f: object) -> None:
+	def _write_header(self, f: TextIO) -> None:
 		"""Write script header to file."""
 		f.write("# Spaces Script\n")
 		f.write(
@@ -3222,7 +3229,7 @@ class SaveScriptCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _write_script_lines(self, f: object, script_lines: list[str]) -> None:
+	def _write_script_lines(self, f: TextIO, script_lines: list[str]) -> None:
 		"""Write script lines to file."""
 		for each_index, each_line in enumerate(script_lines):
 			self._write_single_line(f, each_line, each_index, script_lines)
@@ -3232,7 +3239,7 @@ class SaveScriptCommand:
 
 	def _write_single_line(
 		self,
-		f: object,
+		f: TextIO,
 		line: str,
 		index: int,
 		script_lines: list[str]
@@ -3287,7 +3294,7 @@ class SaveSimilaritiesCommand:
 		common.capture_and_push_undo_state(
 			"Save similarities", "passive", params
 		)
-		self._write_similarities_file(file_name)
+		self._write_similarities_file(file_name, common)
 		common.name_of_file_written_to = file_name
 		self._print_save_similarities_confirmation(file_name)
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -3297,10 +3304,10 @@ class SaveSimilaritiesCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _write_similarities_file(self, file_name: str) -> None:
+	def _write_similarities_file(self, file_name: str, common: Spaces) -> None:
 		"""Write similarities to lower triangular file with error handling."""
 		try:
-			self.common.write_lower_triangle(
+			common.write_lower_triangle(
 				file_name,
 				self._director.similarities_active.similarities_as_list,
 				self._director.similarities_active.nitem,

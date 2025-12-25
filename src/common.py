@@ -114,6 +114,11 @@ class Spaces:
 		self.cutoff: float = 0.0
 		self.redone_command_name: str = ""
 		self.undone_command_name: str = ""
+		self.commands_executed: int = 0
+		self.script_file_name: str = ""
+		self.name_of_file_written_to: str = ""
+		self.script_lines: list[str] = []
+		self.file_name: str = ""
 
 		return
 
@@ -1876,6 +1881,22 @@ class Spaces:
 		print("\nCoordinates for all points for all solutions\n")
 		print(uncertainty_active.sample_solutions)
 		return
+
+	# ------------------------------------------------------------------------
+
+	def read_sample_design_file_check_for_errors(
+		self, file_name: str, uncertainty_active: object
+	) -> None:
+		"""Read sample design file (stub implementation)."""
+		pass
+
+	# ------------------------------------------------------------------------
+
+	def read_sample_repetitions_file_check_for_errors(
+		self, file_name: str, uncertainty_active: object
+	) -> None:
+		"""Read sample repetitions file (stub implementation)."""
+		pass
 
 	# ------------------------------------------------------------------------
 
