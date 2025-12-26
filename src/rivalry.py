@@ -17,6 +17,7 @@ from constants import (
 	MINIMAL_DIFFERENCE_FROM_ZERO,
 	SETTLED_ASSIGNMENT,
 )
+from exceptions import SpacesError
 
 from geometry import (
 	Circle,
@@ -130,6 +131,114 @@ class Rivalry:
 		self.point_coords: pd.DataFrame = pd.DataFrame()
 		self.hor_dim: int = 0
 		self.vert_dim: int = 0
+
+	# ------------------------------------------------------------------------
+
+	def get_bisector(self) -> Bisector:
+		"""Get bisector, raising if not initialized."""
+		if self.bisector is None:
+			error_title = "Bisector Not Initialized"
+			error_message = "Cannot access bisector before reference points set"
+			raise SpacesError(error_title, error_message)
+		# Validate that start and end points have coordinates
+		start = self.bisector._start
+		end = self.bisector._end
+		if (start.x is None or start.y is None or
+			end.x is None or end.y is None):
+			error_title = "Invalid Bisector"
+			error_message = "Bisector points missing coordinates"
+			raise SpacesError(error_title, error_message)
+		return self.bisector
+
+	# ------------------------------------------------------------------------
+
+	def get_east(self) -> East:
+		"""Get east line, raising if not initialized."""
+		if self.east is None:
+			error_title = "East Not Initialized"
+			error_message = "Cannot access east before reference points set"
+			raise SpacesError(error_title, error_message)
+		# Validate that start and end points have coordinates
+		start = self.east._start
+		end = self.east._end
+		if (start.x is None or start.y is None or
+			end.x is None or end.y is None):
+			error_title = "Invalid East"
+			error_message = "East points missing coordinates"
+			raise SpacesError(error_title, error_message)
+		return self.east
+
+	# ------------------------------------------------------------------------
+
+	def get_west(self) -> West:
+		"""Get west line, raising if not initialized."""
+		if self.west is None:
+			error_title = "West Not Initialized"
+			error_message = "Cannot access west before reference points set"
+			raise SpacesError(error_title, error_message)
+		# Validate that start and end points have coordinates
+		start = self.west._start
+		end = self.west._end
+		if (start.x is None or start.y is None or
+			end.x is None or end.y is None):
+			error_title = "Invalid West"
+			error_message = "West points missing coordinates"
+			raise SpacesError(error_title, error_message)
+		return self.west
+
+	# ------------------------------------------------------------------------
+
+	def get_connector(self) -> Connector:
+		"""Get connector line, raising if not initialized."""
+		if self.connector is None:
+			error_title = "Connector Not Initialized"
+			error_message = "Cannot access connector before reference points set"
+			raise SpacesError(error_title, error_message)
+		# Validate that start and end points have coordinates
+		start = self.connector._start
+		end = self.connector._end
+		if (start.x is None or start.y is None or
+			end.x is None or end.y is None):
+			error_title = "Invalid Connector"
+			error_message = "Connector points missing coordinates"
+			raise SpacesError(error_title, error_message)
+		return self.connector
+
+	# ------------------------------------------------------------------------
+
+	def get_first(self) -> First:
+		"""Get first dimension divider, raising if not initialized."""
+		if self.first is None:
+			error_title = "First Divider Not Initialized"
+			error_message = "Cannot access first before reference points set"
+			raise SpacesError(error_title, error_message)
+		# Validate that start and end points have coordinates
+		start = self.first._start
+		end = self.first._end
+		if (start.x is None or start.y is None or
+			end.x is None or end.y is None):
+			error_title = "Invalid First Divider"
+			error_message = "First divider points missing coordinates"
+			raise SpacesError(error_title, error_message)
+		return self.first
+
+	# ------------------------------------------------------------------------
+
+	def get_second(self) -> Second:
+		"""Get second dimension divider, raising if not initialized."""
+		if self.second is None:
+			error_title = "Second Divider Not Initialized"
+			error_message = "Cannot access second before reference points set"
+			raise SpacesError(error_title, error_message)
+		# Validate that start and end points have coordinates
+		start = self.second._start
+		end = self.second._end
+		if (start.x is None or start.y is None or
+			end.x is None or end.y is None):
+			error_title = "Invalid Second Divider"
+			error_message = "Second divider points missing coordinates"
+			raise SpacesError(error_title, error_message)
+		return self.second
 
 	# ------------------------------------------------------------------------
 

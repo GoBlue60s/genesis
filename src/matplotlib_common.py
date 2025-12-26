@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from director import Status
 
-from exceptions import SelectionError
+from exceptions import SelectionError, UnderDevelopmentError
 from constants import MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
 
 # ------------------------------------------------------------------------
@@ -97,7 +97,7 @@ class MatplotlibCommon:
 
 	def add_heatmap_to_matplotlib_heatmap(
 		self, ax: plt.Axes, data: np.ndarray, shading: str
-	) -> plt.Axes:
+	) -> plt.AxesImage:
 		im = ax.imshow(data, cmap=shading, interpolation="none")
 
 		return im
@@ -174,7 +174,8 @@ class MatplotlibCommon:
 			self._director.common.use_plot_ranges()
 		)
 
-		ax.axis([hor_min, hor_max, vert_min, vert_max])
+		ax.set_xlim(hor_min, hor_max)
+		ax.set_ylim(vert_min, vert_max)
 
 		return
 
@@ -199,10 +200,12 @@ class MatplotlibCommon:
 		if use_metric:
 			max_stress = max(y_coords)
 			show_max_stress = math.ceil(max_stress)
-			ax.axis([1, 10, 0, show_max_stress])
+			ax.set_xlim(1, 10)
+			ax.set_ylim(0, show_max_stress)
 		else:
 			show_min_stress = int(min_stress.iloc[0, 1] + 2)
-			ax.axis([1, 10, 0, show_min_stress])
+			ax.set_xlim(1, 10)
+			ax.set_ylim(0, show_min_stress)
 		return fig
 
 	# ------------------------------------------------------------------------
@@ -292,7 +295,8 @@ class MatplotlibCommon:
 					)
 		else:
 			raise SelectionError(command, "No axis selected")
-		ax.axis([hor_min, hor_max, vert_min, vert_max])
+		ax.set_xlim(hor_min, hor_max)
+		ax.set_ylim(vert_min, vert_max)
 
 		self._director.similarities_active.ranks_df = ranks_df
 
@@ -301,11 +305,20 @@ class MatplotlibCommon:
 	# ------------------------------------------------------------------------
 
 	def request_differences_plot_for_tabs_using_matplotlib(self) -> None:
-		matplotlib_common = self._director.matplotlib_common
+		under_development_error_title = "This method is not yet implemented"
+		under_development_error_message = (
+			"This feature is under development"
+		)
+		raise UnderDevelopmentError(
+			under_development_error_title, under_development_error_message
+		)
 
-		fig = self._director.current_command.plot_a_heatmap_using_matplotlib()
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
-		return
+		# matplotlib_common = self._director.matplotlib_common
+		# fig = (
+		#     self._director.current_command.plot_a_heatmap_using_matplotlib()
+		# )
+		# matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		# return
 
 	# ------------------------------------------------------------------------
 
@@ -432,61 +445,68 @@ class MatplotlibCommon:
 		# if self._director.common.have_bisector_info():
 		if self._director.common.have_reference_points():
 			show_bisector = self._director.common.show_bisector
-			start = rivalry.bisector._start
-			end = rivalry.bisector._end
+			bisector = rivalry.get_bisector()
+			start = bisector._start
+			end = bisector._end
 
 			# if show_bisector and self._director.common.have_bisector_info():
 			if show_bisector and self._director.common.have_reference_points():
-				ax.text(start.x, start.y, "S")
-				ax.text(end.x, end.y, "E")
-				ax.plot([start.x, end.x], [start.y, end.y])
+				ax.text(start.x, start.y, "S")  # type: ignore[arg-type]
+				ax.text(end.x, end.y, "E")  # type: ignore[arg-type]
+				ax.plot([start.x, end.x], [start.y, end.y])  # type: ignore[arg-type]
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def add_east_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-		rivalry = self._director.rivalry
-		start = rivalry.east._start
-		end = rivalry.east._end
+		if self._director.common.have_reference_points():
+			rivalry = self._director.rivalry
+			east = rivalry.get_east()
+			start = east._start
+			end = east._end
 
-		ax.plot([start.x, end.x], [start.y, end.y])
-		ax.text(start.x, start.y, "E_S")
-		ax.text(end.x, end.y, "E_E")
+			ax.plot([start.x, end.x], [start.y, end.y])  # type: ignore[arg-type]
+			ax.text(start.x, start.y, "E_S")  # type: ignore[arg-type]
+			ax.text(end.x, end.y, "E_E")  # type: ignore[arg-type]
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def add_west_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-		rivalry = self._director.rivalry
-		start = rivalry.west._start
-		end = rivalry.west._end
+		if self._director.common.have_reference_points():
+			rivalry = self._director.rivalry
+			west = rivalry.get_west()
+			start = west._start
+			end = west._end
 
-		ax.plot([start.x, end.x], [start.y, end.y])
-		ax.text(start.x, start.y, "W_S")
-		ax.text(end.x, end.y, "W_E")
+			ax.plot([start.x, end.x], [start.y, end.y])  # type: ignore[arg-type]
+			ax.text(start.x, start.y, "W_S")  # type: ignore[arg-type]
+			ax.text(end.x, end.y, "W_E")  # type: ignore[arg-type]
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def add_first_dim_divider_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-		vert_max = self._director.common.plot_ranges.vert_max
-		vert_min = self._director.common.plot_ranges.vert_min
-		first_div = self._director.rivalry.first_div
+		if self._director.common.have_reference_points():
+			vert_max = self._director.common.plot_ranges.vert_max
+			vert_min = self._director.common.plot_ranges.vert_min
+			first_div = self._director.rivalry.first_div
 
-		ax.plot([first_div, first_div], [vert_max, vert_min])
+			ax.plot([first_div, first_div], [vert_max, vert_min])
 
 		return
 
 	# ------------------------------------------------------------------------
 
 	def add_second_dim_divider_to_matplotlib_plot(self, ax: plt.Axes) -> None:
-		hor_max = self._director.common.plot_ranges.hor_max
-		hor_min = self._director.common.plot_ranges.hor_min
-		second_div = self._director.rivalry.second_div
-		ax.plot([hor_max, hor_min], [second_div, second_div])
+		if self._director.common.have_reference_points():
+			hor_max = self._director.common.plot_ranges.hor_max
+			hor_min = self._director.common.plot_ranges.hor_min
+			second_div = self._director.rivalry.second_div
+			ax.plot([hor_max, hor_min], [second_div, second_div])
 
 		return
 
@@ -559,12 +579,12 @@ class MatplotlibCommon:
 
 	def confidence_ellipse_using_matplotlib(
 		self,
-		x: list[float],
-		y: list[float],
+		x: list[float] | np.ndarray,
+		y: list[float] | np.ndarray,
 		ax: plt.Axes,
 		n_std: float = 3.0,
 		facecolor: str = "none",
-		**kwargs: str | float,
+		**kwargs: object,
 	) -> Ellipse:
 		"""
 		Create a plot of the covariance confidence ellipse of *x* and *y*.
@@ -600,18 +620,18 @@ class MatplotlibCommon:
 			width=ell_radius_x * 2,
 			height=ell_radius_y * 2,
 			facecolor=facecolor,
-			**kwargs,
+			**kwargs,  # type: ignore[arg-type]
 		)
 
 		# Calculating the standard deviation of x from
 		# the squareroot of the variance and multiplying
 		# with the given number of standard deviations.
-		scale_x = np.sqrt(cov[0, 0]) * n_std
-		mean_x = np.mean(x)
+		scale_x = float(np.sqrt(cov[0, 0]) * n_std)
+		mean_x = float(np.mean(x))
 
 		# calculating the standard deviation of y ...
-		scale_y = np.sqrt(cov[1, 1]) * n_std
-		mean_y = np.mean(y)
+		scale_y = float(np.sqrt(cov[1, 1]) * n_std)
+		mean_y = float(np.mean(y))
 
 		transf = (
 			transforms.Affine2D()
@@ -622,9 +642,9 @@ class MatplotlibCommon:
 
 		ellipse.set_transform(transf + ax.transData)
 
-		ellipse_patch = ax.add_patch(ellipse)
+		ax.add_patch(ellipse)
 
-		return ellipse_patch
+		return ellipse
 
 	# ------------------------------------------------------------------------
 

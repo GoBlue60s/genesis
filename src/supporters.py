@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from exceptions import SpacesError
+
 if TYPE_CHECKING:
 	from director import Spaces, Status
 
@@ -35,7 +37,11 @@ class ASupporterGrouping(AbstractCommand):
 
 		if self._director.common.have_reference_points():
 			self._bisector = rivalry.bisector
-			self._direction = rivalry.bisector._direction
+			if self._bisector is None:
+				error_title = "Missing Bisector"
+				error_message = "Bisector not set with reference points"
+				raise SpacesError(error_title, error_message)
+			self._direction = self._bisector._direction
 			self._west = rivalry.west
 			self._east = rivalry.east
 			self._seg = rivalry.seg
