@@ -597,8 +597,9 @@ class PyQtGraphCommon:
 
 		# if (show_bisector and self._director.common.have_bisector_info()):
 		if show_bisector and self._director.common.have_reference_points():
-			start = rivalry.bisector._start
-			end = rivalry.bisector._end
+			bisector = rivalry.get_bisector()
+			start = bisector._start
+			end = bisector._end
 
 			start.name = pg.TextItem(
 				text="S", color=(0, 0, 0), anchor=(1.0, 0.0)
@@ -619,40 +620,48 @@ class PyQtGraphCommon:
 	def add_east_to_pyqtgraph_plot(self, the_plot: pg.PlotItem) -> None:
 		# pen: pg.QtGui.QPen) -> None:
 
-		rivalry = self._director.rivalry
-		start = rivalry.east._start
-		end = rivalry.east._end
+		if self._director.common.have_reference_points():
+			rivalry = self._director.rivalry
+			east = rivalry.get_east()
+			start = east._start
+			end = east._end
 
-		start.name = pg.TextItem(
-			text="E_S", color=(0, 0, 0), anchor=(1.0, 0.0)
-		)
-		start.name.setPos(start.x, start.y)
-		the_plot.addItem(start.name)
-		east_end_name = pg.TextItem(
-			text="E_E", color=(0, 0, 0), anchor=(1.0, 0.0)
-		)
-		east_end_name.setPos(end.x, end.y)
-		the_plot.addItem(east_end_name)
-		the_plot.plot([start.x, end.x], [start.y, end.y])
+			start.name = pg.TextItem(
+				text="E_S", color=(0, 0, 0), anchor=(1.0, 0.0)
+			)
+			start.name.setPos(start.x, start.y)
+			the_plot.addItem(start.name)
+			east_end_name = pg.TextItem(
+				text="E_E", color=(0, 0, 0), anchor=(1.0, 0.0)
+			)
+			east_end_name.setPos(end.x, end.y)
+			the_plot.addItem(east_end_name)
+			the_plot.plot([start.x, end.x], [start.y, end.y])
+
 		return
 
 	# ------------------------------------------------------------------------
 	def add_west_to_pyqtgraph_plot(self, the_plot: pg.PlotItem) -> None:
 		# pen: pg.QtGui.QPen) -> None:
 
-		rivalry = self._director.rivalry
-		start = rivalry.west._start
-		end = rivalry.west._end
+		if self._director.common.have_reference_points():
+			rivalry = self._director.rivalry
+			west = rivalry.get_west()
+			start = west._start
+			end = west._end
 
-		start.name = pg.TextItem(
-			text="W_S", color=(0, 0, 0), anchor=(1.0, 0.0)
-		)
-		start.name.setPos(start.x, start.y)
-		the_plot.addItem(start.name)
-		end.name = pg.TextItem(text="W_E", color=(0, 0, 0), anchor=(1.0, 0.0))
-		end.name.setPos(end.x, end.y)
-		the_plot.addItem(end.name)
-		the_plot.plot([start.x, end.x], [start.y, end.y])
+			start.name = pg.TextItem(
+				text="W_S", color=(0, 0, 0), anchor=(1.0, 0.0)
+			)
+			start.name.setPos(start.x, start.y)
+			the_plot.addItem(start.name)
+			end.name = pg.TextItem(
+				text="W_E", color=(0, 0, 0), anchor=(1.0, 0.0)
+			)
+			end.name.setPos(end.x, end.y)
+			the_plot.addItem(end.name)
+			the_plot.plot([start.x, end.x], [start.y, end.y])
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -662,14 +671,16 @@ class PyQtGraphCommon:
 	) -> None:
 		# pen: pg.QtGui.QPen) -> None:
 
-		first_div = self._director.rivalry.first_div
-		vert_max = self._director.common.plot_ranges.vert_max
-		vert_min = self._director.common.plot_ranges.vert_min
+		if self._director.common.have_reference_points():
+			first_div = self._director.rivalry.first_div
+			vert_max = self._director.common.plot_ranges.vert_max
+			vert_min = self._director.common.plot_ranges.vert_min
 
-		if self._director.common.have_scores():
-			the_plot.plot([first_div, first_div], [vert_max, vert_min])
-		else:
-			the_plot.plot([first_div, first_div], [vert_max, vert_min])
+			if self._director.common.have_scores():
+				the_plot.plot([first_div, first_div], [vert_max, vert_min])
+			else:
+				the_plot.plot([first_div, first_div], [vert_max, vert_min])
+
 		return
 
 	# ------------------------------------------------------------------------
@@ -679,14 +690,16 @@ class PyQtGraphCommon:
 	) -> None:
 		# pen: pg.QtGui.QPen) -> None:
 
-		hor_max = self._director.common.plot_ranges.hor_max
-		hor_min = self._director.common.plot_ranges.hor_min
-		second_div = self._director.rivalry.second_div
+		if self._director.common.have_reference_points():
+			hor_max = self._director.common.plot_ranges.hor_max
+			hor_min = self._director.common.plot_ranges.hor_min
+			second_div = self._director.rivalry.second_div
 
-		if self._director.common.have_scores():
-			the_plot.plot([hor_max, hor_min], [second_div, second_div])
-		else:
-			the_plot.plot([hor_max, hor_min], [second_div, second_div])
+			if self._director.common.have_scores():
+				the_plot.plot([hor_max, hor_min], [second_div, second_div])
+			else:
+				the_plot.plot([hor_max, hor_min], [second_div, second_div])
+
 		return
 
 	# ------------------------------------------------------------------------
