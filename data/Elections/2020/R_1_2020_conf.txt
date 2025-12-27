@@ -8,7 +8,7 @@ Harp;Kamala Harris (post)
 Fauc;Dr. Anthony Fauci
 NRA;National Rifle Association
 Plan;Planned Parenthood
-Penp;Mike Pence	(post)
+Penp;Mike Pence (post)
 Supr;U.S. Supreme Court
 Busi;Big business
 Capi;Capitalists

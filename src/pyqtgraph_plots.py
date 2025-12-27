@@ -41,6 +41,9 @@ class PyQtGraphMethods:
 		tab_plot_widget = self._plot_alike_using_pyqtgraph()
 		tab_gallery_widget = self._plot_alike_using_pyqtgraph()
 
+		if tab_plot_widget is None or tab_gallery_widget is None:
+			return
+
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
 			tab_plot_widget, tab_gallery_widget
 		)
@@ -49,7 +52,7 @@ class PyQtGraphMethods:
 
 	# ------------------------------------------------------------------------
 
-	def _plot_alike_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
+	def _plot_alike_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget | None:
 		"""plot alike  -creates a plot with a line joining points with
 		high similarity.
 		A plot of the configuration will be created with a line joining pairs
@@ -87,7 +90,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_configuration_to_pyqtgraph_plot(plot)
 
@@ -120,6 +123,9 @@ class PyQtGraphMethods:
 			base_groups_to_show
 		)
 
+		if tab_plot_widget is None or tab_gallery_widget is None:
+			return
+
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
 			tab_plot_widget, tab_gallery_widget
 		)
@@ -130,7 +136,7 @@ class PyQtGraphMethods:
 
 	def _plot_base_using_pyqtgraph(
 		self, base_groups_to_show: str
-	) -> pg.GraphicsLayoutWidget:
+	) -> pg.GraphicsLayoutWidget | None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		pyqtgraph_plotter = director.pyqtgraph_plotter
@@ -146,7 +152,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
@@ -229,6 +235,10 @@ class PyQtGraphMethods:
 		tab_gallery_widget = self._plot_battleground_using_pyqtgraph(
 			battleground_groups_to_show
 		)
+
+		if tab_plot_widget is None or tab_gallery_widget is None:
+			return
+
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
 			tab_plot_widget, tab_gallery_widget
 		)
@@ -239,7 +249,7 @@ class PyQtGraphMethods:
 
 	def _plot_battleground_using_pyqtgraph(
 		self, battleground_groups_to_show: str
-	) -> pg.GraphicsLayoutWidget:
+	) -> pg.GraphicsLayoutWidget | None:
 		"""show battleground function - creates a plot showing the reference
 		points and an area where battleground supporters are most likely
 		found.
@@ -263,7 +273,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_west_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_east_to_pyqtgraph_plot(plot)
@@ -273,7 +283,8 @@ class PyQtGraphMethods:
 		bisector_middle_name = pg.TextItem(
 			text="M", color=(0, 0, 0), anchor=(1.0, 0.0)
 		)
-		bisector_middle_name.setPos(bisector_cross_x, bisector_cross_y)
+		bisector_middle_name.setPos(
+			bisector_cross_x, bisector_cross_y)  # type: ignore[arg-type]
 		plot.addItem(bisector_middle_name)
 
 		battleground_people_points = (
@@ -493,6 +504,10 @@ class PyQtGraphMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		tab_plot_widget = self.plot_compare_using_pyqtgraph(target)
 		tab_gallery_widget = self.plot_compare_using_pyqtgraph(target)
+
+		if tab_plot_widget is None or tab_gallery_widget is None:
+			return
+
 		pyqtgraph_common.plot_to_gui_using_pyqtgraph(
 			tab_plot_widget, tab_gallery_widget
 		)
@@ -505,7 +520,7 @@ class PyQtGraphMethods:
 
 	def plot_compare_using_pyqtgraph(
 		self, target: TargetFeature
-	) -> pg.GraphicsLayoutWidget:
+	) -> pg.GraphicsLayoutWidget | None:
 		director = self._director
 		pyqtgraph_common = director.pyqtgraph_common
 		configuration_active = director.configuration_active
@@ -527,7 +542,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
 		for each_label in range_points:
@@ -611,7 +626,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)
@@ -667,7 +682,7 @@ class PyQtGraphMethods:
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Contest")
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pen = pg.mkPen(color=(255, 0, 0))
 		rival_a_label = pg.TextItem(
@@ -774,7 +789,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
@@ -906,7 +921,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
@@ -1109,7 +1124,7 @@ class PyQtGraphMethods:
 			point_coords.iloc[each_point, vert_dim]
 			for each_point in range_points
 		]
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
 		for each_point in range_points:
@@ -1262,7 +1277,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
@@ -1732,7 +1747,7 @@ class PyQtGraphMethods:
 			)
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		# pen = pg.mkPen(color=(0, 255, 0))
 		plot.scatterPlot(
@@ -1808,7 +1823,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
@@ -2223,7 +2238,7 @@ class PyQtGraphMethods:
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
 
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_reference_points_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
@@ -2739,7 +2754,7 @@ class PyQtGraphMethods:
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
 		)
 		plot = pyqtgraph_common.set_aspect_and_grid_in_pyqtgraph_plot(plot)
-		pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
+		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_configuration_to_pyqtgraph_plot(plot)
 		for each_point in range_points:

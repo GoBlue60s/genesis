@@ -97,7 +97,7 @@ class ConfigurationFeature:
 	# ------------------------------------------------------------------------
 
 	def _populate_base_groups_to_show(
-		self, base_groups_to_show: list[str]
+		self, base_groups_to_show: str | list[str]
 	) -> PeoplePoints:
 		director = self._director
 		common = director.common

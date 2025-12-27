@@ -26,7 +26,7 @@ class PyQtGraphCommon:
 	# ------------------------------------------------------------------------
 
 	def begin_pyqtgraph_plot_with_title(
-		self, title: str
+		self, title: str | None
 	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem]:
 		graphics_layout_widget = pg.GraphicsLayoutWidget()
 		graphics_layout_widget.setBackground("w")
@@ -68,7 +68,7 @@ class PyQtGraphCommon:
 		plot.setLabel("bottom", dim_names[hor_dim], color="k", size="15pt")
 		plot.setLabel("left", dim_names[vert_dim], color="k", size="15pt")
 
-		return
+		return plot
 
 	# ------------------------------------------------------------------------
 
@@ -175,13 +175,13 @@ class PyQtGraphCommon:
 	) -> None:
 		# Handle NaN values in image data
 		image_data = im.image
-		if np.isnan(image_data).all():
+		if np.isnan(image_data).all():  # type: ignore[call-overload]
 			# If all values are NaN, use default range
 			min_val, max_val = 0.0, 1.0
 		else:
 			# Use nanmin/nanmax to ignore NaN values
-			min_val = np.nanmin(image_data)
-			max_val = np.nanmax(image_data)
+			min_val = np.nanmin(image_data)  # type: ignore[call-overload]
+			max_val = np.nanmax(image_data)  # type: ignore[call-overload]
 
 			# If min and max are the same, create a small range
 			if min_val == max_val:
@@ -397,7 +397,7 @@ class PyQtGraphCommon:
 		
 		plot_conf = graphics_layout_widget.addPlot(title=None)
 		plot_conf = self.set_aspect_and_grid_in_pyqtgraph_plot(plot_conf)
-		self.add_axes_labels_to_pyqtgraph_plot(plot_conf)
+		plot_conf = self.add_axes_labels_to_pyqtgraph_plot(plot_conf)
 		self.set_ranges_for_pyqtgraph_plot(plot_conf)
 		self.add_connector_to_pyqtgraph_plot(plot_conf)
 		self.add_bisector_to_pyqtgraph_plot(plot_conf)
@@ -601,16 +601,16 @@ class PyQtGraphCommon:
 			start = bisector._start
 			end = bisector._end
 
-			start.name = pg.TextItem(
+			start.text_item = pg.TextItem(
 				text="S", color=(0, 0, 0), anchor=(1.0, 0.0)
 			)
-			start.name.setPos(start.x, start.y)
-			the_plot.addItem(start.name)
-			end.name = pg.TextItem(
+			start.text_item.setPos(start.x, start.y)
+			the_plot.addItem(start.text_item)
+			end.text_item = pg.TextItem(
 				text="E", color=(0, 0, 0), anchor=(1.0, 0.0)
 			)
-			end.name.setPos(end.x, end.y)
-			the_plot.addItem(end.name)
+			end.text_item.setPos(end.x, end.y)
+			the_plot.addItem(end.text_item)
 			the_plot.plot([start.x, end.x], [start.y, end.y])
 
 		return
@@ -626,17 +626,17 @@ class PyQtGraphCommon:
 			start = east._start
 			end = east._end
 
-			start.name = pg.TextItem(
+			start.text_item = pg.TextItem(
 				text="E_S", color=(0, 0, 0), anchor=(1.0, 0.0)
 			)
-			start.name.setPos(start.x, start.y)
-			the_plot.addItem(start.name)
-			east_end_name = pg.TextItem(
+			start.text_item.setPos(start.x, start.y)
+			the_plot.addItem(start.text_item)
+			end.text_item = pg.TextItem(
 				text="E_E", color=(0, 0, 0), anchor=(1.0, 0.0)
 			)
-			east_end_name.setPos(end.x, end.y)
-			the_plot.addItem(east_end_name)
-			the_plot.plot([start.x, end.x], [start.y, end.y])
+			end.text_item.setPos(end.x, end.y)
+			the_plot.addItem(end.text_item)
+			the_plot.plot([start.x, end.x], [start.y, end.y])  # type: ignore[arg-type]
 
 		return
 
@@ -650,16 +650,16 @@ class PyQtGraphCommon:
 			start = west._start
 			end = west._end
 
-			start.name = pg.TextItem(
+			start.text_item = pg.TextItem(
 				text="W_S", color=(0, 0, 0), anchor=(1.0, 0.0)
 			)
-			start.name.setPos(start.x, start.y)
-			the_plot.addItem(start.name)
-			end.name = pg.TextItem(
+			start.text_item.setPos(start.x, start.y)
+			the_plot.addItem(start.text_item)
+			end.text_item = pg.TextItem(
 				text="W_E", color=(0, 0, 0), anchor=(1.0, 0.0)
 			)
-			end.name.setPos(end.x, end.y)
-			the_plot.addItem(end.name)
+			end.text_item.setPos(end.x, end.y)
+			the_plot.addItem(end.text_item)
 			the_plot.plot([start.x, end.x], [start.y, end.y])
 
 		return

@@ -626,6 +626,7 @@ class Point:
 		self.size: int = kwargs.pop("size", 1)
 		self.style: str = kwargs.pop("style", "dot")
 		self.kind: str = kwargs.pop("kind", "")
+		self.text_item: object | None = None  # For pyqtgraph TextItem widget
 
 		# Store coordinates with dimension-neutral naming
 		self._coords = {}
