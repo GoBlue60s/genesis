@@ -643,13 +643,14 @@ class Point:
 
 	# x, y, z properties as convenience accessors that map to dimensions
 	@property
-	def x(self) -> float | None:
+	def x(self) -> float:
 		"""First coordinate, regardless of its semantic meaning."""
 		if "dim_1" in self._coords:
 			return self._coords["dim_1"]
 		if self._coords:
 			return next(iter(self._coords.values()))
-		return None
+		msg = "Point has no coordinates - cannot access x"
+		raise ValueError(msg)
 
 	@x.setter
 	def x(self, value: float | None) -> None:
@@ -665,14 +666,15 @@ class Point:
 			self._coords["dim_1"] = float(value)
 
 	@property
-	def y(self) -> float | None:
+	def y(self) -> float:
 		"""Second coordinate, regardless of its semantic meaning."""
 
 		if "dim_2" in self._coords:
 			return self._coords["dim_2"]
 		if len(self._coords) > TEST_FOR_MORE_THAN_ONE_COORDINATE:
 			return next(itertools.islice(self._coords.values(), 1, None))
-		return None
+		msg = "Point has no coordinates - cannot access y"
+		raise ValueError(msg)
 
 	@y.setter
 	def y(self, value: float | None) -> None:

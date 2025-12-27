@@ -138,15 +138,9 @@ class Rivalry:
 		"""Get bisector, raising if not initialized."""
 		if self.bisector is None:
 			error_title = "Bisector Not Initialized"
-			error_message = "Cannot access bisector before reference points set"
-			raise SpacesError(error_title, error_message)
-		# Validate that start and end points have coordinates
-		start = self.bisector._start
-		end = self.bisector._end
-		if (start.x is None or start.y is None or
-			end.x is None or end.y is None):
-			error_title = "Invalid Bisector"
-			error_message = "Bisector points missing coordinates"
+			error_message = (
+				"Cannot access bisector before reference points set"
+			)
 			raise SpacesError(error_title, error_message)
 		return self.bisector
 
@@ -158,14 +152,6 @@ class Rivalry:
 			error_title = "East Not Initialized"
 			error_message = "Cannot access east before reference points set"
 			raise SpacesError(error_title, error_message)
-		# Validate that start and end points have coordinates
-		start = self.east._start
-		end = self.east._end
-		if (start.x is None or start.y is None or
-			end.x is None or end.y is None):
-			error_title = "Invalid East"
-			error_message = "East points missing coordinates"
-			raise SpacesError(error_title, error_message)
 		return self.east
 
 	# ------------------------------------------------------------------------
@@ -176,14 +162,6 @@ class Rivalry:
 			error_title = "West Not Initialized"
 			error_message = "Cannot access west before reference points set"
 			raise SpacesError(error_title, error_message)
-		# Validate that start and end points have coordinates
-		start = self.west._start
-		end = self.west._end
-		if (start.x is None or start.y is None or
-			end.x is None or end.y is None):
-			error_title = "Invalid West"
-			error_message = "West points missing coordinates"
-			raise SpacesError(error_title, error_message)
 		return self.west
 
 	# ------------------------------------------------------------------------
@@ -192,15 +170,9 @@ class Rivalry:
 		"""Get connector line, raising if not initialized."""
 		if self.connector is None:
 			error_title = "Connector Not Initialized"
-			error_message = "Cannot access connector before reference points set"
-			raise SpacesError(error_title, error_message)
-		# Validate that start and end points have coordinates
-		start = self.connector._start
-		end = self.connector._end
-		if (start.x is None or start.y is None or
-			end.x is None or end.y is None):
-			error_title = "Invalid Connector"
-			error_message = "Connector points missing coordinates"
+			error_message = (
+				"Cannot access connector before reference points set"
+			)
 			raise SpacesError(error_title, error_message)
 		return self.connector
 
@@ -212,14 +184,6 @@ class Rivalry:
 			error_title = "First Divider Not Initialized"
 			error_message = "Cannot access first before reference points set"
 			raise SpacesError(error_title, error_message)
-		# Validate that start and end points have coordinates
-		start = self.first._start
-		end = self.first._end
-		if (start.x is None or start.y is None or
-			end.x is None or end.y is None):
-			error_title = "Invalid First Divider"
-			error_message = "First divider points missing coordinates"
-			raise SpacesError(error_title, error_message)
 		return self.first
 
 	# ------------------------------------------------------------------------
@@ -229,14 +193,6 @@ class Rivalry:
 		if self.second is None:
 			error_title = "Second Divider Not Initialized"
 			error_message = "Cannot access second before reference points set"
-			raise SpacesError(error_title, error_message)
-		# Validate that start and end points have coordinates
-		start = self.second._start
-		end = self.second._end
-		if (start.x is None or start.y is None or
-			end.x is None or end.y is None):
-			error_title = "Invalid Second Divider"
-			error_message = "Second divider points missing coordinates"
 			raise SpacesError(error_title, error_message)
 		return self.second
 

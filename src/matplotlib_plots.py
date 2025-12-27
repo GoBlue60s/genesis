@@ -8,10 +8,11 @@ from matplotlib import pyplot as plt
 from constants import MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING
 from exceptions import DependencyError
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
 	import pandas as pd
+	from associationsmenu import AlikeCommand
 	from director import Status
 
 	# from common import Spaces
@@ -57,7 +58,7 @@ class MatplotlibMethods:
 		common = director.common
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
-		current_command = director.current_command
+		current_command = cast("AlikeCommand", director.current_command)
 
 		if not common.have_alike_coords():
 			title = "No alike points available for plotting"
