@@ -786,6 +786,17 @@ class Polygon(Region):
 		self._thickness: int = thickness
 		self._style = style
 
+	@property
+	def vertices(self) -> CoordinateLists:
+		"""Return vertices as a CoordinateLists object."""
+		return CoordinateLists(self._x, self._y)
+
+	@vertices.setter
+	def vertices(self, value: CoordinateLists) -> None:
+		"""Set vertices from a CoordinateLists object."""
+		self._x = value.x
+		self._y = value.y
+
 
 # -------------------------------------------------------------------------
 

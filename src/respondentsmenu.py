@@ -187,6 +187,7 @@ class ConvertibleCommand(ASupporterGrouping):
 
 		self._director.command = "Convertible"
 		self._groups_to_show = ""
+		self._convertible_groups_to_show = ""
 		rivalry = self._director.rivalry
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
@@ -255,6 +256,7 @@ class CoreSupportersCommand(ASupporterGrouping):
 		self.common = common
 		self._director.command = "Core supporters"
 		self._groups_to_show = ""
+		self.core_groups_to_show = ""
 		rivalry = self._director.rivalry
 		self._core_radius = rivalry.core_radius
 		self._rival_a = rivalry.rival_a
@@ -328,6 +330,7 @@ class FirstDimensionCommand(ASupporterGrouping):
 		self._common = common
 		self._director.command = "First dimension"
 		self._groups_to_show = ""
+		self._first_dim_groups_to_show = ""
 		rivalry = self._director.rivalry
 		self._first_div = rivalry.first_div
 		self._rival_a = rivalry.rival_a
@@ -422,6 +425,7 @@ class LikelySupportersCommand(ASupporterGrouping):
 		rivalry = self._director.rivalry
 		self._director.command = "Likely supporters"
 		self._groups_to_show = ""
+		self.likely_groups_to_show = ""
 		self._rival_a = rivalry.rival_a
 		self._rival_b = rivalry.rival_b
 		return
@@ -962,6 +966,7 @@ class SecondDimensionCommand(ASupporterGrouping):
 		self.common = common
 		self._director.command = "Second dimension"
 		self._groups_to_show = ""
+		self._second_dim_groups_to_show = ""
 		rivalry = self._director.rivalry
 		self._second_div = rivalry.second_div
 		self._rival_a = rivalry.rival_a

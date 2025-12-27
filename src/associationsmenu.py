@@ -619,6 +619,9 @@ class StressContributionCommand:
 	def __init__(self, director: Status, common: Spaces) -> None: # noqa: ARG002
 		self._director = director
 		self._director.command = "Stress contribution"
+		self.sorted_stress_df: pd.DataFrame = pd.DataFrame()
+		self._point_to_plot_label: str = ""
+		self._point_to_plot_index: int = 0
 		return
 
 	# ------------------------------------------------------------------------

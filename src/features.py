@@ -12,7 +12,7 @@ import scipy.stats as ss
 
 from experimental import ItemFrame
 from geometry import PeoplePoints
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
 	from common import Spaces
@@ -91,6 +91,11 @@ class ConfigurationFeature:
 		self.item_labels: list[str] = []
 		self.item_names: list[str] = []
 		self.eigen: pd.DataFrame = pd.DataFrame()
+
+		# Matplotlib-specific rendering objects
+		self._core_a: Any = None
+		self._core_b: Any = None
+		self._core_radius: float = 0.0
 
 		return
 

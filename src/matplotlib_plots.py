@@ -12,8 +12,18 @@ from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
 	import pandas as pd
-	from associationsmenu import AlikeCommand
+	from associationsmenu import AlikeCommand, StressContributionCommand
 	from director import Status
+	from respondentsmenu import (
+		BaseCommand,
+		BattlegroundCommand,
+		ConvertibleCommand,
+		CoreSupportersCommand,
+		FirstDimensionCommand,
+		LikelySupportersCommand,
+		SecondDimensionCommand,
+	)
+	from rivalry import Bisector, East, West
 
 	# from common import Spaces
 	from geometry import PeoplePoints
@@ -106,8 +116,9 @@ class MatplotlibMethods:
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		current_command = cast("BaseCommand", director.current_command)
 
-		base_groups_to_show = director.current_command._base_groups_to_show
+		base_groups_to_show = current_command._base_groups_to_show
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_base_using_matplotlib(base_groups_to_show)
@@ -190,9 +201,12 @@ class MatplotlibMethods:
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		current_command = cast(
+			"BattlegroundCommand", director.current_command
+		)
 
 		battleground_groups_to_show = (
-			director.current_command._battleground_groups_to_show
+			current_command._battleground_groups_to_show
 		)
 
 		director.common.set_axis_extremes_based_on_coordinates(point_coords)
@@ -226,12 +240,16 @@ class MatplotlibMethods:
 			director.set_focus_on_tab("Output")
 			return None
 
-		bisector_cross_x = rivalry.bisector._cross_x
-		bisector_cross_y = rivalry.bisector._cross_y
-		west_cross_x = rivalry.west._cross_x
-		west_cross_y = rivalry.west._cross_y
-		east_cross_x = rivalry.east._cross_x
-		east_cross_y = rivalry.east._cross_y
+		bisector = cast("Bisector", rivalry.bisector)
+		west = cast("West", rivalry.west)
+		east = cast("East", rivalry.east)
+
+		bisector_cross_x = bisector._cross_x
+		bisector_cross_y = bisector._cross_y
+		west_cross_x = west._cross_x
+		west_cross_y = west._cross_y
+		east_cross_x = east._cross_x
+		east_cross_y = east._cross_y
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			director.set_focus_on_tab("Output")
@@ -489,9 +507,12 @@ class MatplotlibMethods:
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		current_command = cast(
+			"ConvertibleCommand", director.current_command
+		)
 
 		convertible_groups_to_show = (
-			director.current_command._convertible_groups_to_show
+			current_command._convertible_groups_to_show
 		)
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
@@ -590,8 +611,11 @@ class MatplotlibMethods:
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		current_command = cast(
+			"CoreSupportersCommand", director.current_command
+		)
 
-		core_groups_to_show = director.current_command.core_groups_to_show
+		core_groups_to_show = current_command.core_groups_to_show
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_core_using_matplotlib(core_groups_to_show)
@@ -885,9 +909,12 @@ class MatplotlibMethods:
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		current_command = cast(
+			"FirstDimensionCommand", director.current_command
+		)
 
 		first_dim_groups_to_show = (
-			director.current_command._first_dim_groups_to_show
+			current_command._first_dim_groups_to_show
 		)
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
@@ -1416,10 +1443,13 @@ class MatplotlibMethods:
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		current_command = cast(
+			"LikelySupportersCommand", director.current_command
+		)
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 
-		likely_groups_to_show = director.current_command.likely_groups_to_show
+		likely_groups_to_show = current_command.likely_groups_to_show
 
 		fig = self._plot_likely_using_matplotlib(likely_groups_to_show)
 
@@ -1719,7 +1749,10 @@ class MatplotlibMethods:
 
 	def _plot_sorted_stress_contributions_using_matplotlib(self) -> plt.Figure:
 		matplotlib_common = self._director.matplotlib_common
-		sorted_stress_df = self._director.current_command.sorted_stress_df
+		current_command = cast(
+			"StressContributionCommand", self._director.current_command
+		)
+		sorted_stress_df = current_command.sorted_stress_df
 
 		fig, ax = matplotlib_common.begin_matplotlib_plot_with_title(
 			"Stress Contribution by Point"
@@ -1752,8 +1785,11 @@ class MatplotlibMethods:
 	) -> plt.Figure:
 		# point = self._point_to_plot_label
 		matplotlib_common = self._director.matplotlib_common
-		point_label = self._director.current_command._point_to_plot_label
-		point_index = self._director.current_command._point_to_plot_index
+		current_command = cast(
+			"StressContributionCommand", self._director.current_command
+		)
+		point_label = current_command._point_to_plot_label
+		point_index = current_command._point_to_plot_index
 		ranks_df = self._director.similarities_active.ranks_df
 		item_names = self._director.similarities_active.item_names
 		range_similarities = (
@@ -1843,9 +1879,12 @@ class MatplotlibMethods:
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
 		point_coords = configuration_active.point_coords
+		current_command = cast(
+			"SecondDimensionCommand", director.current_command
+		)
 
 		second_dim_groups_to_show = (
-			director.current_command._second_dim_groups_to_show
+			current_command._second_dim_groups_to_show
 		)
 
 		common.set_axis_extremes_based_on_coordinates(point_coords)
@@ -2365,13 +2404,14 @@ class MatplotlibMethods:
 			)
 
 		if common.have_reference_points() and common.show_bisector:
-			ax.text(bisector._start.x, bisector._start.y, "S")
-			ax.text(bisector._end.x, bisector._end.y, "E")
-			ax.text(bisector._start.x, bisector._start.y, "S")
-			ax.text(bisector._end.x, bisector._end.y, "E")
+			bisector_cast = cast("Bisector", bisector)
+			ax.text(bisector_cast._start.x, bisector_cast._start.y, "S")
+			ax.text(bisector_cast._end.x, bisector_cast._end.y, "E")
+			ax.text(bisector_cast._start.x, bisector_cast._start.y, "S")
+			ax.text(bisector_cast._end.x, bisector_cast._end.y, "E")
 			ax.plot(
-				[bisector._start.x, bisector._end.x],
-				[bisector._start.y, bisector._end.y],
+				[bisector_cast._start.x, bisector_cast._end.x],
+				[bisector_cast._start.y, bisector_cast._end.y],
 			)
 
 		director.set_focus_on_tab("Plot")
