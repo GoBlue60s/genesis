@@ -122,8 +122,8 @@ class LineInPlot:
 		self._thickness: int = thickness
 		self._style: str = style
 		self._case: str = ""
-		self._start: Point = Point()
-		self._end: Point = Point()
+		self._start: Point = Point(0.0, 0.0)
+		self._end: Point = Point(0.0, 0.0)
 
 		# Only execute if all required parameters are provided
 		if (
@@ -832,6 +832,16 @@ class Polygon(Region):
 		"""Set vertices from a CoordinateLists object."""
 		self._x = value.x
 		self._y = value.y
+
+	@property
+	def outline(self) -> np.ndarray:
+		"""Return polygon outline."""
+		return self._outline
+
+	@outline.setter
+	def outline(self, value: np.ndarray) -> None:
+		"""Set polygon outline."""
+		self._outline = value
 
 
 # -------------------------------------------------------------------------

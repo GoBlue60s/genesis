@@ -966,12 +966,14 @@ command_dict = MappingProxyType({
 		"state_capture": [],
 		"script_parameters": ["axis_for_similarities"],
 		"execute_parameters": ["axis_for_similarities"],
+		"parameter_aliases": {"axis": "axis_for_similarities"},
 		"interactive_getters": {
 			"axis_for_similarities": {
-				"getter_type": "option",
+				"getter_type": "chose_option_dialog",
 				"title": "Shepard diagram",
-				"prompt": "Show similarity on:",
-				"options": ["X-axis (horizontal)", "Y-axis (vertical)"]
+				"options_title": "Show similarity on:",
+				"options": ["X-axis (horizontal)", "Y-axis (vertical)"],
+				"values": ["X", "Y"]
 			}
 		}
 	},

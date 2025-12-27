@@ -2683,7 +2683,7 @@ class Spaces:
 		if self._director.executing_script:
 			# Get from script parameters
 			return self._get_script_parameters(
-				command_name, cmd_info, expected_params
+				command_name, cmd_info, expected_params, kwargs
 			)
 		# else:
 		# Get from interactive dialogs using metadata
@@ -2697,7 +2697,8 @@ class Spaces:
 		self,
 		command_name: str,
 		cmd_info: dict,
-		expected_params: list[str]
+		expected_params: list[str],
+		kwargs: dict
 	) -> dict[str, any]:
 		"""Extract parameters from script execution context.
 
@@ -2705,6 +2706,7 @@ class Spaces:
 			command_name: Name of the command being executed
 			cmd_info: Command metadata from command_dict
 			expected_params: List of expected parameter names
+			kwargs: Parameters passed from execute method
 
 		Returns:
 			Dictionary of parameter_name -> value
@@ -2714,16 +2716,42 @@ class Spaces:
 		"""
 		params = {}
 		interactive_getters = cmd_info.get("interactive_getters", {})
+		parameter_aliases = cmd_info.get("parameter_aliases", {})
 
 		for param_name in expected_params:
+			# First check if parameter was passed via kwargs from execute
+			if param_name in kwargs:
+				param_value = kwargs[param_name]
+				# Still need to convert option to value if applicable
+				getter_info = interactive_getters.get(param_name, {})
+				if getter_info.get("getter_type") == "chose_option_dialog":
+					values = getter_info.get("values")
+					if values:
+						options = getter_info.get("options", [])
+						if param_value in options:
+							option_index = options.index(param_value)
+							param_value = values[option_index]
+				params[param_name] = param_value
+				continue
+			# Check if parameter exists directly or via alias
+			script_param_name = param_name
 			if param_name not in self._director.script_parameters:
-				# Required parameter missing from script
-				title = f"{command_name} script parameter error"
-				message = f"Missing required parameter: {param_name}"
-				raise SpacesError(title, message)
+				# Check if there's an alias for this parameter
+				alias_found = False
+				for alias, full_name in parameter_aliases.items():
+					if full_name == param_name and alias in self._director.script_parameters:
+						script_param_name = alias
+						alias_found = True
+						break
+
+				if not alias_found:
+					# Required parameter missing from script
+					title = f"{command_name} script parameter error"
+					message = f"Missing required parameter: {param_name}"
+					raise SpacesError(title, message)
 
 			script_params = self._director.script_parameters
-			param_value = script_params[param_name]
+			param_value = script_params[script_param_name]
 
 			# Special handling for focal_item_dialog: convert name to index
 			getter_info = interactive_getters.get(param_name, {})
@@ -2731,6 +2759,15 @@ class Spaces:
 				param_value = self._convert_focal_item_name_to_index(
 					command_name, param_name, param_value, getter_info
 				)
+
+			# Special handling for chose_option_dialog: convert option to value
+			if getter_info.get("getter_type") == "chose_option_dialog":
+				values = getter_info.get("values")
+				if values:
+					options = getter_info.get("options", [])
+					if param_value in options:
+						option_index = options.index(param_value)
+						param_value = values[option_index]
 
 			params[param_name] = param_value
 
@@ -3085,11 +3122,16 @@ class Spaces:
 		if result != QDialog.Accepted:
 			self._raise_cancelled_error(command_name)
 
-		selected_option = options[dialog.selected_option]
+		# Get the value to return - use values mapping if provided
+		values = getter_info.get("values")
+		if values:
+			selected_value = values[dialog.selected_option]
+		else:
+			selected_value = options[dialog.selected_option]
 
 		# Store and return
-		self._director.obtained_parameters[param_name] = selected_option
-		return {param_name: selected_option}
+		self._director.obtained_parameters[param_name] = selected_value
+		return {param_name: selected_value}
 
 	# ------------
 
@@ -3760,12 +3802,23 @@ class Spaces:
 		current_key = None
 		current_value = ""
 		in_brackets = 0
+		in_quotes = False
+		quote_char = None
 
 		i = 0
 		while i < len(param_str):
 			char = param_str[i]
 
-			if char == "=" and current_key is None and in_brackets == 0:
+			if char in '"\'':
+				# Toggle quote state
+				if not in_quotes:
+					in_quotes = True
+					quote_char = char
+				elif char == quote_char:
+					in_quotes = False
+					quote_char = None
+				current_value += char
+			elif char == "=" and current_key is None and in_brackets == 0 and not in_quotes:
 				# Found key=value separator - normalize to lowercase
 				current_key = current_value.strip().lower()
 				current_value = ""
@@ -3775,8 +3828,8 @@ class Spaces:
 			elif char in "]})":
 				in_brackets -= 1
 				current_value += char
-			elif char == " " and in_brackets == 0:
-				# Space outside brackets - check if complete param
+			elif char == " " and in_brackets == 0 and not in_quotes:
+				# Space outside brackets and quotes - check if complete param
 				if current_key and current_value:
 					params_dict[current_key] = self._parse_parameter_value(
 						current_value.strip()

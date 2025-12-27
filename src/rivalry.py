@@ -36,6 +36,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from director import Status
 	from common import Spaces
+	from features import ConfigurationFeature
 
 
 # -------------------------------------------------------------------------
@@ -272,7 +273,7 @@ class Rivalry:
 		second_dim_divider = rivalry.second_div
 
 		self.seg = pd.DataFrame(
-			columns=[
+			columns=pd.Index([
 				score_1_name,
 				score_2_name,
 				"Base",
@@ -282,7 +283,7 @@ class Rivalry:
 				"Battle_ground",
 				"First",
 				"Second",
-			]
+			])
 		)
 		segments = self.seg
 		segments[score_1_name] = score_1
@@ -395,13 +396,15 @@ class Rivalry:
 		battleground_segment_names: list[str],
 		convertible_segment_names: list[str],
 	) -> None:
-		self.base_pcts = self.segment_percentages.base_pcts
-		self.battleground_pcts = self.segment_percentages.battleground_pcts
-		self.conv_pcts = self.segment_percentages.conv_pcts
-		self.core_pcts = self.segment_percentages.core_pcts
-		self.first_pcts = self.segment_percentages.first_pcts
-		self.likely_pcts = self.segment_percentages.likely_pcts
-		self.second_pcts = self.segment_percentages.second_pcts
+		self.base_pcts = list(self.segment_percentages.base_pcts)
+		self.battleground_pcts = list(
+			self.segment_percentages.battleground_pcts
+		)
+		self.conv_pcts = list(self.segment_percentages.conv_pcts)
+		self.core_pcts = list(self.segment_percentages.core_pcts)
+		self.first_pcts = list(self.segment_percentages.first_pcts)
+		self.likely_pcts = list(self.segment_percentages.likely_pcts)
+		self.second_pcts = list(self.segment_percentages.second_pcts)
 
 		base_pcts_df = pd.DataFrame(
 			{
@@ -451,7 +454,9 @@ class Rivalry:
 		self.likely_pcts_df = likely_pcts_df
 		self.second_pcts_df = second_pcts_df
 
-		self.segments_pcts_df = pd.DataFrame(columns=["Segment", "Percent"])
+		self.segments_pcts_df = pd.DataFrame(
+			columns=pd.Index(["Segment", "Percent"])
+		)
 
 		segments_list = []
 
@@ -715,7 +720,7 @@ class Rivalry:
 		west: West,
 		east: East,
 		nscored: int,
-	) -> pd.DataFrame:
+	) -> tuple[pd.DataFrame, list[str]]:
 		rivalry = self._director.rivalry
 		in_group = self._director.common.in_group
 		not_in_group = self._director.common.not_in_group
@@ -736,8 +741,8 @@ class Rivalry:
 					each_indiv,
 					bisector._start.y,
 					score_2_name,
-					west._start.y,
-					east._start.y,
+					west,
+					east,
 				)
 			elif bisector._direction == "Vertical":
 				segments = self._convertible_group_when_bisector_is_vertical(
@@ -815,8 +820,6 @@ class Rivalry:
 		west: West,
 		east: East,
 	) -> pd.DataFrame:
-		# west_start_y: float,
-		# east_start_y: float) -> pd.DataFrame:
 
 		if (
 			bisector_start_y
@@ -930,8 +933,8 @@ class Rivalry:
 		rival_b: Point,
 		bisector: Bisector,
 		point_coords: pd.DataFrame,
-		hor_dim: str,
-		vert_dim: str,
+		hor_dim: int,
+		vert_dim: int,
 		nscored: int,
 	) -> tuple[pd.DataFrame, list[str]]:
 		# point_names = self._director.configuration_active.point_names
@@ -1002,7 +1005,7 @@ class Rivalry:
 		west: West,
 		east: East,
 		nscored: int,
-	) -> pd.DataFrame:
+	) -> tuple[pd.DataFrame, list[str]]:
 		if self._director.common.have_scores():
 			self.battleground_segment_people_points = PeoplePoints(
 				self.battleground_segment._x, self.battleground_segment._y
@@ -1334,7 +1337,7 @@ class Rivalry:
 		# --------------------------------------------------------------------
 
 	def dividers(
-		self, source: PeoplePoints, rival_a: Point, rival_b: Point
+		self, source: ConfigurationFeature, rival_a: Point, rival_b: Point
 	) -> None:
 		"""Determines the point on each dimension that separates rivals
 		on that dimension
@@ -1812,7 +1815,7 @@ class Rivalry:
 
 	# -----------------------------------------------------------------------
 
-	def _west_base(self, west: West) -> np.array:
+	def _west_base(self, west: West) -> np.ndarray:
 		(hor_max, hor_min, vert_max, vert_min) = (
 			self._director.common.use_plot_ranges()
 		)
@@ -1906,7 +1909,7 @@ class Rivalry:
 
 	# -----------------------------------------------------------------------
 
-	def _east_base(self, east: East) -> np.array:
+	def _east_base(self, east: East) -> np.ndarray:
 		(hor_max, hor_min, vert_max, vert_min) = (
 			self._director.common.use_plot_ranges()
 		)
@@ -2542,7 +2545,7 @@ class Rivalry:
 	# -----------------------------------------------------------------------
 
 	def _determine_vertices_of_convertible_regions(
-		self, bisector: object, west: West, east: East
+		self, bisector: Bisector, west: West, east: East
 	) -> None:
 		(
 			right_includes_upper_right_as_pairs,
@@ -2805,7 +2808,7 @@ class Rivalry:
 
 # -----------------------------------------------------------------------
 
-	def _convertible_default_vertices(self) -> tuple[np.array, np.array]:
+	def _convertible_default_vertices(self) -> tuple[np.ndarray, np.ndarray]:
 		"""
 		Create default convertible vertices for left and right regions.
 
@@ -2850,10 +2853,10 @@ class Rivalry:
 		bisector: Bisector,
 		west: West,
 		east: East,
-		convertible_to_left_vertices_as_pairs: np.array,
-		convertible_to_right_vertices_as_pairs: np.array,
+		convertible_to_left_vertices_as_pairs: np.ndarray,
+		convertible_to_right_vertices_as_pairs: np.ndarray,
 		params: dict
-	) -> tuple[np.array, np.array]:
+	) -> tuple[np.ndarray, np.ndarray]:
 		right_includes_upper_right_as_pairs = params[
 			"right_includes_upper_right_as_pairs"]
 		left_includes_lower_left_as_pairs = params[
@@ -2952,7 +2955,7 @@ class Rivalry:
 		}
 
 		# Add all default cases explicitly
-		def default_result() -> tuple[np.array, np.array]:
+		def default_result() -> tuple[np.ndarray, np.ndarray]:
 			return (
 				convertible_to_left_vertices_as_pairs,
 				convertible_to_right_vertices_as_pairs
@@ -3177,7 +3180,7 @@ class Rivalry:
 		rival_b: Point,
 		hor_dim: int,
 		vert_dim: int,
-	) -> tuple[float]:
+	) -> float:
 		sumofsqs = (
 			point_coords.iloc[rival_a.index, hor_dim]
 			- point_coords.iloc[rival_b.index, hor_dim]
@@ -3428,7 +3431,7 @@ class Rivalry:
 		segment_names = self.segment_names
 
 		segments = pd.DataFrame(
-			columns=[score_1_name, score_2_name, segment_names]
+			columns=pd.Index([score_1_name, score_2_name, *segment_names])
 		)
 		self.seg = segments
 

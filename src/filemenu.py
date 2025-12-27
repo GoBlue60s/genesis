@@ -2158,8 +2158,21 @@ class OpenScriptCommand:
 			if len(params) > 1:
 				# Has extra parameter - try to provide it from script params
 				param_name = params[1]
+
+				# Check for parameter directly or via alias
+				extra_value = None
 				if param_name in params_dict:
 					extra_value = params_dict[param_name]
+				else:
+					# Check if there's an alias for this parameter
+					cmd_info = command_dict.get(command_name, {})
+					parameter_aliases = cmd_info.get("parameter_aliases", {})
+					for alias, full_name in parameter_aliases.items():
+						if full_name == param_name and alias in params_dict:
+							extra_value = params_dict[alias]
+							break
+
+				if extra_value is not None:
 					command_instance.execute(self.common, extra_value)
 				else:
 					# No value in script - check if parameter has default

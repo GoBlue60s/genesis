@@ -20,8 +20,8 @@ Ranks distances
 # Test Ranks similarities command
 Ranks similarities
 
-# Test Scree command (requires use_metric parameter)
-Scree use_metric=False
+# Test Scree command (requires use_metric parameter) deprecated
+# Scree use_metric=False
 
 # Test Shepard command (requires axis parameter)
 Shepard axis="X-axis (horizontal)"
