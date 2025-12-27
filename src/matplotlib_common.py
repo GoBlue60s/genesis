@@ -29,10 +29,11 @@ class MatplotlibCommon:
 	# ------------------------------------------------------------------------
 
 	def begin_matplotlib_plot_with_title(
-		self, title: str
+		self, title: str | None
 	) -> tuple[plt.Figure, plt.Axes]:
 		fig, ax = plt.subplots()
-		ax.set_title(title)
+		if title is not None:
+			ax.set_title(title)
 		return fig, ax
 
 	# ------------------------------------------------------------------------

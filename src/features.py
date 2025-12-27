@@ -950,8 +950,8 @@ class ScoresFeature:
 		self._offset: float = 0.0
 
 		# Cluster-related attributes
-		self.cluster_labels: np.ndarray | None = None
-		self.cluster_centers: np.ndarray | None = None
+		self.cluster_labels: np.ndarray = np.array([])
+		self.cluster_centers: np.ndarray = np.array([])
 		self.n_clusters: int = 0
 		self.original_clustered_data: pd.DataFrame | None = None
 

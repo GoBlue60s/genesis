@@ -38,13 +38,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_alike_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _plot_alike_using_matplotlib(self) -> plt.Figure:
+	def _plot_alike_using_matplotlib(self) -> plt.Figure | None:
 		"""plot alike  -creates a plot with a line joining points with
 		high similarity.
 		A plot of the configuration will be created with a line joining pairs
@@ -110,7 +111,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_base_using_matplotlib(base_groups_to_show)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -118,7 +120,7 @@ class MatplotlibMethods:
 
 	def _plot_base_using_matplotlib(
 		self, base_groups_to_show: str
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		matplotlib_plotter = director.matplotlib_plotter
@@ -197,7 +199,8 @@ class MatplotlibMethods:
 			battleground_groups_to_show
 		)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -205,17 +208,22 @@ class MatplotlibMethods:
 
 	def _plot_battleground_using_matplotlib(
 		self, battleground_groups_to_show: str
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		"""show battleground function - creates a plot showing the reference
 		points and an area where battleground supporters are most likely
 		found.
 		"""
 		director = self._director
+		common = director.common
 		matplotlib_common = director.matplotlib_common
 		matplotlib_plotter = director.matplotlib_plotter
 		rivalry = director.rivalry
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
+
+		if not common.have_reference_points():
+			director.set_focus_on_tab("Output")
+			return None
 
 		bisector_cross_x = rivalry.bisector._cross_x
 		bisector_cross_y = rivalry.bisector._cross_y
@@ -250,9 +258,9 @@ class MatplotlibMethods:
 			ax, battleground_people_points
 		)
 
-		ax.text(bisector_cross_x, bisector_cross_y, "M")
-		ax.text(west_cross_x, west_cross_y, "W")
-		ax.text(east_cross_x, east_cross_y, "E")
+		ax.text(bisector_cross_x, bisector_cross_y, "M")  # type: ignore[arg-type]
+		ax.text(west_cross_x, west_cross_y, "W")  # type: ignore[arg-type]
+		ax.text(east_cross_x, east_cross_y, "E")  # type: ignore[arg-type]
 
 		director.set_focus_on_tab("Plot")
 
@@ -298,7 +306,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self.plot_compare_using_matplotlib(point_coords)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -306,7 +315,7 @@ class MatplotlibMethods:
 
 	def plot_compare_using_matplotlib(
 		self, target: pd.DataFrame
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -372,7 +381,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def plot_a_configuration_using_matplotlib(self) -> plt.Figure:
+	def plot_a_configuration_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
@@ -409,13 +418,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_contest_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _plot_contest_using_matplotlib(self) -> plt.Figure:
+	def _plot_contest_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -488,7 +498,8 @@ class MatplotlibMethods:
 			convertible_groups_to_show
 		)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -496,7 +507,7 @@ class MatplotlibMethods:
 
 	def _plot_convertible_using_matplotlib(
 		self, convertible_groups_to_show: str
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		matplotlib_plotter = director.matplotlib_plotter
@@ -584,7 +595,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_core_using_matplotlib(core_groups_to_show)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -592,7 +604,7 @@ class MatplotlibMethods:
 
 	def _plot_core_using_matplotlib(
 		self, core_groups_to_show: str
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		matplotlib_plotter = director.matplotlib_plotter
@@ -633,8 +645,14 @@ class MatplotlibMethods:
 		self,
 	) -> None:
 		director = self._director
+		common = director.common
 		configuration_active = director.configuration_active
 		rivalry = director.rivalry
+
+		if not common.have_reference_points():
+			director.set_focus_on_tab("Output")
+			return
+
 		core_left = rivalry.core_left
 		core_left_center = rivalry.core_left._center
 		core_right = rivalry.core_right
@@ -642,19 +660,19 @@ class MatplotlibMethods:
 		core_radius = rivalry.core_radius
 
 		core_a = plt.Circle(
-			(core_left_center.x, core_left_center.y),
-			radius=core_radius,
-			color=core_left._fill,
+			(core_left_center.x, core_left_center.y),  # type: ignore[arg-type]
+			radius=core_radius,  # type: ignore[arg-type]
+			color=core_left._fill,  # type: ignore[arg-type]
 		)
 		core_b = plt.Circle(
-			(core_right_center.x, core_right_center.y),
-			radius=core_radius,
-			color=core_right._fill,
+			(core_right_center.x, core_right_center.y),  # type: ignore[arg-type]
+			radius=core_radius,  # type: ignore[arg-type]
+			color=core_right._fill,  # type: ignore[arg-type]
 		)
 
-		configuration_active._core_a = core_a
-		configuration_active._core_b = core_b
-		configuration_active._core_radius = core_radius
+		configuration_active._core_a = core_a  # type: ignore[assignment]
+		configuration_active._core_b = core_b  # type: ignore[assignment]
+		configuration_active._core_radius = core_radius  # type: ignore[assignment]
 
 		director.set_focus_on_tab("Plot")
 
@@ -753,13 +771,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_directions_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _plot_directions_using_matplotlib(self) -> plt.Figure:
+	def _plot_directions_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -776,7 +795,7 @@ class MatplotlibMethods:
 
 		ndim = configuration_active.ndim
 
-		if ndim < MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
+		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
 			self._director.set_focus_on_tab("Output")
 			return None
 
@@ -819,7 +838,7 @@ class MatplotlibMethods:
 		unit_circle = plt.Circle((0.0, 0.0), 1.0, fill=False)
 		ax.add_artist(unit_circle)
 		#
-		ax.axis([-1.5, 1.5, -1.5, 1.5])
+		ax.axis((-1.5, 1.5, -1.5, 1.5))
 
 		director.set_focus_on_tab("Plot")
 
@@ -873,7 +892,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_first_using_matplotlib(first_dim_groups_to_show)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -881,7 +901,7 @@ class MatplotlibMethods:
 
 	def _plot_first_using_matplotlib(
 		self, first_dim_groups_to_show: str
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		matplotlib_plotter = director.matplotlib_plotter
@@ -953,13 +973,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(group_coords)
 		fig = self.plot_grouped_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ----------------------------------------------------------------**------
 
-	def plot_grouped_using_matplotlib(self) -> plt.Figure:
+	def plot_grouped_using_matplotlib(self) -> plt.Figure | None:
 		(hor_max, hor_min, vert_max, vert_min) = (
 			self._director.common.use_plot_ranges()
 		)
@@ -999,7 +1020,7 @@ class MatplotlibMethods:
 			)
 		ax.scatter(x_coords, y_coords, color="black", marker="o")
 
-		ax.axis([hor_min, hor_max, vert_min, vert_max])
+		ax.axis((hor_min, hor_max, vert_min, vert_max))
 
 		director.set_focus_on_tab("Plot")
 
@@ -1281,7 +1302,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
 
 		fig = self.plot_individuals_using_matplotlib()
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		self.score_1 = score_1
 		self.score_1_name = score_1_name
@@ -1292,7 +1314,7 @@ class MatplotlibMethods:
 
 	# ------------------------------------------------------------------------
 
-	def plot_individuals_using_matplotlib(self) -> plt.Figure:
+	def plot_individuals_using_matplotlib(self) -> plt.Figure | None:
 		"""Plot individual scores using matplotlib.
 
 		Creates a scatter plot of individual score data with appropriate
@@ -1340,13 +1362,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_joint_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _plot_joint_using_matplotlib(self) -> plt.Figure:
+	def _plot_joint_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		configuration_active = director.configuration_active
@@ -1399,7 +1422,8 @@ class MatplotlibMethods:
 
 		fig = self._plot_likely_using_matplotlib(likely_groups_to_show)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -1407,7 +1431,7 @@ class MatplotlibMethods:
 
 	def _plot_likely_using_matplotlib(
 		self, likely_groups_to_show: str
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		matplotlib_plotter = director.matplotlib_plotter
@@ -1499,7 +1523,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(scores.iloc[:, 1:3])
 
 		fig = self.plot_scores_using_matplotlib()
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		self.score_1 = score_1
 		self.score_1_name = score_1_name
@@ -1510,7 +1535,7 @@ class MatplotlibMethods:
 
 	# -------------------------------------------------------------**---------
 
-	def plot_scores_using_matplotlib(self) -> plt.Figure:
+	def plot_scores_using_matplotlib(self) -> plt.Figure | None:
 
 		director = self._director
 		common = director.common
@@ -1608,7 +1633,7 @@ class MatplotlibMethods:
 		matplotlib_common.set_ranges_for_matplotlib_plot(ax)
 
 		# Get the cluster labels
-		cluster_labels = scores_active.cluster_labels
+		cluster_labels: np.ndarray = scores_active.cluster_labels
 
 		# Color points by cluster assignment
 		colors = [
@@ -1825,7 +1850,8 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_second_using_matplotlib(second_dim_groups_to_show)
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
@@ -1833,7 +1859,7 @@ class MatplotlibMethods:
 
 	def _plot_second_using_matplotlib(
 		self, second_dim_groups_to_show: str
-	) -> plt.Figure:
+	) -> plt.Figure | None:
 		director = self._director
 		matplotlib_common = director.matplotlib_common
 		matplotlib_plotter = director.matplotlib_plotter
@@ -1905,13 +1931,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self.plot_target_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def plot_target_using_matplotlib(self) -> plt.Figure:
+	def plot_target_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -1968,13 +1995,14 @@ class MatplotlibMethods:
 		)
 		fig = self.plot_uncertainty_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def plot_uncertainty_using_matplotlib(self) -> plt.Figure:
+	def plot_uncertainty_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -2010,15 +2038,13 @@ class MatplotlibMethods:
 			x_mean, y_mean = common.solutions_means(each_point)
 			ax.text(x_mean, y_mean, point_labels[each_point])
 			ax.scatter(x_coords, y_coords, color="r", s=0.5)
-			ax.patches.Ellipse = (
-				matplotlib_common.confidence_ellipse_using_matplotlib(
-					x_coords,
-					y_coords,
-					ax,
-					n_std=2.0,
-					facecolor="none",
-					edgecolor="r",
-				)
+			matplotlib_common.confidence_ellipse_using_matplotlib(
+				x_coords,
+				y_coords,
+				ax,
+				n_std=2.0,
+				facecolor="none",
+				edgecolor="r",
 			)
 
 		director.set_focus_on_tab("Plot")
@@ -2039,13 +2065,14 @@ class MatplotlibMethods:
 		)
 		fig = self.plot_spatial_uncertainty_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def plot_spatial_uncertainty_using_matplotlib(self) -> plt.Figure:
+	def plot_spatial_uncertainty_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -2117,13 +2144,14 @@ class MatplotlibMethods:
 		)
 		fig = self.plot_point_uncertainty_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def plot_point_uncertainty_using_matplotlib(self) -> plt.Figure:
+	def plot_point_uncertainty_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -2197,13 +2225,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = self._plot_vectors_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _plot_vectors_using_matplotlib(self) -> plt.Figure:
+	def _plot_vectors_using_matplotlib(self) -> plt.Figure | None:
 		director = self._director
 		common = director.common
 		matplotlib_common = director.matplotlib_common
@@ -2265,13 +2294,14 @@ class MatplotlibMethods:
 		common.set_axis_extremes_based_on_coordinates(point_coords)
 		fig = matplotlib_plotter._plot_custom_using_matplotlib()
 
-		matplotlib_common.plot_to_gui_using_matplotlib(fig)
+		if fig is not None:
+			matplotlib_common.plot_to_gui_using_matplotlib(fig)
 
 		return
 
 	# ------------------------------------------------------------------------
 
-	def _plot_custom_using_matplotlib(self) -> plt.Figure:
+	def _plot_custom_using_matplotlib(self) -> plt.Figure | None:
 		#
 		director = self._director
 		common = director.common
@@ -2318,7 +2348,7 @@ class MatplotlibMethods:
 		custom_vert_min = -1.0
 		custom_vert_max = 1.0
 		ax.axis(
-			[custom_hor_min, custom_hor_max, custom_vert_min, custom_vert_max]
+			(custom_hor_min, custom_hor_max, custom_vert_min, custom_vert_max)
 		)
 
 		if common.show_connector:
