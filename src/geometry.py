@@ -90,14 +90,50 @@ class Corners(NamedTuple):
 class LineInPlot:
 	def __init__(
 		self,
-		director: Status,
-		point_on_line: Point,
-		slope: float,
+		director: Status | None = None,
+		point_on_line: Point | None = None,
+		slope: float | None = None,
 		color: str = "black",
 		thickness: int = 1,
 		style: str = "solid",
 	) -> None:
-		self._execute(director, point_on_line, slope, color, thickness, style)
+		# Initialize all attributes with default values
+		self._director: Status | None = None
+		self._direction: str = ""
+		self._intercept: float = 0.0
+		self._theoretical_extremes: TheoreticalExtremes = TheoreticalExtremes()
+		self._potential_extremes: TheoreticalExtremes = TheoreticalExtremes()
+		self._y_at_hor_max: float = 0.0
+		self._y_at_hor_min: float = 0.0
+		self._x_at_vert_max: float = 0.0
+		self._x_at_vert_min: float = 0.0
+		self._goes_through: Sides = Sides()
+		self._intersects: Sides = Sides()
+		self._right_side: bool = False
+		self._left_side: bool = False
+		self._top: bool = False
+		self._bottom: bool = False
+		self._x: float | None = None
+		self._y: float | None = None
+		self._cross_x: float | None = None
+		self._cross_y: float | None = None
+		self._slope: float = 0.0
+		self._color: str = color
+		self._thickness: int = thickness
+		self._style: str = style
+		self._case: str = ""
+		self._start: Point = Point()
+		self._end: Point = Point()
+
+		# Only execute if all required parameters are provided
+		if (
+			director is not None
+			and point_on_line is not None
+			and slope is not None
+		):
+			self._execute(
+				director, point_on_line, slope, color, thickness, style
+			)
 
 	def _execute(
 		self,

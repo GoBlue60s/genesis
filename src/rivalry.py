@@ -44,9 +44,9 @@ if TYPE_CHECKING:
 class Bisector(LineInPlot):
 	def __init__(
 		self,
-		director: Status,
-		point_on_line: Point,
-		slope: float,
+		director: Status | None = None,
+		point_on_line: Point | None = None,
+		slope: float | None = None,
 		color: str = "black",
 		thickness: int = 1,
 		style: str = "solid",
@@ -55,7 +55,8 @@ class Bisector(LineInPlot):
 			director, point_on_line, slope, color, thickness, style
 		)
 
-		self._director = director
+		if director is not None:
+			self._director = director
 
 		return
 
@@ -66,9 +67,9 @@ class Bisector(LineInPlot):
 class East(LineInPlot):
 	def __init__(
 		self,
-		director: Status,
-		point_on_line: Point,
-		slope: float,
+		director: Status | None = None,
+		point_on_line: Point | None = None,
+		slope: float | None = None,
 		color: str = "black",
 		thickness: int = 1,
 		style: str = "solid",
@@ -77,7 +78,8 @@ class East(LineInPlot):
 			director, point_on_line, slope, color, thickness, style
 		)
 
-		self._director = director
+		if director is not None:
+			self._director = director
 
 
 # --------------------------------------------------------------------------
@@ -86,6 +88,7 @@ class East(LineInPlot):
 class Rivalry:
 	def __init__(self, director: Status) -> None:
 		self._director = director
+		self._initialized: bool = False
 
 		self.EPSILON = MINIMAL_DIFFERENCE_FROM_ZERO
 
@@ -116,13 +119,13 @@ class Rivalry:
 
 		self.core_radius: float = 0.0
 
-		# Line objects (initialized later when reference points are set)
-		self.connector: Connector | None = None
-		self.bisector: Bisector | None = None
-		self.east: East | None = None
-		self.west: West | None = None
-		self.first: First | None = None
-		self.second: Second | None = None
+		# Line objects (empty instances until reference points are set)
+		self.connector: Connector = Connector()
+		self.bisector: Bisector = Bisector()
+		self.east: East = East()
+		self.west: West = West()
+		self.first: First = First()
+		self.second: Second = Second()
 
 		self.n_individ: int = 0
 		self.nscored_individ: int = 0
@@ -134,9 +137,19 @@ class Rivalry:
 
 	# ------------------------------------------------------------------------
 
+	def is_initialized(self) -> bool:
+		"""Check if reference points have been established.
+
+		Returns:
+			bool: True if reference points are set, False otherwise
+		"""
+		return self._initialized
+
+	# ------------------------------------------------------------------------
+
 	def get_bisector(self) -> Bisector:
 		"""Get bisector, raising if not initialized."""
-		if self.bisector is None:
+		if not self._initialized:
 			error_title = "Bisector Not Initialized"
 			error_message = (
 				"Cannot access bisector before reference points set"
@@ -148,7 +161,7 @@ class Rivalry:
 
 	def get_east(self) -> East:
 		"""Get east line, raising if not initialized."""
-		if self.east is None:
+		if not self._initialized:
 			error_title = "East Not Initialized"
 			error_message = "Cannot access east before reference points set"
 			raise SpacesError(error_title, error_message)
@@ -158,7 +171,7 @@ class Rivalry:
 
 	def get_west(self) -> West:
 		"""Get west line, raising if not initialized."""
-		if self.west is None:
+		if not self._initialized:
 			error_title = "West Not Initialized"
 			error_message = "Cannot access west before reference points set"
 			raise SpacesError(error_title, error_message)
@@ -168,7 +181,7 @@ class Rivalry:
 
 	def get_connector(self) -> Connector:
 		"""Get connector line, raising if not initialized."""
-		if self.connector is None:
+		if not self._initialized:
 			error_title = "Connector Not Initialized"
 			error_message = (
 				"Cannot access connector before reference points set"
@@ -180,7 +193,7 @@ class Rivalry:
 
 	def get_first(self) -> First:
 		"""Get first dimension divider, raising if not initialized."""
-		if self.first is None:
+		if not self._initialized:
 			error_title = "First Divider Not Initialized"
 			error_message = "Cannot access first before reference points set"
 			raise SpacesError(error_title, error_message)
@@ -190,7 +203,7 @@ class Rivalry:
 
 	def get_second(self) -> Second:
 		"""Get second dimension divider, raising if not initialized."""
-		if self.second is None:
+		if not self._initialized:
 			error_title = "Second Divider Not Initialized"
 			error_message = "Cannot access second before reference points set"
 			raise SpacesError(error_title, error_message)
@@ -1583,6 +1596,9 @@ class Rivalry:
 
 		self.west_cross = west_cross
 		self.east_cross = east_cross
+
+		# Mark rivalry as initialized now that all line objects are created
+		self._initialized = True
 
 		return
 
@@ -3443,11 +3459,11 @@ class Rivalry:
 class Connector(LineInPlot):
 	def __init__(
 		self,
-		director: Status,
-		point_on_line: Point,
-		slope: float,
-		rival_a: Point,
-		rival_b: Point,
+		director: Status | None = None,
+		point_on_line: Point | None = None,
+		slope: float | None = None,
+		rival_a: Point | None = None,
+		rival_b: Point | None = None,
 		color: str = "black",
 		thickness: int = 1,
 		style: str = "solid",
@@ -3456,8 +3472,14 @@ class Connector(LineInPlot):
 			director, point_on_line, slope, color, thickness, style
 		)
 
-		self._director = director
-		self.length = self._calculate_connector_length(rival_a, rival_b)
+		if director is not None:
+			self._director = director
+
+		# Only calculate length if both rivals are provided
+		if rival_a is not None and rival_b is not None:
+			self.length = self._calculate_connector_length(rival_a, rival_b)
+		else:
+			self.length = 0.0
 
 	# -------------------------------------------------------------------------
 
@@ -3478,9 +3500,9 @@ class Connector(LineInPlot):
 class First(LineInPlot):
 	def __init__(
 		self,
-		director: Status,
-		point_on_line: Point,
-		slope: float,
+		director: Status | None = None,
+		point_on_line: Point | None = None,
+		slope: float | None = None,
 		color: str = "black",
 		thickness: int = 1,
 		style: str = "solid",
@@ -3496,9 +3518,9 @@ class First(LineInPlot):
 class Second(LineInPlot):
 	def __init__(
 		self,
-		director: Status,
-		point_on_line: Point,
-		slope: float,
+		director: Status | None = None,
+		point_on_line: Point | None = None,
+		slope: float | None = None,
 		color: str = "black",
 		thickness: int = 1,
 		style: str = "solid",
@@ -3548,9 +3570,9 @@ class SegmentPercentages(NamedTuple):
 class West(LineInPlot):
 	def __init__(
 		self,
-		director: Status,
-		point_on_line: Point,
-		slope: float,
+		director: Status | None = None,
+		point_on_line: Point | None = None,
+		slope: float | None = None,
 		color: str = "black",
 		thickness: int = 1,
 		style: str = "solid",
@@ -3559,4 +3581,5 @@ class West(LineInPlot):
 			director, point_on_line, slope, color, thickness, style
 		)
 
-		self._director = director
+		if director is not None:
+			self._director = director

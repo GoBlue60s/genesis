@@ -73,7 +73,7 @@ max-args = 10
 [tool.ty]
 
 [[tool.ty.overrides]]
-include = ["src/dialogs.py", "src/pyqtgraph_common.py", "src/pyqtgraph_plots.py"]
+include = ["src/dialogs.py"]
 rules = {unresolved-attribute = "ignore", possibly-missing-attribute = "ignore" }
 
 

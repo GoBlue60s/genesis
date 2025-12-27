@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 		LikelySupportersCommand,
 		SecondDimensionCommand,
 	)
-	from rivalry import Bisector, East, West
 
 	# from common import Spaces
 	from geometry import PeoplePoints
@@ -240,9 +239,9 @@ class MatplotlibMethods:
 			director.set_focus_on_tab("Output")
 			return None
 
-		bisector = cast("Bisector", rivalry.bisector)
-		west = cast("West", rivalry.west)
-		east = cast("East", rivalry.east)
+		bisector = rivalry.bisector
+		west = rivalry.west
+		east = rivalry.east
 
 		bisector_cross_x = bisector._cross_x
 		bisector_cross_y = bisector._cross_y
@@ -2404,14 +2403,13 @@ class MatplotlibMethods:
 			)
 
 		if common.have_reference_points() and common.show_bisector:
-			bisector_cast = cast("Bisector", bisector)
-			ax.text(bisector_cast._start.x, bisector_cast._start.y, "S")
-			ax.text(bisector_cast._end.x, bisector_cast._end.y, "E")
-			ax.text(bisector_cast._start.x, bisector_cast._start.y, "S")
-			ax.text(bisector_cast._end.x, bisector_cast._end.y, "E")
+			ax.text(bisector._start.x, bisector._start.y, "S")
+			ax.text(bisector._end.x, bisector._end.y, "E")
+			ax.text(bisector._start.x, bisector._start.y, "S")
+			ax.text(bisector._end.x, bisector._end.y, "E")
 			ax.plot(
-				[bisector_cast._start.x, bisector_cast._end.x],
-				[bisector_cast._start.y, bisector_cast._end.y],
+				[bisector._start.x, bisector._end.x],
+				[bisector._start.y, bisector._end.y],
 			)
 
 		director.set_focus_on_tab("Plot")
