@@ -11,7 +11,7 @@ from pathlib import Path
 # Third-party imports
 import numpy as np
 import pandas as pd
-import peek
+from peek import peek
 
 from pyqtgraph.Qt import QtCore
 from PySide6.QtPrintSupport import QPrinter, QPrintDialog
@@ -51,7 +51,7 @@ from geometry import PlotExtremes
 from typing import Any, TextIO, TYPE_CHECKING
 
 if TYPE_CHECKING:
-	# from collections.abc import Callable
+	from collections.abc import Callable
 	from command_state import CommandState
 	from spaces import Status
 	from features import (
@@ -62,6 +62,9 @@ if TYPE_CHECKING:
 		TargetFeature,
 	)
 # from experimental import RepresentationOfPoints
+
+# Type annotation for peek (debugging function similar to print)
+peek: Callable[..., Any]
 
 # ---------------------------------------------------------------------------
 
@@ -1888,7 +1891,6 @@ class Spaces:
 		self, file_name: str, uncertainty_active: object
 	) -> None:
 		"""Read sample design file (stub implementation)."""
-		pass
 
 	# ------------------------------------------------------------------------
 
@@ -1896,7 +1898,6 @@ class Spaces:
 		self, file_name: str, uncertainty_active: object
 	) -> None:
 		"""Read sample repetitions file (stub implementation)."""
-		pass
 
 	# ------------------------------------------------------------------------
 
@@ -2696,10 +2697,10 @@ class Spaces:
 	def _get_script_parameters(
 		self,
 		command_name: str,
-		cmd_info: dict,
+		cmd_info: dict[str, Any],
 		expected_params: list[str],
-		kwargs: dict
-	) -> dict[str, any]:
+		kwargs: dict[str, Any]
+	) -> dict[str, Any]:
 		"""Extract parameters from script execution context.
 
 		Args:
@@ -2721,57 +2722,124 @@ class Spaces:
 		for param_name in expected_params:
 			# First check if parameter was passed via kwargs from execute
 			if param_name in kwargs:
-				param_value = kwargs[param_name]
-				# Still need to convert option to value if applicable
-				getter_info = interactive_getters.get(param_name, {})
-				if getter_info.get("getter_type") == "chose_option_dialog":
-					values = getter_info.get("values")
-					if values:
-						options = getter_info.get("options", [])
-						if param_value in options:
-							option_index = options.index(param_value)
-							param_value = values[option_index]
+				param_value = self._convert_option_to_value(
+					kwargs[param_name], param_name, interactive_getters
+				)
 				params[param_name] = param_value
 				continue
-			# Check if parameter exists directly or via alias
-			script_param_name = param_name
-			if param_name not in self._director.script_parameters:
-				# Check if there's an alias for this parameter
-				alias_found = False
-				for alias, full_name in parameter_aliases.items():
-					if full_name == param_name and alias in self._director.script_parameters:
-						script_param_name = alias
-						alias_found = True
-						break
 
-				if not alias_found:
-					# Required parameter missing from script
-					title = f"{command_name} script parameter error"
-					message = f"Missing required parameter: {param_name}"
-					raise SpacesError(title, message)
+			# Get parameter from script, checking aliases if needed
+			script_param_name = self._find_parameter_alias(
+				param_name, parameter_aliases, command_name
+			)
+			param_value = self._director.script_parameters[script_param_name]
 
-			script_params = self._director.script_parameters
-			param_value = script_params[script_param_name]
-
-			# Special handling for focal_item_dialog: convert name to index
-			getter_info = interactive_getters.get(param_name, {})
-			if getter_info.get("getter_type") == "focal_item_dialog":
-				param_value = self._convert_focal_item_name_to_index(
-					command_name, param_name, param_value, getter_info
-				)
-
-			# Special handling for chose_option_dialog: convert option to value
-			if getter_info.get("getter_type") == "chose_option_dialog":
-				values = getter_info.get("values")
-				if values:
-					options = getter_info.get("options", [])
-					if param_value in options:
-						option_index = options.index(param_value)
-						param_value = values[option_index]
-
+			# Process the parameter value (conversions, etc.)
+			param_value = self._process_script_parameter_value(
+				param_value, param_name, command_name, interactive_getters
+			)
 			params[param_name] = param_value
 
 		return params
+
+	# ------------
+
+	def _convert_option_to_value(
+		self,
+		param_value: object,
+		param_name: str,
+		interactive_getters: dict[str, Any]
+	) -> object:
+		"""Convert dialog option to its corresponding value if applicable.
+
+		Args:
+			param_value: The parameter value (possibly an option string)
+			param_name: Name of the parameter
+			interactive_getters: Getter metadata dictionary
+
+		Returns:
+			Converted value or original value if no conversion needed
+		"""
+		getter_info = interactive_getters.get(param_name, {})
+		if getter_info.get("getter_type") == "chose_option_dialog":
+			values = getter_info.get("values")
+			if values:
+				options = getter_info.get("options", [])
+				if param_value in options:
+					option_index = options.index(param_value)
+					return values[option_index]
+		return param_value
+
+	# ------------
+
+	def _find_parameter_alias(
+		self,
+		param_name: str,
+		parameter_aliases: dict[str, str],
+		command_name: str
+	) -> str:
+		"""Find parameter name or its alias in script parameters.
+
+		Args:
+			param_name: The full parameter name to find
+			parameter_aliases: Dictionary of alias -> full_name mappings
+			command_name: Name of the command (for error messages)
+
+		Returns:
+			The parameter name or alias name to use for script lookup
+
+		Raises:
+			SpacesError: If parameter not found directly or via alias
+		"""
+		if param_name in self._director.script_parameters:
+			return param_name
+
+		# Check if there's an alias for this parameter
+		for alias, full_name in parameter_aliases.items():
+			if (full_name == param_name and
+					alias in self._director.script_parameters):
+				return alias
+
+		# Required parameter missing from script
+		title = f"{command_name} script parameter error"
+		message = f"Missing required parameter: {param_name}"
+		raise SpacesError(title, message)
+
+	# ------------
+
+	def _process_script_parameter_value(
+		self,
+		param_value: object,
+		param_name: str,
+		command_name: str,
+		interactive_getters: dict[str, Any]
+	) -> object:
+		"""Process a script parameter value with any needed conversions.
+
+		Args:
+			param_value: The raw parameter value from script
+			param_name: Name of the parameter
+			command_name: Name of the command (for error messages)
+			interactive_getters: Getter metadata dictionary
+
+		Returns:
+			Processed parameter value
+		"""
+		getter_info = interactive_getters.get(param_name, {})
+
+		# Convert focal item name to index if needed
+		if getter_info.get("getter_type") == "focal_item_dialog":
+			param_value = self._convert_focal_item_name_to_index(
+				command_name, param_name, param_value, getter_info
+			)
+
+		# Convert option to value if needed
+		if getter_info.get("getter_type") == "chose_option_dialog":
+			param_value = self._convert_option_to_value(
+				param_value, param_name, interactive_getters
+			)
+
+		return param_value
 
 	# ------------
 
@@ -2815,10 +2883,10 @@ class Spaces:
 	def _get_interactive_parameters(
 		self,
 		command_name: str,
-		cmd_info: dict,
+		cmd_info: dict[str, Any],
 		expected_params: list[str],
-		kwargs: dict
-	) -> dict[str, any]:
+		kwargs: dict[str, Any]
+	) -> dict[str, object]:
 		"""Get parameters interactively from dialogs.
 
 		Args:
@@ -2865,9 +2933,9 @@ class Spaces:
 	def _try_get_cached_or_kwarg_parameter(
 		self,
 		param_name: str,
-		kwargs: dict,
+		kwargs: dict[str, Any],
 		execute_parameters: list[str]
-	) -> any:
+	) -> object:
 		"""Try to get parameter from cache, kwargs, or execute parameters.
 
 		Args:
@@ -2948,9 +3016,9 @@ class Spaces:
 		self,
 		command_name: str,
 		param_name: str,
-		getter_info: dict,
+		getter_info: dict[str, Any],
 		getter_param_name: str
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Get parameter value via interactive dialog.
 
 		Args:
@@ -3005,7 +3073,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle file dialog parameter getter."""
 		caption = getter_info.get("caption", "Open file")
 		file_filter = getter_info.get("filter", "*.*")
@@ -3038,7 +3106,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle SetValueDialog parameter getter."""
 		from dialogs import SetValueDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3075,7 +3143,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle PairofPointsDialog parameter getter."""
 		from dialogs import PairofPointsDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3101,7 +3169,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle ChoseOptionDialog parameter getter."""
 		from dialogs import ChoseOptionDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3140,7 +3208,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle plane dialog parameter getter for Settings - plane."""
 		from dialogs import ChoseOptionDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3203,7 +3271,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle focal item dialog parameter getter."""
 		title = getter_info.get("title", "Select item")
 		label = getter_info.get("label", "Select an item:")
@@ -3223,7 +3291,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle GetIntegerDialog parameter getter."""
 		from dialogs import GetIntegerDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3254,7 +3322,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle GetStringDialog parameter getter."""
 		from dialogs import GetStringDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3284,7 +3352,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle GetCoordinatesDialog parameter getter."""
 		from dialogs import GetCoordinatesDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3311,7 +3379,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle ModifyItemsDialog parameter getter."""
 		from dialogs import ModifyItemsDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3344,7 +3412,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle SelectItemsDialog parameter getter."""
 		from dialogs import SelectItemsDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3370,7 +3438,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle ModifyValuesDialog parameter getter."""
 		from dialogs import ModifyValuesDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3409,7 +3477,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle MoveDialog parameter getter."""
 		from dialogs import MoveDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3435,7 +3503,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle MatrixDialog parameter getter."""
 		from dialogs import MatrixDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3463,7 +3531,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle ModifyTextDialog parameter getter."""
 		from dialogs import ModifyTextDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3489,7 +3557,7 @@ class Spaces:
 		command_name: str,
 		param_name: str,
 		getter_info: dict
-	) -> dict[str, any]:
+	) -> dict[str, object]:
 		"""Handle SetNamesDialog parameter getter."""
 		from dialogs import SetNamesDialog  # noqa: PLC0415
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
@@ -3510,7 +3578,7 @@ class Spaces:
 
 	# ------------
 
-	def _get_items_from_source(self, getter_info: dict) -> list:
+	def _get_items_from_source(self, getter_info: dict[str, Any]) -> list:
 		"""Get items list from items_source attribute or items key.
 
 		Args:
@@ -3531,7 +3599,9 @@ class Spaces:
 
 	# ------------
 
-	def _get_default_values(self, getter_info: dict) -> list | None:
+	def _get_default_values(
+		self, getter_info: dict[str, Any]
+	) -> list | None:
 		"""Get default values for dialog.
 
 		Args:
@@ -3555,7 +3625,7 @@ class Spaces:
 
 	# ------------
 
-	def _get_numeric_defaults(self, getter_info: dict) -> list:
+	def _get_numeric_defaults(self, getter_info: dict[str, Any]) -> list:
 		"""Get numeric default values for ModifyValuesDialog.
 
 		Args:
@@ -3619,7 +3689,7 @@ class Spaces:
 
 	def _convert_to_boolean_params(
 		self,
-		getter_info: dict,
+		getter_info: dict[str, Any],
 		items: list,
 		selected_list: list
 	) -> dict[str, bool]:
@@ -3783,7 +3853,7 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def _parse_parameter_string(self, param_str: str) -> dict:
+	def _parse_parameter_string(self, param_str: str) -> dict[str, object]:
 		"""Parse parameter string into key=value dictionary.
 
 		Args:
@@ -3797,61 +3867,143 @@ class Spaces:
 		if not param_str:
 			return params_dict
 
-		# Parse key=value pairs
-		# Handle cases like: file_name=path or contest=['a', 'b']
-		current_key = None
-		current_value = ""
-		in_brackets = 0
-		in_quotes = False
-		quote_char = None
+		# Initialize parsing state
+		state = {
+			"current_key": None,
+			"current_value": "",
+			"in_brackets": 0,
+			"in_quotes": False,
+			"quote_char": None
+		}
 
-		i = 0
-		while i < len(param_str):
-			char = param_str[i]
-
-			if char in '"\'':
-				# Toggle quote state
-				if not in_quotes:
-					in_quotes = True
-					quote_char = char
-				elif char == quote_char:
-					in_quotes = False
-					quote_char = None
-				current_value += char
-			elif char == "=" and current_key is None and in_brackets == 0 and not in_quotes:
-				# Found key=value separator - normalize to lowercase
-				current_key = current_value.strip().lower()
-				current_value = ""
-			elif char in "[{(":
-				in_brackets += 1
-				current_value += char
-			elif char in "]})":
-				in_brackets -= 1
-				current_value += char
-			elif char == " " and in_brackets == 0 and not in_quotes:
-				# Space outside brackets and quotes - check if complete param
-				if current_key and current_value:
-					params_dict[current_key] = self._parse_parameter_value(
-						current_value.strip()
-					)
-					current_key = None
-					current_value = ""
-			else:
-				current_value += char
-
-			i += 1
+		# Parse character by character
+		for char in param_str:
+			self._process_parameter_character(
+				char, state, params_dict
+			)
 
 		# Handle last parameter
-		if current_key and current_value:
-			params_dict[current_key] = self._parse_parameter_value(
-				current_value.strip()
+		if state["current_key"] and state["current_value"]:
+			params_dict[state["current_key"]] = self._parse_parameter_value(
+				state["current_value"].strip()
 			)
 
 		return params_dict
 
+	# ------------
+
+	def _process_parameter_character(
+		self,
+		char: str,
+		state: dict[str, Any],
+		params_dict: dict[str, object]
+	) -> None:
+		"""Process a single character during parameter string parsing.
+
+		Args:
+			char: The character to process
+			state: Current parsing state dictionary
+			params_dict: Dictionary being built with parameters
+
+		Modifies:
+			state and params_dict are updated in place
+		"""
+		if char in '"\'':
+			self._handle_quote_character(char, state)
+		elif self._is_key_value_separator(char, state):
+			state["current_key"] = state["current_value"].strip().lower()
+			state["current_value"] = ""
+		elif char in "[{(":
+			state["in_brackets"] += 1
+			state["current_value"] += char
+		elif char in "]})":
+			state["in_brackets"] -= 1
+			state["current_value"] += char
+		elif self._is_parameter_separator(char, state):
+			self._finalize_parameter(state, params_dict)
+		else:
+			state["current_value"] += char
+
+	# ------------
+
+	def _handle_quote_character(
+		self, char: str, state: dict[str, Any]
+	) -> None:
+		"""Handle quote character in parameter parsing.
+
+		Args:
+			char: The quote character
+			state: Current parsing state dictionary
+
+		Modifies:
+			state is updated in place
+		"""
+		if not state["in_quotes"]:
+			state["in_quotes"] = True
+			state["quote_char"] = char
+		elif char == state["quote_char"]:
+			state["in_quotes"] = False
+			state["quote_char"] = None
+		state["current_value"] += char
+
+	# ------------
+
+	def _is_key_value_separator(
+		self, char: str, state: dict[str, Any]
+	) -> bool:
+		"""Check if character is a key=value separator.
+
+		Args:
+			char: The character to check
+			state: Current parsing state dictionary
+
+		Returns:
+			True if this is a key=value separator
+		"""
+		return (char == "=" and state["current_key"] is None and
+				state["in_brackets"] == 0 and not state["in_quotes"])
+
+	# ------------
+
+	def _is_parameter_separator(
+		self, char: str, state: dict[str, Any]
+	) -> bool:
+		"""Check if character is a parameter separator (space).
+
+		Args:
+			char: The character to check
+			state: Current parsing state dictionary
+
+		Returns:
+			True if this is a parameter separator
+		"""
+		return (char == " " and state["in_brackets"] == 0 and
+				not state["in_quotes"])
+
+	# ------------
+
+	def _finalize_parameter(
+		self, state: dict[str, Any], params_dict: dict[str, object]
+	) -> None:
+		"""Finalize and store a complete parameter.
+
+		Args:
+			state: Current parsing state dictionary
+			params_dict: Dictionary being built with parameters
+
+		Modifies:
+			state and params_dict are updated in place
+		"""
+		if state["current_key"] and state["current_value"]:
+			params_dict[state["current_key"]] = self._parse_parameter_value(
+				state["current_value"].strip()
+			)
+			state["current_key"] = None
+			state["current_value"] = ""
+
 	# ------------------------------------------------------------------------
 
-	def _parse_parameter_value(self, value_str: str) -> any:
+	def _parse_parameter_value(self, value_str: str) -> object:
 		"""Parse a parameter value string into appropriate Python type.
 
 		Args:
