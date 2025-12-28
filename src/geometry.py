@@ -97,7 +97,7 @@ class LineInPlot:
 		style: str = "solid",
 	) -> None:
 		# Initialize all attributes with default values
-		self._director: Status | None = None
+		self._director: Status
 		self._direction: str = ""
 		self._intercept: float = 0.0
 		self._theoretical_extremes: TheoreticalExtremes = TheoreticalExtremes()

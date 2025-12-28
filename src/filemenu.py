@@ -2113,90 +2113,215 @@ class OpenScriptCommand:
 			params_dict: Dictionary of parameters for the command
 			line_num: Line number in script (for error messages)
 		"""
-		import inspect  # noqa: PLC0415
-		from dictionaries import command_dict  # noqa: PLC0415
+		# Get and validate command class
+		command_class = self._get_command_class(command_name, line_num)
 
-		# Get command class from widget_dict
-		# (which maps command names to classes)
-		widget_dict = self._director.widget_dict
-
-		if command_name not in widget_dict:
-			unknown_command_title = "Unknown command"
-			unknown_command_message = \
-				f"Command '{command_name}' not found in line {line_num}"
-			raise SpacesError(unknown_command_title, unknown_command_message)
-
-		# Skip interactive_only commands (they cannot be scripted)
-		if command_name in command_dict:
-			cmd_type = command_dict[command_name].get("type")
-			if cmd_type == "interactive_only":
-				return
-
-		# widget_dict format: [CommandClass, sharing_type, display_lambda]
-		command_class = widget_dict[command_name][0]
+		# Skip interactive_only commands
+		if self._should_skip_command(command_name):
+			return
 
 		# Store script parameters in director for command to access
 		self._director.script_parameters = params_dict
 
 		try:
-			# Instantiate command
+			# Instantiate and execute command
 			command_instance = command_class(self._director, self.common)
-
-			# Store command instance in director so _display() can be called
-			# for table widget creation (needed for "unique" type commands)
 			self._director.current_command = command_instance
 
-			# Check execute method signature to determine if extra param needed
-			execute_sig = inspect.signature(command_instance.execute)
-			params = list(execute_sig.parameters.keys())
-
-			# Most commands have: execute(self, common)
-			# Some have: execute(self, common, extra_param)
-			# Note: inspect.signature on bound method excludes 'self'
-			# so params only contains 'common' and any extra parameters
-			# Call appropriately based on signature
-			if len(params) > 1:
-				# Has extra parameter - try to provide it from script params
-				param_name = params[1]
-
-				# Check for parameter directly or via alias
-				extra_value = None
-				if param_name in params_dict:
-					extra_value = params_dict[param_name]
-				else:
-					# Check if there's an alias for this parameter
-					cmd_info = command_dict.get(command_name, {})
-					parameter_aliases = cmd_info.get("parameter_aliases", {})
-					for alias, full_name in parameter_aliases.items():
-						if full_name == param_name and alias in params_dict:
-							extra_value = params_dict[alias]
-							break
-
-				if extra_value is not None:
-					command_instance.execute(self.common, extra_value)
-				else:
-					# No value in script - check if parameter has default
-					param_obj = execute_sig.parameters[param_name]
-					if param_obj.default != inspect.Parameter.empty:
-						# Has default, call without extra param
-						command_instance.execute(self.common)
-					else:
-						# Required but not provided
-						missing_param_title = "Missing parameter"
-						missing_param_message = (
-							f"Command '{command_name}' requires "
-							f"parameter '{param_name}' but it was not "
-							f"provided in line {line_num}"
-						)
-						raise SpacesError(missing_param_title,
-						missing_param_message)
-			else:
-				# Standard execute(self, common) signature
-				command_instance.execute(self.common)
+			self._execute_command_with_signature(
+				command_instance, command_name, params_dict, line_num
+			)
 
 		finally:
 			# Clear script parameters
 			self._director.script_parameters = None
+
+	# ------------
+
+	def _get_command_class(self, command_name: str, line_num: int) -> type:
+		"""Get command class from widget_dict and validate.
+
+		Args:
+			command_name: Name of command to look up
+			line_num: Line number in script (for error messages)
+
+		Returns:
+			Command class
+
+		Raises:
+			SpacesError: If command not found
+		"""
+		widget_dict = self._director.widget_dict
+
+		if command_name not in widget_dict:
+			unknown_command_title = "Unknown command"
+			unknown_command_message = (
+				f"Command '{command_name}' not found in line {line_num}"
+			)
+			raise SpacesError(unknown_command_title, unknown_command_message)
+
+		# widget_dict format: [CommandClass, sharing_type, display_lambda]
+		return widget_dict[command_name][0]
+
+	# ------------
+
+	def _should_skip_command(self, command_name: str) -> bool:
+		"""Check if command should be skipped (interactive_only).
+
+		Args:
+			command_name: Name of command
+
+		Returns:
+			True if command should be skipped
+		"""
+		from dictionaries import command_dict  # noqa: PLC0415
+
+		if command_name in command_dict:
+			cmd_type = command_dict[command_name].get("type")
+			return cmd_type == "interactive_only"
+		return False
+
+	# ------------
+
+	def _execute_command_with_signature(
+		self,
+		command_instance: object,
+		command_name: str,
+		params_dict: dict,
+		line_num: int
+	) -> None:
+		"""Execute command with appropriate signature.
+
+		Args:
+			command_instance: Instance of command to execute
+			command_name: Name of command
+			params_dict: Script parameters
+			line_num: Line number (for errors)
+		"""
+		import inspect  # noqa: PLC0415
+
+		execute_sig = inspect.signature(command_instance.execute)  # type: ignore[unresolved-attribute]
+		params = list(execute_sig.parameters.keys())
+
+		# Note: inspect.signature on bound method excludes 'self'
+		# so params only contains 'common' and any extra parameters
+		if len(params) > 1:
+			# Has extra parameter
+			self._execute_with_extra_param(
+				command_instance, command_name, params_dict,
+				params[1], execute_sig, line_num
+			)
+		else:
+			# Standard execute(self, common) signature
+			command_instance.execute(self.common) # type: ignore[unresolved-attribute]
+
+	# ------------
+
+	def _execute_with_extra_param(
+		self,
+		command_instance: object,
+		command_name: str,
+		params_dict: dict,
+		param_name: str,
+		execute_sig: object,
+		line_num: int
+	) -> None:
+		"""Execute command that requires an extra parameter.
+
+		Args:
+			command_instance: Command to execute
+			command_name: Name of command
+			params_dict: Script parameters
+			param_name: Name of extra parameter
+			execute_sig: Signature of execute method
+			line_num: Line number (for errors)
+		"""
+		extra_value = self._get_extra_parameter_value(
+			param_name, params_dict, command_name
+		)
+
+		if extra_value is not None:
+			command_instance.execute(self.common, extra_value)  # type: ignore[unresolved-attribute]
+		elif self._parameter_has_default(param_name, execute_sig):
+			command_instance.execute(self.common) # type: ignore[unresolved-attribute]
+		else:
+			self._raise_missing_parameter_error(
+				command_name, param_name, line_num
+			)
+
+	# ------------
+
+	def _get_extra_parameter_value(
+		self,
+		param_name: str,
+		params_dict: dict,
+		command_name: str
+	) -> object:
+		"""Get extra parameter value from script params or via alias.
+
+		Args:
+			param_name: Name of parameter to find
+			params_dict: Script parameters
+			command_name: Name of command
+
+		Returns:
+			Parameter value or None if not found
+		"""
+		from dictionaries import command_dict  # noqa: PLC0415
+
+		# Check for parameter directly
+		if param_name in params_dict:
+			return params_dict[param_name]
+
+		# Check if there's an alias for this parameter
+		cmd_info = command_dict.get(command_name, {})
+		parameter_aliases = cmd_info.get("parameter_aliases", {})
+		for alias, full_name in parameter_aliases.items():
+			if full_name == param_name and alias in params_dict:
+				return params_dict[alias]
+
+		return None
+
+	# ------------
+
+	def _parameter_has_default(
+		self, param_name: str, execute_sig: object
+	) -> bool:
+		"""Check if parameter has a default value.
+
+		Args:
+			param_name: Name of parameter
+			execute_sig: Signature of execute method
+
+		Returns:
+			True if parameter has default value
+		"""
+		import inspect  # noqa: PLC0415
+		param_obj = execute_sig.parameters[param_name]  # type: ignore[unresolved-attribute]
+		return param_obj.default != inspect.Parameter.empty
+
+	# ------------
+
+	def _raise_missing_parameter_error(
+		self, command_name: str, param_name: str, line_num: int
+	) -> None:
+		"""Raise error for missing required parameter.
+
+		Args:
+			command_name: Name of command
+			param_name: Name of missing parameter
+			line_num: Line number in script
+
+		Raises:
+			SpacesError: Always raises
+		"""
+		missing_param_title = "Missing parameter"
+		missing_param_message = (
+			f"Command '{command_name}' requires "
+			f"parameter '{param_name}' but it was not "
+			f"provided in line {line_num}"
+		)
+		raise SpacesError(missing_param_title, missing_param_message)
 
 	# ------------------------------------------------------------------------
 
