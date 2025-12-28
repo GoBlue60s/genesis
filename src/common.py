@@ -11,7 +11,7 @@ from pathlib import Path
 # Third-party imports
 import numpy as np
 import pandas as pd
-from peek import peek
+from peek import peek # noqa: F401
 
 from pyqtgraph.Qt import QtCore
 from PySide6.QtPrintSupport import QPrinter, QPrintDialog
@@ -48,7 +48,7 @@ from exceptions import (
 )
 
 from geometry import PlotExtremes
-from typing import Any, TextIO, TYPE_CHECKING
+from typing import Any, TextIO, TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
 	from collections.abc import Callable
@@ -62,9 +62,6 @@ if TYPE_CHECKING:
 		TargetFeature,
 	)
 # from experimental import RepresentationOfPoints
-
-# Type annotation for peek (debugging function similar to print)
-peek: Callable[..., Any]
 
 # ---------------------------------------------------------------------------
 
@@ -374,7 +371,7 @@ class Spaces:
 		if items:
 			dialog.setTextValue(items[0])
 
-		if dialog.exec() == QDialog.Accepted: # ty: ignore[unresolved-attribute]
+		if dialog.exec() == QDialog.DialogCode.Accepted: # ty: ignore[unresolved-attribute]
 			selected_item = dialog.textValue()
 			if selected_item in items:
 				index_selected_item = items.index(selected_item)
@@ -906,7 +903,7 @@ class Spaces:
 		expected_rows = nreferent - 1
 
 		if len(values) != expected_rows:
-			peek("Raising SpacesError due to invalid structure")
+			print("Raising SpacesError due to invalid structure")
 			title = "Invalid lower triangular matrix structure"
 			message = (
 				f"Expected {expected_rows} rows for {nreferent} items, "
@@ -980,7 +977,9 @@ class Spaces:
 					)
 					values_as_square[each_item].append(values_as_dict[index])
 		values_as_dataframe = pd.DataFrame(
-			values_as_square, columns=item_names, index=item_names
+			values_as_square,
+			columns=pd.Index(item_names),
+			index=pd.Index(item_names)
 		)
 
 		return (
@@ -1178,7 +1177,11 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def declare_file_type_and_size(
-		self, file_handle: TextIO, file_type: str, nreferent: int
+		self,
+		file_handle: TextIO,
+		file_type: str,
+		nreferent: int,
+		source: object | None = None
 	) -> None:
 		"""Writes file type and size information to a file.
 
@@ -1187,14 +1190,18 @@ class Spaces:
 			file_type: The type of file (e.g., "Configuration",
 				"Lower Triangular")
 			nreferent: Number of reference points/items
+			source: Source object with ndim and npoint attributes
+				(ConfigurationFeature or TargetFeature)
 		"""
 
 		file_handle.write(file_type + "\n")
 
 		match file_type:
 			case "Configuration":
+				if source is None:
+					source = self._director.configuration_active
 				file_handle.write(
-					" " + str(self.ndim) + " " + str(self.npoint) + "\n"
+					" " + str(source.ndim) + " " + str(source.npoint) + "\n"  # type: ignore[unresolved-attribute]
 				)
 			case "Lower Triangular":
 				file_handle.write(str(nreferent) + "\n")
@@ -1930,7 +1937,7 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def print_restoration_summary(
-		self, cmd_state: object, *, is_undo: bool = False
+		self, cmd_state: CommandState, *, is_undo: bool = False
 	) -> None:
 		"""Print summary of what features are being undone or restored.
 
@@ -2218,7 +2225,7 @@ class Spaces:
 		one_less = nreferent - 1
 		nitems = range(one_less)
 		#
-		for each_item in nitems:
+		for each_item in nitems: # noqa: B007
 			aitem = file_handle.readline()
 			aitem = aitem.rstrip()
 			if len(aitem) == 0:
@@ -2228,12 +2235,9 @@ class Spaces:
 					self.problematic_values_in_lower_triangle_error_message,
 				)
 
-			item = aitem.split()
-			values.append(item)
-			#
-			range_ites = range(each_item + 1)
-			for ites in range_ites:
-				values[each_item][ites] = float(values[each_item][ites])
+			item: list[str] = aitem.split()
+			item_as_floats: list[float] = [float(x) for x in item]
+			values.append(item_as_floats)
 		return values
 
 	# ------------------------------------------------------------------------
@@ -2337,6 +2341,9 @@ class Spaces:
 		"""Get the format string for a specific column"""
 		if use_column_specific_formats and col < len(format_spec):
 			return format_spec[col]
+		# If format_spec is a list, return first element as default
+		if isinstance(format_spec, list):
+			return format_spec[0] if format_spec else ""
 		return format_spec
 
 	@staticmethod
@@ -2359,9 +2366,11 @@ class Spaces:
 	) -> None:
 		"""Set the alignment for a table widget item based on format"""
 		if column_format == "s":
-			alignment = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+			alignment = (QtCore.Qt.AlignmentFlag.AlignLeft |
+				QtCore.Qt.AlignmentFlag.AlignVCenter)
 		else:
-			alignment = QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+			alignment = (QtCore.Qt.AlignmentFlag.AlignCenter |
+				QtCore.Qt.AlignmentFlag.AlignVCenter)
 		item.setTextAlignment(alignment)
 
 	@staticmethod
@@ -2421,15 +2430,15 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def write_configuration_type_file(
-		self, file_name: str, source: object
+		self, file_name: str, source: ConfigurationFeature | TargetFeature
 	) -> None:
 		"""Write a configuration-type file (configuration or target).
 
 		Args:
 			file_name: Path to the output file
-			source: Object with configuration attributes (ndim, npoint,
-				dim_labels, dim_names, point_labels, point_names,
-				range_dims, range_points, point_coords)
+			source: ConfigurationFeature or TargetFeature with attributes
+				(ndim, npoint, dim_labels, dim_names, point_labels,
+				point_names, range_dims, range_points, point_coords)
 		"""
 		file_type: str = "Configuration"
 		with Path(file_name).open("w") as file_handle:
@@ -2628,8 +2637,8 @@ class Spaces:
 			title, label, min_allowed, max_allowed, an_integer, default
 		)
 		result = ext_comp_dialog.exec()
-		if result == QDialog.Accepted:
-			ext_comp = ext_comp_dialog.getValue()
+		if result == QDialog.DialogCode.Accepted:
+			ext_comp = int(ext_comp_dialog.getValue())
 		else:
 			raise SpacesError(
 				zero_components_error_title, zero_components_error_message
@@ -2734,6 +2743,10 @@ class Spaces:
 			script_param_name = self._find_parameter_alias(
 				param_name, parameter_aliases, command_name
 			)
+			if self._director.script_parameters is None:
+				title = f"{command_name} parameter error"
+				message = "Script parameters not set during script execution"
+				raise SpacesError(title, message)
 			param_value = self._director.script_parameters[script_param_name]
 
 			# Process the parameter value (conversions, etc.)
@@ -2793,6 +2806,11 @@ class Spaces:
 		Raises:
 			SpacesError: If parameter not found directly or via alias
 		"""
+		if self._director.script_parameters is None:
+			title = f"{command_name} parameter error"
+			message = "Script parameters not set during script execution"
+			raise SpacesError(title, message)
+
 		if param_name in self._director.script_parameters:
 			return param_name
 
@@ -2849,7 +2867,7 @@ class Spaces:
 		self,
 		command_name: str,
 		param_name: str,
-		param_value: str,
+		param_value: object,
 		getter_info: dict
 	) -> int:
 		"""Convert focal item name to index for script parameters.
@@ -2918,13 +2936,13 @@ class Spaces:
 				continue
 
 			# Need to get from interactive dialog
-			getter_info, getter_param_name = self._find_getter_info(
+			getter_info, _ = self._find_getter_info(
 				command_name, param_name, interactive_getters
 			)
 
 			# Get parameter via dialog
 			dialog_params = self._get_parameter_via_dialog(
-				command_name, param_name, getter_info, getter_param_name
+				command_name, param_name, getter_info
 			)
 			params.update(dialog_params)
 
@@ -3018,8 +3036,7 @@ class Spaces:
 		self,
 		command_name: str,
 		param_name: str,
-		getter_info: dict[str, Any],
-		getter_param_name: str
+		getter_info: dict[str, Any]
 	) -> dict[str, object]:
 		"""Get parameter value via interactive dialog.
 
@@ -3027,7 +3044,6 @@ class Spaces:
 			command_name: Name of the command being executed
 			param_name: Name of the parameter to get
 			getter_info: Getter metadata dictionary
-			getter_param_name: The key name in interactive_getters
 
 		Returns:
 			Dictionary with parameter(s) obtained from dialog
@@ -3047,7 +3063,7 @@ class Spaces:
 			"focal_item_dialog": self._handle_focal_item_dialog,
 			"get_integer_dialog": self._handle_get_integer_dialog,
 			"get_string_dialog": self._handle_get_string_dialog,
-			"get_coordinates_dialog": self._handle_get_coordinates_dialog,
+			# "get_coordinates_dialog": self._handle_get_coordinates_dialog,
 			"modify_items_dialog": self._handle_modify_items_dialog,
 			"select_items_dialog": self._handle_select_items_dialog,
 			"modify_values_dialog": self._handle_modify_values_dialog,
@@ -3072,7 +3088,7 @@ class Spaces:
 
 	def _handle_file_dialog(
 		self,
-		command_name: str,
+		command_name: str,  # noqa: ARG002
 		param_name: str,
 		getter_info: dict
 	) -> dict[str, object]:
@@ -3128,7 +3144,7 @@ class Spaces:
 			title, label, min_val, max_val, is_integer, default
 		)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		value = dialog.getValue()
@@ -3155,7 +3171,7 @@ class Spaces:
 
 		dialog = PairofPointsDialog(title, items)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		selected = dialog.selected_items()
@@ -3189,7 +3205,7 @@ class Spaces:
 
 		dialog = ChoseOptionDialog(title, options_title, options)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		# Get the value to return - use values mapping if provided
@@ -3208,7 +3224,7 @@ class Spaces:
 	def _handle_plane_dialog(
 		self,
 		command_name: str,
-		param_name: str,
+		param_name: str,  # noqa: ARG002
 		getter_info: dict
 	) -> dict[str, object]:
 		"""Handle plane dialog parameter getter for Settings - plane."""
@@ -3232,7 +3248,7 @@ class Spaces:
 			default_index=hor_default_index
 		)
 		result = hor_dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		hor_axis_name = dim_names[hor_dialog.selected_option]
@@ -3255,7 +3271,7 @@ class Spaces:
 				default_index=vert_default_index
 			)
 			result = vert_dialog.exec()
-			if result != QDialog.Accepted:
+			if result != QDialog.DialogCode.Accepted:
 				self._raise_cancelled_error(command_name)
 
 			vert_axis_name = vert_options[vert_dialog.selected_option]
@@ -3270,7 +3286,7 @@ class Spaces:
 
 	def _handle_focal_item_dialog(
 		self,
-		command_name: str,
+		command_name: str,  # noqa: ARG002
 		param_name: str,
 		getter_info: dict
 	) -> dict[str, object]:
@@ -3308,7 +3324,7 @@ class Spaces:
 			title, message, min_value, max_value, default_value
 		)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		value = dialog.get_value()
@@ -3338,7 +3354,7 @@ class Spaces:
 			title, message, max_length, default_value
 		)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		value = dialog.get_value()
@@ -3349,30 +3365,30 @@ class Spaces:
 
 	# ------------
 
-	def _handle_get_coordinates_dialog(
-		self,
-		command_name: str,
-		param_name: str,
-		getter_info: dict
-	) -> dict[str, object]:
-		"""Handle GetCoordinatesDialog parameter getter."""
-		from dialogs import GetCoordinatesDialog  # noqa: PLC0415
-		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
-
-		title = getter_info.get("title", "Enter coordinates")
-		message = getter_info.get("message", "")
-		ndim = getter_info.get("ndim", 2)
-
-		dialog = GetCoordinatesDialog(title, message, ndim)
-		result = dialog.exec()
-		if result != QDialog.Accepted:
-			self._raise_cancelled_error(command_name)
-
-		coordinates = dialog.get_coordinates()
-
-		# Store and return
-		self._director.obtained_parameters[param_name] = coordinates
-		return {param_name: coordinates}
+	# def _handle_get_coordinates_dialog(
+	# 	self,
+	# 	command_name: str,
+	# 	param_name: str,
+	# 	getter_info: dict
+	# ) -> dict[str, object]:
+	# 	"""Handle GetCoordinatesDialog parameter getter."""
+	# 	from dialogs import GetCoordinatesDialog
+	# 	from PySide6.QtWidgets import QDialog
+	#
+	# 	title = getter_info.get("title", "Enter coordinates")
+	# 	message = getter_info.get("message", "")
+	# 	ndim = getter_info.get("ndim", 2)
+	#
+	# 	dialog = GetCoordinatesDialog(title, message, ndim)
+	# 	result = dialog.exec()
+	# 	if result != QDialog.DialogCode.Accepted:
+	# 		self._raise_cancelled_error(command_name)
+	#
+	# 	coordinates = dialog.get_coordinates()
+	#
+	# 	# Store and return
+	# 	self._director.obtained_parameters[param_name] = coordinates
+	# 	return {param_name: coordinates}
 
 	# ------------
 
@@ -3392,7 +3408,7 @@ class Spaces:
 
 		dialog = ModifyItemsDialog(title, items, default_values)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		selected_list = dialog.selected_items()
@@ -3424,10 +3440,10 @@ class Spaces:
 
 		dialog = SelectItemsDialog(title, items)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
-		selected_items = dialog.get_selected_items()
+		selected_items = dialog.selected_items()
 
 		# Store and return
 		self._director.obtained_parameters[param_name] = selected_items
@@ -3452,7 +3468,7 @@ class Spaces:
 
 		dialog = ModifyValuesDialog(title, labels, is_integer, defaults)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		values = dialog.selected_items()
@@ -3485,14 +3501,21 @@ class Spaces:
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
 
 		title = getter_info.get("title", "Move points")
+		value_title = getter_info.get("value_title", "Distance:")
 		n_dimensions = getter_info.get("n_dimensions", 2)
+		options = getter_info.get(
+			"options",
+			[f"Dimension {i+1}" for i in range(n_dimensions)]
+		)
 
-		dialog = MoveDialog(title, n_dimensions)
+		dialog = MoveDialog(title, value_title, options)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
-		dims_and_dists = dialog.get_dimensions_and_distances()
+		selected_dim = dialog.getSelectedOption()
+		distance = dialog.getDecimalValue()
+		dims_and_dists = (selected_dim, distance)
 
 		# Store and return
 		self._director.obtained_parameters[param_name] = dims_and_dists
@@ -3517,7 +3540,7 @@ class Spaces:
 
 		dialog = MatrixDialog(title, label, column_labels, row_labels)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		matrix = dialog.get_matrix()
@@ -3543,10 +3566,10 @@ class Spaces:
 
 		dialog = ModifyTextDialog(title, labels)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
-		new_labels = dialog.get_new_labels()
+		new_labels = dialog.selected_items()
 
 		# Store and return
 		self._director.obtained_parameters[param_name] = new_labels
@@ -3565,11 +3588,13 @@ class Spaces:
 		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
 
 		title = getter_info.get("title", "Set names")
+		label = getter_info.get("label", "Enter names:")
 		names = getter_info.get("names", [])
+		max_chars = getter_info.get("max_chars", 50)
 
-		dialog = SetNamesDialog(title, names)
+		dialog = SetNamesDialog(title, label, names, max_chars)
 		result = dialog.exec()
-		if result != QDialog.Accepted:
+		if result != QDialog.DialogCode.Accepted:
 			self._raise_cancelled_error(command_name)
 
 		new_names = dialog.getNames()
@@ -3595,7 +3620,7 @@ class Spaces:
 			obj = self._director
 			for attr_name in items_source.split("."):
 				obj = getattr(obj, attr_name)
-			return obj
+			return cast("list", obj)
 		# else:
 		return getter_info.get("items", [])
 
@@ -3694,7 +3719,7 @@ class Spaces:
 		getter_info: dict[str, Any],
 		items: list,
 		selected_list: list
-	) -> dict[str, bool]:
+	) -> dict[str, object]:
 		"""Convert selected items list to individual boolean parameters.
 
 		Args:
@@ -3775,7 +3800,7 @@ class Spaces:
 					obj = self._director
 					for attr in items_source.split("."):
 						obj = getattr(obj, attr)
-					items = obj
+					items = cast("list", obj)
 				else:
 					items = getter_info.get("items", [])
 
@@ -3822,7 +3847,7 @@ class Spaces:
 
 		# Return the longest match (most specific)
 		if matching_commands:
-			return max(matching_commands, key=len)
+			return cast("str", max(matching_commands, key=len))
 
 		# No match found
 		return parts[0] if parts else ""
@@ -3887,7 +3912,7 @@ class Spaces:
 		# Handle last parameter
 		if state["current_key"] and state["current_value"]:
 			params_dict[state["current_key"]] = self._parse_parameter_value(
-				state["current_value"].strip()
+				cast("str", state["current_value"]).strip()
 			)
 
 		return params_dict
@@ -4520,7 +4545,7 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def capture_and_print(
-	self, func: object, *args: object, **kwargs: object
+	self, func: Callable[..., Any], *args: object, **kwargs: object
 ) -> None:
 		"""Capture stdout from a function and send it to a printer."""
 

@@ -396,15 +396,15 @@ class Rivalry:
 		battleground_segment_names: list[str],
 		convertible_segment_names: list[str],
 	) -> None:
-		self.base_pcts = list(self.segment_percentages.base_pcts)
-		self.battleground_pcts = list(
-			self.segment_percentages.battleground_pcts
-		)
-		self.conv_pcts = list(self.segment_percentages.conv_pcts)
-		self.core_pcts = list(self.segment_percentages.core_pcts)
-		self.first_pcts = list(self.segment_percentages.first_pcts)
-		self.likely_pcts = list(self.segment_percentages.likely_pcts)
-		self.second_pcts = list(self.segment_percentages.second_pcts)
+		# Keep as Series to preserve index (segment codes like 1, 2, 3)
+		# Converting to list loses index, causing "index out of range" errors
+		self.base_pcts = self.segment_percentages.base_pcts
+		self.battleground_pcts = self.segment_percentages.battleground_pcts
+		self.conv_pcts = self.segment_percentages.conv_pcts
+		self.core_pcts = self.segment_percentages.core_pcts
+		self.first_pcts = self.segment_percentages.first_pcts
+		self.likely_pcts = self.segment_percentages.likely_pcts
+		self.second_pcts = self.segment_percentages.second_pcts
 
 		base_pcts_df = pd.DataFrame(
 			{

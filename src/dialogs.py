@@ -33,7 +33,7 @@ class ChoseOptionDialog(QDialog):
 		options_title: str,
 		options: list[str],
 		parent: QWidget | None = None,
-		default_index: int | None = None,
+		default_index: int = -1,
 	) -> None:
 		super().__init__(parent)
 
@@ -42,7 +42,7 @@ class ChoseOptionDialog(QDialog):
 		self.group = QVBoxLayout()
 		self.button_group = QHBoxLayout()
 		self.main_layout = QVBoxLayout()
-		self.selected_option = default_index
+		self.selected_option: int = default_index
 		self.options = options
 		label = QLabel(options_title)
 		self.group.addWidget(label)
@@ -50,7 +50,7 @@ class ChoseOptionDialog(QDialog):
 			rb = QRadioButton(option)
 			rb.toggled.connect(self._update_selected_option)
 			# Pre-select the default option if specified
-			if default_index is not None and each_option == default_index:
+			if each_option == default_index:
 				rb.setChecked(True)
 			self.group.addWidget(rb)
 		ok_button = QPushButton("OK")
