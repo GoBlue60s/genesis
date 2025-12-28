@@ -6,7 +6,6 @@ from typing import NamedTuple
 from exceptions import SpacesError
 
 import numpy as np
-import peek  # noqa: F401
 from dataclasses import dataclass
 
 from typing import TYPE_CHECKING
