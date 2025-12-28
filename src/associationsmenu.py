@@ -229,7 +229,7 @@ class AlikeCommand:
 		)
 		self.alike_df = pd.DataFrame(
 			alike_pairs,
-			columns=["Item", "Paired with", similarity_column_name],
+			columns=pd.Index(["Item", "Paired with", similarity_column_name]),
 		)
 
 		return self.alike_df

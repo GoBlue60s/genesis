@@ -1,31 +1,35 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 import copy
 import pickle
 import pandas as pd
 import weakref
 from types import SimpleNamespace
 
+if TYPE_CHECKING:
+	from collections.abc import Callable
+	from director import Status
+
 # Import for type checking unpickleable objects
+# Declare types that may not be available
+FigureCanvasQTAgg: type | None = None
+Figure: type | None = None
+
 try:
 	from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 	from matplotlib.figure import Figure
 	MATPLOTLIB_AVAILABLE = True
 except ImportError:
-	FigureCanvasQTAgg = None
-	Figure = None
 	MATPLOTLIB_AVAILABLE = False
+
+QWidget: type | None = None
 
 try:
 	from PySide6.QtWidgets import QWidget
 	QT_AVAILABLE = True
 except ImportError:
-	QWidget = None
 	QT_AVAILABLE = False
-
-if TYPE_CHECKING:
-	from director import Status
 
 # ----------------------------------------------------------------------------
 
@@ -94,7 +98,7 @@ def _handle_pandas_objects(obj: object, memo: dict) -> object | None:
 
 
 def _handle_container_types(
-	obj: object, memo: dict, copier_func: object
+	obj: object, memo: dict, copier_func: Callable[[object, dict], object]
 ) -> object | None:
 	"""Handle list, dict, and tuple container types.
 
@@ -129,7 +133,7 @@ def _handle_container_types(
 
 
 def _handle_custom_objects(
-	obj: object, memo: dict, copier_func: object
+	obj: object, memo: dict, copier_func: Callable[[object, dict], object]
 ) -> object:
 	"""Handle custom objects with __dict__.
 
@@ -159,7 +163,8 @@ def _handle_custom_objects(
 	memo[id(obj)] = new_obj
 
 	# Copy all attributes, handling _director specially
-	for attr_name, attr_value in obj.__dict__.items():
+	# Cast to Any since we verified __dict__ exists with hasattr
+	for attr_name, attr_value in cast("Any", obj).__dict__.items():
 		if attr_name == "_director":
 			# Set _director to None instead of copying
 			setattr(new_obj, attr_name, None)
@@ -214,7 +219,7 @@ def _copy_feature_state[T](feature_obj: T) -> T:
 		)
 
 	# Start the recursive copy with empty memo
-	return _deepcopy_with_director_handling(feature_obj, {})
+	return cast("T", _deepcopy_with_director_handling(feature_obj, {}))
 
 # ----------------------------------------------------------------------------
 
