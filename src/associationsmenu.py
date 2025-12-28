@@ -281,7 +281,7 @@ class LineOfSightCommand:
 		params = common.get_command_parameters("Line of sight")
 		common.capture_and_push_undo_state("Line of sight", "active", params)
 		self._director.similarities_active = common.los(
-			self._director.evaluations_active)
+			self._director.evaluations_active.evaluations)
 		self._duplicate_similarities(common)
 		self._director.similarities_active.rank_similarities()
 		self._director.similarities_active.duplicate_ranked_similarities(
@@ -334,7 +334,7 @@ class PairedCommand:
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Paired")
 		common.capture_and_push_undo_state("Paired", "passive", params)
-		focal_index: int = params["focus"]
+		focal_index = int(params["focus"])
 		common.focal_index = focal_index
 		self._focal_item_index: int = focal_index
 		self._create_paired_dataframe()
@@ -634,7 +634,7 @@ class StressContributionCommand:
 		params = common.get_command_parameters("Stress contribution")
 		common.capture_and_push_undo_state(
 			"Stress contribution", "passive", params)
-		index = params["focal_item"]
+		index = int(params["focal_item"])
 		common.point_index = index
 		self.stress_contribution_df = (
 			self._create_stress_contribution_df(index, worst_fit))
@@ -652,7 +652,7 @@ class StressContributionCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _calculate_and_sort_stress_contributions(self) -> list[float]:
+	def _calculate_and_sort_stress_contributions(self) -> pd.DataFrame:
 		ranks_df = self._director.similarities_active.ranks_df
 
 		worst_fit: list[float] = []
@@ -703,7 +703,7 @@ class StressContributionCommand:
 			stress_by_point.items(), key=lambda x: x[1], reverse=True
 		)
 		self.sorted_stress_df = pd.DataFrame(
-			sorted_stress, columns=["Point", "Stress_Contribution"]
+			sorted_stress, columns=pd.Index(["Point", "Stress_Contribution"])
 		)
 
 	# ------------------------------------------------------------------------
