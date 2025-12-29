@@ -696,9 +696,6 @@ class PyQtGraphMethods:
 		rival_b = rivalry.rival_b
 		# connector = rivalry.connector
 		ndim = configuration_active.ndim
-		# Reference points are guaranteed to exist when plotting contest
-		rival_a_idx = cast("int", rival_a.index)
-		rival_b_idx = cast("int", rival_b.index)
 		bisector_cross_x = cast("float", rivalry.bisector._cross_x)
 		bisector_cross_y = cast("float", rivalry.bisector._cross_y)
 
@@ -721,15 +718,15 @@ class PyQtGraphMethods:
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pen = pg.mkPen(color=(255, 0, 0))
 		self._add_contest_rival_labels(
-			plot, point_labels, point_coords, rival_a_idx, rival_b_idx,
+			plot, point_labels, point_coords, rival_a.index, rival_b.index,
 			hor_dim, vert_dim
 		)
 		self._add_contest_rival_points(
-			plot, x_coords, y_coords, point_coords, rival_a_idx, rival_b_idx,
+			plot, x_coords, y_coords, point_coords, rival_a.index, rival_b.index,
 			hor_dim, vert_dim, pen
 		)
 		self._add_contest_core_circles(
-			plot, point_coords, rival_a_idx, rival_b_idx, hor_dim, vert_dim,
+			plot, point_coords, rival_a.index, rival_b.index, hor_dim, vert_dim,
 			rivalry.core_radius, pen
 		)
 		pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)

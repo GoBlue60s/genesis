@@ -1058,7 +1058,7 @@ class SimilaritiesFeature:
 		self.differences_of_ranks_as_list: list[int] = []
 		self.differences_of_ranks_as_square: list[list[int]] = []
 		self.differences_of_ranks_as_dataframe = pd.DataFrame()
-		# self.shepard_diagram_table_as_square
+		self.shepard_diagram_table_as_square: np.ndarray = np.empty(0)
 		self.shepard_diagram_table_as_dataframe = pd.DataFrame()
 		self.ndyad: int = 0  # kept from previous
 		self.range_dyads: range = range(0)  # kept from previous

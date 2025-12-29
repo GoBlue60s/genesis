@@ -70,6 +70,7 @@ class Spaces:
 	def __init__(self, parent: Status, director: Status) -> None:
 		self.parent = parent
 		self._director = director
+		self._reference_points_established: bool = False
 
 		self.plot_ranges = PlotExtremes()
 		self.presentation_layer: str = "Matplotlib"
@@ -1115,10 +1116,7 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def have_reference_points(self) -> bool:
-		rivalry = self._director.rivalry
-		return not (
-			rivalry.rival_a.index is None or rivalry.rival_b.index is None
-		)
+		return self._reference_points_established
 
 	# ------------------------------------------------------------------------
 

@@ -26,6 +26,7 @@ from geometry import (
 	PeoplePoints,
 	Point,
 	Polygon,
+	ReferencePoint,
 	Region,
 	TheoreticalExtremes,
 )
@@ -106,8 +107,8 @@ class Rivalry:
 		]
 
 		self._create_instances_based_on_rivalry()
-		self.rival_a: Point = Point()
-		self.rival_b: Point = Point()
+		self.rival_a: ReferencePoint = ReferencePoint()
+		self.rival_b: ReferencePoint = ReferencePoint()
 
 		self.base_pcts: list[float] = []
 		self.battleground_pcts: list = []
@@ -213,8 +214,8 @@ class Rivalry:
 	# ------------------------------------------------------------------------
 
 	def _create_instances_based_on_rivalry(self) -> None:
-		self.rival_a = Point()
-		self.rival_b = Point()
+		self.rival_a = ReferencePoint()
+		self.rival_b = ReferencePoint()
 		self.mid_point = Point()
 		self.point_1 = Point()
 		self.point_2 = Point()

@@ -791,6 +791,30 @@ class Point:
 # --------------------------------------------------------------------------
 
 
+class ReferencePoint(Point):
+	"""A Point used as a reference point in rivalry analysis.
+
+	ReferencePoints are guaranteed to have an index set, distinguishing
+	them from general Points which may not be indexed.
+	"""
+
+	def __init__(
+		self, *args: float, **kwargs: float | str | int
+	) -> None:
+		"""Initialize a ReferencePoint with required index.
+
+		Args:
+			*args: Positional coordinates
+			**kwargs: Named coordinates and metadata (index required)
+		"""
+		super().__init__(*args, **kwargs)
+		# Override index type to be non-optional
+		self.index: int = self.index if self.index is not None else 0
+
+
+# --------------------------------------------------------------------------
+
+
 class Polygon(Region):
 	def __init__(
 		self,

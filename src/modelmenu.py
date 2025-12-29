@@ -908,6 +908,7 @@ class FactorAnalysisCommand:
 		from rivalry import Rivalry  # noqa: PLC0415
 
 		self._director.rivalry = Rivalry(self._director)
+		self.common._reference_points_established = False
 
 		configuration_active.range_dims = range_dims
 		configuration_active.point_coords = point_coords
@@ -1811,6 +1812,7 @@ class MDSCommand:
 		from rivalry import Rivalry  # noqa: PLC0415
 
 		self._director.rivalry = Rivalry(self._director)
+		self.common._reference_points_established = False
 
 		self._director.configuration_active.ndim = ndim
 		self._director.configuration_active.range_points = range_points
@@ -1978,6 +1980,7 @@ class PrincipalComponentsCommand:
 		from rivalry import Rivalry  # noqa: PLC0415
 
 		self._director.rivalry = Rivalry(self._director)
+		self.common._reference_points_established = False
 
 		ndim = trans.shape[1]
 		npoint = trans.shape[0]

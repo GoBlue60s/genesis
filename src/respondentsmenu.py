@@ -541,6 +541,7 @@ class ReferencePointsCommand:
 		# NOW modify the rivalry state with the new reference points
 		rivalry.rival_a.index = new_rival_a_index
 		rivalry.rival_b.index = new_rival_b_index
+		common._reference_points_established = True
 		rivalry.rival_a.name = point_names[new_rival_a_index]
 		rivalry.rival_b.name = point_names[new_rival_b_index]
 		rivalry.rival_a.label = point_labels[new_rival_a_index]

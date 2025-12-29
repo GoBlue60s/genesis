@@ -75,6 +75,7 @@ class ConfigurationCommand:
 		self._director.configuration_active.inter_point_distances()
 		common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
+		common._reference_points_established = False
 
 		self._director.configuration_active.print_active_function()
 		common.create_plot_for_tabs("configuration")
@@ -196,6 +197,7 @@ class CreateCommand:
 		self._director.configuration_active.inter_point_distances()
 		common.rank_when_similarities_match_configuration()
 		self._director.rivalry = Rivalry(self._director)
+		common._reference_points_established = False
 
 		self._director.configuration_active.print_active_function()
 		common.create_plot_for_tabs("configuration")
