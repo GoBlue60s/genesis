@@ -89,6 +89,7 @@ class Status(QMainWindow):
 	"""Main Window."""
 
 	title_for_table_widget: str = ""
+	cluster_results: pd.DataFrame
 
 	def __init__(self, parent: QWidget | None = None) -> None:
 		"""Initializer."""

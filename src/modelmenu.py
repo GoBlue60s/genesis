@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 	# from sklearn.preprocessing import StandardScaler
 	from director import Status
 	from common import Spaces
+	from command_state import CommandState
 
 from constants import (
 	DEFAULT_NUMBER_OF_CLUSTERS,
@@ -74,63 +75,97 @@ class ClusterCommand:
 
 	def execute(self, common: Spaces) -> None:
 		common.initiate_command_processes()
+		name_source, n_clusters = self._get_clustering_parameters(common)
+		self._capture_state_for_undo(name_source, n_clusters)
+		self._perform_clustering(n_clusters)
+		self._print_cluster_results(
+			self._director.scores_active.cluster_centers, n_clusters
+		)
+		common.create_plot_for_tabs("clusters")
+		self._director.create_widgets_for_output_and_log_tabs()
+		self._director.record_command_as_successfully_completed()
+		return
 
-		# Step 1: Get data source from user (or script)
+	# ------------------------------------------------------------------------
+
+	def _get_clustering_parameters(
+		self, common: Spaces
+	) -> tuple[str, int]:
+		"""Get clustering parameters from user or script."""
 		params_step1 = common.get_command_parameters("Cluster")
 		name_source = params_step1["data_source"]
-
-		# Step 2: Validate and get data based on selected source
 		self.data_for_clustering = self._get_data_for_source(name_source)
 
-		# Step 3: Get number of clusters (handling dynamic max_val)
-		# For interactive mode, need to update max_val based on data size
 		if not self._director.executing_script:
-			from dictionaries import command_dict  # noqa: PLC0415
-
-			# Temporarily update the max_val for n_clusters based on data
-			self.number_clusters_max_allowed = min(
-				15, len(self.data_for_clustering) - 1
-			)
-			# Update metadata temporarily for this call
-			original_max = command_dict["Cluster"]["interactive_getters"][
-				"n_clusters"
-			]["max_val"]
-			command_dict["Cluster"]["interactive_getters"]["n_clusters"][
-				"max_val"
-			] = self.number_clusters_max_allowed
-			params_step2 = common.get_command_parameters("Cluster")
-			# Restore original max_val
-			command_dict["Cluster"]["interactive_getters"]["n_clusters"][
-				"max_val"
-			] = original_max
-			n_clusters = params_step2["n_clusters"]
+			n_clusters = self._get_n_clusters_interactively(common)
 		else:
-			# Script mode: use parameter from script
 			n_clusters = params_step1["n_clusters"]
-		#
-		# Capture state before making changes (for undo)
-		# State capture depends on which data source user selected
-		#
-		state_to_capture = ["scores"]  # Always capture scores
+
+		return name_source, n_clusters
+
+	# ------------------------------------------------------------------------
+
+	def _get_n_clusters_interactively(self, common: Spaces) -> int:
+		"""Get number of clusters from user with dynamic max value."""
+		from dictionaries import command_dict  # noqa: PLC0415
+
+		self.number_clusters_max_allowed = min(
+			15, len(self.data_for_clustering) - 1
+		)
+		original_max = command_dict["Cluster"]["interactive_getters"][
+			"n_clusters"
+		]["max_val"]
+		command_dict["Cluster"]["interactive_getters"]["n_clusters"][
+			"max_val"
+		] = self.number_clusters_max_allowed
+
+		params_step2 = common.get_command_parameters("Cluster")
+
+		command_dict["Cluster"]["interactive_getters"]["n_clusters"][
+			"max_val"
+		] = original_max
+
+		return params_step2["n_clusters"]
+
+	# ------------------------------------------------------------------------
+
+	def _capture_state_for_undo(
+		self, name_source: str, n_clusters: int
+	) -> None:
+		"""Capture state for undo based on data source."""
+		from command_state import CommandState  # noqa: PLC0415
+		from datetime import datetime  # noqa: PLC0415
+
+		state_to_capture = self._determine_state_to_capture(name_source)
+		params = {"data_source": name_source, "n_clusters": n_clusters}
+
+		cmd_state = CommandState("Cluster", "active", params)
+		cmd_state.timestamp = datetime.now().strftime(
+			"%Y-%m-%d %H:%M:%S"
+		)  # noqa: DTZ005
+
+		self._capture_states(cmd_state, state_to_capture)
+		self._director.push_undo_state(cmd_state)
+
+	# ------------------------------------------------------------------------
+
+	def _determine_state_to_capture(self, name_source: str) -> list[str]:
+		"""Determine which states to capture based on data source."""
+		state_to_capture = ["scores"]
 		if name_source == "distances":
 			state_to_capture.append("configuration")
 		elif name_source == "evaluations":
 			state_to_capture.append("evaluations")
 		elif name_source == "similarities":
 			state_to_capture.append("similarities")
-		# Note: if name_source == "scores", we already capture scores
+		return state_to_capture
 
-		# Build parameters dict for redo/scripting
-		params = {"data_source": name_source, "n_clusters": n_clusters}
+	# ------------------------------------------------------------------------
 
-		# Capture state using helper - manually iterate state_to_capture
-		from command_state import CommandState  # noqa: PLC0415
-		from datetime import datetime  # noqa: PLC0415
-
-		cmd_state = CommandState("Cluster", "active", params)
-		cmd_state.timestamp = \
-			datetime.now().strftime("%Y-%m-%d %H:%M:%S") # noqa: DTZ005
-
+	def _capture_states(
+		self, cmd_state: CommandState, state_to_capture: list[str]
+	) -> None:
+		"""Capture the specified states."""
 		for item in state_to_capture:
 			if item == "configuration":
 				cmd_state.capture_configuration_state(self._director)
@@ -141,40 +176,39 @@ class ClusterCommand:
 			elif item == "similarities":
 				cmd_state.capture_similarities_state(self._director)
 
-		self._director.push_undo_state(cmd_state)
-		#
-		# Now perform k-means clustering on the selected data
-		#
+	# ------------------------------------------------------------------------
+
+	def _perform_clustering(self, n_clusters: int) -> None:
+		"""Perform K-means clustering and store results."""
 		kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
 		cluster_labels = kmeans.fit_predict(self.data_for_clustering)
 		cluster_centers = kmeans.cluster_centers_
 
-		# Store cluster results
+		self._store_cluster_results(
+			cluster_labels, cluster_centers, n_clusters
+		)
+		self._store_original_data()
+
+	# ------------------------------------------------------------------------
+
+	def _store_cluster_results(
+		self,
+		cluster_labels: np.ndarray,
+		cluster_centers: np.ndarray,
+		n_clusters: int,
+	) -> None:
+		"""Store cluster results in scores_active."""
 		self._director.scores_active.cluster_labels = cluster_labels
 		self._director.scores_active.cluster_centers = cluster_centers
 		self._director.scores_active.n_clusters = n_clusters
 
-		# Store original data for plotting when clustering scores
-		if name_source == "scores":
-			self._director.scores_active.original_clustered_data = (
-				self.data_for_clustering.copy()
-			)
-		else:
-			# For non-score clustering, store the data for plotting
-			self._director.scores_active.original_clustered_data = (
-				self.data_for_clustering.copy()
-			)
+	# ------------------------------------------------------------------------
 
-		# Note: Cluster centers are NOT scores - they are centroids
-		# Do not set scores_active.scores to cluster centers
-		# Clusters and individual scores are different concepts
-
-		# Print cluster results table
-		self._print_cluster_results(cluster_centers, n_clusters)
-		common.create_plot_for_tabs("clusters")
-		self._director.create_widgets_for_output_and_log_tabs()
-		self._director.record_command_as_successfully_completed()
-		return
+	def _store_original_data(self) -> None:
+		"""Store original clustered data for plotting."""
+		self._director.scores_active.original_clustered_data = (
+			self.data_for_clustering.copy()
+		)
 
 	# ------------------------------------------------------------------------
 
@@ -512,7 +546,9 @@ class ClusterCommand:
 			*column_names,
 			*ref_headers,
 		]
-		cluster_df = pd.DataFrame(cluster_data, columns=all_columns)
+		cluster_df = pd.DataFrame(
+			cluster_data, columns=pd.Index(all_columns)
+		)
 
 		# Store the cluster data for the statistical table widget
 		self._director.cluster_results = cluster_df
@@ -675,7 +711,7 @@ class DirectionsCommand:
 				"Angle_Radians": angles_radians,
 				"Quadrant": quadrants,
 			},
-			index=point_names,
+			index=pd.Index(point_names),
 		)
 
 		self._director.configuration_active.directions_df = directions_df
@@ -836,32 +872,42 @@ class FactorAnalysisCommand:
 		"""Extract all results from the factor analysis."""
 		the_loadings = fa.loadings_
 		loadings = pd.DataFrame(
-			the_loadings, columns=dim_names, index=item_names
+			the_loadings,
+			columns=pd.Index(dim_names),
+			index=pd.Index(item_names),
 		)
 		point_coords = pd.DataFrame(
-			loadings, columns=dim_names, index=item_names
+			loadings,
+			columns=pd.Index(dim_names),
+			index=pd.Index(item_names),
 		)
 
 		ev, v = fa.get_eigenvalues()
-		eigen = pd.DataFrame(data=ev, columns=["Eigenvalue"])
-		eigen_common = pd.DataFrame(data=v, columns=["Eigenvalue"])
+		eigen = pd.DataFrame(data=ev, columns=pd.Index(["Eigenvalue"]))
+		eigen_common = pd.DataFrame(data=v, columns=pd.Index(["Eigenvalue"]))
 
 		get_commonalities = fa.get_communalities()
 		commonalities = pd.DataFrame(
-			data=get_commonalities, columns=["Commonality"], index=item_names
+			data=get_commonalities,
+			columns=pd.Index(["Commonality"]),
+			index=pd.Index(item_names),
 		)
 
 		factor_variance = pd.DataFrame(
 			fa.get_factor_variance(),
-			columns=dim_names,
-			index=["Variance", "Proportional", "Cumulative"],
+			columns=pd.Index(dim_names),
+			index=pd.Index(["Variance", "Proportional", "Cumulative"]),
 		)
 
 		uniquenesses = pd.DataFrame(
-			fa.get_uniquenesses(), columns=["Uniqueness"], index=item_names
+			fa.get_uniquenesses(),
+			columns=pd.Index(["Uniqueness"]),
+			index=pd.Index(item_names),
 		)
 
-		scores = pd.DataFrame(fa.transform(evaluations), columns=dim_names)
+		scores = pd.DataFrame(
+			fa.transform(evaluations), columns=pd.Index(dim_names)
+		)
 		scores.reset_index(inplace=True)
 		scores.rename(columns={"index": "Resp no"}, inplace=True)
 
@@ -1135,21 +1181,24 @@ class FactorAnalysisMachineLearningCommand:
 
 		components = pd.DataFrame(
 			transformer.components_,
-			index=transformer.get_feature_names_out(),
-			columns=item_names,
+			index=pd.Index(transformer.get_feature_names_out()),
+			columns=pd.Index(item_names),
 		)
 
 		x_trans = pd.DataFrame(
-			X_transformed, columns=transformer.get_feature_names_out()
+			X_transformed,
+			columns=pd.Index(transformer.get_feature_names_out()),
 		)
 
 		covar = pd.DataFrame(
-			transformer.get_covariance(), columns=item_names, index=item_names
+			transformer.get_covariance(),
+			columns=pd.Index(item_names),
+			index=pd.Index(item_names),
 		)
 
 		x_new = pd.DataFrame(
 			transformer.transform(X),
-			columns=transformer.get_feature_names_out(),
+			columns=pd.Index(transformer.get_feature_names_out()),
 		)
 
 		transpose = components.transpose()
@@ -1336,7 +1385,7 @@ class FactorAnalysisMachineLearningCommand:
 
 	def _store_sklearn_results_for_display(
 		self,
-		transformer: object,
+		transformer: FactorAnalysis | PCA,
 		X: pd.DataFrame,  # noqa: N803
 		item_names: list[str],
 		nreferent: int,
@@ -1347,7 +1396,7 @@ class FactorAnalysisMachineLearningCommand:
 
 		self._director.configuration_active.x_new = pd.DataFrame(
 			transformer.transform(X),
-			columns=transformer.get_feature_names_out(),
+			columns=pd.Index(transformer.get_feature_names_out()),
 		)
 		self._director.configuration_active.ndim = ndim
 		self._director.configuration_active.range_dims = range_dims
@@ -1357,31 +1406,36 @@ class FactorAnalysisMachineLearningCommand:
 		eigenvalues = np.sort(eigenvalues)[::-1]
 
 		self._director.configuration_active.eigen = pd.DataFrame(
-			eigenvalues[:nreferent], columns=["Eigenvalue"]
+			eigenvalues[:nreferent], columns=pd.Index(["Eigenvalue"])
 		)
 
 		explained_variance = np.var(transformer.components_, axis=1)
 		self._director.configuration_active.eigen_common = pd.DataFrame(
-			explained_variance, columns=["Eigenvalue"]
+			explained_variance, columns=pd.Index(["Eigenvalue"])
 		)
 
 		loadings_matrix = transformer.components_.T
 		pseudo_communalities = np.sum(loadings_matrix**2, axis=1)
 		self._director.configuration_active.commonalities = pd.DataFrame(
-			pseudo_communalities, columns=["Commonality"], index=item_names
+			pseudo_communalities,
+			columns=pd.Index(["Commonality"]),
+			index=pd.Index(item_names),
 		)
 
 		pseudo_uniquenesses = 1 - pseudo_communalities
 		self._director.configuration_active.uniquenesses = pd.DataFrame(
-			pseudo_uniquenesses, columns=["Uniqueness"], index=item_names
+			pseudo_uniquenesses,
+			columns=pd.Index(["Uniqueness"]),
+			index=pd.Index(item_names),
 		)
 
 		self._director.configuration_active.loadings = pd.DataFrame(
 			loadings_matrix,
-			columns=[
-				f"Factor {i + 1}" for i in range(transformer.n_components)
-			],
-			index=item_names,
+			columns=pd.Index([
+				f"Factor {i + 1}"
+				for i in range(transformer.n_components)  # type: ignore[arg-type]
+			]),
+			index=pd.Index(item_names),
 		)
 
 		self._director.configuration_active.transformer_mean = (
@@ -1399,10 +1453,10 @@ class FactorAnalysisMachineLearningCommand:
 
 	def _print_factor_analysis_m_l_results(
 		self,
-		scaler: object,
-		X: pd.DataFrame, # noqa: N803
-		transformer: object,
-		X_transformed: pd.DataFrame, # noqa: N803
+		scaler: StandardScaler,
+		X: pd.DataFrame,  # noqa: N803
+		transformer: FactorAnalysis | PCA,
+		X_transformed: np.ndarray,  # noqa: N803
 		x_trans: pd.DataFrame,
 		covar: pd.DataFrame,
 		trans: pd.DataFrame,
@@ -1448,8 +1502,8 @@ class FactorAnalysisMachineLearningCommand:
 	def _print_factor_analysis_m_l(  # noqa: PLR0913
 		self,
 		scaler: StandardScaler,
-		X: np.ndarray,  # noqa: N803
-		transformer: FactorAnalysis,
+		X: pd.DataFrame | np.ndarray,  # noqa: N803
+		transformer: FactorAnalysis | PCA,
 		X_transformed: np.ndarray,  # noqa: N803
 		x_trans: pd.DataFrame,
 		covar: pd.DataFrame,
@@ -1480,12 +1534,12 @@ class FactorAnalysisMachineLearningCommand:
 		print("\nScore: \n", transformer.score(X))
 		print("\nScore_samples: \n", transformer.score_samples(X))
 		print("\n\tComponents_: \n", transformer.components_)
-		print("\n\tn_features_in_: ", transformer.n_features_in_)
-		print("\n\tnoise_variance_: \n", transformer.noise_variance_)
+		print("\n\tn_features_in_: ", transformer.n_features_in_)  # type: ignore[union-attr]
+		print("\n\tnoise_variance_: \n", transformer.noise_variance_)  # type: ignore[union-attr]
 		print("\n\tmean_: \n", transformer.mean_)
 		x_new = pd.DataFrame(
 			transformer.transform(X),
-			columns=transformer.get_feature_names_out(),
+			columns=pd.Index(transformer.get_feature_names_out()),
 		)
 		print("\nX_new: \n", x_new)
 		print("\nTranspose: \n", trans)
@@ -1566,7 +1620,8 @@ class FactorAnalysisMachineLearningCommand:
 			# Column 0: Eigenvalues
 			item = QTableWidgetItem(f"{eigenvalues[row]:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+				QtCore.Qt.AlignmentFlag.AlignCenter
+				| QtCore.Qt.AlignmentFlag.AlignVCenter
 			)
 			table_widget.setItem(row, 0, item)
 
@@ -1576,7 +1631,8 @@ class FactorAnalysisMachineLearningCommand:
 			]
 			item = QTableWidgetItem(f"{mean_val:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+				QtCore.Qt.AlignmentFlag.AlignCenter
+				| QtCore.Qt.AlignmentFlag.AlignVCenter
 			)
 			table_widget.setItem(row, 1, item)
 
@@ -1588,26 +1644,32 @@ class FactorAnalysisMachineLearningCommand:
 			noise_val = float(noise_val.mean())
 			item = QTableWidgetItem(f"{noise_val:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+				QtCore.Qt.AlignmentFlag.AlignCenter
+				| QtCore.Qt.AlignmentFlag.AlignVCenter
 			)
 			table_widget.setItem(row, 2, item)
 
 			# Column 3: Item names
 			item = QTableWidgetItem(item_names[row])
-			item.setTextAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+			item.setTextAlignment(
+				QtCore.Qt.AlignmentFlag.AlignLeft
+				| QtCore.Qt.AlignmentFlag.AlignVCenter
+			)
 			table_widget.setItem(row, 3, item)
 
 			# Column 4: Factor 1 components (loadings)
 			item = QTableWidgetItem(f"{loadings.iloc[row, 0]:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+				QtCore.Qt.AlignmentFlag.AlignCenter
+				| QtCore.Qt.AlignmentFlag.AlignVCenter
 			)
 			table_widget.setItem(row, 4, item)
 
 			# Column 5: Factor 2 components (loadings)
 			item = QTableWidgetItem(f"{loadings.iloc[row, 1]:6.4f}")
 			item.setTextAlignment(
-				QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+				QtCore.Qt.AlignmentFlag.AlignCenter
+				| QtCore.Qt.AlignmentFlag.AlignVCenter
 			)
 			table_widget.setItem(row, 5, item)
 
@@ -1935,7 +1997,8 @@ class PrincipalComponentsCommand:
 		)
 		pca_for_eigenvalues.fit(X_pca)
 		self._director.configuration_active.eigen = pd.DataFrame(
-			pca_for_eigenvalues.explained_variance_, columns=["Eigenvalue"]
+			pca_for_eigenvalues.explained_variance_,
+			columns=pd.Index(["Eigenvalue"]),
 		)
 		#
 		# Fit PCA with requested n_components for main analysis
@@ -1949,16 +2012,17 @@ class PrincipalComponentsCommand:
 		pd.set_option("display.max_colwidth", 300)
 		components = pd.DataFrame(
 			pca_transformer.components_,
-			index=pca_transformer.get_feature_names_out(),
-			columns=item_names,
+			index=pd.Index(pca_transformer.get_feature_names_out()),
+			columns=pd.Index(item_names),
 		)
 		x_pca_trans = pd.DataFrame(
-			X_pca_transformed, columns=pca_transformer.get_feature_names_out()
+			X_pca_transformed,
+			columns=pd.Index(pca_transformer.get_feature_names_out()),
 		)
 		self._director.configuration_active.pca_covar = pd.DataFrame(
 			pca_transformer.get_covariance(),
-			columns=item_names,
-			index=item_names,
+			columns=pd.Index(item_names),
+			index=pd.Index(item_names),
 		)
 		transpose = components.transpose()
 		trans = pd.DataFrame(transpose)
@@ -2016,7 +2080,7 @@ class PrincipalComponentsCommand:
 
 	def _establish_pca_results_as_scores(
 		self,
-		X_pca_transformed: np.array,  # noqa: N803
+		X_pca_transformed: np.ndarray,  # noqa: N803
 	) -> None:
 		score_1_name = self._director.configuration_active.dim_names[0]
 		score_2_name = self._director.configuration_active.dim_names[1]
@@ -2024,7 +2088,7 @@ class PrincipalComponentsCommand:
 		vert_axis_name = self._director.configuration_active.dim_names[1]
 		dim_names = self._director.configuration_active.dim_names
 
-		scores = pd.DataFrame(X_pca_transformed, columns=dim_names)
+		scores = pd.DataFrame(X_pca_transformed, columns=pd.Index(dim_names))
 		scores.reset_index(inplace=True)
 		scores.rename(columns={"index": "Resp no"}, inplace=True)
 
@@ -2042,7 +2106,7 @@ class PrincipalComponentsCommand:
 	def _print_pca(
 		self,
 		pca_transformer: PCA,
-		X_pca_transformed: np.array,  # noqa: N803
+		X_pca_transformed: np.ndarray,  # noqa: N803
 		x_pca_trans: pd.DataFrame,
 		transpose: pd.DataFrame,
 	) -> None:
@@ -2145,7 +2209,9 @@ class UncertaintyAnalysis:
 		self.nrepetitions: int = 0
 		self.probability_of_inclusion: float = 0.0
 		self.sample_design: pd.DataFrame = pd.DataFrame()
+		self.sample_design_nrepetitions: int = 0
 		self.sample_design_frequencies: pd.DataFrame = pd.DataFrame()
+		self.sample_design_frequencies_as_json: str = ""
 		self.sample_design_analysis_df: pd.DataFrame = pd.DataFrame()
 		self.sample_repetitions: pd.DataFrame = pd.DataFrame()
 		self.solutions_stress_df: pd.DataFrame = pd.DataFrame()
@@ -2181,7 +2247,7 @@ class UncertaintyAnalysis:
 
 			value_1 = f"{each_repetition}"
 			item_1 = QTableWidgetItem(value_1)
-			item_1.setTextAlignment(QtCore.Qt.AlignCenter)
+			item_1.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 			table_widget.setItem(
 				each_repetition - 1, 0, QTableWidgetItem(item_1)
 			)
@@ -2202,13 +2268,13 @@ class UncertaintyAnalysis:
 					/ universe_size
 				)
 			item_2 = QTableWidgetItem(value_2)
-			item_2.setTextAlignment(QtCore.Qt.AlignCenter)
+			item_2.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 			table_widget.setItem(
 				each_repetition - 1, 1, QTableWidgetItem(item_2)
 			)
 			value_3 = f"{percent_value_2:.2%}"
 			item_3 = QTableWidgetItem(value_3)
-			item_3.setTextAlignment(QtCore.Qt.AlignCenter)
+			item_3.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 			table_widget.setItem(
 				each_repetition - 1, 2, QTableWidgetItem(item_3)
 			)
@@ -2228,13 +2294,13 @@ class UncertaintyAnalysis:
 					/ universe_size
 				)
 			item_4 = QTableWidgetItem(value_4)
-			item_4.setTextAlignment(QtCore.Qt.AlignCenter)
+			item_4.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 			table_widget.setItem(
 				each_repetition - 1, 3, QTableWidgetItem(item_4)
 			)
 			value_5 = f"{percent_value_4:.2%}"
 			item_5 = QTableWidgetItem(value_5)
-			item_5.setTextAlignment(QtCore.Qt.AlignCenter)
+			item_5.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 			table_widget.setItem(
 				each_repetition - 1, 4, QTableWidgetItem(item_5)
 			)
@@ -2280,12 +2346,12 @@ class UncertaintyCommand:
 		self._director.command = "Uncertainty"
 
 		self.solutions: pd.DataFrame = pd.DataFrame(
-			columns=[self._director.target_active.dim_names]
+			columns=pd.Index(self._director.target_active.dim_names)
 		)
 		self.solutions: pd.DataFrame = pd.DataFrame()
 		self._director.uncertainty_active.sample_solutions = pd.DataFrame()
-		self.target_out: np.array = np.array([])
-		self.active_out: np.array = np.array([])
+		self.target_out: np.ndarray = np.array([])
+		self.active_out: np.ndarray = np.array([])
 		self.target_adjusted = TargetFeature(self._director)
 
 		# Dialog parameters for sample design
@@ -2380,7 +2446,7 @@ class UncertaintyCommand:
 
 	def _get_solutions_from_mds(
 		self, common: Spaces, sample_repetitions: pd.DataFrame, nreferent: int
-	) -> tuple[np.array, np.array]:
+	) -> tuple[np.ndarray, np.ndarray]:
 		director = self._director
 		target_active = director.target_active
 		uncertainty_active = director.uncertainty_active
@@ -2438,7 +2504,7 @@ class UncertaintyCommand:
 		self._hide_progress_bar()
 
 		uncertainty_active.solutions_stress_df = pd.DataFrame(
-			stress_data, columns=["Solution", "Stress"]
+			stress_data, columns=pd.Index(["Solution", "Stress"])
 		)
 
 		self.solutions.columns = target_active.dim_names
@@ -2580,7 +2646,7 @@ class UncertaintyCommand:
 			QApplication.processEvents()
 
 		sample_design = pd.DataFrame(
-			columns=["RespId", "Repetition", "Selected"]
+			columns=pd.Index(["RespId", "Repetition", "Selected"])
 		)
 
 		range_of_universe = range(universe_size)
@@ -2604,7 +2670,7 @@ class UncertaintyCommand:
 		sample_design.sort_values(by=["Repetition", "RespId"], inplace=True)
 
 		sample_design_frequencies = (
-			sample_design.groupby(["Repetition", "Selected"])
+			sample_design.groupby(["Repetition", "Selected"])  # type: ignore[call-overload]
 			.size()
 			.reset_index(name="Count")
 		)

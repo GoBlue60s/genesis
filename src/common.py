@@ -82,6 +82,8 @@ class Spaces:
 		self.values: list = [float]
 
 		#
+		self.best_stress: float = -1.0
+		self.ndim: int = 0
 		self.hor_dim: int = 0
 		self.vert_dim: int = 1
 		self.show_bisector: bool = False
@@ -1207,7 +1209,7 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def los(self, evaluations: pd.DataFrame) -> SimilaritiesFeature:
+	def los(self, evaluations: EvaluationsFeature) -> SimilaritiesFeature:
 		"""Line of sight analysis to extract similarities from evaluations."""
 		line_of_sight = self._initialize_similarities_feature(evaluations)
 		df = self._apply_reflection_if_needed(evaluations.evaluations)
