@@ -76,6 +76,14 @@ max-args = 10
 include = ["src/dialogs.py"]
 rules = {unresolved-attribute = "ignore", possibly-missing-attribute = "ignore" }
 
+[[tool.ty.overrides]]
+include = ["src/pyqtgraph_common.py"]
+rules = {unresolved-attribute = "ignore", possibly-missing-attribute = "ignore"}
+
+[[tool.ty.overrides]]
+include = ["src/pyqtgraph_plots.py"]
+rules = {unresolved-attribute = "ignore", possibly-missing-attribute = "ignore"}
+
 
 
 

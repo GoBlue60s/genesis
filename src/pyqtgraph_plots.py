@@ -10,7 +10,7 @@ from constants import (
 	CORE_SIZE_HALF,
 	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 )
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
 	import pandas as pd
@@ -82,8 +82,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
@@ -144,8 +149,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Base Supporters")
@@ -265,8 +275,13 @@ class PyQtGraphMethods:
 		bisector_cross_y = rivalry.bisector._cross_y
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Battleground")
@@ -531,8 +546,13 @@ class PyQtGraphMethods:
 		ndim = target.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		mid_x_s: list[float] = []
 		mid_y_s: list[float] = []
@@ -618,8 +638,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
@@ -671,10 +696,20 @@ class PyQtGraphMethods:
 		rival_b = rivalry.rival_b
 		# connector = rivalry.connector
 		ndim = configuration_active.ndim
+		# Reference points are guaranteed to exist when plotting contest
+		rival_a_idx = cast("int", rival_a.index)
+		rival_b_idx = cast("int", rival_b.index)
+		bisector_cross_x = cast("float", rivalry.bisector._cross_x)
+		bisector_cross_y = cast("float", rivalry.bisector._cross_y)
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		x_coords: list[int] = []
 		y_coords: list[int] = []
@@ -685,62 +720,124 @@ class PyQtGraphMethods:
 		plot = pyqtgraph_common.add_axes_labels_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pen = pg.mkPen(color=(255, 0, 0))
-		rival_a_label = pg.TextItem(
-			text=point_labels[rival_a.index], color="k", border="w", fill=None
+		self._add_contest_rival_labels(
+			plot, point_labels, point_coords, rival_a_idx, rival_b_idx,
+			hor_dim, vert_dim
 		)
-		rival_a_label.setPos(
-			point_coords.iloc[rival_a.index, hor_dim],
-			point_coords.iloc[rival_a.index, vert_dim] + 0.04,
+		self._add_contest_rival_points(
+			plot, x_coords, y_coords, point_coords, rival_a_idx, rival_b_idx,
+			hor_dim, vert_dim, pen
 		)
-		plot.addItem(rival_a_label)
-		rival_b_label = pg.TextItem(
-			text=point_labels[rivalry.rival_b.index],
-			color="k",
-			border="w",
-			fill=None,
+		self._add_contest_core_circles(
+			plot, point_coords, rival_a_idx, rival_b_idx, hor_dim, vert_dim,
+			rivalry.core_radius, pen
 		)
-		rival_b_label.setPos(
-			point_coords.iloc[rival_b.index, hor_dim],
-			point_coords.iloc[rival_b.index, vert_dim] + 0.04,
-		)
-		plot.addItem(rival_b_label)
-		x_coords.append(point_coords.iloc[rival_a.index, hor_dim])
-		y_coords.append(point_coords.iloc[rival_a.index, vert_dim])
-		x_coords.append(point_coords.iloc[rival_b.index, hor_dim])
-		y_coords.append(point_coords.iloc[rival_b.index, vert_dim])
-		plot.scatterPlot(x_coords, y_coords, symbolSize=5, symbol="o", pen=pen)
-		core_radius = rivalry.core_radius
-		core_a = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_a.index, hor_dim] - core_radius,
-			point_coords.iloc[rival_a.index, vert_dim] - core_radius,
-			core_radius * 2,
-			core_radius * 2,
-		)
-		core_a.setPen(pen)
-		plot.addItem(core_a)
-		core_b = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_b.index, hor_dim] - core_radius,
-			point_coords.iloc[rival_b.index, vert_dim] - core_radius,
-			core_radius * 2,
-			core_radius * 2,
-		)
-		core_b.setPen(pen)
-		plot.addItem(core_b)
 		pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_connector_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_west_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_east_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_first_dim_divider_to_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_second_dim_divider_to_pyqtgraph_plot(plot)
-		m_label = pg.TextItem(text="M", color="k", border="w", fill=None)
-		m_label.setPos(
-			rivalry.bisector._cross_x, rivalry.bisector._cross_y + 0.04
+		self._add_contest_bisector_label(
+			plot, bisector_cross_x, bisector_cross_y
 		)
-		plot.addItem(m_label)
 
 		director.set_focus_on_tab("Plot")
 
 		return graphics_layout_widget
+
+	# ------------------------------------------------------------------------
+
+	def _add_contest_rival_labels(
+		self,
+		plot: pg.PlotItem,
+		point_labels: list[str],
+		point_coords: pd.DataFrame,
+		rival_a_idx: int,
+		rival_b_idx: int,
+		hor_dim: int,
+		vert_dim: int,
+	) -> None:
+		rival_a_label = pg.TextItem(
+			text=point_labels[rival_a_idx], color="k", border="w"
+		)
+		rival_a_label.setPos(
+			point_coords.iloc[rival_a_idx, hor_dim],
+			point_coords.iloc[rival_a_idx, vert_dim] + 0.04,
+		)
+		plot.addItem(rival_a_label)
+		rival_b_label = pg.TextItem(
+			text=point_labels[rival_b_idx],
+			color="k",
+			border="w",
+		)
+		rival_b_label.setPos(
+			point_coords.iloc[rival_b_idx, hor_dim],
+			point_coords.iloc[rival_b_idx, vert_dim] + 0.04,
+		)
+		plot.addItem(rival_b_label)
+
+	# ------------------------------------------------------------------------
+
+	def _add_contest_rival_points(
+		self,
+		plot: pg.PlotItem,
+		x_coords: list[int],
+		y_coords: list[int],
+		point_coords: pd.DataFrame,
+		rival_a_idx: int,
+		rival_b_idx: int,
+		hor_dim: int,
+		vert_dim: int,
+		pen: QtGui.QPen,
+	) -> None:
+		x_coords.append(point_coords.iloc[rival_a_idx, hor_dim])
+		y_coords.append(point_coords.iloc[rival_a_idx, vert_dim])
+		x_coords.append(point_coords.iloc[rival_b_idx, hor_dim])
+		y_coords.append(point_coords.iloc[rival_b_idx, vert_dim])
+		plot.scatterPlot(x_coords, y_coords, symbolSize=5, symbol="o", pen=pen)
+
+	# ------------------------------------------------------------------------
+
+	def _add_contest_core_circles(
+		self,
+		plot: pg.PlotItem,
+		point_coords: pd.DataFrame,
+		rival_a_idx: int,
+		rival_b_idx: int,
+		hor_dim: int,
+		vert_dim: int,
+		core_radius: float,
+		pen: QtGui.QPen,
+	) -> None:
+		core_a = pg.QtWidgets.QGraphicsEllipseItem(
+			point_coords.iloc[rival_a_idx, hor_dim] - core_radius,
+			point_coords.iloc[rival_a_idx, vert_dim] - core_radius,
+			core_radius * 2,
+			core_radius * 2,
+		)
+		core_a.setPen(pen)
+		plot.addItem(core_a)
+		core_b = pg.QtWidgets.QGraphicsEllipseItem(
+			point_coords.iloc[rival_b_idx, hor_dim] - core_radius,
+			point_coords.iloc[rival_b_idx, vert_dim] - core_radius,
+			core_radius * 2,
+			core_radius * 2,
+		)
+		core_b.setPen(pen)
+		plot.addItem(core_b)
+
+	# ------------------------------------------------------------------------
+
+	def _add_contest_bisector_label(
+		self,
+		plot: pg.PlotItem,
+		bisector_cross_x: float,
+		bisector_cross_y: float,
+	) -> None:
+		m_label = pg.TextItem(text="M", color="k", border="w")
+		m_label.setPos(bisector_cross_x, bisector_cross_y + 0.04)
+		plot.addItem(m_label)
 
 	# ------------------------------------------------------------------------
 
@@ -781,8 +878,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Convertible")
@@ -913,8 +1015,13 @@ class PyQtGraphMethods:
 		configuration_active = director.configuration_active
 		ndim = configuration_active.ndim
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Core Supporters")
@@ -1108,8 +1215,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
@@ -1155,7 +1267,6 @@ class PyQtGraphMethods:
 				color="k",
 				anchor=(0.5, 1),
 				border="w",
-				fill=None,
 			)
 			nudge_x = unit_x + 0.2 if unit_x >= 0.0 else unit_x - 0.2
 			nudge_y = unit_y if unit_y >= 0.0 else unit_y - 0.2
@@ -1267,8 +1378,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
@@ -1374,8 +1490,13 @@ class PyQtGraphMethods:
 
 		ndim = grouped_data_active.ndim
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			self._director.pyqtgraph_common.begin_pyqtgraph_plot_with_title(
@@ -1404,7 +1525,6 @@ class PyQtGraphMethods:
 				color="k",
 				anchor=(0.5, 1),
 				border="w",
-				fill=None,
 			)
 			a_label.setPos(x[each_label], y[each_label])
 			plot.addItem(a_label)
@@ -1738,8 +1858,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
@@ -1813,8 +1938,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
@@ -1944,8 +2074,13 @@ class PyQtGraphMethods:
 		point_size = common.point_size
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Scores")
@@ -2228,8 +2363,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(
@@ -2340,8 +2480,13 @@ class PyQtGraphMethods:
 		ndim = target_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
@@ -2366,7 +2511,6 @@ class PyQtGraphMethods:
 				color="k",
 				anchor=(0.5, 1),
 				border="w",
-				fill=None,
 			)
 			a_label.setPos(x[each_label], y[each_label])
 			plot.addItem(a_label)
@@ -2404,6 +2548,7 @@ class PyQtGraphMethods:
 	def plot_uncertainty_using_pyqtgraph(self) -> pg.GraphicsLayoutWidget:
 		director = self._director
 		common = director.common
+		pyqtgraph_common = director.pyqtgraph_common
 		uncertainty_active = director.uncertainty_active
 		ndim = uncertainty_active.ndim
 		range_points = uncertainty_active.range_points
@@ -2411,13 +2556,15 @@ class PyQtGraphMethods:
 		solutions = uncertainty_active.solutions
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
-		result = self._initialize_uncertainty_plot()
-		if result is None:
-			return None
-		graphics_layout_widget, plot = result
+		graphics_layout_widget, plot = self._initialize_uncertainty_plot()
 
 		for each_point in range_points:
 			x_coords, y_coords = self._extract_point_coordinates(
@@ -2428,7 +2575,7 @@ class PyQtGraphMethods:
 			self._add_point_scatter_and_label(
 				plot, each_point, x_coords, y_coords, x_mean, y_mean
 			)
-			self._add_ellipse_mode_pyqtgraph(
+			pyqtgraph_common.add_ellipse_mode_pyqtgraph(
 				plot, x_coords, y_coords, x_mean, y_mean
 			)
 
@@ -2440,7 +2587,7 @@ class PyQtGraphMethods:
 
 	def _initialize_uncertainty_plot(
 		self,
-	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem] | None:
+	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem]:
 		"""Initialize the uncertainty plot with title and labels."""
 		director = self._director
 		common = director.common
@@ -2452,8 +2599,13 @@ class PyQtGraphMethods:
 		ndim = uncertainty_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title("Uncertainty")
@@ -2512,13 +2664,17 @@ class PyQtGraphMethods:
 		solutions = uncertainty_active.solutions
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
-		result = self._initialize_spatial_uncertainty_plot()
-		if result is None:
-			return None
-		graphics_layout_widget, plot = result
+		graphics_layout_widget, plot = (
+			self._initialize_spatial_uncertainty_plot()
+		)
 
 		plot_to_show = getattr(director, "plot_to_show", "ellipses")
 
@@ -2558,7 +2714,7 @@ class PyQtGraphMethods:
 
 	def _initialize_spatial_uncertainty_plot(
 		self,
-	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem] | None:
+	) -> tuple[pg.GraphicsLayoutWidget, pg.PlotItem]:
 		"""Initialize the spatial uncertainty plot with title and labels."""
 		director = self._director
 		common = director.common
@@ -2570,8 +2726,13 @@ class PyQtGraphMethods:
 		ndim = uncertainty_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		title = "Uncertainty"
 		graphics_layout_widget, plot = (
@@ -2607,7 +2768,6 @@ class PyQtGraphMethods:
 			color="k",
 			anchor=(0.5, 0.5),
 			border="w",
-			fill=None,
 		)
 		point_label.setPos(x_mean, y_mean)
 		plot.addItem(point_label)
@@ -2660,8 +2820,13 @@ class PyQtGraphMethods:
 		ndim = uncertainty_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		plot_to_show = getattr(director, "plot_to_show", "ellipses")
 		selected_point_indices = getattr(
@@ -2747,8 +2912,13 @@ class PyQtGraphMethods:
 		ndim = configuration_active.ndim
 
 		if ndim > MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING:
-			director.set_focus_on_tab("Output")
-			return None
+			title = "Too many dimensions for plotting"
+			message = (
+				"Spaces can only plot 2D data. "
+				"Current configuration has " + str(ndim) + " dimensions."
+			)
+			raise DependencyError(title, message)
+			
 
 		graphics_layout_widget, plot = (
 			pyqtgraph_common.begin_pyqtgraph_plot_with_title(None)
