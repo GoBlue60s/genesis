@@ -199,7 +199,8 @@ class SquareTableWidget:
 
 					item = QTableWidgetItem(formatted_value)
 					item.setTextAlignment(
-						QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter
+						QtCore.Qt.AlignmentFlag.AlignCenter
+						| QtCore.Qt.AlignmentFlag.AlignVCenter
 					)
 					table_widget.setItem(row, col, item)
 
@@ -410,7 +411,7 @@ class RivalryTableWidget:
 
 	def _build_rivalry_table(
 		self,
-		data: pd.DataFrame,
+		data: pd.DataFrame | None,
 		row_headers: list[str],
 		column_headers: list[str],
 		row_height: int,
@@ -442,6 +443,11 @@ class RivalryTableWidget:
 			self._director.output_widget_type = "Table"
 
 			return table_widget
+
+		# At this point, data must be a valid DataFrame (not None)
+		if data is None:
+			message = "data should not be None when noscores=False"
+			raise ValueError(message)
 
 		# Create the table widget
 		table_widget = QTableWidget(data.shape[0], data.shape[1])

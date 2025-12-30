@@ -90,6 +90,10 @@ class Status(QMainWindow):
 
 	title_for_table_widget: str = ""
 	cluster_results: pd.DataFrame
+	width: int
+	decimals: int
+	plot_to_show: str
+	selected_point_indices: list[int]
 
 	def __init__(self, parent: QWidget | None = None) -> None:
 		"""Initializer."""
@@ -179,6 +183,8 @@ class Status(QMainWindow):
 		self.row_header_color: str = "lightgreen"
 		self.cell_color: str = "lightyellow"
 		self.name_of_file_written_to: str = ""
+		self.width: int = 8
+		self.decimals: int = 2
 
 	# ------------------------------------------------------------------------
 
@@ -359,24 +365,25 @@ class Status(QMainWindow):
 				
 	# ------------------------------------------------------------------------
 
-	def widget_control(self, next_output: str) -> object:
+	def widget_control(self, next_output: str) -> QWidget:
 		widget_dict = self.widget_dict
 		# _current_command = self.current_command
 
-		gui_output_as_widget = None
-		if next_output in widget_dict:
-			if widget_dict[next_output][1] == "unique":
-				gui_output_as_widget = self.current_command._display()  # type: ignore[possibly-missing-attribute]
-			else:
-				which_shared = widget_dict[next_output][2]
-				if callable(which_shared):
-					gui_output_as_widget = which_shared()
-				else:
-					gui_output_as_widget = which_shared
+		if next_output not in widget_dict:
+			title = "Widget not found"
+			message = f"Key '{next_output}' not found in the widget dictionary"
+			raise SpacesError(title, message)
+
+		if widget_dict[next_output][1] == "unique":
+			gui_output_as_widget = self.current_command._display()  # type: ignore[possibly-missing-attribute]
 		else:
-			print("Key not found in the widget control dictionary")
+			which_shared = widget_dict[next_output][2]
+			if callable(which_shared):
+				gui_output_as_widget = which_shared()
+			else:
+				gui_output_as_widget = which_shared
 		# self.current_command = _current_command
-		return gui_output_as_widget
+		return gui_output_as_widget  # type: ignore[return-value]
 
 	# ------------------------------------------------------------------------
 

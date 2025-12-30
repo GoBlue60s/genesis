@@ -110,13 +110,13 @@ class Rivalry:
 		self.rival_a: ReferencePoint = ReferencePoint()
 		self.rival_b: ReferencePoint = ReferencePoint()
 
-		self.base_pcts: list[float] = []
-		self.battleground_pcts: list = []
-		self.conv_pcts: list[float] = []
-		self.core_pcts: list[float] = []
-		self.first_pcts: list[float] = []
-		self.likely_pcts: list = []
-		self.second_pcts: list[float] = []
+		self.base_pcts: pd.Series = pd.Series(dtype=float)
+		self.battleground_pcts: pd.Series = pd.Series(dtype=float)
+		self.conv_pcts: pd.Series = pd.Series(dtype=float)
+		self.core_pcts: pd.Series = pd.Series(dtype=float)
+		self.first_pcts: pd.Series = pd.Series(dtype=float)
+		self.likely_pcts: pd.Series = pd.Series(dtype=float)
+		self.second_pcts: pd.Series = pd.Series(dtype=float)
 		self.base_pcts_df: pd.DataFrame = pd.DataFrame()
 
 		self.core_radius: float = 0.0

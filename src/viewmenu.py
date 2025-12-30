@@ -206,7 +206,7 @@ class ViewCustomCommand:
 		params = common.get_command_parameters("View custom")
 		common.capture_and_push_undo_state("View custom", "passive", params)
 		self._print_view_custom()
-		self._create_view_custom_plot_for_tabs_using_matplotlib()
+		common.create_plot_for_tabs("view_custom")
 		self._director.create_widgets_for_output_and_log_tabs()
 		self._director.record_command_as_successfully_completed()
 		return

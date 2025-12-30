@@ -42,6 +42,7 @@ class ConfigurationFeature:
 		self.point_names: list[str] = []
 		self.point_labels: list[str] = []
 		self.point_coords: pd.DataFrame = pd.DataFrame()
+		self.compared: pd.DataFrame = pd.DataFrame()
 		self.directions_df: pd.DataFrame = pd.DataFrame()
 		self.eigen: pd.DataFrame = pd.DataFrame()
 		self.eigen_common: pd.DataFrame = pd.DataFrame()
@@ -1481,6 +1482,8 @@ class TargetFeature:
 		self.hor_axis_name: str = ""
 		self.vert_axis_name: str = ""
 
+		self.disparity: float = 0.0
+		self.compare_df: pd.DataFrame = pd.DataFrame()
 		self.distances: list[float] = []
 		self.seg: pd.DataFrame = pd.DataFrame()
 

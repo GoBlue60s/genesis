@@ -70,10 +70,14 @@ class CompareCommand:
 		active_out, target_out, disparity = procrustes(active_in, target_in)
 
 		point_coords = pd.DataFrame(
-			active_out, columns=dim_labels, index=point_names
+			active_out,
+			columns=pd.Index(dim_labels),
+			index=pd.Index(point_names)
 		)
 		target_coords = pd.DataFrame(
-			target_out, columns=dim_labels, index=point_names
+			target_out,
+			columns=pd.Index(dim_labels),
+			index=pd.Index(point_names)
 		)
 		compared = point_coords.merge(
 			target_coords, how="inner", left_index=True, right_index=True
@@ -103,7 +107,7 @@ class CompareCommand:
 		vert_dim = common.vert_dim
 
 		# Create an empty DataFrame with point names as index
-		compare_df = pd.DataFrame(index=active_config.point_names)
+		compare_df = pd.DataFrame(index=pd.Index(active_config.point_names))
 
 		# Add the coordinates in an object-oriented way
 		# Use a loop to iterate over dimensions and set X/Y coordinates
@@ -540,7 +544,9 @@ class VarimaxCommand:
 		print(f"\nDEBUG -- in process {rotated=}")
 		print(f"\nDEBUG -- {dim_labels=}{point_names=}{item_names=}")
 		point_coords = pd.DataFrame(
-			rotated, columns=dim_labels, index=item_names
+			rotated,
+			columns=pd.Index(dim_labels),
+			index=pd.Index(item_names)
 		)
 
 		self._director.configuration_active.point_coords = point_coords
@@ -554,7 +560,7 @@ class VarimaxCommand:
 		gamma: float = 1.0,
 		q: int = 20,
 		tol: float = 1e-6,
-	) -> np.array:
+	) -> np.ndarray:
 		p, k = np.shape(Phi)
 		# R = eye(k)
 		R = np.zeros(k)  # noqa: N806
