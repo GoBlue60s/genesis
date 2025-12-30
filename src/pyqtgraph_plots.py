@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 	import pandas as pd
 	from director import Status
 	from features import TargetFeature
-	from geometry import PeoplePoints
+	from geometry import PeoplePoints, ReferencePoint
 
 from exceptions import DependencyError, UnderDevelopmentError
 
@@ -718,15 +718,18 @@ class PyQtGraphMethods:
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pen = pg.mkPen(color=(255, 0, 0))
 		self._add_contest_rival_labels(
-			plot, point_labels, point_coords, rival_a.index, rival_b.index,
+			plot, point_labels, point_coords, rival_a, rival_b,
 			hor_dim, vert_dim
 		)
 		self._add_contest_rival_points(
-			plot, x_coords, y_coords, point_coords, rival_a.index, rival_b.index,
+			plot, x_coords, y_coords, point_coords,
+			rival_a, rival_b,
 			hor_dim, vert_dim, pen
 		)
 		self._add_contest_core_circles(
-			plot, point_coords, rival_a.index, rival_b.index, hor_dim, vert_dim,
+			plot, point_coords,
+			rival_a, rival_b,
+			hor_dim, vert_dim,
 			rivalry.core_radius, pen
 		)
 		pyqtgraph_common.add_bisector_to_pyqtgraph_plot(plot)
@@ -750,27 +753,27 @@ class PyQtGraphMethods:
 		plot: pg.PlotItem,
 		point_labels: list[str],
 		point_coords: pd.DataFrame,
-		rival_a_idx: int,
-		rival_b_idx: int,
+		rival_a: ReferencePoint,
+		rival_b: ReferencePoint,
 		hor_dim: int,
 		vert_dim: int,
 	) -> None:
 		rival_a_label = pg.TextItem(
-			text=point_labels[rival_a_idx], color="k", border="w"
+			text=point_labels[rival_a.index], color="k", border="w"
 		)
 		rival_a_label.setPos(
-			point_coords.iloc[rival_a_idx, hor_dim],
-			point_coords.iloc[rival_a_idx, vert_dim] + 0.04,
+			point_coords.iloc[rival_a.index, hor_dim],
+			point_coords.iloc[rival_a.index, vert_dim] + 0.04,
 		)
 		plot.addItem(rival_a_label)
 		rival_b_label = pg.TextItem(
-			text=point_labels[rival_b_idx],
+			text=point_labels[rival_b.index],
 			color="k",
 			border="w",
 		)
 		rival_b_label.setPos(
-			point_coords.iloc[rival_b_idx, hor_dim],
-			point_coords.iloc[rival_b_idx, vert_dim] + 0.04,
+			point_coords.iloc[rival_b.index, hor_dim],
+			point_coords.iloc[rival_b.index, vert_dim] + 0.04,
 		)
 		plot.addItem(rival_b_label)
 
@@ -782,16 +785,16 @@ class PyQtGraphMethods:
 		x_coords: list[int],
 		y_coords: list[int],
 		point_coords: pd.DataFrame,
-		rival_a_idx: int,
-		rival_b_idx: int,
+		rival_a: ReferencePoint,
+		rival_b: ReferencePoint,
 		hor_dim: int,
 		vert_dim: int,
 		pen: QtGui.QPen,
 	) -> None:
-		x_coords.append(point_coords.iloc[rival_a_idx, hor_dim])
-		y_coords.append(point_coords.iloc[rival_a_idx, vert_dim])
-		x_coords.append(point_coords.iloc[rival_b_idx, hor_dim])
-		y_coords.append(point_coords.iloc[rival_b_idx, vert_dim])
+		x_coords.append(point_coords.iloc[rival_a.index, hor_dim])
+		y_coords.append(point_coords.iloc[rival_a.index, vert_dim])
+		x_coords.append(point_coords.iloc[rival_b.index, hor_dim])
+		y_coords.append(point_coords.iloc[rival_b.index, vert_dim])
 		plot.scatterPlot(x_coords, y_coords, symbolSize=5, symbol="o", pen=pen)
 
 	# ------------------------------------------------------------------------
@@ -800,24 +803,24 @@ class PyQtGraphMethods:
 		self,
 		plot: pg.PlotItem,
 		point_coords: pd.DataFrame,
-		rival_a_idx: int,
-		rival_b_idx: int,
+		rival_a: ReferencePoint,
+		rival_b: ReferencePoint,
 		hor_dim: int,
 		vert_dim: int,
 		core_radius: float,
 		pen: QtGui.QPen,
 	) -> None:
 		core_a = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_a_idx, hor_dim] - core_radius,
-			point_coords.iloc[rival_a_idx, vert_dim] - core_radius,
+			point_coords.iloc[rival_a.index, hor_dim] - core_radius,
+			point_coords.iloc[rival_a.index, vert_dim] - core_radius,
 			core_radius * 2,
 			core_radius * 2,
 		)
 		core_a.setPen(pen)
 		plot.addItem(core_a)
 		core_b = pg.QtWidgets.QGraphicsEllipseItem(
-			point_coords.iloc[rival_b_idx, hor_dim] - core_radius,
-			point_coords.iloc[rival_b_idx, vert_dim] - core_radius,
+			point_coords.iloc[rival_b.index, hor_dim] - core_radius,
+			point_coords.iloc[rival_b.index, vert_dim] - core_radius,
 			core_radius * 2,
 			core_radius * 2,
 		)
@@ -2925,8 +2928,8 @@ class PyQtGraphMethods:
 		pyqtgraph_common.set_ranges_for_pyqtgraph_plot(plot)
 		pyqtgraph_common.add_configuration_to_pyqtgraph_plot(plot)
 		for each_point in range_points:
-			x = point_coords.iloc[each_point][0]
-			y = point_coords.iloc[each_point][1]
+			x = point_coords.iloc[each_point, 0]
+			y = point_coords.iloc[each_point, 1]
 			arrow_len = 20  # adjust the size of the arrow (
 			# to indicate relative vector magnitude if necessary)
 			line_pen = pg.mkPen("r", width=3)
