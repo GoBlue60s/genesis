@@ -944,6 +944,7 @@ class ScoresFeature:
 		self.nscores: int = 0
 		self.range_scores: range = range(0)
 		self.nscored_individ: int = 0
+		self.range_nscored_individ: range = range(0)
 		self.nscored_items: int = 0
 		self.n_individ: int = 0
 		self.ndim: int = 0

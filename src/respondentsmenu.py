@@ -34,12 +34,12 @@ class BaseCommand(ASupporterGrouping):
 	# ------------------------------------------------------------------------
 
 	def execute(self, common: Spaces, show: str) -> None:
-		
+
 		director = self._director
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Base", show=show)
 		common.capture_and_push_undo_state("Base", "passive", params)
-		director.current_command._base_groups_to_show = show
+		self._base_groups_to_show = show
 		self._print_base()
 		common.create_plot_for_tabs("base")
 		director.create_widgets_for_output_and_log_tabs()
@@ -110,7 +110,7 @@ class BattlegroundCommand(ASupporterGrouping):
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Battleground", show=show)
 		common.capture_and_push_undo_state("Battleground", "passive", params)
-		self._director.current_command._battleground_groups_to_show = show
+		self._battleground_groups_to_show = show
 		self._print_battleground()
 		common.create_plot_for_tabs("battleground")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -200,7 +200,7 @@ class ConvertibleCommand(ASupporterGrouping):
 		common.initiate_command_processes()
 		params = common.get_command_parameters("Convertible", show=show)
 		common.capture_and_push_undo_state("Convertible", "passive", params)
-		self._director.current_command._convertible_groups_to_show = show
+		self._convertible_groups_to_show = show
 		self._print_convertible()
 		common.create_plot_for_tabs("convertible")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -270,7 +270,7 @@ class CoreSupportersCommand(ASupporterGrouping):
 		params = common.get_command_parameters("Core supporters", show=show)
 		common.capture_and_push_undo_state(
 			"Core supporters", "passive", params)
-		self._director.current_command.core_groups_to_show = show
+		self.core_groups_to_show = show
 		self._print_core()
 		common.create_plot_for_tabs("core")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -345,7 +345,7 @@ class FirstDimensionCommand(ASupporterGrouping):
 		params = common.get_command_parameters("First dimension", show=show)
 		common.capture_and_push_undo_state(
 			"First dimension", "passive", params)
-		self._director.current_command._first_dim_groups_to_show = show
+		self._first_dim_groups_to_show = show
 		self._print_first_dimension()
 		common.create_plot_for_tabs("first")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -437,7 +437,7 @@ class LikelySupportersCommand(ASupporterGrouping):
 		params = common.get_command_parameters("Likely supporters", show=show)
 		common.capture_and_push_undo_state(
 			"Likely supporters", "passive", params)
-		self._director.current_command.likely_groups_to_show = show
+		self.likely_groups_to_show = show
 		self._print_likely()
 		common.create_plot_for_tabs("likely")
 		self._director.create_widgets_for_output_and_log_tabs()
@@ -585,9 +585,13 @@ class SampleDesignerCommand:
 		# self._director.uncertainty_active.probability_of_inclusion = 0
 		# self._director.uncertainty_active.nrepetitions = 0
 		self._director.uncertainty_active.sample_design = pd.DataFrame(
-			columns=["RespId", "Repetition", "Selected"])
+			columns=pd.Index(["RespId", "Repetition", "Selected"])
+		)
 		self._director.uncertainty_active.sample_design_frequencies = (
-			pd.DataFrame(columns=["Repetition", "Selected", "Count"]))
+			pd.DataFrame(
+				columns=pd.Index(["Repetition", "Selected", "Count"])
+			)
+		)
 		# self._designer_title = "Set sample parameters.."
 		# self._designer_items = [
 		# 	"Probability of inclusion",
@@ -658,7 +662,7 @@ class SampleDesignerCommand:
 		sample_design.sort_values(by=["Repetition", "RespId"], inplace=True)
 
 		sample_design_frequencies = (
-			sample_design.groupby(["Repetition", "Selected"])
+			sample_design.groupby(["Repetition", "Selected"])  # type: ignore[call-overload]
 			.size()
 			.reset_index(name="Count")
 		)
@@ -899,7 +903,8 @@ class ScoreIndividualsCommand:
 		score_2_name = dim_names[1]
 
 		scores_df = pd.DataFrame(
-			columns=[score_1_name, score_2_name], index=evaluations.index
+			columns=pd.Index([score_1_name, score_2_name]),
+			index=pd.Index(evaluations.index)
 		)
 		nscored = len(evaluations)
 
@@ -982,7 +987,7 @@ class SecondDimensionCommand(ASupporterGrouping):
 		params = common.get_command_parameters("Second dimension", show=show)
 		common.capture_and_push_undo_state(
 			"Second dimension", "passive", params)
-		self._director.current_command._second_dim_groups_to_show = show
+		self._second_dim_groups_to_show = show
 		self._print_second_dimension()
 		common.create_plot_for_tabs("second")
 		self._director.create_widgets_for_output_and_log_tabs()
