@@ -745,7 +745,7 @@ class Status(QMainWindow):
 		self.spaces_statusbar: QStatusBar = QStatusBar()
 		self.left_statusbar_message: str = "Left"
 		self.center_statusbar_message: str = ""
-		self.right_statusbar_message: str = "Spaces 2025"
+		self.right_statusbar_message: str = "Spaces 2026"
 		self.left_statusbar: QLabel = QLabel(self.left_statusbar_message)
 		self.right_statusbar: QLabel = QLabel(self.right_statusbar_message)
 

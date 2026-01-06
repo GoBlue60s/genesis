@@ -2366,7 +2366,9 @@ class Spaces:
 	) -> None:
 		"""Set the alignment for a table widget item based on format"""
 		if column_format == "s":
-			alignment = (QtCore.Qt.AlignmentFlag.AlignLeft |
+			alignment = (
+				QtCore.AlignLeft |
+#				QtCore.Qt.AlignmentFlag.AlignLeft |
 				QtCore.Qt.AlignmentFlag.AlignVCenter)
 		else:
 			alignment = (QtCore.Qt.AlignmentFlag.AlignCenter |
