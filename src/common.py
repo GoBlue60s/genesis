@@ -1209,7 +1209,7 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def los(self, evaluations: EvaluationsFeature) -> SimilaritiesFeature:
+	def los(self, evaluations: pd.DataFrame) -> SimilaritiesFeature:
 		"""Line of sight analysis to extract similarities from evaluations."""
 		line_of_sight = self._initialize_similarities_feature(evaluations)
 		df = self._apply_reflection_if_needed(evaluations.evaluations)
@@ -2367,8 +2367,8 @@ class Spaces:
 		"""Set the alignment for a table widget item based on format"""
 		if column_format == "s":
 			alignment = (
-				QtCore.AlignLeft |
-#				QtCore.Qt.AlignmentFlag.AlignLeft |
+#				QtCore.AlignLeft |
+				QtCore.Qt.AlignmentFlag.AlignLeft |
 				QtCore.Qt.AlignmentFlag.AlignVCenter)
 		else:
 			alignment = (QtCore.Qt.AlignmentFlag.AlignCenter |

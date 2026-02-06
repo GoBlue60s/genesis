@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from factor_analyzer import FactorAnalyzer
+# from factor_analyzer import FactorAnalyzer
 import numpy as np
 import pandas as pd
 import peek  # noqa: F401

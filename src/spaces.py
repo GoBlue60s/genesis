@@ -9,7 +9,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtCore import QFile, QIODevice
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QTextEdit
-from director import Status, SplashWindow
+from director import Status, SplashWindow  # ty: ignore[unresolved-import]
 
 
 # end of imports
@@ -70,7 +70,7 @@ class MyApplication:
 			f"{len(self.director.title_generator_dict)} tables available."
 			"\n\nHave fun - Go boldly where no man has gone before!!!!!!! \n"
 		)
-		# peek("Peek seems to be working") # ty: ignore[call-non-callable]
+		# peek("Peek seems to be working")
 		self.start_event_loop()
 		self.print_debug_logs()
 		sys.exit()
@@ -108,9 +108,9 @@ class MyApplication:
 		return self.spaces_app.exec()
 
 	def print_debug_logs(self) -> None:
-		print(f"{self.director.commands_used=}") # ty: ignore[call-non-callable]
-		print(f"{self.director.command_exit_code=}") # ty: ignore[call-non-callable]
-		print(f"{self.director.undo_stack_source=}\n") # ty: ignore[call-non-callable]
+		print(f"{self.director.commands_used=}")
+		print(f"{self.director.command_exit_code=}")
+		print(f"{self.director.undo_stack_source=}\n")
 
 	@staticmethod
 	def exit_with_error(error_message: str) -> None:

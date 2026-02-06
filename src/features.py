@@ -64,9 +64,6 @@ class ConfigurationFeature:
 		self.dim_labels: list[str] = []
 		self.range_dims: range = range(0)
 		self.range_items: range = range(0)
-
-		# self.hor_axis_name: str = "Unknown"   # ???????????????????????
-		# self.vert_axis_name: str = "Unknown"   # ??????????????????????
 		self.hor_axis_name: str = ""
 		self.vert_axis_name: str = ""
 
@@ -90,7 +87,7 @@ class ConfigurationFeature:
 		self.range_dyads: range = range(0)
 		self.ranks_df: pd.DataFrame = pd.DataFrame()
 		# Pandas data frame used for advanced computations on dyads
-		self.ev: pd.DataFrame = pd.DataFrame()
+		# self.ev: pd.DataFrame = pd.DataFrame()
 		# Pandas data framer used for evaluations
 		self.first: pd.DataFrame = pd.DataFrame()
 		self.second: pd.DataFrame = pd.DataFrame()
