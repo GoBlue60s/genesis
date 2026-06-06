@@ -241,6 +241,9 @@ class RedoCommand:
 
 		# Use the same helper methods from UndoCommand
 		# We can create a temporary UndoCommand instance to reuse methods
+		# Save and restore director.command because UndoCommand.__init__
+		# sets it to "Undo" as a side effect
+		saved_command = self._director.command
 		temp_undo = UndoCommand(self._director, self.common)
 		temp_undo._add_current_config_details(
 			restored_types, restoration_details
@@ -260,6 +263,7 @@ class RedoCommand:
 		temp_undo._add_current_rivalry_details(
 			restored_types, restoration_details
 		)
+		self._director.command = saved_command
 
 		return restoration_details
 
