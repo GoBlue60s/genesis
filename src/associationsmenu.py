@@ -281,7 +281,7 @@ class LineOfSightCommand:
 		params = common.get_command_parameters("Line of sight")
 		common.capture_and_push_undo_state("Line of sight", "active", params)
 		self._director.similarities_active = common.los(
-			self._director.evaluations_active.evaluations)
+			self._director.evaluations_active)
 		self._duplicate_similarities(common)
 		self._director.similarities_active.rank_similarities()
 		self._director.similarities_active.duplicate_ranked_similarities(

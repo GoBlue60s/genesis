@@ -57,6 +57,7 @@ if TYPE_CHECKING:
 	from features import (
 		ConfigurationFeature,
 		CorrelationsFeature,
+		EvaluationsFeature,
 		IndividualsFeature,
 		SimilaritiesFeature,
 		TargetFeature,
@@ -1209,7 +1210,7 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def los(self, evaluations: pd.DataFrame) -> SimilaritiesFeature:
+	def los(self, evaluations: EvaluationsFeature) -> SimilaritiesFeature:
 		"""Line of sight analysis to extract similarities from evaluations."""
 		line_of_sight = self._initialize_similarities_feature(evaluations)
 		df = self._apply_reflection_if_needed(evaluations.evaluations)
@@ -1225,7 +1226,7 @@ class Spaces:
 		return line_of_sight
 
 	def _initialize_similarities_feature(
-		self, evaluations: pd.DataFrame
+		self, evaluations: EvaluationsFeature
 	) -> SimilaritiesFeature:
 		"""Initialize and configure a SimilaritiesFeature object."""
 		from features import SimilaritiesFeature  # noqa: PLC0415
@@ -1336,7 +1337,7 @@ class Spaces:
 		return cum_b_hat.rank(axis=1, method="average")
 
 	def _find_best_ranking(
-		self, ordered: pd.DataFrame, evaluations: pd.DataFrame
+		self, ordered: pd.DataFrame, evaluations: EvaluationsFeature
 	) -> pd.Series:
 		"""Find the best ranking through optimization."""
 		# Calculate iteration control parameter (unused but preserved)

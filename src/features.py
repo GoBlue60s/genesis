@@ -1300,9 +1300,12 @@ class SimilaritiesFeature:
 		ranks_df["Distance_AB"] = 0.0
 		#
 		for each_dyad in range_similarities:
-			ranks_df.loc[each_dyad, "Distance_AB"] = distances_as_dict[
-				temp_list[each_dyad]
-			]
+			a_label = ranks_df.iloc[each_dyad, a_label_index]
+			b_label = ranks_df.iloc[each_dyad, b_label_index]
+			key = f"{a_label}_{b_label}"
+			if key not in distances_as_dict:
+				key = f"{b_label}_{a_label}"
+			ranks_df.loc[each_dyad, "Distance_AB"] = distances_as_dict[key]
 		ranks_df["Distance_Rank"] = ranks_df["Distance_AB"].rank(
 			method="average"
 		)
