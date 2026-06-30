@@ -3664,9 +3664,13 @@ title_generator_dict = MappingProxyType({
 		"Evaluations have been read and correlations computed"
 	),
 	"Exit": lambda _: "Exiting Spaces",
-	"Factor analysis": lambda _: "Factor analysis",
-	"Factor analysis machine learning": lambda _: (
-		"Factor Analysis - Machine Learning"
+	"Factor analysis": lambda d: (
+		f"Factor analysis: "
+		f"{d.undo_stack[-1].command_params.get('n_factors')} factors"
+	),
+	"Factor analysis machine learning": lambda d: (
+		f"Factor Analysis - Machine Learning: "
+		f"{d.undo_stack[-1].command_params.get('n_components')} components"
 	),
 	"First dimension": lambda _: "Party oriented segments",
 	"Grouped data": lambda d: (
@@ -3682,7 +3686,9 @@ title_generator_dict = MappingProxyType({
 		f"({len(d.individuals_active.ind_vars)} rows)"
 	),
 	"Invert": lambda d: (
-		f"Configuration has {d.configuration_active.ndim} "
+		f"Inverted: "
+		f"{', '.join(d.undo_stack[-1].command_params.get('dimensions', []))}"
+		f" — Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
 	"Joint": lambda _: (
@@ -3699,11 +3705,19 @@ title_generator_dict = MappingProxyType({
 		f"{d.similarities_active.nreferent} items"
 	),
 	"MDS": lambda d: (
-		f"Configuration has {d.configuration_active.ndim} dimensions and "
-		f"{d.configuration_active.npoint} points and stress of "
-		f"{d.common.best_stress: 6.4f}"
+		(
+			"Metric MDS"
+			if d.undo_stack[-1].command_params.get("use_metric")
+			else "Non-metric MDS"
+		) + (
+			f" — Configuration has {d.configuration_active.ndim} dimensions"
+			f" and {d.configuration_active.npoint} points,"
+			f" stress {d.common.best_stress: 6.4f}"
+		)
 	),
 	"Move": lambda d: (
+		f"Moved {d.undo_stack[-1].command_params.get('dimension')}"
+		f" by {d.undo_stack[-1].command_params.get('distance')} — "
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
@@ -3728,7 +3742,10 @@ title_generator_dict = MappingProxyType({
 		f"{d.configuration_active.point_names[d.common.focal_index]} "
 		f"and other points"
 	),
-	"Principal components": lambda _: "Principal components",
+	"Principal components": lambda d: (
+		f"Principal components: "
+		f"{d.undo_stack[-1].command_params.get('n_components')} components"
+	),
 	"Print configuration": lambda _: "Active configuration",
 	"Print correlations": lambda _: "Active correlations",
 	"Print evaluations": lambda _: "Active evaluations",
@@ -3752,10 +3769,15 @@ title_generator_dict = MappingProxyType({
 		f"{d.rivalry.rival_b.name}"
 	),
 	"Rescale": lambda d: (
+		f"Rescaled: "
+		f"{', '.join(d.undo_stack[-1].command_params.get('dimensions', []))}"
+		f" by {d.undo_stack[-1].command_params.get('scale_factor')} — "
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
 	"Rotate": lambda d: (
+		f"Rotated by "
+		f"{d.undo_stack[-1].command_params.get('degrees')} degrees — "
 		f"Configuration has {d.configuration_active.ndim} "
 		f"dimensions and {d.configuration_active.npoint} points"
 	),
@@ -3822,18 +3844,52 @@ title_generator_dict = MappingProxyType({
 		f"Segments defined by contest between {d.rivalry.rival_a.name} "
 		f"and {d.rivalry.rival_b.name}"
 	),
-	"Settings - display sizing": lambda _: "Display sizing settings updated",
-	"Settings - layout options": lambda _: "Layout options updated",
-	"Settings - plane": lambda _: "Plane settings updated",
-	"Settings - plot settings": lambda _: "Plot settings updated",
-	"Settings - presentation layer": lambda _: "Presentation layer updated",
-	"Settings - segment sizing": lambda _: (
-		"Segment sizing settings updated"
+	"Settings - display sizing": lambda d: (
+		f"Display sizing — "
+		f"axis={d.undo_stack[-1].command_params.get('axis_extra')}%, "
+		"displacement="
+		f"{d.undo_stack[-1].command_params.get('displacement')}%, "
+		f"point size={d.undo_stack[-1].command_params.get('point_size')}"
 	),
-	"Settings - vector sizing": lambda _: "Vector sizing settings updated",
-	"Shepard": lambda _: (
-		"Rank of similarity above diagonal, "
-		"rank of distance below diagonal"
+	"Settings - layout options": lambda d: (
+		f"Layout options — "
+		f"max cols={d.undo_stack[-1].command_params.get('max_cols')}, "
+		f"width={d.undo_stack[-1].command_params.get('width')}, "
+		f"decimals={d.undo_stack[-1].command_params.get('decimals')}"
+	),
+	"Settings - plane": lambda d: (
+		f"Plane — "
+		f"horizontal={d.undo_stack[-1].command_params.get('horizontal')}, "
+		f"vertical={d.undo_stack[-1].command_params.get('vertical')}"
+	),
+	"Settings - plot settings": lambda d: (
+		f"Plot settings — "
+		f"bisector={d.undo_stack[-1].command_params.get('bisector')}, "
+		f"connector={d.undo_stack[-1].command_params.get('connector')}, "
+		"ref points="
+		f"{d.undo_stack[-1].command_params.get('reference_points')}, "
+		"just ref="
+		f"{d.undo_stack[-1].command_params.get('just_reference_points')}"
+	),
+	"Settings - presentation layer": lambda d: (
+		f"Presentation layer: "
+		f"{d.undo_stack[-1].command_params.get('layer')}"
+	),
+	"Settings - segment sizing": lambda d: (
+		f"Segment sizing — "
+		"battleground="
+		f"{d.undo_stack[-1].command_params.get('battleground')}%, "
+		f"core={d.undo_stack[-1].command_params.get('core')}%"
+	),
+	"Settings - vector sizing": lambda d: (
+		f"Vector sizing — "
+		"head width="
+		f"{d.undo_stack[-1].command_params.get('vector_head_width')}, "
+		f"width={d.undo_stack[-1].command_params.get('vector_width')}"
+	),
+	"Shepard": lambda d: (
+		f"Shepard: similarity on "
+		f"{d.undo_stack[-1].command_params.get('axis_for_similarities')}-axis"
 	),
 	"Similarities": lambda d: (
 		f"The {d.similarities_active.value_type} matrix has "
@@ -3850,9 +3906,11 @@ title_generator_dict = MappingProxyType({
 	),
 	"Terse": lambda _: "Output will not include explanations",
 	"Tester": lambda _: "Tester",
-	"Uncertainty": lambda _: (
-		"An ellipse around each point delineates with 95% confidence "
-		"that the point lies within that point's ellipse"
+	"Uncertainty": lambda d: (
+		f"Uncertainty: "
+		f"{d.undo_stack[-1].command_params.get('probability_of_inclusion')}%"
+		f" probability of inclusion, "
+		f"{d.undo_stack[-1].command_params.get('nrepetitions')} repetitions"
 	),
 	"Undo": lambda d: f"Undid {d.common.undone_command_name} command",
 	"Varimax": lambda _: "Varimax rotation of active configuration",
@@ -3882,7 +3940,11 @@ title_generator_dict = MappingProxyType({
 		f"{d.grouped_data_active.ngroups} points"
 	),
 	"View individuals": lambda _: "Individuals",
-	"View point uncertainty": lambda _: "Point Uncertainty ",
+	"View point uncertainty": lambda d: (
+		f"Point Uncertainty "
+		f"({d.undo_stack[-1].command_params.get('plot')}): "
+		f"{', '.join(d.undo_stack[-1].command_params.get('points', []))}"
+	),
 	"View sample design": lambda d: (
 		f"Sample design - Size of universe: "
 		f"{d.uncertainty_active.universe_size}, "
@@ -3905,8 +3967,10 @@ title_generator_dict = MappingProxyType({
 		f"{d.similarities_active.nreferent} items"
 	),
 	"View spatial uncertainty": lambda d: (
-		f"Spatial Uncertainty - {d.uncertainty_active.nsolutions} "
-		f"solutions with {d.uncertainty_active.ndim} dimensions and "
+		f"Spatial Uncertainty "
+		f"({d.undo_stack[-1].command_params.get('plot')}) - "
+		f"{d.uncertainty_active.nsolutions} solutions with "
+		f"{d.uncertainty_active.ndim} dimensions and "
 		f"{d.uncertainty_active.npoints} points"
 	),
 	"View target": lambda d: (

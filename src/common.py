@@ -4101,6 +4101,11 @@ class Spaces:
 			self._director.clear_redo_stack()
 
 		self._director.push_undo_state(cmd_state)
+		if cmd_state.command_params:
+			param_str = ", ".join(
+				f"{k}={v}" for k, v in cmd_state.command_params.items()
+			)
+			print(f"Input: {param_str}")
 		return
 
 	# ------------------------------------------------------------------------

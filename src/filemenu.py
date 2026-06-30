@@ -1882,6 +1882,7 @@ class OpenScriptCommand:
 			"Unable to execute script file.\nCheck file format and try again."
 		)
 		self._executed_commands = []  # Track executed commands
+		self._executed_commands_params: list[dict] = []
 		self.index_of_script_in_command_used = None  # Track index
 		return
 
@@ -1902,6 +1903,13 @@ class OpenScriptCommand:
 
 		# Get file name and read script lines
 		file_name, script_lines = self._read_script_file()
+
+		# Print script source and contents to Record tab
+		print(f"\nScript: {file_name}")
+		print("-" * 60)
+		for line in script_lines:
+			print(line.rstrip())
+		print("-" * 60 + "\n")
 
 		# Execute the script
 		commands_executed = self._execute_script_lines(script_lines)
@@ -2021,6 +2029,7 @@ class OpenScriptCommand:
 					)
 					commands_executed += 1
 					self._executed_commands.append(command_name)
+					self._executed_commands_params.append(params_dict)
 
 					# Update progress bar
 					director.progress_bar.setValue(commands_executed)
@@ -2081,8 +2090,17 @@ class OpenScriptCommand:
 			f"Executed {len(self._executed_commands)} commands:\n"
 		]
 
-		for idx, cmd_name in enumerate(self._executed_commands, 1):
-			summary_lines.append(f"{idx}. {cmd_name}")
+		for idx, (cmd_name, params) in enumerate(
+			zip(self._executed_commands,
+				self._executed_commands_params, strict=True), 1
+		):
+			if params:
+				param_str = ", ".join(
+					f"{k}={v}" for k, v in params.items()
+				)
+				summary_lines.append(f"{idx}. {cmd_name} ({param_str})")
+			else:
+				summary_lines.append(f"{idx}. {cmd_name}")
 
 		widget.setPlainText("\n".join(summary_lines))
 
