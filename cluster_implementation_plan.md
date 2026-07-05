@@ -3,10 +3,12 @@
 ## Problem Statement
 
 When clustering data from different sources (scores, distances, evaluations, similarities), the plotting code needs to know:
+
 1. Which data source was clustered
 2. Where to get axis names for plot labels
 
 Currently cluster results are stored in `scores_active`, which causes problems:
+
 - When clustering distances (not scores), `scores_active` may be empty or contain unrelated data
 - `scores_active.hor_axis_name` and `scores_active.vert_axis_name` may be incorrect for non-score clustering
 - Conceptually, clusters are not scores - they're a different data type
@@ -14,23 +16,29 @@ Currently cluster results are stored in `scores_active`, which causes problems:
 ## Current Architecture
 
 ### Data Sources
+
 Four possible data sources for clustering:
+
 1. **scores** → axis names from `scores_active.hor_axis_name` / `vert_axis_name`
 2. **distances** → axis names from `configuration_active.hor_axis_name` / `vert_axis_name`
 3. **evaluations** → axis names from `evaluations_active.hor_axis_name` / `vert_axis_name`
 4. **similarities** → axis names from `similarities_active.hor_axis_name` / `vert_axis_name`
 
 ### Current Storage (in scores_active)
+
 - `cluster_labels` - array of cluster assignments for each point
 - `cluster_centers` - centroid coordinates for each cluster
 - `n_clusters` - number of clusters
 - `original_clustered_data` - the original data that was clustered (for plotting)
 
 ### Current Problem
+
 The traceback shows:
-```
+
+```plaintext
 KeyError: 'Left-Right'
 ```
+
 When trying to access `scores[hor_axis_name]` where `scores` DataFrame doesn't have the column 'Left-Right' because we clustered distances, not scores.
 
 ## Proposed Solution: ClustersFeature or Clusters Class
@@ -59,6 +67,7 @@ class ClustersFeature:
 ```
 
 Then in `director.py`:
+
 ```python
 self.clusters_active = ClustersFeature(self)
 ```
@@ -68,11 +77,13 @@ self.clusters_active = ClustersFeature(self)
 **Design Question**: Features have specific logic and patterns in the codebase. It's unclear if clusters conceptually fit the "feature" pattern.
 
 Clusters might need to be something different that:
+
 - Can have multiple instances (e.g., user creates multiple different clusterings)
 - Represents results of an operation rather than a data type
 - Has a lifecycle independent of the source data
 
 This needs more research into:
+
 1. What makes something a "feature" in Spaces architecture?
 2. Do features always represent input data types, or can they represent derived results?
 3. Should there be a concept of "results" or "analysis outputs" separate from features?
@@ -202,6 +213,7 @@ May need to add capture/restore logic for `clusters_active` state for undo/redo 
 ## Alternative: Minimal Change Approach
 
 If creating a new feature/class is too disruptive, a minimal fix could:
+
 1. Add `clustered_data_source: str = ""` to `ScoresFeature`
 2. Have cluster command set this and copy axis names to `scores_active`
 3. Have plotting code read from `scores_active` as it does now
