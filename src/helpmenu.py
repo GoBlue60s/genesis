@@ -30,7 +30,7 @@ class AboutCommand:
 		self._director.command = "About"
 		self._director.acknowledgements = (
 			"Charles Antonelli",
-			"Phillipp Acsany",
+			"Philipp Acsany",
 			"Ned Batchelder",
 			"Cornell Belcher",
 			"Alexis Castelanas",
