@@ -4105,7 +4105,7 @@ class Spaces:
 			param_str = ", ".join(
 				f"{k}={v}" for k, v in cmd_state.command_params.items()
 			)
-			print(f"Input: {param_str}")
+			print(f"\nInput: {param_str}\n")
 		return
 
 	# ------------------------------------------------------------------------

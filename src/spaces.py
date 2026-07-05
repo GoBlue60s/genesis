@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 # Standard library imports
+import re
 import sys
 
 # from dataclasses import dataclass
@@ -38,11 +39,50 @@ class MyTextEditWrapper:
 		self.text_to_tab.setFont(fixed_font)
 		# super().__init__(StringIO())
 
+		# Tracks how many consecutive newlines currently sit at the end
+		# of the Record tab, so runs split across separate write() calls
+		# (e.g. print()'s own text followed by its "\n" end argument)
+		# are still capped consistently to at most one blank line.
+		self._trailing_newlines = 0
+
 	# -----------------------------------------------------------------------
 
 	def write(self, text: str) -> int:
-		self.text_to_tab.insertPlainText(text)
-		return len(text)
+		original_length = len(text)
+		text = self._normalize_blank_lines(text)
+		if text:
+			self.text_to_tab.insertPlainText(text)
+		return original_length
+
+	# -----------------------------------------------------------------------
+
+	def _normalize_blank_lines(self, text: str) -> str:
+		"""Cap consecutive newlines so no more than one blank line
+		ever appears in the Record tab, regardless of how many
+		newlines the individual print() calls on either side of a
+		seam happen to contribute.
+		"""
+		if not text:
+			return text
+
+		# Collapse any run of 3+ newlines within this chunk to one
+		# blank line (2 newlines).
+		text = re.sub(r"\n{3,}", "\n\n", text)
+
+		leading_newlines = len(text) - len(text.lstrip("\n"))
+		if leading_newlines:
+			allowed_total = min(self._trailing_newlines + leading_newlines, 2)
+			kept = max(0, allowed_total - self._trailing_newlines)
+			text = "\n" * kept + text[leading_newlines:]
+
+		if text.strip("\n") == "":
+			self._trailing_newlines = min(
+				self._trailing_newlines + len(text), 2
+			)
+		else:
+			self._trailing_newlines = len(text) - len(text.rstrip("\n"))
+
+		return text
 
 	# -----------------------------------------------------------------------
 
