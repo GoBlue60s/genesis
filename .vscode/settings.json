@@ -15,6 +15,8 @@
   "ruff.lint.enable": true,
   "ruff.organizeImports": false,
   "ruff.fixAll": false,
-"python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
-"python-envs.defaultEnvManager": "ms-python.python:system"
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "ruff.interpreter": ["${workspaceFolder}\\.venv\\Scripts\\python.exe"],
+  "ty.interpreter": ["${workspaceFolder}\\.venv\\Scripts\\python.exe"]
 }

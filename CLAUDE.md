@@ -42,7 +42,7 @@ python src/spaces.py
 ### Python Environment
 
 - This project uses a virtual environment (`.venv/`)
-- Target Python version: 3.14.3
+- Target Python version: 3.15.2
 - Activate the virtual environment before running commands
 
 ## Code Architecture

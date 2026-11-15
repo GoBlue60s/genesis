@@ -132,7 +132,7 @@ class MyApplication:
 	def load_welcome_dialog(self, ui_filename: str) -> None:
 		ui_file = QFile(ui_filename)
 		if not ui_file.open(
-			QIODevice.ReadOnly): # ty: ignore[unresolved-attribute]
+			QIODevice.ReadOnly): # ty: ignore[missing-attribute]
 			self.exit_with_error(
 				f"Cannot open {ui_filename}: {ui_file.errorString()}"
 			)
@@ -142,7 +142,7 @@ class MyApplication:
 		if not welcome_dialog:
 			self.exit_with_error(loader.errorString())
 		welcome_dialog.show()
-		welcome_dialog.exec() # ty: ignore[unresolved-attribute]
+		welcome_dialog.exec() # ty: ignore[missing-attribute]
 
 	def start_event_loop(self) -> int:
 		return self.spaces_app.exec()

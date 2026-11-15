@@ -2,7 +2,7 @@
 
 line-length = 79  # Match your coding standards
 indent-width = 4
-target-version = "py314"  # Target Python 3.14
+target-version = "py315"  # Target Python 3.15
 
 [tool.ruff.format]
 # Explicitly disable ruff formatting - we use ruff only as a linter
@@ -44,6 +44,7 @@ ignore = [
     "D417",    # Missing argument descriptions in the docstring
 
     # --- Code cleanliness / style issues ---
+    "CPY001",  # Missing copyright notice at top of file
     "ERA001",  # Found commented-out code
     "RET504",  # Unnecessary variable assignment before return (intentionally ignored for preferred return style)
     "RET505",  # Unnecessary else after return (conflicts with TRY300; prefer explicit else in try/except blocks)
@@ -72,17 +73,20 @@ max-args = 10
 
 [tool.ty]
 
+[tool.ty.environment]
+root = ["./src"]  # Modules in src/ import each other as top-level modules
+
 [[tool.ty.overrides]]
 include = ["src/dialogs.py"]
-rules = {unresolved-attribute = "ignore", possibly-missing-attribute = "ignore" }
+rules = {missing-attribute = "ignore", possibly-missing-attribute = "ignore" }
 
 [[tool.ty.overrides]]
 include = ["src/pyqtgraph_common.py"]
-rules = {unresolved-attribute = "ignore", possibly-missing-attribute = "ignore"}
+rules = {missing-attribute = "ignore", possibly-missing-attribute = "ignore"}
 
 [[tool.ty.overrides]]
 include = ["src/pyqtgraph_plots.py"]
-rules = {unresolved-attribute = "ignore", possibly-missing-attribute = "ignore"}
+rules = {missing-attribute = "ignore", possibly-missing-attribute = "ignore"}
 
 
 
