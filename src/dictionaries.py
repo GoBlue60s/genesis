@@ -2224,7 +2224,7 @@ def create_widget_dict(parent: Status) -> FrozenDict:
 		"Save script": [
 			SaveScriptCommand,
 			"shared",
-			lambda: parent.display_a_line(),
+			parent.display_a_line,
 		],
 		"Score individuals": [
 			ScoreIndividualsCommand,
@@ -2833,8 +2833,10 @@ transform_menu_dict = MappingProxyType({
 	"Compare": [
 		"spaces_compare_icon.jpg",
 		"compare",
-		"Compare the active configuration to the active target "
-		"configuration",
+		(
+			"Compare the active configuration to the active target "
+			"configuration"
+		),
 	],
 	"Varimax": {
 		"icon": "spaces_varimax_icon.jpg",
@@ -3163,14 +3165,18 @@ respondents_menu_dict = MappingProxyType({
 			"Left focused": [
 				None,
 				"first_left",
-				"Display individuals on the left of mean on"
-				" first dimension",
+				(
+					"Display individuals on the left of mean on"
+					" first dimension"
+				),
 			],
 			"Right focused": [
 				None,
 				"first_right",
-				"Display individuals on the right of mean on"
-				" first dimension",
+				(
+					"Display individuals on the right of mean on"
+					" first dimension"
+				),
 			],
 		},
 	},

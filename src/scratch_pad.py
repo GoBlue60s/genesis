@@ -1,4 +1,4 @@
-# from typing import Literal
+from typing import Literal
 
 guy1 = "Chris"
 guy2: Literal["John"] = "John"

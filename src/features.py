@@ -35,6 +35,17 @@ class ConfigurationFeature:
 		# NOTE: _hor_dim and _vert_dim are unused - configuration plotting
 		# reads directly from common.hor_dim and common.vert_dim
 
+		self._init_point_and_dimension_attributes()
+		self._init_analysis_attributes()
+		self._init_distance_attributes()
+		self._init_score_and_rendering_attributes()
+
+		return
+
+	# ------------------------------------------------------------------------
+
+	def _init_point_and_dimension_attributes(self) -> None:
+		"""Initialize attributes describing points, items and dimensions."""
 		self.nreferent: int = 0
 		self.npoint: int = 0
 		self.npoints: int = 0
@@ -44,6 +55,21 @@ class ConfigurationFeature:
 		self.point_coords: pd.DataFrame = pd.DataFrame()
 		self.compared: pd.DataFrame = pd.DataFrame()
 		self.directions_df: pd.DataFrame = pd.DataFrame()
+		self.config_as_itemframe: ItemFrame = ItemFrame()
+		self.ndim: int = 0
+		self.dim_names: list[str] = []
+		self.dim_labels: list[str] = []
+		self.range_dims: range = range(0)
+		self.range_items: range = range(0)
+		self.hor_axis_name: str = ""
+		self.vert_axis_name: str = ""
+		self.item_labels: list[str] = []
+		self.item_names: list[str] = []
+
+	# ------------------------------------------------------------------------
+
+	def _init_analysis_attributes(self) -> None:
+		"""Initialize attributes holding factor analysis and MDS results."""
 		self.eigen: pd.DataFrame = pd.DataFrame()
 		self.eigen_common: pd.DataFrame = pd.DataFrame()
 		self.commonalities: pd.DataFrame = pd.DataFrame()
@@ -58,17 +84,17 @@ class ConfigurationFeature:
 		self.fa: Any = None
 		self.transformer_mean: Any = None
 		self.transformer_noise_variance: Any = None
-		self.config_as_itemframe: ItemFrame = ItemFrame()
-		self.ndim: int = 0
-		self.dim_names: list[str] = []
-		self.dim_labels: list[str] = []
-		self.range_dims: range = range(0)
-		self.range_items: range = range(0)
-		self.hor_axis_name: str = ""
-		self.vert_axis_name: str = ""
+		self.best_stress: int = -1
+		self.n_comp: int = 0
+		self.use_metric: bool = False
+		# self.min_stress: list = []
+		self.offset: float = 0.0
+		# self.sample_design: pd.DataFrame = pd.DataFrame()
 
-		_min: float = 0.0  # the vertical minimum for plot
+	# ------------------------------------------------------------------------
 
+	def _init_distance_attributes(self) -> None:
+		"""Initialize attributes holding distances, ranks and dyads."""
 		self.distances: list[list[float]] = []
 		self.range_distances: range = range(0)
 		self.distances_as_dict: dict = {}
@@ -88,6 +114,11 @@ class ConfigurationFeature:
 		self.ranks_df: pd.DataFrame = pd.DataFrame()
 		# Pandas data frame used for advanced computations on dyads
 		# self.ev: pd.DataFrame = pd.DataFrame()
+
+	# ------------------------------------------------------------------------
+
+	def _init_score_and_rendering_attributes(self) -> None:
+		"""Initialize score, segment and plot rendering attributes."""
 		# Pandas data framer used for evaluations
 		self.first: pd.DataFrame = pd.DataFrame()
 		self.second: pd.DataFrame = pd.DataFrame()
@@ -95,23 +126,11 @@ class ConfigurationFeature:
 		self.score_1_name: str = ""
 		self.score_2_name: str = ""
 		# self.nscored_individ: int = 0
-		self.best_stress: int = -1
-		self.n_comp: int = 0
-		self.use_metric: bool = False
-		# self.min_stress: list = []
-		self.offset: float = 0.0
-		# self.sample_design: pd.DataFrame = pd.DataFrame()
-
-		self.item_labels: list[str] = []
-		self.item_names: list[str] = []
-		self.eigen: pd.DataFrame = pd.DataFrame()
 
 		# Matplotlib-specific rendering objects
 		self._core_a: Any = None
 		self._core_b: Any = None
 		self._core_radius: float = 0.0
-
-		return
 
 	# ------------------------------------------------------------------------
 

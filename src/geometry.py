@@ -65,7 +65,7 @@ class Circle(Region):
 
 		self._center = center
 		self._radius = radius
-		self._points: PeoplePoints = points if points else PeoplePoints([], [])
+		self._points: PeoplePoints = points or PeoplePoints([], [])
 		self._fill = fill
 		self._tribe: str = tribe
 		self._color: str = color
@@ -799,7 +799,7 @@ class ReferencePoint(Point):
 	"""
 
 	def __init__(
-		self, *args: float, **kwargs: float | str | int
+		self, *args: float, **kwargs: float | str
 	) -> None:
 		"""Initialize a ReferencePoint with required index.
 
@@ -838,7 +838,7 @@ class Polygon(Region):
 		self._x: list[float] = vertices.x
 		self._y: list[float] = vertices.y
 		self._corners: Corners = corners
-		self._points: PeoplePoints = points if points else PeoplePoints([], [])
+		self._points: PeoplePoints = points or PeoplePoints([], [])
 		self._fill = fill
 		self._tribe: str = tribe
 		self._color: str = color

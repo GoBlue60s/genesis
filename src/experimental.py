@@ -109,7 +109,7 @@ class Item:
 		# self.index: int = index
 		self.name: str = name
 		self.label: str = label
-		self.location: Point = location if location else Point()
+		self.location: Point = location or Point()
 
 
 # -------------------------------------------------------------------------

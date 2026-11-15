@@ -4,6 +4,15 @@ line-length = 79  # Match your coding standards
 indent-width = 4
 target-version = "py315"  # Target Python 3.15
 
+# One-off helper scripts and data-specific handlers are not linted
+extend-exclude = [
+    "data",
+    "extract_all_titles.py",
+    "extract_titles.py",
+    "test_inspect_fix.py",
+    "test_parse.py",
+]
+
 [tool.ruff.format]
 # Explicitly disable ruff formatting - we use ruff only as a linter
 # This ensures ruff format commands will not modify files

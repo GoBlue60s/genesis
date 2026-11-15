@@ -233,7 +233,6 @@ class InvertCommand:
 					self._inverter(checked_dim)
 		if self._director.common.have_scores():
 			# peek("Scores exist, inverting scores on selected dimensions")
-			#  # ty: ignore[call-non-callable]
 			cols = []
 			cols.extend(
 				[

@@ -375,7 +375,7 @@ class Spaces:
 		if items:
 			dialog.setTextValue(items[0])
 
-		if dialog.exec() == QDialog.DialogCode.Accepted: # ty: ignore[unresolved-attribute]
+		if dialog.exec() == QDialog.DialogCode.Accepted:
 			selected_item = dialog.textValue()
 			if selected_item in items:
 				index_selected_item = items.index(selected_item)
@@ -3850,7 +3850,7 @@ class Spaces:
 
 		# Return the longest match (most specific)
 		if matching_commands:
-			return cast("str", max(matching_commands, key=len))
+			return max(matching_commands, key=len)
 
 		# No match found
 		return parts[0] if parts else ""
@@ -3913,10 +3913,7 @@ class Spaces:
 			)
 
 		# Handle last parameter
-		if state["current_key"] and state["current_value"]:
-			params_dict[state["current_key"]] = self._parse_parameter_value(
-				cast("str", state["current_value"]).strip()
-			)
+		self._finalize_parameter(state, params_dict)
 
 		return params_dict
 

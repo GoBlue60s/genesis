@@ -925,6 +925,6 @@ class PyQtGraphCommon:
 				# Get the item in the cell
 				item = graphics_layout_widget.ci.layout.itemAt(row, col)
 				# Check if item is a PlotItem
-				if isinstance(item, pg.graphicsItems.PlotItem.PlotItem):
+				if isinstance(item, pg.PlotItem):
 					# Disable mouse events for this PlotItem
 					item.vb.setMouseEnabled(x=False, y=False)

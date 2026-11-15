@@ -808,8 +808,8 @@ class UndoCommand:
 		riv = self._director.rivalry
 		print("\n\tReference points restored:")
 		print(f"\t  Rival A:"
-			f" {riv.rival_a.name if riv.rival_a.name else 'unknown'}")
+			f" {riv.rival_a.name or 'unknown'}")
 		print(f"\t  Rival B:"
-			f" {riv.rival_b.name if riv.rival_b.name else 'unknown'}")
+			f" {riv.rival_b.name or 'unknown'}")
 		if riv.seg is not None and not riv.seg.empty:
 			print(f"\t  Segments: {len(riv.seg)} segments restored")

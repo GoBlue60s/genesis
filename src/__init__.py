@@ -1,2 +1,1 @@
-import peek
-# __all__ = ['peek']
+"""Spaces: multidimensional scaling and statistical analysis."""

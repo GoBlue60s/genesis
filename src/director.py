@@ -245,7 +245,7 @@ class Status(QMainWindow):
 		self.tab_widget = QTabWidget(self)
 		self.setCentralWidget(self.tab_widget)
 		self.tab_widget.setTabPosition(
-			QTabWidget.South) # ty: ignore[unresolved-attribute]
+			QTabWidget.South) # ty: ignore[missing-attribute]
 		#
 		self.text_to_tab = QTextEdit()
 		#
@@ -1236,8 +1236,8 @@ class Status(QMainWindow):
 		_tab_output_layout.addWidget(table_to_output)
 		table_to_log = BuildOutputForGUI(self)
 		spacer = QSpacerItem(20, 40,
-			QSizePolicy.Minimum, # ty: ignore[unresolved-attribute]
-			QSizePolicy.Fixed) # ty: ignore[unresolved-attribute]
+			QSizePolicy.Minimum, # ty: ignore[missing-attribute]
+			QSizePolicy.Fixed) # ty: ignore[missing-attribute]
 		# Adjust size as needed
 		_tab_log_layout.addItem(spacer)
 		_tab_log_layout.addWidget(table_to_log)
@@ -1598,7 +1598,7 @@ class SplashWindow(QWidget):
 		# Set the background image
 		palette = QPalette()
 		palette.setBrush(
-			QPalette.Window, # ty: ignore[unresolved-attribute]
+			QPalette.Window, # ty: ignore[missing-attribute]
 			QBrush(
 				QPixmap(
 					"c:/PythonProjects/genesis/resources/Constellation.jpg"

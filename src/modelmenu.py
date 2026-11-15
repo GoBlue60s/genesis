@@ -33,6 +33,7 @@ from constants import (
 	DEFAULT_NUMBER_OF_CLUSTERS,
 	MAXIMUM_NUMBER_OF_DIMENSIONS_FOR_PLOTTING,
 	MINIMAL_DIFFERENCE_FROM_ZERO,
+	MINIMUM_NUMBER_OF_INERTIAS_FOR_ELBOW,
 )
 from exceptions import SpacesError
 from features import EvaluationsFeature, SimilaritiesFeature, TargetFeature
@@ -140,9 +141,9 @@ class ClusterCommand:
 		params = {"data_source": name_source, "n_clusters": n_clusters}
 
 		cmd_state = CommandState("Cluster", "active", params)
-		cmd_state.timestamp = datetime.now().strftime(
+		cmd_state.timestamp = datetime.now().strftime(  # noqa: DTZ005
 			"%Y-%m-%d %H:%M:%S"
-		)  # noqa: DTZ005
+		)
 
 		self._capture_states(cmd_state, state_to_capture)
 		self._director.push_undo_state(cmd_state)
@@ -312,7 +313,7 @@ class ClusterCommand:
 
 		# Find optimal k using elbow method (look for biggest
 		#  decrease in inertia)
-		if len(inertias) >= 2:
+		if len(inertias) >= MINIMUM_NUMBER_OF_INERTIAS_FOR_ELBOW:
 			# Calculate the rate of decrease in inertia
 			decreases = [
 				inertias[i] - inertias[i + 1] for i in range(len(inertias) - 1)
@@ -340,7 +341,6 @@ class ClusterCommand:
 
 	def _calculate_reference_point_proximity(
 		self,
-		cluster_centers: np.ndarray,
 		n_clusters: int,
 	) -> tuple[list[str], list[list[str]]]:
 		"""Calculate percentage closer to each reference point"""
@@ -452,9 +452,7 @@ class ClusterCommand:
 
 		# Get reference point proximity data if available
 		ref_headers, ref_percentages = (
-			self._calculate_reference_point_proximity(
-				cluster_centers, n_clusters
-			)
+			self._calculate_reference_point_proximity(n_clusters)
 		)
 
 		# Create table data
@@ -516,9 +514,7 @@ class ClusterCommand:
 
 		# Get reference point proximity data if available
 		ref_headers, ref_percentages = (
-			self._calculate_reference_point_proximity(
-				cluster_centers, n_clusters
-			)
+			self._calculate_reference_point_proximity(n_clusters)
 		)
 
 		# Build the data with cluster numbers, colors, percentages,
@@ -931,7 +927,7 @@ class FactorAnalysisCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _setup_configuration_attributes(  # noqa: PLR0913
+	def _setup_configuration_attributes(  # noqa: PLR0913, PLR0917
 		self,
 		range_dims: range,
 		point_coords: pd.DataFrame,
@@ -1499,7 +1495,7 @@ class FactorAnalysisMachineLearningCommand:
 
 	# ------------------------------------------------------------------------
 
-	def _print_factor_analysis_m_l(  # noqa: PLR0913
+	def _print_factor_analysis_m_l(  # noqa: PLR0913, PLR0917
 		self,
 		scaler: StandardScaler,
 		X: pd.DataFrame | np.ndarray,  # noqa: N803
