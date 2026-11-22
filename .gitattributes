@@ -1,0 +1,4 @@
+# Keep TOML files and the uv lock file with LF line endings on Windows.
+# The Python extension's TOML parser rejects CRLF after comments.
+*.toml text eol=lf
+uv.lock text eol=lf
