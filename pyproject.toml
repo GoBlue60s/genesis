@@ -1,3 +1,32 @@
+[project]
+name = "spaces"
+version = "0.1.0"
+description = "Multidimensional scaling and statistical analysis GUI"
+requires-python = ">=3.15"
+# Versions are deliberately unpinned: Spaces tracks the latest releases.
+# uv.lock records the last known-good set; refresh it with
+# `uv sync --upgrade`.
+dependencies = [
+    "factor-analyzer",
+    "jinja2",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "peek-python",
+    "pyqtgraph",
+    "pyside6",
+    "scikit-learn",
+    "scipy",
+    "tabulate",
+]
+
+[dependency-groups]
+# Development tools; `uv sync` installs this group by default
+dev = [
+    "ruff",
+    "ty",
+]
+
 [tool.ruff]
 
 line-length = 79  # Match your coding standards

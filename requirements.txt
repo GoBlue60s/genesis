@@ -1,5 +1,7 @@
 # This project uses latest versions of all dependencies
 # Older versions are not tested or supported
+# For pip users only: pyproject.toml is the primary list (used by uv sync).
+# Keep the two lists in step when adding or removing a library.
 pandas
 numpy
 matplotlib

@@ -59,14 +59,27 @@ The application requires the following key packages:
 ### Setup
 
 1. Clone the repository
-2. Create and activate a virtual environment:
+2. Create the virtual environment and install dependencies with
+   [uv](https://docs.astral.sh/uv/):
 
    ```bash
-   python -m venv venv
-   # On Windows:
-   venv\Scripts\activate
+   uv sync
+   ```
 
-3. Install dependencies (requirements file to be added)
+   Without uv, use pip and `requirements.txt` instead:
+
+   ```bash
+   python -m venv .venv
+   # On Windows:
+   .venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. Update to the latest library versions at any time:
+
+   ```bash
+   uv sync --upgrade
+   ```
 
 - Tested with latest version of libraries
 - Older version may work as well

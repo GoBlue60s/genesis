@@ -41,7 +41,12 @@ python src/spaces.py
 
 ### Python Environment
 
-- This project uses a virtual environment (`.venv/`)
+- This project uses a virtual environment (`.venv/`) managed by uv
+- Dependencies are listed, unpinned, in `pyproject.toml`; `uv.lock`
+  records the installed set. Use `uv sync` to install and
+  `uv sync --upgrade` to move to the latest versions
+- Add or remove libraries with `uv add` / `uv remove`, and mirror the
+  change in `requirements.txt` (kept for pip users)
 - Target Python version: 3.15.2
 - Activate the virtual environment before running commands
 
