@@ -303,9 +303,6 @@ class ViewEvaluationsCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "View evaluations"
-		self._director.width = 8
-		self._director.decimals = 2
-
 		return
 
 		# --------------------------------------------------------------------
@@ -353,8 +350,6 @@ class ViewIndividualsCommand:
 		self._director = director
 		self.common = common
 		self._director.command = "View individuals"
-		self._director.width = 8
-		self._director.decimals = 2
 		return
 
 		# --------------------------------------------------------------------

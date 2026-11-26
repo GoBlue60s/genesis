@@ -5,7 +5,7 @@ import inspect
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Protocol, TextIO, cast
+from typing import TYPE_CHECKING, Any, TextIO, cast
 
 import pandas as pd
 import peek # noqa: F401
@@ -23,8 +23,7 @@ from command_state import CommandState
 from modelmenu import UncertaintyAnalysis
 
 if TYPE_CHECKING:
-	from collections.abc import Callable
-
+	from command_protocols import SpacesCommand
 	from common import Spaces
 	from director import Status
 
@@ -41,19 +40,6 @@ if __name__ == "__main__":  # pragma: no cover
 	print("This module is not designed to run as a script.  "
 		f"{Path(__file__).name}")
 	sys.exit(1)
-
-
-# ----------------------------------------------------------------------------
-
-
-class ScriptCommand(Protocol):
-	"""Any command a script can run: one with an execute method.
-
-	Commands take execute(common) or execute(common, extra_value), so
-	execute is typed loosely and its signature is inspected at run time.
-	"""
-
-	execute: Callable[..., None]
 
 
 # ----------------------------------------------------------------------------
@@ -2226,7 +2212,7 @@ class OpenScriptCommand:
 
 	def _execute_command_with_signature(
 		self,
-		command_instance: ScriptCommand,
+		command_instance: SpacesCommand,
 		command_name: str,
 		params_dict: dict,
 		line_num: int
@@ -2258,7 +2244,7 @@ class OpenScriptCommand:
 
 	def _execute_with_extra_param(
 		self,
-		command_instance: ScriptCommand,
+		command_instance: SpacesCommand,
 		command_name: str,
 		params_dict: dict,
 		param_name: str,

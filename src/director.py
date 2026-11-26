@@ -35,7 +35,7 @@ from PySide6.QtWidgets import (
 )
 
 # Typing imports
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from matplotlib_common import MatplotlibCommon
 from pyqtgraph_common import PyQtGraphCommon
@@ -43,6 +43,7 @@ from pyqtgraph_common import PyQtGraphCommon
 if TYPE_CHECKING:
 	from collections.abc import Callable
 	from matplotlib import pyplot as plt
+	from command_protocols import DisplayingCommand, SpacesCommand
 	from command_state import CommandState
 
 from constants import TEST_IF_ACTION_OR_SUBMENU_HAS_THREE_ITEMS
@@ -68,7 +69,7 @@ from dictionaries import (
 	command_dependencies_dict,
 )
 from exceptions import SpacesError
-from geometry import Point
+from geometry import ReferencePoint
 from table_builder import (
 	BuildOutputForGUI,
 	BasicTableWidget,
@@ -90,8 +91,6 @@ class Status(QMainWindow):
 
 	title_for_table_widget: str = ""
 	cluster_results: pd.DataFrame
-	width: int
-	decimals: int
 	plot_to_show: str
 	selected_point_indices: list[int]
 
@@ -183,8 +182,6 @@ class Status(QMainWindow):
 		self.row_header_color: str = "lightgreen"
 		self.cell_color: str = "lightyellow"
 		self.name_of_file_written_to: str = ""
-		self.width: int = 8
-		self.decimals: int = 2
 
 	# ------------------------------------------------------------------------
 
@@ -377,15 +374,18 @@ class Status(QMainWindow):
 			raise SpacesError(title, message)
 
 		if widget_dict[next_output][1] == "unique":
-			gui_output_as_widget = self.current_command._display()  # type: ignore[possibly-missing-attribute]
+			# "unique" entries belong to commands that define _display
+			displaying_command = cast(
+				"DisplayingCommand", self.current_command)
+			gui_output_as_widget = displaying_command._display()
 		else:
+			# Shared entries hold a widget or a callable that builds one
 			which_shared = widget_dict[next_output][2]
 			if callable(which_shared):
-				gui_output_as_widget = which_shared()
-			else:
-				gui_output_as_widget = which_shared
+				which_shared = which_shared()
+			gui_output_as_widget = cast("QWidget", which_shared)
 		# self.current_command = _current_command
-		return gui_output_as_widget  # type: ignore[return-value]
+		return gui_output_as_widget
 
 	# ------------------------------------------------------------------------
 
@@ -764,8 +764,8 @@ class Status(QMainWindow):
 		# Create expanding spacer between progress bar and right label
 		self.progress_spacer = QWidget()
 		self.progress_spacer.setSizePolicy(
-			QSizePolicy.Expanding, # type: ignore[attr-defined]
-			QSizePolicy.Preferred  # type: ignore[attr-defined]
+			QSizePolicy.Policy.Expanding,
+			QSizePolicy.Policy.Preferred
 		)
 		self.progress_spacer.hide()
 
@@ -901,15 +901,16 @@ class Status(QMainWindow):
 		common = self.common
 
 		try:
-			command_class = request_dict_local[next_command][0]
-			if request_dict_local[next_command][1] is None:
-				self.current_command = command_class(self, common)
-				self.current_command.execute(common)
+			command_class, extra_argument = (
+				request_dict_local[next_command][:2])
+			# request_dict pairs each command class with the extra argument
+			# (if any) its execute expects, which ty cannot see per entry
+			command = cast("SpacesCommand", command_class(self, common))
+			self.current_command = command
+			if extra_argument is None:
+				command.execute(common)
 			else:
-				self.current_command = command_class(self, common)
-				self.current_command.execute(
-					common, request_dict_local[next_command][1]
-				)
+				command.execute(common, extra_argument)
 		except SpacesError as e:
 			self.unable_to_complete_command_set_status_as_failed()
 			self.common.error(e.title, e.message)
@@ -1063,8 +1064,8 @@ class Status(QMainWindow):
 		self.configuration_active.point_coords = pd.DataFrame()
 		self.configuration_active.distances.clear()
 		if self.common.have_reference_points():
-			self.rivalry.rival_a = Point()
-			self.rivalry.rival_b = Point()
+			self.rivalry.rival_a = ReferencePoint()
+			self.rivalry.rival_b = ReferencePoint()
 			# self.rivalry.rival_a.index = None
 			# self.rivalry.rival_b.index = None
 			self.rivalry.seg = pd.DataFrame()
@@ -1104,21 +1105,6 @@ class Status(QMainWindow):
 
 	def abandon_individual_data(self) -> None:
 		self.individuals_active.ind_vars = pd.DataFrame()
-		return
-
-	# ------------------------------------------------------------------------
-
-	def abandon_reference_points(self) -> None:
-		self.rival_a = Point()
-		self.rival_b = Point()
-		# self.rival_a.index = None
-		# self.rival_b.index = None
-		# self.configuration_active.bisector = Line()
-		# self.configuration_active.west = Line()
-		# self.configuration_active.east = Line()
-		# self.configuration_active.connector = Line()
-		self.seg = pd.DataFrame()
-
 		return
 
 	# ------------------------------------------------------------------------
@@ -1230,16 +1216,17 @@ class Status(QMainWindow):
 		_tab_output_layout = self.tab_output_layout
 		_tab_log_layout = self.tab_log_layout
 
-		for i in reversed(range(_tab_output_layout.count())):
-			widget = _tab_output_layout.itemAt(i).widget()
+		for each_item in reversed(range(_tab_output_layout.count())):
+			layout_item = _tab_output_layout.itemAt(each_item)
+			widget = None if layout_item is None else layout_item.widget()
 			if widget is not None:
 				widget.setParent(None)
 		table_to_output = BuildOutputForGUI(self)
 		_tab_output_layout.addWidget(table_to_output)
 		table_to_log = BuildOutputForGUI(self)
 		spacer = QSpacerItem(20, 40,
-			QSizePolicy.Minimum, # ty: ignore[missing-attribute]
-			QSizePolicy.Fixed) # ty: ignore[missing-attribute]
+			QSizePolicy.Policy.Minimum,
+			QSizePolicy.Policy.Fixed)
 		# Adjust size as needed
 		_tab_log_layout.addItem(spacer)
 		_tab_log_layout.addWidget(table_to_log)
@@ -1566,7 +1553,8 @@ class EstablishSpacesStructure:
 	def __init__(self, parent: Status) -> None:
 		self.parent = parent
 		self.common: Spaces = Spaces(parent, parent)
-		self.current_command: Spaces = Spaces(parent, parent)
+		# No command has run yet; set by request_control and scripts
+		self.current_command: SpacesCommand | None = None
 		self.commands_used: list[str] = ["Initialize"]
 		self.command_exit_code: list[int] = [0]
 		self.command_states: list[CommandState | None] = [None]
