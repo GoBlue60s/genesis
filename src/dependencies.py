@@ -5,6 +5,8 @@ from PySide6.QtWidgets import QDialog
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+	from collections.abc import Callable
+
 	from director import Status
 
 from common import Spaces  # noqa: F401
@@ -671,7 +673,8 @@ class DependencyChecking:
 			match selected_option:
 				case 0:
 					# Abandon existing - continue checking other features
-					abandon_dict[existing]()
+					self._abandon_existing_and_record(
+						existing, new, abandon_dict)
 					existing_abandoned: bool = True
 					return False  # Continue checking
 				case 1:
@@ -757,6 +760,28 @@ class DependencyChecking:
 			)
 
 		return existing_abandoned
+
+	# ------------------------------------------------------------------------
+
+	def _abandon_existing_and_record(
+		self,
+		existing: str,
+		new: str,
+		abandon_dict: dict[str, Callable[[], None]],
+	) -> None:
+		"""Abandon the existing feature and note it in the Record tab."""
+		had_reference_points: bool = (
+			existing == "Configuration"
+			and self._director.common.have_reference_points()
+		)
+		abandon_dict[existing]()
+		print(
+			f"\nActive {existing.lower()} has been abandoned "
+			f"to continue establishing {new.lower()}."
+		)
+		if had_reference_points:
+			print("Reference points have also been abandoned.")
+		return
 
 	# ------------------------------------------------------------------------
 

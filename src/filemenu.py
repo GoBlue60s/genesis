@@ -3382,7 +3382,6 @@ class SaveScriptCommand:
 		f.write(
 			f"# Created: "
 			f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n") # noqa: DTZ005
-		f.write("# Spaces Version: 2026\n")
 		return
 
 	# ------------------------------------------------------------------------

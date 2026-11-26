@@ -1,6 +1,5 @@
 # Spaces Script
 # Created: 2025-11-13 18:04:28
-# Spaces Version: 2025
 Target file="C:/PythonProjects/genesis/data/Elections/2004/Jacoby_2004_conf_labelled.txt"
 Evaluations file="C:/PythonProjects/genesis/data/Elections/2004/.Jacoby_2004_Evaluations.csv"
 Uncertainty probability_of_inclusion=80 nrepetitions=12

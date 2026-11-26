@@ -248,6 +248,8 @@ class Status(QMainWindow):
 			QTabWidget.South) # ty: ignore[missing-attribute]
 		#
 		self.text_to_tab = QTextEdit()
+		# Record tab is a log: users may select and copy, not edit
+		self.text_to_tab.setReadOnly(True)
 		#
 		self.tab_plot_scroll_area = QScrollArea()
 		self.tab_output_widget = QWidget()

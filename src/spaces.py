@@ -6,7 +6,7 @@ import sys
 
 # from dataclasses import dataclass
 # from peek import peek
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QTextCursor
 from PySide6.QtCore import QFile, QIODevice
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QTextEdit
@@ -51,6 +51,10 @@ class MyTextEditWrapper:
 		original_length = len(text)
 		text = self._normalize_blank_lines(text)
 		if text:
+			# insertPlainText writes at the widget's cursor, which moves
+			# wherever the user clicks in the Record tab. Always append
+			# at the end so output stays in chronological order.
+			self.text_to_tab.moveCursor(QTextCursor.MoveOperation.End)
 			self.text_to_tab.insertPlainText(text)
 		return original_length
 
