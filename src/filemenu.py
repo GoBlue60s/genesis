@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 # Standard library imports
+import inspect
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, TextIO
+from typing import TYPE_CHECKING, Any, Protocol, TextIO, cast
 
 import pandas as pd
 import peek # noqa: F401
@@ -22,6 +23,8 @@ from command_state import CommandState
 from modelmenu import UncertaintyAnalysis
 
 if TYPE_CHECKING:
+	from collections.abc import Callable
+
 	from common import Spaces
 	from director import Status
 
@@ -38,6 +41,19 @@ if __name__ == "__main__":  # pragma: no cover
 	print("This module is not designed to run as a script.  "
 		f"{Path(__file__).name}")
 	sys.exit(1)
+
+
+# ----------------------------------------------------------------------------
+
+
+class ScriptCommand(Protocol):
+	"""Any command a script can run: one with an execute method.
+
+	Commands take execute(common) or execute(common, extra_value), so
+	execute is typed loosely and its signature is inspected at run time.
+	"""
+
+	execute: Callable[..., None]
 
 
 # ----------------------------------------------------------------------------
@@ -67,9 +83,11 @@ class ConfigurationCommand:
 		file_name: str = params["file"]
 		common.capture_and_push_undo_state(
 			"Configuration", "active", params)
+		from features import ConfigurationFeature  # noqa: PLC0415
+
 		self._director.configuration_active = \
 			common.read_configuration_type_file(
-			file_name, "Configuration")
+			file_name, ConfigurationFeature)
 		self._director.dependency_checker.detect_consistency_issues()
 
 		self._director.configuration_active.inter_point_distances()
@@ -132,9 +150,12 @@ class CorrelationsCommand:
 		Correlations are stored in a lower triangular matrix format, which is
 		different from the rectangular format used for evaluations.
 		"""
+		from features import CorrelationsFeature  # noqa: PLC0415
+
 		try:
 			self._director.correlations_active = (
-				common.read_lower_triangular_matrix(file_name, "correlations")
+				common.read_lower_triangular_matrix(
+					file_name, CorrelationsFeature)
 			)
 			self._director.correlations_active.duplicate_correlations(common)
 		except (
@@ -2205,7 +2226,7 @@ class OpenScriptCommand:
 
 	def _execute_command_with_signature(
 		self,
-		command_instance: object,
+		command_instance: ScriptCommand,
 		command_name: str,
 		params_dict: dict,
 		line_num: int
@@ -2218,9 +2239,7 @@ class OpenScriptCommand:
 			params_dict: Script parameters
 			line_num: Line number (for errors)
 		"""
-		import inspect  # noqa: PLC0415
-
-		execute_sig = inspect.signature(command_instance.execute)  # type: ignore[unresolved-attribute]
+		execute_sig = inspect.signature(command_instance.execute)
 		params = list(execute_sig.parameters.keys())
 
 		# Note: inspect.signature on bound method excludes 'self'
@@ -2233,17 +2252,17 @@ class OpenScriptCommand:
 			)
 		else:
 			# Standard execute(self, common) signature
-			command_instance.execute(self.common) # type: ignore[unresolved-attribute]
+			command_instance.execute(self.common)
 
 	# ------------
 
 	def _execute_with_extra_param(
 		self,
-		command_instance: object,
+		command_instance: ScriptCommand,
 		command_name: str,
 		params_dict: dict,
 		param_name: str,
-		execute_sig: object,
+		execute_sig: inspect.Signature,
 		line_num: int
 	) -> None:
 		"""Execute command that requires an extra parameter.
@@ -2261,9 +2280,9 @@ class OpenScriptCommand:
 		)
 
 		if extra_value is not None:
-			command_instance.execute(self.common, extra_value)  # type: ignore[unresolved-attribute]
+			command_instance.execute(self.common, extra_value)
 		elif self._parameter_has_default(param_name, execute_sig):
-			command_instance.execute(self.common) # type: ignore[unresolved-attribute]
+			command_instance.execute(self.common)
 		else:
 			self._raise_missing_parameter_error(
 				command_name, param_name, line_num
@@ -2295,7 +2314,8 @@ class OpenScriptCommand:
 
 		# Check if there's an alias for this parameter
 		cmd_info = command_dict.get(command_name, {})
-		parameter_aliases = cmd_info.get("parameter_aliases", {})
+		parameter_aliases = cast(
+			"dict[str, str]", cmd_info.get("parameter_aliases", {}))
 		for alias, full_name in parameter_aliases.items():
 			if full_name == param_name and alias in params_dict:
 				return params_dict[alias]
@@ -2305,7 +2325,7 @@ class OpenScriptCommand:
 	# ------------
 
 	def _parameter_has_default(
-		self, param_name: str, execute_sig: object
+		self, param_name: str, execute_sig: inspect.Signature
 	) -> bool:
 		"""Check if parameter has a default value.
 
@@ -2316,8 +2336,7 @@ class OpenScriptCommand:
 		Returns:
 			True if parameter has default value
 		"""
-		import inspect  # noqa: PLC0415
-		param_obj = execute_sig.parameters[param_name]  # type: ignore[unresolved-attribute]
+		param_obj = execute_sig.parameters[param_name]
 		return param_obj.default != inspect.Parameter.empty
 
 	# ------------
@@ -4012,9 +4031,12 @@ class SimilaritiesCommand:
 		Similarities are stored in a lower triangular matrix format and can
 		be either "similarities" or "dissimilarities" based on value_type.
 		"""
+		from features import SimilaritiesFeature  # noqa: PLC0415
+
 		try:
 			self._director.similarities_active = (
-				common.read_lower_triangular_matrix(file_name, value_type)
+				common.read_lower_triangular_matrix(
+					file_name, SimilaritiesFeature, value_type=value_type)
 			)
 			self._director.similarities_active.duplicate_similarities(common)
 			self._director.similarities_active.range_similarities = \
@@ -4068,8 +4090,10 @@ class TargetCommand:
 		common.capture_and_push_undo_state("Target", "active", params)
 
 		# Read and validate target file
+		from features import TargetFeature  # noqa: PLC0415
+
 		self._director.target_active = common.read_configuration_type_file(
-			file_name, "Target")
+			file_name, TargetFeature)
 		self._director.dependency_checker.detect_consistency_issues()
 
 		self._director.target_active.print_target()

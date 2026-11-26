@@ -513,14 +513,18 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def read_configuration_type_file(
-		self, file_name: str, configuration_type: str
-	) -> ConfigurationFeature | TargetFeature:
-		"""This is used by commands needing to	read a configuration file."""
+	def read_configuration_type_file[
+		ConfigurationType: (ConfigurationFeature, TargetFeature)
+	](
+		self, file_name: str, feature_class: type[ConfigurationType]
+	) -> ConfigurationType:
+		"""Read a configuration-format file into a new feature.
 
-		from features import ConfigurationFeature, TargetFeature  # noqa: PLC0415
-
+		feature_class is the feature to build (ConfigurationFeature or
+		TargetFeature); its name, without "Feature", titles any errors.
+		"""
 		_director = self._director
+		configuration_type = feature_class.__name__.removesuffix("Feature")
 
 		self.read_configuration_type_file_initialize_variables(
 			file_name, configuration_type
@@ -546,10 +550,7 @@ class Spaces:
 				self.conf_file_not_found_message,
 			) from None
 
-		if configuration_type == "Configuration":
-			destination: ConfigurationFeature = ConfigurationFeature(_director)
-		elif configuration_type == "Target":
-			destination: TargetFeature = TargetFeature(_director)
+		destination = feature_class(_director)
 		destination.ndim = ndim
 		destination.npoint = npoint
 		destination.range_dims = range(ndim)
@@ -2022,14 +2023,24 @@ class Spaces:
 
 	# ------------------------------------------------------------------------
 
-	def read_lower_triangular_matrix(
-		self, file_name: str, data_type: str
-	) -> SimilaritiesFeature | CorrelationsFeature:
+	def read_lower_triangular_matrix[
+		MatrixType: (SimilaritiesFeature, CorrelationsFeature)
+	](
+		self,
+		file_name: str,
+		feature_class: type[MatrixType],
+		*,
+		value_type: str = "similarities",
+	) -> MatrixType:
 		"""read lower triangular function - this function is used
 		to read information stored in lower triangular form such
 		as similarities, distances and correlations.
+
+		feature_class is the feature to build (SimilaritiesFeature or
+		CorrelationsFeature). value_type ("similarities" or
+		"dissimilarities") applies only to SimilaritiesFeature.
 		"""
-		from features import SimilaritiesFeature, CorrelationsFeature  # noqa: PLC0415
+		from features import SimilaritiesFeature  # noqa: PLC0415
 
 		# Note:
 		# Within read_lower_triangular the elements of the matrix are
@@ -2048,14 +2059,9 @@ class Spaces:
 				item_labels, item_names = self.read_lower_triangle_dictionary(
 					file_handle, nreferent
 				)
-				if data_type in {"similarities", "dissimilarities"}:
-					similarities = self.read_lower_triangle_values(
-						file_handle, nreferent
-					)
-				elif data_type == "correlations":
-					correlations = self.read_lower_triangle_values(
-						file_handle, nreferent
-					)
+				values = self.read_lower_triangle_values(
+					file_handle, nreferent
+				)
 
 		except EOFError:
 			self.event_driven_automatic_restoration()
@@ -2076,24 +2082,12 @@ class Spaces:
 				self.unexpected_input_lower_triangular_error_message,
 			) from None
 
-		if data_type == "similarities":
-			destination: SimilaritiesFeature = SimilaritiesFeature(
-				self._director
-			)
-			destination.similarities = similarities
-			destination.value_type = "similarities"
-
-		elif data_type == "dissimilarities":
-			destination: SimilaritiesFeature = SimilaritiesFeature(
-				self._director
-			)
-			destination.similarities = similarities
-			destination.value_type = "dissimilarities"
-		elif data_type == "correlations":
-			destination: CorrelationsFeature = CorrelationsFeature(
-				self._director
-			)
-			destination.correlations = correlations
+		destination = feature_class(self._director)
+		if isinstance(destination, SimilaritiesFeature):
+			destination.similarities = values
+			destination.value_type = value_type
+		else:
+			destination.correlations = values
 
 		destination.nreferent = nreferent
 		destination.nitem = destination.nreferent
