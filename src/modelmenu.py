@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from factor_analyzer import FactorAnalyzer
 import numpy as np
@@ -108,24 +108,15 @@ class ClusterCommand:
 
 	def _get_n_clusters_interactively(self, common: Spaces) -> int:
 		"""Get number of clusters from user with dynamic max value."""
-		from dictionaries import command_dict  # noqa: PLC0415
-
 		self.number_clusters_max_allowed = min(
 			15, len(self.data_for_clustering) - 1
 		)
-		original_max = command_dict["Cluster"]["interactive_getters"][
-			"n_clusters"
-		]["max_val"]
-		command_dict["Cluster"]["interactive_getters"]["n_clusters"][
-			"max_val"
-		] = self.number_clusters_max_allowed
-
-		params_step2 = common.get_command_parameters("Cluster")
-
-		command_dict["Cluster"]["interactive_getters"]["n_clusters"][
-			"max_val"
-		] = original_max
-
+		params_step2 = common.get_command_parameters(
+			"Cluster",
+			getter_overrides={
+				"n_clusters": {"max_val": self.number_clusters_max_allowed}
+			},
+		)
 		return params_step2["n_clusters"]
 
 	# ------------------------------------------------------------------------
@@ -299,13 +290,14 @@ class ClusterCommand:
 			return DEFAULT_NUMBER_OF_CLUSTERS
 
 		k_range = range(2, max_k + 1)
-		inertias = []
+		inertias: list[float] = []
 		silhouette_scores = []
 
 		for k in k_range:
 			kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
 			cluster_labels = kmeans.fit_predict(data)
-			inertias.append(kmeans.inertia_)
+			# inertia_ is set by fitting (sklearn declares it untyped)
+			inertias.append(cast("float", kmeans.inertia_))
 
 			# Calculate silhouette score
 			sil_score = silhouette_score(data, cluster_labels)
@@ -1428,8 +1420,8 @@ class FactorAnalysisMachineLearningCommand:
 		self._director.configuration_active.loadings = pd.DataFrame(
 			loadings_matrix,
 			columns=pd.Index([
-				f"Factor {i + 1}"
-				for i in range(transformer.n_components)  # type: ignore[arg-type]
+				f"Factor {each_factor + 1}"
+				for each_factor in range(loadings_matrix.shape[1])
 			]),
 			index=pd.Index(item_names),
 		)
@@ -1530,8 +1522,12 @@ class FactorAnalysisMachineLearningCommand:
 		print("\nScore: \n", transformer.score(X))
 		print("\nScore_samples: \n", transformer.score_samples(X))
 		print("\n\tComponents_: \n", transformer.components_)
-		print("\n\tn_features_in_: ", transformer.n_features_in_)  # type: ignore[union-attr]
-		print("\n\tnoise_variance_: \n", transformer.noise_variance_)  # type: ignore[union-attr]
+		print(
+			"\n\tn_features_in_: ",
+			# Set dynamically by sklearn during fit
+			transformer.n_features_in_,  # ty: ignore[missing-attribute]
+		)
+		print("\n\tnoise_variance_: \n", transformer.noise_variance_)
 		print("\n\tmean_: \n", transformer.mean_)
 		x_new = pd.DataFrame(
 			transformer.transform(X),
@@ -2234,74 +2230,36 @@ class UncertaintyAnalysis:
 		table_widget = QTableWidget(nrepetitions, 5)
 
 		for each_repetition in range(1, nrepetitions + 1):
-			_repetition_selected = (
-				repetition_freqs["Repetition"] == each_repetition
-			) & (repetition_freqs["Selected"])
-			_repetition_not_selected = (
-				repetition_freqs["Repetition"] == each_repetition
-			) & (~repetition_freqs["Selected"])
-
-			value_1 = f"{each_repetition}"
-			item_1 = QTableWidgetItem(value_1)
-			item_1.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-			table_widget.setItem(
-				each_repetition - 1, 0, QTableWidgetItem(item_1)
-			)
-
-			if repetition_freqs.loc[_repetition_selected]["Count"].empty:
-				value_2 = "0"
-				percent_value_2 = 0.0
-			else:
-				value_2 = f"{
-					repetition_freqs.loc[_repetition_selected][
-						'Count'
-					].to_numpy()[0]
-				}"
-				percent_value_2 = (
-					repetition_freqs.loc[_repetition_selected][
-						"Count"
-					].to_numpy()[0]
-					/ universe_size
-				)
-			item_2 = QTableWidgetItem(value_2)
-			item_2.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-			table_widget.setItem(
-				each_repetition - 1, 1, QTableWidgetItem(item_2)
-			)
-			value_3 = f"{percent_value_2:.2%}"
-			item_3 = QTableWidgetItem(value_3)
-			item_3.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-			table_widget.setItem(
-				each_repetition - 1, 2, QTableWidgetItem(item_3)
-			)
-			if repetition_freqs.loc[_repetition_not_selected]["Count"].empty:
-				value_4 = "0"
-				percent_value_4 = 0.0
-			else:
-				value_4 = f"{
-					repetition_freqs.loc[_repetition_not_selected][
-						'Count'
-					].to_numpy()[0]
-				}"
-				percent_value_4 = (
-					repetition_freqs.loc[_repetition_not_selected][
-						"Count"
-					].to_numpy()[0]
-					/ universe_size
-				)
-			item_4 = QTableWidgetItem(value_4)
-			item_4.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-			table_widget.setItem(
-				each_repetition - 1, 3, QTableWidgetItem(item_4)
-			)
-			value_5 = f"{percent_value_4:.2%}"
-			item_5 = QTableWidgetItem(value_5)
-			item_5.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-			table_widget.setItem(
-				each_repetition - 1, 4, QTableWidgetItem(item_5)
-			)
+			selected = self._count_for_repetition(
+				repetition_freqs, each_repetition, selected=True)
+			not_selected = self._count_for_repetition(
+				repetition_freqs, each_repetition, selected=False)
+			row_values = [
+				f"{each_repetition}",
+				f"{selected}",
+				f"{selected / universe_size:.2%}",
+				f"{not_selected}",
+				f"{not_selected / universe_size:.2%}",
+			]
+			for each_column, each_value in enumerate(row_values):
+				item = QTableWidgetItem(each_value)
+				item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+				table_widget.setItem(each_repetition - 1, each_column, item)
 
 		return table_widget
+
+	# ------------------------------------------------------------------------
+
+	@staticmethod
+	def _count_for_repetition(
+		repetition_freqs: pd.DataFrame, repetition: int, *, selected: bool
+	) -> int:
+		"""Count of cases selected (or not) in one repetition, else 0."""
+		matching = repetition_freqs[
+			(repetition_freqs["Repetition"] == repetition)
+			& (repetition_freqs["Selected"] == selected)
+		]["Count"]
+		return 0 if matching.empty else int(matching.to_numpy()[0])
 
 	# ------------------------------------------------------------------------
 
@@ -2665,14 +2623,15 @@ class UncertaintyCommand:
 
 		sample_design.sort_values(by=["Repetition", "RespId"], inplace=True)
 
-		sample_design_frequencies = (
-			sample_design.groupby(["Repetition", "Selected"])  # type: ignore[call-overload]
-			.size()
-			.reset_index(name="Count")
+		# size() of a default (as_index) groupby is a Series
+		group_sizes = cast(
+			"pd.Series",
+			sample_design.groupby(["Repetition", "Selected"]).size(),
 		)
-		sample_design_frequencies_as_json = sample_design_frequencies.to_json(
-			orient="records"
-		)
+		sample_design_frequencies = group_sizes.reset_index(name="Count")
+		# to_json returns the text when no path is given
+		sample_design_frequencies_as_json = cast(
+			"str", sample_design_frequencies.to_json(orient="records"))
 
 		# Store in uncertainty_active
 		uncertainty_active.universe_size = universe_size

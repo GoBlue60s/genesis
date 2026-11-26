@@ -51,7 +51,7 @@ from geometry import PlotExtremes
 from typing import Any, TextIO, TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-	from collections.abc import Callable
+	from collections.abc import Callable, Mapping
 	from command_state import CommandState
 	from spaces import Status
 	from features import (
@@ -2651,7 +2651,11 @@ class Spaces:
 	# ------------------------------------------------------------------------
 
 	def get_command_parameters(
-		self, command_name: str, **kwargs: object
+		self,
+		command_name: str,
+		*,
+		getter_overrides: Mapping[str, Mapping[str, object]] | None = None,
+		**kwargs: object,
 	) -> dict[str, Any]:
 		"""Get command parameters from script or interactive dialogs.
 
@@ -2661,6 +2665,9 @@ class Spaces:
 
 		Args:
 			command_name: Name of the command (e.g., "Evaluations", "Rotate")
+			getter_overrides: Per-parameter dialog settings that replace
+				those in command_dict for this call only, for values known
+				only at run time (e.g., {"n_clusters": {"max_val": 9}})
 			**kwargs: Optional keyword arguments for parameters passed from
 				execute method (e.g., value_type="Similarities")
 
@@ -2696,9 +2703,29 @@ class Spaces:
 			)
 		# else:
 		# Get from interactive dialogs using metadata
+		if getter_overrides:
+			cmd_info = self._apply_getter_overrides(
+				cmd_info, getter_overrides)
 		return self._get_interactive_parameters(
 			command_name, cmd_info, expected_params, kwargs
 		)
+
+	# ------------
+
+	@staticmethod
+	def _apply_getter_overrides(
+		cmd_info: Mapping[str, Any],
+		getter_overrides: Mapping[str, Mapping[str, object]],
+	) -> dict[str, Any]:
+		"""Return a copy of cmd_info with getter settings overridden.
+
+		command_dict itself is never modified.
+		"""
+		getters = dict(cmd_info.get("interactive_getters", {}))
+		for each_param, each_override in getter_overrides.items():
+			getters[each_param] = {
+				**getters.get(each_param, {}), **each_override}
+		return {**cmd_info, "interactive_getters": getters}
 
 	# ------------------------------------------------------------------------
 
