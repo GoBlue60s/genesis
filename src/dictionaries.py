@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NotRequired, TypedDict
 
 from constants import (
 	MINIMUM_ALLOWABLE_CUT_OFF,
@@ -137,6 +137,8 @@ from viewmenu import (
 )
 
 if TYPE_CHECKING:
+	from collections.abc import Mapping
+
 	from director import Status
 
 # Type alias for immutable dictionaries
@@ -3223,12 +3225,86 @@ tester_menu_dict = MappingProxyType({
 
 
 # ----------------------------------------------------------------------------
+# Table configuration types
+# Purpose: Describe the entries of the four table dictionaries below so
+# table_builder.py reads each setting with its real type. Settings named
+# *_attr (and "source"/"data") name attributes looked up with getattr.
+# ----------------------------------------------------------------------------
+
+
+class BasicTableConfig(TypedDict):
+	"""Entry of basic_table_dict.
+
+	row_headers/column_headers are a list of headers, or the name of the
+	source attribute that holds them.
+	"""
+
+	source: str
+	data: str
+	row_headers: str | list[str]
+	column_headers: str | list[str]
+	row_height: int
+	format: str
+
+
+# ----------------------------------------------------------------------------
+
+
+class SquareTableConfig(TypedDict):
+	"""Entry of square_table_dict."""
+
+	source_attr: str
+	data_attr: str
+	item_names_attr: str
+	row_height: int
+	format_str: str
+	diagonal: str
+
+
+# ----------------------------------------------------------------------------
+
+
+class StatisticalTableConfig(TypedDict):
+	"""Entry of statistical_table_dict.
+
+	Row headers come from row_headers or from the dotted path in
+	row_headers_attr (e.g. "source.point_names"); column headers from
+	column_headers or column_headers_attr. "cluster_results" and "paired"
+	are special-cased in table_builder.py.
+	"""
+
+	source_attr: NotRequired[str]
+	data_attr: NotRequired[str]
+	row_headers: NotRequired[list[str]]
+	row_headers_attr: NotRequired[str]
+	column_headers: NotRequired[list[str]]
+	column_headers_attr: NotRequired[str]
+	column_headers_dynamic: NotRequired[bool]
+	row_height: NotRequired[int]
+	format_spec: NotRequired[str | list[str]]
+	format_spec_dynamic: NotRequired[bool]
+
+
+# ----------------------------------------------------------------------------
+
+
+class RivalryTableConfig(TypedDict):
+	"""Entry of rivalry_table_dict; data_attr names a rivalry attribute."""
+
+	data_attr: str
+	column_headers: list[str]
+	format_spec: str | list[str]
+	row_headers: NotRequired[list[str]]
+	requires_scores: NotRequired[bool]
+
+
+# ----------------------------------------------------------------------------
 # Dictionary: basic_table_dict (renamed from display_tables_dict)
 # Source: table_builder.py lines 59-84
 # Purpose: Configuration for basic (non-square) tables
 # ----------------------------------------------------------------------------
 
-basic_table_dict = MappingProxyType({
+basic_table_dict: Mapping[str, BasicTableConfig] = MappingProxyType({
 	"configuration": {
 		"source": "configuration_active",
 		"data": "point_coords",
@@ -3262,7 +3338,7 @@ basic_table_dict = MappingProxyType({
 # Purpose: Configuration for square matrix tables
 # ----------------------------------------------------------------------------
 
-square_table_dict = MappingProxyType({
+square_table_dict: Mapping[str, SquareTableConfig] = MappingProxyType({
 	"correlations": {
 		"source_attr": "correlations_active",
 		"data_attr": "correlations_as_dataframe",
@@ -3328,7 +3404,9 @@ square_table_dict = MappingProxyType({
 # Purpose: Configuration for general statistical tables
 # ----------------------------------------------------------------------------
 
-statistical_table_dict = MappingProxyType({
+statistical_table_dict: Mapping[
+	str, StatisticalTableConfig
+] = MappingProxyType({
 	"alike": {
 		"source_attr": "current_command",
 		"data_attr": "alike_df",
@@ -3500,8 +3578,6 @@ statistical_table_dict = MappingProxyType({
 		"format_spec": ["d", "8.4f"],
 	},
 	"cluster_results": {
-		"source_attr": None,
-		"data_attr": None,
 		"row_headers": [],
 		"column_headers_attr": "list(data.columns)",
 		"format_spec_dynamic": True,
@@ -3515,7 +3591,7 @@ statistical_table_dict = MappingProxyType({
 # Purpose: Configuration for rivalry segment tables
 # ----------------------------------------------------------------------------
 
-rivalry_table_dict = MappingProxyType({
+rivalry_table_dict: Mapping[str, RivalryTableConfig] = MappingProxyType({
 	"base": {
 		"data_attr": "base_pcts_df",
 		"column_headers": [
