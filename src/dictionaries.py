@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from types import MappingProxyType
-from typing import TYPE_CHECKING, NotRequired, TypedDict
+from typing import TYPE_CHECKING, NotRequired, Required, TypedDict
 
 from constants import (
 	MINIMUM_ALLOWABLE_CUT_OFF,
@@ -146,6 +146,63 @@ FrozenDict = MappingProxyType
 
 
 # ----------------------------------------------------------------------------
+# Command configuration types
+# Purpose: Describe command_dict entries so code reading them gets each
+# setting's real type, and ty checks every entry.
+# ----------------------------------------------------------------------------
+
+
+class GetterConfig(TypedDict, total=False):
+	"""Settings for the dialog that obtains one parameter interactively.
+
+	getter_type selects the dialog (e.g. "set_value_dialog"); which other
+	settings apply depends on that dialog. A max_val of None means the
+	maximum is determined at run time.
+	"""
+
+	getter_type: Required[str]
+	title: str
+	label: str
+	caption: str
+	filter: str
+	directory: str
+	mode: str
+	is_integer: bool
+	min_val: float
+	max_val: float | None
+	default: float
+	step_size: float
+	options_title: str
+	options: list[str]
+	items: list[str]
+	items_source: str
+	labels: list[str]
+	values: list[str]
+	defaults: list[float]
+	defaults_source: list[str]
+	defaults_multiplier: int | list[int]
+	default_values: list[float] | None
+	boolean_params: list[str]
+	converts_to_booleans: bool
+
+
+# ----------------------------------------------------------------------------
+
+
+class CommandConfig(TypedDict):
+	"""Entry of command_dict: how a command is classified, undone and
+	scripted, and how its parameters are obtained interactively.
+	"""
+
+	type: str
+	state_capture: NotRequired[list[str]]
+	script_parameters: NotRequired[list[str]]
+	execute_parameters: NotRequired[list[str]]
+	interactive_getters: NotRequired[dict[str, GetterConfig]]
+	parameter_aliases: NotRequired[dict[str, str]]
+
+
+# ----------------------------------------------------------------------------
 # Dictionary: command_dict
 # Source: director.py lines 936-977 (active_commands,
 #  interactive_only_commands, script_commands, passive_commands)
@@ -153,7 +210,7 @@ FrozenDict = MappingProxyType
 #          (40 active + 2 interactive_only + 3 script + 63 passive)
 # ----------------------------------------------------------------------------
 
-command_dict = MappingProxyType({
+command_dict: Mapping[str, CommandConfig] = MappingProxyType({
 	"About": {
 		"type": "passive",
 		"state_capture": [],

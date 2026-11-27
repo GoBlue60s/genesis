@@ -5,7 +5,7 @@ import inspect
 import sys
 from pathlib import Path
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, TextIO, cast
+from typing import TYPE_CHECKING, Any, TextIO
 
 import pandas as pd
 import peek # noqa: F401
@@ -2300,8 +2300,7 @@ class OpenScriptCommand:
 
 		# Check if there's an alias for this parameter
 		cmd_info = command_dict.get(command_name, {})
-		parameter_aliases = cast(
-			"dict[str, str]", cmd_info.get("parameter_aliases", {}))
+		parameter_aliases = cmd_info.get("parameter_aliases", {})
 		for alias, full_name in parameter_aliases.items():
 			if full_name == param_name and alias in params_dict:
 				return params_dict[alias]

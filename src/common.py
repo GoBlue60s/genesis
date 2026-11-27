@@ -1183,7 +1183,7 @@ class Spaces:
 		file_handle: TextIO,
 		file_type: str,
 		nreferent: int,
-		source: object | None = None
+		source: ConfigurationFeature | TargetFeature | None = None
 	) -> None:
 		"""Writes file type and size information to a file.
 
@@ -1203,7 +1203,7 @@ class Spaces:
 				if source is None:
 					source = self._director.configuration_active
 				file_handle.write(
-					" " + str(source.ndim) + " " + str(source.npoint) + "\n"  # type: ignore[unresolved-attribute]
+					" " + str(source.ndim) + " " + str(source.npoint) + "\n"
 				)
 			case "Lower Triangular":
 				file_handle.write(str(nreferent) + "\n")
@@ -1252,7 +1252,7 @@ class Spaces:
 
 		# Set up dimensions and item data
 		df_orig = evaluations.evaluations
-		(line_of_sight.n_individ, line_of_sight.nreferent) = df_orig.shape
+		line_of_sight.nreferent = df_orig.shape[1]
 		line_of_sight.nitem = line_of_sight.nreferent
 		line_of_sight.npoints = line_of_sight.nreferent
 		line_of_sight.range_items = range(line_of_sight.nreferent)
@@ -2732,7 +2732,7 @@ class Spaces:
 	def _get_script_parameters(
 		self,
 		command_name: str,
-		cmd_info: dict[str, Any],
+		cmd_info: Mapping[str, Any],
 		expected_params: list[str],
 		kwargs: dict[str, Any]
 	) -> dict[str, Any]:
@@ -2927,7 +2927,7 @@ class Spaces:
 	def _get_interactive_parameters(
 		self,
 		command_name: str,
-		cmd_info: dict[str, Any],
+		cmd_info: Mapping[str, Any],
 		expected_params: list[str],
 		kwargs: dict[str, Any]
 	) -> dict[str, object]:
@@ -4417,7 +4417,8 @@ class Spaces:
 		df: pd.DataFrame,
 		file_name: str,
 		file_type: str,
-		**kwargs: object
+		*,
+		index: bool = True,
 	) -> None:
 		"""Write CSV file with type identification header.
 
@@ -4429,7 +4430,7 @@ class Spaces:
 			file_name: Path to output file
 			file_type: Type identifier (e.g., 'SCORES', 'EVALUATIONS',
 				'INDIVIDUALS')
-			**kwargs: Additional arguments passed to DataFrame.to_csv()
+			index: Whether to write the row index (as DataFrame.to_csv)
 
 		Example:
 			File will start with:
@@ -4439,7 +4440,7 @@ class Spaces:
 		"""
 		with Path(file_name).open('w', encoding='utf-8') as f:
 			f.write(f"# TYPE: {file_type.upper()}\n")
-		df.to_csv(file_name, mode='a', **kwargs)
+		df.to_csv(file_name, mode='a', index=index)
 		return
 
 	# ------------------------------------------------------------------------
