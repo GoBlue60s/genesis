@@ -3093,7 +3093,6 @@ class Spaces:
 			"modify_values_dialog": self._handle_modify_values_dialog,
 			"move_dialog": self._handle_move_dialog,
 			"matrix_dialog": self._handle_matrix_dialog,
-			"modify_text_dialog": self._handle_modify_text_dialog,
 			"set_names_dialog": self._handle_set_names_dialog,
 		}
 
@@ -3572,32 +3571,6 @@ class Spaces:
 		# Store and return
 		self._director.obtained_parameters[param_name] = matrix
 		return {param_name: matrix}
-
-	# ------------
-
-	def _handle_modify_text_dialog(
-		self,
-		command_name: str,
-		param_name: str,
-		getter_info: dict
-	) -> dict[str, object]:
-		"""Handle ModifyTextDialog parameter getter."""
-		from dialogs import ModifyTextDialog  # noqa: PLC0415
-		from PySide6.QtWidgets import QDialog  # noqa: PLC0415
-
-		title = getter_info.get("title", "Modify text")
-		labels = getter_info.get("labels", [])
-
-		dialog = ModifyTextDialog(title, labels)
-		result = dialog.exec()
-		if result != QDialog.DialogCode.Accepted:
-			self._raise_cancelled_error(command_name)
-
-		new_labels = dialog.selected_items()
-
-		# Store and return
-		self._director.obtained_parameters[param_name] = new_labels
-		return {param_name: new_labels}
 
 	# ------------
 

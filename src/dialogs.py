@@ -178,18 +178,7 @@ class ModifyItemsDialog(QDialog):
 			self.checkboxes.append(checkbox)
 			checkbox.setChecked(default_value)
 			self.main_layout.addWidget(checkbox)
-		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-		)
-		self.checkbox_box.accepted.connect(self.accept)
-		self.checkbox_box.rejected.connect(self.reject)
-
-		checkbox_layout = QHBoxLayout()
-		checkbox_layout.addWidget(self.checkbox_box)
-		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
-		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
-		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.main_layout.addLayout(checkbox_layout)
+		_add_ok_cancel_buttons(self, self.main_layout)
 		self.setLayout(self.main_layout)
 
 	def selected_items(self) -> list[str]:
@@ -204,92 +193,34 @@ class ModifyItemsDialog(QDialog):
 # --------------------------------------------------------------------------
 
 
-class ModifyTextDialog(QDialog):
-	def __init__(
-		self,
-		title: str,
-		items: list[str],
-		default_values: list[str] | None = None,
-		parent: QWidget | None = None,
-	) -> None:
-		super().__init__(parent)
-
-		self.setWindowTitle(title)
-		self.setFixedWidth(325)
-		self.items = items
-		self.spinboxes = []
-		self.main_layout = QVBoxLayout()
-		for item, default_value in zip(
-			items, default_values or [], strict=False
-		):
-			hbox = QHBoxLayout()
-			label = QLabel(item)
-			spinbox = QSpinBox()
-			spinbox.setMinimum(0)
-			spinbox.setMaximum(100)
-			spinbox.setValue(default_value)
-			spinbox.setAlignment(QtCore.Qt.AlignRight)
-			hbox.addWidget(label)
-			hbox.addWidget(spinbox)
-
-			self.spinboxes.append(spinbox)
-
-			self.main_layout.addLayout(hbox)
-		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-		)
-		self.checkbox_box.accepted.connect(self.accept)
-		self.checkbox_box.rejected.connect(self.reject)
-
-		checkbox_layout = QHBoxLayout()
-		checkbox_layout.addWidget(self.checkbox_box)
-		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
-		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
-		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.main_layout.addLayout(checkbox_layout)
-		self.setLayout(self.main_layout)
-
-	def selected_items(self) -> list[tuple[str, int]]:
-		selected = [
-			(self.items[i], self.spinboxes[i].value())
-			for i in range(len(self.items))
-		]
-		return selected
-
-
-# --------------------------------------------------------------------------
-
-
 class ModifyValuesDialog(QDialog):
 	def __init__(
 		self,
 		title: str,
 		items: list[str],
 		integers: bool,  # noqa:FBT001
-		default_values: list[int] | None = None,
+		default_values: list[float] | None = None,
 		parent: QWidget | None = None,
 	) -> None:
 		super().__init__(parent)
 		self.setWindowTitle(title)
 		self.setFixedWidth(325)
 		self.items = items
-		self.spinboxes = []
+		self.spinboxes: list[QSpinBox | QDoubleSpinBox] = []
 		self.main_layout = QVBoxLayout()
 		for item, default_value in zip(
 			items, default_values or [], strict=False
 		):
 			hbox = QHBoxLayout()
 			label = QLabel(item)
-			spinbox = QSpinBox() if integers else QDoubleSpinBox()
-			spinbox.setMinimum(0)
-			spinbox.setMaximum(1000)
-			# Integer spinboxes need integer step,
-			#  double spinboxes need decimal step
-			if integers:
-				spinbox.setSingleStep(1)
-			else:
-				spinbox.setSingleStep(0.01)  # type: ignore[arg-type]
-			spinbox.setValue(default_value)
+			# Integer spinboxes step by 1, double spinboxes by 0.01
+			spinbox = _create_value_spinbox(
+				integers=integers,
+				minimum=0,
+				maximum=1000,
+				value=default_value,
+				step=1 if integers else 0.01,
+			)
 			# spinbox.setGeometry(10,20,51,22)
 			spinbox.setAlignment(QtCore.Qt.AlignRight)
 			hbox.addWidget(spinbox)
@@ -298,23 +229,12 @@ class ModifyValuesDialog(QDialog):
 			self.spinboxes.append(spinbox)
 
 			self.main_layout.addLayout(hbox)
-		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-		)
-		self.checkbox_box.accepted.connect(self.accept)
-		self.checkbox_box.rejected.connect(self.reject)
-
-		checkbox_layout = QHBoxLayout()
-		checkbox_layout.addWidget(self.checkbox_box)
-		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
-		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
-		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.main_layout.addLayout(checkbox_layout)
+		_add_ok_cancel_buttons(self, self.main_layout)
 		self.setLayout(self.main_layout)
 
 	# ------------------------------------------------------------------------
 
-	def selected_items(self) -> list[tuple[str, int]]:
+	def selected_items(self) -> list[tuple[str, float]]:
 		selected = [
 			(self.items[i], round(self.spinboxes[i].value(), 2))
 			for i in range(len(self.items))
@@ -401,18 +321,7 @@ class PairofPointsDialog(QDialog):
 			checkbox = QCheckBox(item)
 			self.checkboxes.append(checkbox)
 			self.main_layout.addWidget(checkbox)
-		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-		)
-		self.checkbox_box.accepted.connect(self.accept)
-		self.checkbox_box.rejected.connect(self.reject)
-
-		checkbox_layout = QHBoxLayout()
-		checkbox_layout.addWidget(self.checkbox_box)
-		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
-		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
-		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-		self.main_layout.addLayout(checkbox_layout)
+		_add_ok_cancel_buttons(self, self.main_layout)
 		self.setLayout(self.main_layout)
 		self.selection_error_title = "Selection Error"
 		self.selection_error_message = (
@@ -452,20 +361,7 @@ class SelectItemsDialog(QDialog):
 			self.checkboxes.append(checkbox)
 			self.main_layout.addWidget(checkbox)
 
-		self.checkbox_box = QDialogButtonBox(
-			QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-		)
-		self.checkbox_box.accepted.connect(self.accept)
-		self.checkbox_box.rejected.connect(self.reject)
-
-		checkbox_layout = QHBoxLayout()
-		checkbox_layout.addWidget(self.checkbox_box)
-		checkbox_layout.setAlignment(QtCore.Qt.AlignHCenter)
-		self.checkbox_box.layout().setContentsMargins(0, 0, 0, 0)
-		self.checkbox_box.layout().setAlignment(QtCore.Qt.AlignLeft)
-
-		# THIS LINE WAS MISSING - add the button layout to the main layout
-		self.main_layout.addLayout(checkbox_layout)
+		_add_ok_cancel_buttons(self, self.main_layout)
 
 		self.setLayout(self.main_layout)
 
@@ -574,15 +470,15 @@ class SetValueDialog(QDialog):
 
 		# Create a label and spin box to allow the user to set a value
 		label_widget = QLabel(label, self)
-		if an_integer:  # == True
-			self.spin_box = QSpinBox(self)
-		else:
-			self.spin_box = QDoubleSpinBox(self)
+		self.spin_box = _create_value_spinbox(
+			integers=an_integer,
+			minimum=min_val,
+			maximum=max_val,
+			value=default_value,
+			parent=self,
+		)
 		self.spin_box.setFixedWidth(100)
 		self.spin_box.setAlignment(QtCore.Qt.AlignHCenter)
-		self.spin_box.setMinimum(min_val)  # type: ignore[arg-type]
-		self.spin_box.setMaximum(max_val)  # type: ignore[arg-type]
-		self.spin_box.setValue(default_value)  # type: ignore[arg-type]
 
 		# Add the label and spin box to the layout
 		layout.addWidget(label_widget)
@@ -776,3 +672,58 @@ class GetCoordinatesDialog(QDialog):
 	def get_values(self) -> list[float]:
 		"""Return the list of coordinate values entered by the user."""
 		return [spin_box.value() for spin_box in self.spin_boxes]
+
+
+# --------------------------------------------------------------------------
+
+
+def _add_ok_cancel_buttons(dialog: QDialog, main_layout: QVBoxLayout) -> None:
+	"""Add a centered OK/Cancel row that accepts or rejects dialog."""
+	button_box = QDialogButtonBox(
+		QDialogButtonBox.StandardButton.Ok
+		| QDialogButtonBox.StandardButton.Cancel
+	)
+	button_box.accepted.connect(dialog.accept)
+	button_box.rejected.connect(dialog.reject)
+
+	button_row = QHBoxLayout()
+	button_row.addWidget(button_box)
+	button_row.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
+	box_layout = button_box.layout()
+	if box_layout is not None:
+		box_layout.setContentsMargins(0, 0, 0, 0)
+		box_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+	main_layout.addLayout(button_row)
+	return
+
+
+# --------------------------------------------------------------------------
+
+
+def _create_value_spinbox(
+	*,
+	integers: bool,
+	minimum: float,
+	maximum: float,
+	value: float,
+	step: float | None = None,
+	parent: QWidget | None = None,
+) -> QSpinBox | QDoubleSpinBox:
+	"""Create an integer or decimal spin box with range and value set.
+
+	An integer spin box only accepts whole numbers, so its settings are
+	converted with int().
+	"""
+	if integers:
+		spinbox = QSpinBox(parent)
+		spinbox.setRange(int(minimum), int(maximum))
+		if step is not None:
+			spinbox.setSingleStep(int(step))
+		spinbox.setValue(int(value))
+		return spinbox
+	double_spinbox = QDoubleSpinBox(parent)
+	double_spinbox.setRange(minimum, maximum)
+	if step is not None:
+		double_spinbox.setSingleStep(step)
+	double_spinbox.setValue(value)
+	return double_spinbox
